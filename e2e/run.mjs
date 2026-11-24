@@ -12191,7 +12191,7 @@ async function newplayerFlow(browser) {
   const qpScorebar = playing ? await page.waitForFunction(() => { const el = document.getElementById('scorebar'); return !!el && getComputedStyle(el).display !== 'none' && el.getBoundingClientRect().width > 0 && /You/.test(document.getElementById('sb-left').textContent); }, null, { timeout: T(30000) }).then(() => true, () => false) : false;
   const qpBar = await page.evaluate(() => { const el = document.getElementById('scorebar'); return el ? { display: getComputedStyle(el).display, width: el.getBoundingClientRect().width, left: document.getElementById('sb-left').textContent } : null; });
   check(qpScorebar, `after the tutorial, a Deathmatch shows its score bar again (You / Leader) (${JSON.stringify(qpBar)})`);
-  check(choice.join() === 'core.tdm,core.deathmatch,qp-pick' && !!qp && qp.mode === 'core.deathmatch' && ['citadel', 'crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
+  check(choice.join() === 'core.tdm,core.deathmatch,qp-pick' && !!qp && qp.mode === 'core.deathmatch' && ['crossroads', 'bunker_cross', 'halcyon_station'].includes(qp.map) && qp.fill >= 8 && qp.setup.skill === 'normal' && qp.saved?.mode === 'core.deathmatch', `Quick Play → Deathmatch starts a match against normal bots on one of its maps (${JSON.stringify(qp && { map: qp.map, mode: qp.mode, fill: qp.fill, saved: qp.saved })})`);
   await page.goto(`${CLIENT}/?test=1&name=Tester`);
   await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
   await page.click('#nav-quick');
@@ -14280,6 +14280,83 @@ async function impGrips(browser) {
  * players on a dedicated server: one leans and slides, and the other sees it, drawn from the snapshots. SLIDEPEEK_PICS
  * (a folder): the pictures are kept there too.
  */
+/**
+ * Test weapons (owner, 2026-11-24): Citadel and the Training Range are on no map list; Profile → Favourite loadout →
+ * Test weapons opens the range alone, offline, with your favourite class's loadout and no scorebar or clock; Esc there
+ * opens the pause menu and Esc again (its Back, "Loadout") comes back to the loadout, Test weapons focused. Desktop,
+ * then a phone (a tap on the button, the pause menu's exit). TESTRANGE_PICS=<dir>: pictures at twice the pixels.
+ */
+async function testrangeFlow(browser) {
+  const pics = process.env.TESTRANGE_PICS;
+  const run = async (label, ctxOpts, tap) => {
+    const context = await browser.newContext({ ...ctxOpts, deviceScaleFactor: pics ? 2 : ctxOpts.deviceScaleFactor ?? 1 });
+    await context.addInitScript(() => localStorage.setItem('tiletrigger.favClass', JSON.stringify('runner')));
+    const page = await context.newPage();
+    livePages.add(page);
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    const press = (sel) => (tap ? page.tap(sel) : page.click(sel));
+    await page.goto(`${CLIENT}/?test=1&name=Tester`);
+    await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+    if (label === 'desktop') {
+      // Neither map is offered in Match Setup's list.
+      await page.click('#nav-play');
+      await page.waitForSelector('.map-card', { timeout: T(20000) });
+      const listed = await page.$$eval('.map-card', (cs) => cs.map((c) => c.dataset.map));
+      check(listed.length > 20 && !listed.includes('citadel') && !listed.includes('training_range'), `Match Setup lists neither Citadel nor the Training Range (${listed.length} maps)`);
+      await page.keyboard.press('Escape');
+    }
+    await page.waitForSelector('#profile-badge', { timeout: T(20000) });
+    await press('#profile-badge');
+    await page.waitForSelector('#profile-test-weapons', { timeout: T(20000) });
+    await page.evaluate(() => document.getElementById('profile-fav-class')?.scrollIntoView({ block: 'center' }));
+    const fav = await page.evaluate(() => document.getElementById('profile-fav-class')?.value);
+    check(fav === 'runner', `${label}: Profile's Favourite loadout has the class and a Test weapons button (${fav})`);
+    if (pics) await page.screenshot({ path: `${pics}/loadout-${label}.png` });
+    await press('#profile-test-weapons');
+    const inRange = await page.waitForFunction(() => window.__cs?.map === 'training_range' && window.__cs.phase?.() === 'playing' && window.__cs.local?.alive && /sawed/i.test(document.getElementById('weapon-name')?.textContent ?? ''), null, { timeout: T(120000) }).then(() => true, () => false);
+    if (!inRange) console.log(`NOTE ${label} range: ${await page.evaluate(() => JSON.stringify({ map: window.__cs?.map, phase: window.__cs?.phase?.(), alive: window.__cs?.local?.alive, weapon: document.getElementById('weapon-name')?.textContent })).catch((e) => e.message)}`);
+    const state = inRange ? await page.evaluate(() => {
+      const sb = document.getElementById('scorebar');
+      const r = window.__cs.rules();
+      return { scorebar: !!sb && getComputedStyle(sb).display !== 'none' && sb.getBoundingClientRect().width > 0, timer: document.getElementById('timer')?.textContent ?? '', time: r.timeLimitSeconds, score: r.scoreLimit, classes: !!r.classes };
+    }) : null;
+    check(inRange && !!state && !state.scorebar && !state.timer && state.time === 0 && state.score === 0 && state.classes, `${label}: Test weapons opens the Training Range with the Runner's guns, no scorebar or clock (${JSON.stringify(state)})`);
+    // (A phone plays by touch; on a desktop the page never takes the mouse here: "Click to fight" waits, and Esc
+    // there opens the pause menu as it would in play.)
+    if (tap) await playWithoutMouse(page);
+    // The class screen opens with Classes on: closed for the picture.
+    await page.evaluate(() => (window.__cs.input.classMenu = false));
+    await frames(page, 10);
+    if (pics) await page.screenshot({ path: `${pics}/range-${label}.png` });
+    // Back: the pause menu, then its Back ("Loadout": Esc again) or its exit button (a phone).
+    const paused = await page.evaluate(() => !document.getElementById('pause').hidden);
+    if (!paused && tap) {
+      const pb = await page.evaluate(() => {
+        const r = document.querySelector('#touch-ui .tc-pause')?.getBoundingClientRect();
+        return r ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null;
+      });
+      if (pb) await page.touchscreen.tap(pb.x, pb.y);
+    } else if (!paused) await page.keyboard.press('Escape');
+    await page.waitForFunction(() => !document.getElementById('pause').hidden, null, { timeout: T(10000) }).catch(() => {});
+    const exitLabel = await page.textContent('#exitmatch').catch(() => '');
+    if (tap) {
+      // (A touch tap where the button is: the menu's buttons are never "stable" for Playwright's tap while it draws.)
+      const at = await page.evaluate(() => {
+        const r = document.getElementById('exitmatch').getBoundingClientRect();
+        return { x: r.x + r.width / 2, y: r.y + r.height / 2 };
+      });
+      await page.touchscreen.tap(at.x, at.y);
+    } else await page.keyboard.press('Escape');
+    const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && document.activeElement?.id === 'profile-test-weapons', null, { timeout: T(20000) }).then(() => true, () => false);
+    check(exitLabel === 'Back to loadout' && back, `${label}: ${tap ? 'the pause menu\'s exit' : 'Esc twice'} comes back to the loadout, Test weapons focused (${exitLabel}, ${back})`);
+    check(errors.length === 0, `${label}: no page errors (${errors.join('; ')})`);
+    await context.close();
+  };
+  await run('desktop', { viewport: pics ? { width: 1024, height: 600 } : { width: 1280, height: 720 } }, false);
+  await run('phone', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, true);
+}
+
 /**
  * Player profiles, Phases 2-4 (docs/PLAYER_PROFILES_PLAN.md): Profile's emblem and title pickers; your emblem in the
  * roster, the kill feed and on the scoreboard; your card with your title; another player's card from a click on the
@@ -16447,7 +16524,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, testrange: testrangeFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

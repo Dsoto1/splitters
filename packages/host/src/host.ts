@@ -1,7 +1,7 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { MODE_LABELS, SERVER_RULES, serverRuleFor, isMapId, isRetiredMap, loadMap, mapContentHash, mapIdentity, parsePlaylist, sanitizeName, type BotSet, type LobbyAdvert, type MapDocument, type RotationState, type ServerStats } from '@tiletrigger/shared';
+import { MODE_LABELS, SERVER_RULES, serverRuleFor, isMapId, isUnlistedMap, loadMap, mapContentHash, mapIdentity, parsePlaylist, sanitizeName, type BotSet, type LobbyAdvert, type MapDocument, type RotationState, type ServerStats } from '@tiletrigger/shared';
 import { suiteLookup } from '@tiletrigger/server/rotation';
 import { startServer, type RulesState, type RunningServer } from '@tiletrigger/server/server';
 import { verifyTicket } from '@tiletrigger/server/tickets';
@@ -152,14 +152,14 @@ export class TicketKeys {
   }
 }
 
-/** Suite map IDs (maps/*.json, retired ones left out), as the hub reads them. */
+/** Suite map IDs (maps/*.json, retired and training ones left out: isUnlistedMap), as the hub reads them. */
 export function suiteIds(mapsDir: string): Set<string> {
   if (!existsSync(mapsDir)) return new Set();
   return new Set(
     readdirSync(mapsDir)
       .filter((f) => f.endsWith('.json'))
       .map((f) => f.slice(0, -5))
-      .filter((id) => !isRetiredMap(id)),
+      .filter((id) => !isUnlistedMap(id)),
   );
 }
 

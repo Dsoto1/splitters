@@ -1,7 +1,7 @@
 // Test maps (metadata.testOnly, MapMaker's Map properties: maps/test_coverage.json) are left out of rotations.
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { suiteLookup } from '../src/rotation.ts';
+import { suiteLookup, suitePool } from '../src/rotation.ts';
 
 const MAPS = fileURLToPath(new URL('../../../maps', import.meta.url));
 
@@ -13,5 +13,15 @@ describe('test maps', () => {
     // The Breakthrough Range is a test map again (owner, 2026-11-08: hidden from every list): no rotation takes it.
     expect(lookup('test_breakthrough')).toBeNull();
     expect(lookup('iron_coast')?.modes).toContain('core.breakthrough');
+  });
+
+  it('no rotation or vote takes a retired map (Citadel) or a training map (the Training Range)', () => {
+    const lookup = suiteLookup(MAPS);
+    expect(lookup('citadel')).toBeNull();
+    expect(lookup('training_range')).toBeNull();
+    const pool = suitePool(MAPS);
+    expect(pool.entry('citadel', 'core.deathmatch')).toBeNull();
+    expect(pool.entry('training_range', 'core.deathmatch')).toBeNull();
+    expect(pool.entry('crossroads', 'core.deathmatch')?.map).toBe('crossroads');
   });
 });

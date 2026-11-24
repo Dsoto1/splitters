@@ -287,7 +287,6 @@ export class MapSaving {
       }, () => deleteFromLibrary(entry.id), '', { load: opened, shipped: SHIPPED_IDS.has(entry.id) }, [dup, ren]);
     }
     add('Sandgate', `${kind} · desert town for Team Deathmatch, with open courtyards`, template('sandgate', () => 'Sandgate Remix'), undefined, cls, tpl('sandgate'));
-    add('Citadel', `${kind} · castle keep with a two-storey atrium, roof terraces, props and breakables`, template('citadel', () => 'Citadel Remix'), undefined, cls, tpl('citadel'));
     add('Rockfall Canyon', `${kind} · sculpted terrain canyon with two bases, boulders and a ridge ledge`, template('canyon', () => 'Canyon Remix'), undefined, cls, tpl('canyon'));
     // Every other shipped map (the homage maps and later additions) is a template too (listed from the index: the maps that load).
     const known = new Set(['phase0_arena', 'm3_vault', 'm4_outpost', 'sandgate', 'citadel', 'canyon']);
