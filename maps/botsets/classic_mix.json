@@ -6,16 +6,16 @@
   "fill": "random",
   "entries": [
     { "name": "Brassneck", "look": "core.grunt68", "skill": "hard" },
-    { "name": "Mildred", "look": "core.sprout" },
+    { "name": "Mildred", "look": "core.mei" },
     { "name": "Captain Pell", "look": "core.barnacle" },
-    { "name": "Wick", "look": "core.sprout", "skill": "hard" },
-    { "name": "Doctor Umber", "look": "core.sprout" },
+    { "name": "Wick", "look": "core.mei", "skill": "hard" },
+    { "name": "Doctor Umber", "look": "core.mei" },
     { "name": "Spoke", "look": "core.dale" },
     { "name": "Gloam", "look": "core.dale", "skill": "hard" },
     { "name": "Tibbs", "look": "core.biscuit" },
     { "name": "Ferro", "look": "core.grunt68" },
-    { "name": "Lady Ash", "look": "core.sprout", "skill": "hard" },
+    { "name": "Lady Ash", "look": "core.mei", "skill": "hard" },
     { "name": "Nub", "look": "core.goblin", "skill": "easy" },
-    { "name": "Quill", "look": "core.ranger" }
+    { "name": "Quill", "look": "core.abe" }
   ]
 }

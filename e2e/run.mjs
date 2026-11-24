@@ -5893,7 +5893,7 @@ async function offlineFlow(browser) {
   await until(async () => Math.abs(await yaw()) < 0.01, T(3000));
   check(Math.abs(await yaw()) < 0.01, 'and leaving Character Select faces them forward again');
   check((await page.evaluate(() => window.__front.screen)) === 'profile', 'Back from Character Select returns to Profile, where it was opened');
-  // One grid in sections by what a character is (the Chrono Crew after Outer Space, owner 2026-11-22; experimental characters under their own, before yours) (a compact header each), a jump strip that lights the
+  // One grid in sections by what a character is (the Chrono Crew after Outer Space, owner 2026-11-22; an Experimental section only while someone is in it, none since 2026-11-24) (a compact header each), a jump strip that lights the
   // section in view; Q / E scroll to the next / previous one, and so does scrolling with the wheel.
   await openChars();
   const layout = await page.evaluate(() => ({
@@ -5902,7 +5902,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror,experimental,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -6875,7 +6875,7 @@ async function mobileHudChecks(page, touch, label) {
   const hit = box.buttons.filter((b) => overlaps(box.ammo, b)).map((b) => b.name);
   check(!!box.ammo && box.ammo.l > box.w * 0.6 && box.ammo.b <= box.reload.t + 1 && hit.length === 0, `${label}: the ammo panel sits by the fire buttons, above Reload, over no button (${JSON.stringify({ ammo: box.ammo, reload: box.reload, hit })})`);
   // Five lines into the feed: it keeps 3, above the ammo panel.
-  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Salamander Warlord took over for Elder Tomo`); });
+  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Newt Calloway took over for Elder Tomo`); });
   const feed = await page.evaluate(() => document.getElementById('feed').children.length);
   const after = await touchHudBoxes(page);
   check(feed === 3 && !overlaps(after.feed, after.ammo) && !overlaps(after.feed, after.wheel), `${label}: the kill feed keeps 3 lines, clear of the ammo panel and Weapons (${feed} lines, ${JSON.stringify({ feed: after.feed, ammo: after.ammo })})`);
@@ -7897,7 +7897,7 @@ async function beamsFlow(browser) {
 }
 
 async function tracersFlow(browser) {
-  await tracerMuzzleChecks(browser, ['core.ranger']);
+  await tracerMuzzleChecks(browser, ['core.dale']);
 }
 
 async function tracers2Flow(browser) {
@@ -8008,7 +8008,7 @@ async function tracerMuzzleChecks(browser, looks) {
     }
     await page.keyboard.press('KeyH');
     const fpOn = await step(() => !window.__cs.thirdPerson() && !!window.__cs.view.localMuzzle());
-    if (look === 'core.ranger') for (const weapon of ['core.rifle', 'core.pistol']) {
+    if (look === 'core.dale') for (const weapon of ['core.rifle', 'core.pistol']) {
       await page.evaluate((w) => window.__give(w), weapon);
       await step((w) => window.__cs.view.viewWeapon === w && !!window.__cs.view.localMuzzle(), weapon);
       cases.push({ look, weapon, third: false, strafe: true, crouch: false, aim: false, r: await run({ third: false, frames: 48, strafe: true, crouch: false, aim: false }) });
@@ -8024,7 +8024,7 @@ async function tracerMuzzleChecks(browser, looks) {
     await ctx.close();
   }
   const who = looks.map((l) => l.replace('core.', '')).join(', ');
-  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.ranger') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
+  check(out.length === 0, `tracers leave the gun's muzzle as drawn (${who}): third${looks.includes('core.dale') ? ' and first' : ''} person, the rifle and the pistol, standing, crouched, strafing and aiming (${out.join('; ') || 'all within 1 cm of the muzzle and on the gun'})`);
 }
 
 /**
@@ -14031,7 +14031,7 @@ async function farBodies(browser) {
   // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
   // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
   // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
-  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.tortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
   await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
     const c = m.combatants().find((x) => x.slot === s);
     if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);
@@ -14940,13 +14940,19 @@ async function slidepeekOffline(browser, errors, pic, { SPRINT, CROUCH, LEAN_L, 
 async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R }) {
   // Two players on a dedicated server: Alice leans and slides, Bob sees it (drawn from the network's snapshots).
   const port = await pickPort('E2E_SLIDEPEEK_PORT', 7797);
-  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(port), BOT_FILL: '0', QUIET_STATS: '1', MAP_VOTE: '0', MAP: fileURLToPath(new URL('../maps/void_yard.json', import.meta.url)) });
+  // Known ground, not the match's draw (spawns come from the server's clock-seeded random stream): both start on the
+  // yard's open floor south of the centre (E2E_START_AT, the server's Play-from-here hook for tests), Bob 6 m west of
+  // Alice, and east of Alice 20 m of flat, empty floor with no jump pad (checked again below before she runs).
+  const ALICE_AT = { pos: [-4, 0, -5], yaw: -Math.PI / 2 };
+  const BOB_AT = { pos: [-10, 0, -5], yaw: Math.PI / 2 };
+  start('pnpm', ['--filter', '@tiletrigger/server', 'start'], { PORT: String(port), BOT_FILL: '0', QUIET_STATS: '1', MAP_VOTE: '0', MAP: fileURLToPath(new URL('../maps/void_yard.json', import.meta.url)), E2E_START_AT: JSON.stringify({ Alice: ALICE_AT, Bob: BOB_AT }) });
   await sleep(4000);
   const join = async (name) => {
     const p = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
     livePages.add(p);
     p.on('pageerror', (e) => errors.push(`${name}: ${e.message}`));
-    await p.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://127.0.0.1:${port}`);
+    // (A fixed, kept character for both: the roster's changes don't change the run.)
+    await p.goto(`${CLIENT}/?autojoin&name=${name}&look=core.dale&server=ws://127.0.0.1:${port}`);
     await p.waitForFunction(() => window.__cs?.local, null, { timeout: T(30000) });
     await playWithoutMouse(p);
     await p.addStyleTag({ content: '#pause, #message { display: none !important; }' });
@@ -14956,6 +14962,12 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
   const bob = await join('Bob');
   // (A countdown first: both in play and alive.)
   for (const p of [alice, bob]) await p.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.local.alive, null, { timeout: T(60000) });
+  const at = async (p, want) => {
+    const q = await p.evaluate(() => window.__cs.local.state.pos);
+    return Math.hypot(q.x - want.pos[0], q.z - want.pos[2]) < 0.75 && Math.abs(q.y - want.pos[1]) < 0.5 ? '' : JSON.stringify(q);
+  };
+  const [aOff, bOff] = [await at(alice, ALICE_AT), await at(bob, BOB_AT)];
+  check(!aOff && !bOff, `online: Alice and Bob stand where the test put them ${aOff || bOff ? `(Alice ${aOff || 'ok'}, Bob ${bOff || 'ok'})` : ''}`);
   const aliceSlot = await alice.evaluate(() => window.__cs.slot);
   // Each faces the other (Bob from where he sees Alice drawn).
   const faceEachOther = async () => {
@@ -14966,13 +14978,6 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
     await bob.evaluate((y) => Object.assign(window.__cs.input, { yaw: y, pitch: -0.05 }), yawAB + Math.PI);
     return Math.hypot(b.x - a.x, b.z - a.z);
   };
-  // Walk toward each other until close (the yard's blocks may stand between their spawns).
-  for (let i = 0; i < 40 && (await faceEachOther()) > 7; i++) {
-    for (const p of [alice, bob]) await p.evaluate(() => (window.__autoInput = { forward: 1, buttons: 0 }));
-    await sleep(250);
-  }
-  for (const p of [alice, bob]) await p.evaluate(() => (window.__autoInput = { forward: 0, buttons: 0 }));
-  await sleep(300);
   await faceEachOther();
   await alice.evaluate((b) => (window.__autoInput = { forward: 0, buttons: b }), LEAN_R);
   const seenLean = await bob.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.leanNow ?? 0) > 0.9, aliceSlot, { timeout: T(15000) }).then(() => true, () => false);
@@ -14984,9 +14989,9 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
   await alice.evaluate(() => (window.__autoInput = { forward: 0, buttons: 0 }));
   // Alice sprints a moment, then slides; Bob sees the slide.
   await faceEachOther();
-  // Alice turns away from Bob, or as near away as leaves her 9 m of clear, floored run (the yard's blocks and edges and
-  // its neighbours' gaps are near wherever she spawned): a ray at knee height and the floor under it every 1.5 m.
-  await alice.evaluate(() => {
+  // Alice turns away from Bob (east, onto the open floor), or as near away as leaves her 9 m of clear, floored run: a
+  // ray at knee height and the floor under it every 1.5 m. None (the yard changed under the test's spot): fail below.
+  const runFound = await alice.evaluate(() => {
     const l = window.__cs.local;
     const p = l.state.pos;
     const away = window.__cs.input.yaw + Math.PI;
@@ -15001,10 +15006,15 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
     };
     for (let i = 0; i <= 16; i++) {
       const yaw = away + Math.ceil(i / 2) * (i % 2 ? 1 : -1) * (Math.PI / 8);
-      if (clear(yaw)) return void (window.__cs.input.yaw = yaw);
+      if (clear(yaw)) {
+        window.__cs.input.yaw = yaw;
+        return true;
+      }
     }
-    window.__cs.input.yaw = away;
+    return false;
   });
+  // (No clear run: fail here, with where she stands, rather than sprint blindly off an edge.)
+  check(runFound, `online: Alice has a 9 m clear, floored run to slide on ${runFound ? '' : JSON.stringify(await alice.evaluate(() => window.__cs.local.state.pos))}`);
   // (A 0.4 s sprint, then the crouch, in Alice's own input ticks: she slides within a few metres of Bob.)
   await bob.evaluate((s) => {
     const v = window.__cs.view;

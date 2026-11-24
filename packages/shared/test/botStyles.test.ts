@@ -56,7 +56,7 @@ describe('arena hopping', () => {
     );
     const hops = (style: 'mixed' | 'arena') => {
       const match = new Match(map, { ...DEFAULT_DEATHMATCH_RULES, ...(style === 'arena' ? { botStyle: 'arena' as const } : {}) }, 5);
-      const bots = [0, 1].map((i) => match.addBot(`b${i}`, CORE_BOT_PROFILES[0]!, undefined, true, { look: 'core.pathfinder' })!);
+      const bots = [0, 1].map((i) => match.addBot(`b${i}`, CORE_BOT_PROFILES[0]!, undefined, true, { look: 'core.hyena' })!);
       for (const c of bots) c.invulnerable = true;
       let fight = 0;
       let calm = 0;

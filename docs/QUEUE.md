@@ -33,10 +33,10 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## In flight
 - **Lead: the "splitters" session (owner, 2026-11-22).**
-- **`wip/chars-1124`** (owner, 2026-11-24): retire nine more characters as playable (Linktifa, Sprout and Newt Calloway: hidden, the Designer keeps them; random first character), Frida beside Larry, look-alike groups side by side.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/chars-1124` · 2392255b · 45447332347 (attempt 2: attempt 1 red only on the known `hostcontrols` Esc flake; characters retired and grouped, Dummy retired, Cal the default look, slidepeek online deterministic)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
