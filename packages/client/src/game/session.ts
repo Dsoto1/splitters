@@ -170,6 +170,7 @@ import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
 import { SoundCaptions } from './soundCaptions.ts';
+import { syncPrefs } from './prefSync.ts';
 import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
 import { COMBAT_PREFS_EVENT, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from './combatPrefs.ts';
 import { CRASH_REACH, blastReach, blastShake, crashShake, rollScale, shotShake } from './cameraShake.ts';
@@ -894,6 +895,8 @@ export class GameSession {
       return mine && mine.id === this.hud.team(slot)?.id ? 'friend' : 'enemy';
     });
     if (testMode()) this.captions.log = [];
+    // Signed in: this browser's Sound captions in step with the account's before the match (prefSync.ts).
+    syncPrefs();
     this.weatherSound = new WeatherAudio(opts.audio);
     // The performance overlay: ?stats, F3 or Options; remembered.
     this.showStats = opts.showStats || loadPerfOverlay();

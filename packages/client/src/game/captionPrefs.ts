@@ -2,7 +2,7 @@
  * Sound captions (Options → Accessibility; owner, 2026-11-19, "A"; docs/AUDIO.md, "Sound captions"): important sounds
  * written on screen ("Gunfire, left", "Grenade!", "Footsteps, behind") for hard-of-hearing players and phone play with
  * the sound off. Off (the default), On, or On with direction ('dir'). Kept in this browser and, signed in, on the
- * account (careerStats.ts syncPrefs). The captions themselves are in-match code (soundCaptions.ts), out of the menu's
+ * account (game/prefSync.ts; Options saves there too). The captions themselves are in-match code (soundCaptions.ts), out of the menu's
  * bundle, so this file stays small.
  */
 

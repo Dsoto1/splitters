@@ -17,7 +17,7 @@ vi.mock('../src/profile.ts', () => ({
   },
 }));
 const { syncPrefs } = await import('../src/game/prefSync.ts');
-const { captionMode, saveCaptionMode } = await import('../src/game/captionPrefs.ts');
+const { captionMode } = await import('../src/game/captionPrefs.ts');
 
 describe('Sound captions on the account (the profile\'s prefs)', () => {
   beforeEach(() => {
@@ -25,15 +25,20 @@ describe('Sound captions on the account (the profile\'s prefs)', () => {
     saved.length = 0;
   });
 
-  it("signed in, the account's setting is yours here, and a change goes to the account", () => {
+  it("signed in, the account's setting is yours here as a match starts", () => {
     store.set('tiletrigger.captions', 'on');
     profile.p = { ...profile.p, prefs: { captions: 'dir' } };
+    let heard = 0;
+    window.addEventListener('tiletrigger:captions', () => heard++);
     syncPrefs();
     expect(captionMode()).toBe('dir');
     expect(store.get('tiletrigger.captions')).toBe('dir');
     expect(saved).toEqual([]);
-    saveCaptionMode('off');
-    expect(saved).toEqual([{ prefs: { captions: 'off' } }]);
+    expect(heard).toBe(1);
+    // Already in step: nothing to do.
+    syncPrefs();
+    expect(heard).toBe(1);
+    expect(saved).toEqual([]);
   });
 
   it("an account with none takes this browser's, unless it is the default", () => {

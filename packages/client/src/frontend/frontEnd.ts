@@ -3442,10 +3442,16 @@ export class FrontEnd {
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
     // Sound captions (game/captionPrefs.ts, its key and event written out here to keep that file out of the menu's
-    // first load): off by default; saved on the account when signed in (game/prefSync.ts hears the event).
+    // first load): off by default; signed in, the account's (the profile's `prefs`) and saved there too; a match
+    // brings this browser in step with the account as it starts (game/prefSync.ts).
     const capKey = 'tiletrigger.captions';
-    const captions = el('select', { id: 'opt-captions' }, ...['off', 'on', 'dir'].map((m, i) => el('option', { value: m, textContent: ['Off', 'On', 'On, with direction'][i], selected: m === storage(capKey) })));
-    captions.addEventListener('change', () => (storage(capKey, captions.value), window.dispatchEvent(new Event('tiletrigger:captions'))));
+    const capNow = (currentAccount() && cachedProfile()?.prefs.captions) || storage(capKey);
+    const captions = el('select', { id: 'opt-captions' }, ...['off', 'on', 'dir'].map((m, i) => el('option', { value: m, textContent: ['Off', 'On', 'On, with direction'][i], selected: m === capNow })));
+    captions.addEventListener('change', () => {
+      storage(capKey, captions.value);
+      window.dispatchEvent(new Event('tiletrigger:captions'));
+      if (currentAccount()) void saveProfile({ prefs: { ...cachedProfile()?.prefs, captions: captions.value } }).catch(() => undefined);
+    });
     // Combat accessibility (game/combatPrefs.ts): aim held or toggled, camera shake, controller vibration; the pause menu has them too.
     const combat = combatPrefs();
     const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));

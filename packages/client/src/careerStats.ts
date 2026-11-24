@@ -134,7 +134,6 @@ export async function syncCareer(): Promise<void> {
   await sendPending(who.sub);
   syncOptics();
   syncKeys();
-  syncPrefs();
 }
 
 /**
@@ -171,10 +170,6 @@ export function syncKeys(): void {
 }
 let stopKeySave: (() => void) | null = null;
 
-/** Small settings on the account (the profile's `prefs`: Sound captions), loaded on demand to keep the menu's first load small (game/prefSync.ts). */
-export function syncPrefs(): void {
-  if (currentAccount() && cachedProfile()) void import('./game/prefSync.ts').then((m) => m.syncPrefs()).catch(() => undefined);
-}
 
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);
