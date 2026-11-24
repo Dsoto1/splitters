@@ -14222,6 +14222,124 @@ async function impGrips(browser) {
  * (a folder): the pictures are kept there too.
  */
 /**
+ * Match Setup with only a controller (owner, 2026-11-23: "unable to really navigate or select a map easily … i also
+ * cannot start the match easily"): a stubbed standard gamepad (navigator.getGamepads) drives the d-pad, the sticks
+ * and the buttons. Play from the main menu; the focus ring moves over the cards in two dimensions (a held direction
+ * repeats); A picks a map; Y stars it; RB / LB step the categories; RT the settings' tabs; right off the grid into the
+ * settings, a stepper takes left and right; the right stick scrolls; the hints show the controller's glyphs; Menu starts.
+ */
+async function padsetupFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1500, height: 844 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.addInitScript(() => {
+    const pad = { id: 'e2e pad', index: 0, connected: true, mapping: 'standard', timestamp: 0, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, touched: false, value: 0 })) };
+    window.__pad = pad;
+    navigator.getGamepads = () => [pad, null, null, null];
+    addEventListener('load', () => dispatchEvent(Object.assign(new Event('gamepadconnected'), { gamepad: pad })));
+  });
+  await page.goto(`${CLIENT}/?test=1`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  const frames = (n = 3) => page.evaluate((k) => new Promise((r) => { let i = 0; const f = () => (++i >= k ? r() : requestAnimationFrame(f)); requestAnimationFrame(f); }), n);
+  const hold = (b, on) => page.evaluate(([i, v]) => { window.__pad.buttons[i].pressed = v; window.__pad.buttons[i].value = v ? 1 : 0; }, [b, on]);
+  // One frame down (the pad is read each frame: one press, never held long enough to repeat), then up.
+  const press = async (b) => {
+    await hold(b, true);
+    await frames(1);
+    await hold(b, false);
+    await frames(2);
+  };
+  const B = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, start: 9, up: 12, down: 13, left: 14, right: 15 };
+  const focus = () => page.evaluate(() => { const f = document.activeElement; return { id: f?.id ?? '', map: f?.closest('.map-card')?.dataset.map ?? null, cls: f?.className ?? '' }; });
+  // Main menu → Play, with the pad alone.
+  const navAt = () => page.evaluate(() => document.querySelector('.nav .on')?.id);
+  for (let i = 0; i < 6 && (await navAt()) !== 'nav-play'; i++) await press(B.down);
+  await press(B.a);
+  const opened = await page.waitForFunction(() => document.querySelectorAll('#map-cards .map-card').length > 20, null, { timeout: T(30000) }).then(() => true, () => false);
+  const input = await page.evaluate(() => document.documentElement.dataset.input);
+  check(opened && input === 'pad', `the pad's d-pad and A open Match Setup from the main menu (input: ${input})`);
+  // The first move puts the ring on the map picked; right and down move over the grid.
+  await page.evaluate(() => document.activeElement?.blur());
+  await press(B.down);
+  const home = await focus();
+  const picked = await page.evaluate(() => document.querySelector('#map-cards .map-card.on')?.dataset.map);
+  await press(B.right);
+  const right = await focus();
+  await press(B.down);
+  const down = await focus();
+  const geo = await page.evaluate(([a, b, c]) => {
+    const r = (k) => document.querySelector(`#map-cards .map-card[data-map="${k}"]`).getBoundingClientRect();
+    return { rowSame: Math.abs(r(a).top - r(b).top) < 2 && r(b).left > r(a).left, colSame: Math.abs(r(c).left - r(b).left) < 2 && r(c).top > r(b).top };
+  }, [home.map, right.map, down.map]);
+  const ring = await page.evaluate(() => getComputedStyle(document.activeElement).outlineStyle);
+  check(home.map === picked && geo.rowSame && geo.colSame && ring === 'solid', `the ring starts on the map picked (${picked}), right moves along the row, down to the card under it, drawn as a ring (${JSON.stringify({ home, right, down, ring })})`);
+  // Held, a direction repeats (a short delay, then a steady rate), and the focused card scrolls into view.
+  const before = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  await hold(B.down, true);
+  await page.waitForFunction(() => document.getElementById('map-cards').scrollTop > 0, null, { timeout: T(5000) }).catch(() => {});
+  await frames(30);
+  await hold(B.down, false);
+  await frames(3);
+  const held = await focus();
+  const inView = await page.evaluate(() => { const g = document.getElementById('map-cards').getBoundingClientRect(); const r = document.activeElement.getBoundingClientRect(); return r.top >= g.top - 2 && r.bottom <= g.bottom + 2; });
+  const after = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  check(held.map && held.map !== down.map && after > before && inView, `holding down repeats, and the focused card scrolls into view (${down.map} → ${held.map}, scroll ${before} → ${after})`);
+  // A picks the focused map; Y stars it.
+  await press(B.a);
+  const chosen = await page.evaluate(() => JSON.parse(localStorage.getItem('cs.arcade') ?? '{}').map);
+  await press(B.y);
+  const fav = await page.evaluate(() => document.activeElement.closest('.map-card')?.querySelector('.card-fav')?.getAttribute('aria-pressed'));
+  check(chosen === held.map && fav === 'true', `A picks the focused map and Y stars it (${chosen}, star ${fav})`);
+  // RB / LB step the categories; RT the settings' tabs.
+  await press(B.rb);
+  const cat1 = await page.evaluate(() => document.querySelector('#map-cats .map-cat.on')?.dataset.cat);
+  await press(B.rb);
+  const cat2 = await page.evaluate(() => document.querySelector('#map-cats .map-cat.on')?.dataset.cat);
+  await press(B.lb);
+  await press(B.lb);
+  const cat0 = await page.evaluate(() => document.querySelector('#map-cats .map-cat.on')?.dataset.cat);
+  await press(B.rt);
+  const tab = await page.evaluate(() => document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab);
+  await press(B.lt);
+  check(cat1 === 'temporal' && cat2 === 'dimensional' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
+  // Right off the grid's edge into the settings; a stepper takes left and right; left off the settings back to the grid.
+  await press(B.down);
+  for (let i = 0; i < 6 && !(await focus()).id.startsWith('setup') && !(await page.evaluate(() => !!document.activeElement.closest('#match-setup'))); i++) await press(B.right);
+  const inPanel = await page.evaluate(() => !!document.activeElement.closest('#match-setup'));
+  const score = () => page.evaluate(() => Number(document.getElementById('arcade-score')?.value));
+  await page.evaluate(() => document.getElementById('arcade-score').focus());
+  const s0 = await score();
+  await press(B.right);
+  const s1 = await score();
+  await press(B.left);
+  const s2 = await score();
+  const stayed = (await focus()).id;
+  // (The stepper keeps left and right; from the tabs, the panel's left edge, left goes back to the grid.)
+  await page.evaluate(() => document.getElementById('setup-tab-match').focus());
+  for (let i = 0; i < 8 && (await page.evaluate(() => !!document.activeElement.closest('#match-setup'))); i++) await press(B.left);
+  const back = await focus();
+  check(inPanel && s1 > s0 && s2 === s0 && stayed === 'arcade-score' && !!back.map, `right off the grid goes into the settings; a stepper takes right and left (${s0} → ${s1} → ${s2}, the ring on ${stayed}); left goes back to the grid (${back.map ?? JSON.stringify(back)})`);
+  // The right stick scrolls the grid.
+  const sc0 = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  await page.evaluate(() => (window.__pad.axes[3] = 1));
+  await frames(20);
+  await page.evaluate(() => (window.__pad.axes[3] = 0));
+  const sc1 = await page.evaluate(() => document.getElementById('map-cards').scrollTop);
+  check(sc1 > sc0 + 100, `the right stick scrolls the map grid (${sc0} → ${sc1})`);
+  // The hints show the controller's glyphs.
+  const hints = await page.evaluate(() => [...document.querySelectorAll('.hintbar .hint-btn')].filter((h) => h.offsetParent).map((h) => [...h.querySelectorAll('kbd')].filter((k) => k.offsetParent).map((k) => k.textContent).join('/') + ' ' + h.querySelector('span:last-child')?.textContent));
+  check(['A Select', 'Y Favourite', 'LB/RB Category', '☰ Start'].every((h) => hints.includes(h)) && hints.some((h) => /^B Back$/.test(h)), `the hints show the controller's glyphs (${hints.join(' · ')})`);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/padsetup.png` });
+  // Menu starts the match from anywhere.
+  await press(B.start);
+  const started = await page.waitForFunction(() => window.__cs?.local, null, { timeout: T(90000) }).then(() => true, () => false);
+  const map = await page.evaluate(() => window.__cs?.map?.metadata?.id ?? window.__cs?.match?.map?.metadata?.id ?? null).catch(() => null);
+  check(started, `Menu starts the match (${map ?? chosen})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
  * Player profiles, Phases 2-4 (docs/PLAYER_PROFILES_PLAN.md): Profile's emblem and title pickers; your emblem in the
  * roster, the kill feed and on the scoreboard; your card with your title; another player's card from a click on the
  * end-of-match board (a signed-in player's career from the hub, which this flow stands in for with page.route).
@@ -16388,7 +16506,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

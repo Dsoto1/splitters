@@ -86,6 +86,11 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .hintbar .hint-btn kbd + kbd.g-kbm, .hintbar .hint-btn kbd + kbd.g-any { margin-left: -3px; }
 /* Keyboard glyphs, or the controller's when a controller was used last (inputMode.ts sets data-input). */
 :root:not([data-input='pad']) kbd.g-pad, :root[data-input='pad'] kbd.g-kbm { display: none; }
+/* Hints for one kind of input only (Match Setup: LB / RB Category, Y Favourite, A Select with a controller; Q / E Mode with the keyboard). */
+:root:not([data-input='pad']) .hint-pad, :root[data-input='pad'] .hint-kbm { display: none; }
+/* A controller's focus ring on Match Setup (frontEnd.ts padPlay): bright, steady, outside the element. */
+:root[data-input='pad'] .screen.play :is(button, input, select, summary):focus { outline: 3px solid var(--warning); outline-offset: 3px; }
+:root[data-input='pad'] .screen.play .map-card:focus { outline-offset: 2px; }
 .hintbar kbd.a { background: var(--success); color: #062012; border-radius: 50%; min-width: 20px; }
 .hintbar kbd.b { background: var(--error); color: #fff; border-radius: 50%; min-width: 20px; }
 .hintbar kbd.x { background: var(--info); color: #fff; border-radius: 50%; min-width: 20px; }

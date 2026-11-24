@@ -155,7 +155,8 @@ import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STY
 import type { PortraitRenderer } from './portraits.ts';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscreen, toggleFullscreen } from '../fullscreen.ts';
-import { PAD, glyphs, onPadPress } from '../inputMode.ts';
+import { PAD, glyphs, onPadPress, onPadScroll } from '../inputMode.ts';
+import { nextInDirection, type Dir } from './padNav.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
 import { botManager } from './botManager.ts';
 import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
@@ -558,6 +559,7 @@ export class FrontEnd {
     root.replaceChildren(this.body, this.status, this.footer);
     window.addEventListener('keydown', this.keyHandler);
     onPadPress((b) => this.onPad(b));
+    onPadScroll((px) => this.padScroll(px));
     this.go('home');
     (window as unknown as { __front: FrontEnd }).__front = this;
     void loadProfile().then((p) => {
@@ -650,10 +652,27 @@ export class FrontEnd {
           main('Select', 'Open the highlighted item (Enter, controller A)', () => this.navItems[this.navIndex]!.act()),
         ];
         break;
-      case 'play':
-        moves.push(cycle('Mode'), hintButton('hint-filter', glyphs('F'), 'Filters', 'Filter maps: choose which game modes to list maps for (F)', () => this.openMapFilter()));
-        acts = [main('Start', 'Start the match (Enter, controller A)', () => this.start())];
+      case 'play': {
+        // A controller's own hints (data-input="pad"; the keyboard's hide then, and these with the keyboard): LB / RB
+        // step the categories, A selects, Y stars a card, Menu starts (owner, 2026-11-23).
+        const only = (e: HTMLElement, input: 'pad' | 'kbm') => (e.classList.add(`hint-${input}`), e);
+        const modeHint = only(cycle('Mode'), 'kbm');
+        modeHint.querySelectorAll('kbd.g-pad').forEach((k) => k.remove());
+        moves.push(
+          modeHint,
+          only(hintButton('hint-category', glyphs('LB', 'LB').slice(1).concat(glyphs('RB', 'RB').slice(1)), 'Category', 'Previous / next category (controller LB / RB)', () => this.padPlay(PAD.rb)), 'pad'),
+          hintButton('hint-filter', glyphs('F', 'X'), 'Filters', 'Filter maps: choose which game modes to list maps for (F, controller X)', () => this.openMapFilter()),
+        );
+        acts = [
+          only(hintButton('hint-fav', glyphs('Y', 'Y', 'y').slice(1), 'Favourite', 'Star the focused map (controller Y)', () => this.padPlay(PAD.y)), 'pad'),
+          only(hintButton('hint-select', glyphs('A', 'A', 'a').slice(1), 'Select', 'Pick the focused map or press the focused control (controller A)', () => this.padPlay(PAD.a)), 'pad'),
+          main('Start', 'Start the match (Enter, controller Menu)', () => this.start()),
+        ];
+        // Start's controller glyph is Menu (A selects here).
+        const startPad = acts[2]!.querySelector('kbd.g-pad');
+        if (startPad) startPad.textContent = '☰';
         break;
+      }
       case 'characters':
         moves.push(cycle('Section'));
         acts = [
@@ -722,11 +741,158 @@ export class FrontEnd {
     }
   }
 
+  /**
+   * A controller on Match Setup (owner, 2026-11-23: "unable to really navigate or select a map easily … i also cannot
+   * start the match easily"). The d-pad and left stick move a focus ring over the map cards in two dimensions (held,
+   * they repeat), up from the top row onto the list's bars, right off the grid into the settings and left off the
+   * settings back to the grid; a focused stepper takes left and right itself. A selects (a card picks its map), B goes
+   * back or puts a phone's sheet away, Menu starts the match from anywhere, Y stars the focused card, X opens Filter
+   * maps, LB / RB step the categories, LT / RT the settings' tabs, and the right stick scrolls (padScroll). Returns
+   * false for what the menus' general handling does.
+   */
+  private padPlay(button: number): boolean {
+    const f = document.activeElement as HTMLElement | null;
+    const card = f?.closest<HTMLElement>('#map-cards .map-card') ?? null;
+    switch (button) {
+      case PAD.start:
+        this.start();
+        return true;
+      case PAD.b:
+        if (this.sheetUp()) this.setSheet(false);
+        else this.back();
+        return true;
+      case PAD.a:
+        if (!f || f === document.body || !this.root.contains(f)) this.padFocus(this.padHome());
+        else f.click();
+        return true;
+      case PAD.y:
+        card?.querySelector<HTMLElement>('.card-fav')?.click();
+        return true;
+      case PAD.x:
+        this.openMapFilter();
+        return true;
+      case PAD.lb:
+      case PAD.rb: {
+        const tabs = [...this.body.querySelectorAll<HTMLElement>('#map-cats .map-cat')];
+        const at = Math.max(0, tabs.findIndex((t) => t.classList.contains('on')));
+        const to = tabs[(at + (button === PAD.rb ? 1 : tabs.length - 1)) % tabs.length];
+        // The category's tab (it redraws the cards): the ring goes to the first card it lists.
+        if (to) {
+          to.click();
+          const first = this.body.querySelector<HTMLElement>('#map-cards .map-card');
+          if (first && (!f || card || f === document.body)) this.padFocus(first);
+        }
+        return true;
+      }
+      case PAD.lt:
+      case PAD.rt: {
+        const order = SETUP_TABS.map(([t]) => t);
+        const next = order[(order.indexOf(this.setupTab) + (button === PAD.rt ? 1 : order.length - 1)) % order.length]!;
+        this.showSetupTab(next);
+        if (narrowSetup() && !this.sheetOpen) this.setSheet(true);
+        this.padFocus(document.getElementById(`setup-tab-${next}`));
+        return true;
+      }
+      case PAD.up:
+      case PAD.down:
+      case PAD.left:
+      case PAD.right:
+        this.padMove(button === PAD.up ? 'up' : button === PAD.down ? 'down' : button === PAD.left ? 'left' : 'right');
+        return true;
+    }
+    return false;
+  }
+
+  /** Where the ring starts: the card of the map picked (in view), else the first card. */
+  private padHome(): HTMLElement | null {
+    return this.body.querySelector<HTMLElement>('#map-cards .map-card.on') ?? this.body.querySelector<HTMLElement>('#map-cards .map-card');
+  }
+
+  /** Focus `el` with the ring (only a controller's focus shows it) and bring it into view in its scrolling box. */
+  private padFocus(el: HTMLElement | null): void {
+    if (!el) return;
+    for (const o of this.root.querySelectorAll('.pad-focus')) o.classList.remove('pad-focus');
+    el.classList.add('pad-focus');
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
+  /** What a controller can reach in one of Match Setup's zones (shown, enabled, not in a closed part). */
+  private padZone(zone: 'cards' | 'bars' | 'panel'): HTMLElement[] {
+    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '.map-bar :is(button, input, select), #map-cats .map-cat, #map-subtags .map-subtag' : '#match-setup :is(button, input, select, summary)';
+    return [...this.body.querySelectorAll<HTMLElement>(sel)].filter((e) => {
+      if ((e as HTMLButtonElement).disabled || e.closest('[hidden]') || !e.getClientRects().length) return false;
+      // (A phone's sheet, down: its settings are there but hidden; the strip along the bottom stays in reach.)
+      if (zone === 'panel' && narrowSetup() && !this.sheetOpen && !e.closest('.sheet-peek')) return false;
+      const ck = (e as HTMLElement & { checkVisibility?: (o: object) => boolean }).checkVisibility;
+      return !ck || ck.call(e, { visibilityProperty: true });
+    });
+  }
+
+  /** One step of the ring in `dir` (padPlay). */
+  private padMove(dir: Dir): void {
+    const f = document.activeElement as HTMLElement | null;
+    const zoneOf = (e: HTMLElement | null): 'cards' | 'bars' | 'panel' | null =>
+      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('.map-bar, #map-cats, #map-subtags') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
+    const zone = zoneOf(f);
+    if (!zone || !f) return this.padFocus(this.padHome());
+    const from = zone === 'cards' ? f.closest<HTMLElement>('.map-card')! : f;
+    // A stepper takes left and right: one less or one more.
+    const step = zone === 'panel' && (dir === 'left' || dir === 'right') ? f.closest<HTMLElement>('.stepper') : null;
+    if (step) {
+      const b = step.querySelectorAll<HTMLButtonElement>('button')[dir === 'left' ? 0 : 1];
+      const id = f.id || step.querySelector('input')?.id;
+      if (b && !b.disabled) b.click();
+      // (The panel redraws: the ring stays on the stepper.)
+      const again = id ? document.getElementById(id) : null;
+      if (again) this.padFocus(again);
+      return;
+    }
+    const pick = (list: HTMLElement[], r: DOMRect = from.getBoundingClientRect()) => {
+      const i = nextInDirection(r, list.map((e) => e.getBoundingClientRect()), dir);
+      return i === null ? null : list[i]!;
+    };
+    let to = pick(this.padZone(zone).filter((e) => e !== from));
+    if (!to) {
+      // Off a zone's edge: up from the cards onto the bars, down from the bars onto the cards in view, right off the
+      // map list into the settings, left off the settings back to the grid.
+      const cards = this.padZone('cards');
+      const shown = (() => {
+        const box = this.body.querySelector('#map-cards')?.getBoundingClientRect();
+        return box ? cards.filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.bottom > box.top && r.top < box.bottom;
+        }) : cards;
+      })();
+      if (zone === 'cards' && dir === 'up') to = pick(this.padZone('bars'));
+      else if (zone === 'bars' && dir === 'down') to = pick(shown);
+      else if (zone !== 'panel' && dir === 'right') {
+        if (narrowSetup() && !this.sheetOpen) to = null;
+        else to = pick(this.padZone('panel')) ?? this.padZone('panel')[0] ?? null;
+      } else if (zone === 'panel' && dir === 'left') {
+        const on = this.body.querySelector<HTMLElement>('#map-cards .map-card.on');
+        to = on && shown.includes(on) ? on : (pick(shown) ?? shown[0] ?? null);
+      }
+    }
+    if (to) this.padFocus(to);
+  }
+
+  /** The right stick: scroll the settings when the ring is in them (or a phone's sheet is up), else the map grid. */
+  private padScroll(px: number): void {
+    if (this.root.hidden || this.screen !== 'play') return;
+    const inPanel = !!(document.activeElement as HTMLElement | null)?.closest('#match-setup') || this.sheetUp();
+    const box = this.body.querySelector<HTMLElement>(inPanel ? '#match-setup .setup-body' : '#map-cards');
+    if (box) box.scrollTop += px;
+  }
+
   /** A controller in the menus: the d-pad moves, A presses, B goes back, LB / RB switch, X / Y design. */
   private onPad(button: number): void {
     if (this.root.hidden) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
-    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play') ?? (this.sheetUp() ? this.setupPanel : null);
+    // Match Setup has its own (padPlay): a grid and a panel moved over in two dimensions.
+    if (this.screen === 'play' && !document.getElementById('bm-pick-wrap') && !document.getElementById('bot-manager') && !document.querySelector('dialog[open]') && this.padPlay(button)) return;
+    const dialog = document.querySelector<HTMLDialogElement>('dialog[open]');
+    const top = dialog ?? document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play') ?? (this.sheetUp() ? this.setupPanel : null);
     const scope: HTMLElement = top ?? this.root;
     const move = (dir: 1 | -1) => {
       const items = [...scope.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex="0"]')].filter((e) => !(e as HTMLButtonElement).disabled && e.offsetParent !== null);
@@ -737,6 +903,7 @@ export class FrontEnd {
       next.scrollIntoView({ block: 'nearest' });
     };
     if (button === PAD.b) {
+      if (dialog) return dialog.close();
       if (top) return top.querySelector<HTMLButtonElement>('[data-cancel]')?.click();
       return this.back();
     }

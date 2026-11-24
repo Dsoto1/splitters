@@ -63,6 +63,13 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
       boxes show who plays (players and bots). With Even teams off each box gets its own size, for uneven teams.
     - **Glow** on two things only: the map picked and Start match; steady, and dimmer with Reduce flashing on
       (`html.calm`).
+    - **Controller** (owner, 2026-11-23; `frontend/padNav.ts`, `inputMode.ts`): the d-pad or left stick moves a
+      yellow focus ring over the cards in two dimensions (held, it repeats after a short delay), up from the top row
+      onto the list's bars, right off the grid into the settings and left off them back to the grid; a focused
+      stepper's value takes left and right. A selects, B goes back (or puts a phone's sheet away), Menu starts the
+      match from anywhere, Y stars the focused card, X opens Filter maps, LB / RB step the categories, LT / RT the
+      settings' tabs, the right stick scrolls the grid or the settings. The footer shows these glyphs while a
+      controller was used last. e2e flow `padsetup` plays it with a stubbed gamepad.
     - **Phones** (900 px wide and under): the grid first; the settings are a sheet along the bottom. Down, a strip
       names the map and the setup beside Start; a tap on it, or picking a map, pulls the sheet up; the strip or
       Change map (or Esc / controller B) puts it away.
