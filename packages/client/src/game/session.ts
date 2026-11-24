@@ -875,6 +875,7 @@ export class GameSession {
       opts.transport.botDebug((f) => v.update(f));
     }
     this.input = new InputState(opts.canvas);
+    this.input.onNotice = (text) => this.hud.showMessage(text, 6);
     this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => keyFor(a));
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.sfx.shielded = (slot) => this.shieldedSlots.has(slot);

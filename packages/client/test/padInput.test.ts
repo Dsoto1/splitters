@@ -113,4 +113,20 @@ describe('controller: d-pad lean while aiming, B for crouch and prone', () => {
     expect(step(input, 16) & BUTTON_PRONE).toBe(0);
     input.dispose();
   });
+
+  it('a pad without the standard layout is told once; a standard pad says nothing', async () => {
+    const input = await make();
+    const notes: string[] = [];
+    input.onNotice = (t) => notes.push(t);
+    vi.stubGlobal('navigator', { getGamepads: () => [{ id: 'odd pad', connected: true, mapping: '', axes: [], buttons: [] }] });
+    input.checkPadMapping();
+    input.checkPadMapping();
+    input.frame(0.016);
+    expect(notes).toHaveLength(1);
+    expect(notes[0]).toContain('standard layout');
+    vi.stubGlobal('navigator', { getGamepads: () => [{ id: 'good', connected: true, mapping: 'standard', axes: [0, 0, 0, 0], buttons: [] }] });
+    input.checkPadMapping();
+    expect(notes).toHaveLength(1);
+    input.dispose();
+  });
 });

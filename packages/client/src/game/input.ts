@@ -201,6 +201,7 @@ export class InputState {
     this.setBindings(this.b);
     const off = onBindingsChange((b) => this.setBindings(b));
     this.abort.signal.addEventListener?.('abort', off);
+    window.addEventListener('gamepadconnected', () => this.checkPadMapping(), opts);
     window.addEventListener(
       'keydown',
       (e) => {
@@ -671,7 +672,23 @@ export class InputState {
     this.pollPad(dt, scale, invert);
   }
 
+  /** Told once per pad (by id) that its layout isn't standard, so the game ignores it. Set by the session (a HUD message). */
+  onNotice: ((text: string) => void) | null = null;
+  private noticed = new Set<string>();
+
+  /** A connected pad without the standard layout, and no standard one: say so once per pad (calm, a message, no flash). */
+  checkPadMapping(): void {
+    const pads = [...(navigator.getGamepads?.() ?? [])].filter((g): g is Gamepad => !!g?.connected);
+    if (pads.some((g) => g.mapping === 'standard')) return;
+    for (const g of pads) {
+      if (this.noticed.has(g.id)) continue;
+      this.noticed.add(g.id);
+      this.onNotice?.("Controller found, but this browser doesn't report a standard layout for it. Try Chrome or Edge, or an Xbox or PlayStation controller.");
+    }
+  }
+
   private pollPad(dt: number, scale: number, invert: number): void {
+    this.checkPadMapping();
     const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected && g.mapping === 'standard');
     const p = this.pad;
     if (!pad) {

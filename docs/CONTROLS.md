@@ -66,6 +66,9 @@ weapon switch, made when the d-pad is let go, unless the aim began meanwhile (d-
 and pad combine (both sides: upright). B is told apart the same way: a tap crouches when let go, a hold of 0.4 s goes prone
 at once. In a vehicle B ducks at once.
 
+A connected pad whose browser mapping isn't `standard` (some third-party, wired Xbox 360 or Switch Pro pads) is ignored; with no
+standard pad connected, a message says so once per pad (`InputState.checkPadMapping`, also on `gamepadconnected`).
+
 Free buttons for the actions the pad lacks (not built; the owner picks): Back / View (melee), LB + RB together (alt
 fire), hold R3 (fire mode). Start is the pause menu.
 
