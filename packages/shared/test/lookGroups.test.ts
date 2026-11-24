@@ -145,9 +145,9 @@ describe("Character Select's groups", () => {
     const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine', ...(l.sortAs ? { sortAs: l.sortAs } : {}) }));
     const sections = characterSections(roster);
     expect(sections.map((s) => s.id)).not.toContain(EXPERIMENTAL_SECTION);
-    expect(sections.find((s) => s.id === 'animals')!.looks.slice(0, 9).map((l) => l.name)).toEqual(['Pip Quickfoot', 'Rocket Nutley', 'Rowdy Gnashwell', 'Rufus Boomtown', 'Ollie Hootman', 'Barnaby Burrows', 'Rascal McGraw', 'Chester Knuckleby', 'Axel Newtman']);
+    expect(sections.find((s) => s.id === 'animals')!.looks.slice(0, 9).map((l) => l.name)).toEqual(['Pip Quickfoot', 'Rocket Nutley', 'Rowdy Gnashwell', 'Rufus Boomtown', 'Ollie Hootman', 'Barnaby Burrows', 'Rascal McGraw', 'Chester Knuckleby', 'Newt Calloway']);
     // Display names only: the ids are unchanged.
     expect(getLook('core.baboon').name).toBe('Rufus Boomtown');
-    expect(getLook('core.warlord').name).toBe('Axel Newtman');
+    expect(getLook('core.warlord').name).toBe('Newt Calloway');
   });
 });

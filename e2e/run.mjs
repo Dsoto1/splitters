@@ -6841,7 +6841,7 @@ async function mobileHudChecks(page, touch, label) {
   const hit = box.buttons.filter((b) => overlaps(box.ammo, b)).map((b) => b.name);
   check(!!box.ammo && box.ammo.l > box.w * 0.6 && box.ammo.b <= box.reload.t + 1 && hit.length === 0, `${label}: the ammo panel sits by the fire buttons, above Reload, over no button (${JSON.stringify({ ammo: box.ammo, reload: box.reload, hit })})`);
   // Five lines into the feed: it keeps 3, above the ammo panel.
-  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Axel Newtman took over for Elder Tomo`); });
+  await page.evaluate(() => { for (let i = 0; i < 5; i++) window.__cs.hud.note(`Line ${i}: Newt Calloway took over for Elder Tomo`); });
   const feed = await page.evaluate(() => document.getElementById('feed').children.length);
   const after = await touchHudBoxes(page);
   check(feed === 3 && !overlaps(after.feed, after.ammo) && !overlaps(after.feed, after.wheel), `${label}: the kill feed keeps 3 lines, clear of the ammo panel and Weapons (${feed} lines, ${JSON.stringify({ feed: after.feed, ammo: after.ammo })})`);
@@ -14676,10 +14676,26 @@ async function slidepeekOnline(browser, errors, pic, { SPRINT, CROUCH, LEAN_R })
     await p.addStyleTag({ content: '#pause, #message { display: none !important; }' });
     return p;
   };
-  const alice = await join('Alice');
-  const bob = await join('Bob');
+  let alice = await join('Alice');
+  let bob = await join('Bob');
   // (A countdown first: both in play and alive.)
   for (const p of [alice, bob]) await p.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.local.alive, null, { timeout: T(60000) });
+  // The yard's spawns are picked by the match (far from the other player, from its random stream), and a few stand on
+  // islands (a perch at y 4 to 10) with no floor to walk to the other player or to slide on. Whoever spawned on one
+  // leaves and joins again for another spawn: the scripted run needs the yard's floor, whoever the match deals.
+  const onYardFloor = (p) => p.evaluate(() => window.__cs.local.state.pos.y < 1);
+  for (let tries = 0; tries < 8; tries++) {
+    const [aOn, bOn] = [await onYardFloor(alice), await onYardFloor(bob)];
+    if (aOn && bOn) break;
+    const [name, page] = aOn ? ['Bob', bob] : ['Alice', alice];
+    await page.context().close();
+    livePages.delete(page);
+    const again = await join(name);
+    await again.waitForFunction(() => window.__cs.phase() === 'playing' && window.__cs.local.alive, null, { timeout: T(60000) });
+    if (aOn) bob = again;
+    else alice = again;
+  }
+  check((await onYardFloor(alice)) && (await onYardFloor(bob)), 'online: both players spawned on the yard floor');
   const aliceSlot = await alice.evaluate(() => window.__cs.slot);
   // Each faces the other (Bob from where he sees Alice drawn).
   const faceEachOther = async () => {

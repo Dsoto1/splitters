@@ -187,7 +187,7 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
 | Chrono Crew (`chrono`, a collection) | Dex Calloway, Doc Seraphine Vale, Flicker, Fuse Hollister, Gears Okafor, Lyra Vantis, Mags Petrov, Nova Kade, Sarge Tobias Crane, Vesper Quill, Wren Halloway (all Experimental for now; their group is Outer Space) |
 | Legends (`legends`) | Anoobys, Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Linktifa, Luther Vanguard, Santa, Sun Warrior, The Purple Comet |
-| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Axel Newtman (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies |
+| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
@@ -227,10 +227,10 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
   is hidden (`characterSections` drops an empty one; the mechanism stays for the next batch), and all of them are in the
   automatic picks (random bots, Random characters, Roulette). **Display names only** changed, ids kept (saved picks and
   profiles work): Rufus Boomwell → **Rufus Boomtown**, Bandit → **Rascal McGraw** (the raccoon, Zero Ringtail's model),
-  Salamander Warlord → **Axel Newtman** (the tactical salamander; new bio; the NPC role `warlord` takes the name too).
+  Salamander Warlord → **Newt Calloway** (the tactical salamander; new bio; the NPC role `warlord` takes the name too).
   **Order:** a section lists its characters by name, so the nine the owner wanted together carry `sortAs` `01`..`09`
   (`"01 Pip Quickfoot"`) and open Animalia as its first tiles, in this order: Pip Quickfoot, Rocket Nutley, Rowdy
-  Gnashwell, Rufus Boomtown, Ollie Hootman, Barnaby Burrows, Rascal McGraw, Chester Knuckleby, Axel Newtman.
+  Gnashwell, Rufus Boomtown, Ollie Hootman, Barnaby Burrows, Rascal McGraw, Chester Knuckleby, Newt Calloway.
 - **Left out of automatic picks.** `PICKABLE_LOOKS` (the core tier of `CORE_LOOKS`; "core" in `CORE_LOOKS` is the id
   prefix, not the tier) is what the default look, random bots (`Match.botLook`: the match's own shuffle of `castLooks`,
   `botLookOrder` from the match seed, each bot a different look until the pool runs out; seed 1, tests, keeps roster order), Random characters and Roulette (`RANDOM_LOOK_POOL`) draw from. `content/npcs.json` and

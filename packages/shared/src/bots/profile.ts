@@ -217,7 +217,7 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     // Slow, stubborn and hard to shift.
     character('core.boglurker', 'Boglurker', { aggression: 70, selfPreservation: 30, riskTolerance: 80, rangePreference: 20, pursuitPersistence: 70, tags: ['SUPPRESSOR'], weaponPreferences: ['core.auto_shotgun', 'core.flamethrower', 'core.lmg'] }),
     // Commands the field with heavy ordnance.
-    character('core.warlord', 'Axel Newtman', { aggression: 65, tacticalAwareness: 75, objectivePriority: 80, rangePreference: 50, tags: ['SUPPRESSOR', 'TACTICAL'], weaponPreferences: ['core.launcher', 'core.rockets', 'core.lmg'] }),
+    character('core.warlord', 'Newt Calloway', { aggression: 65, tacticalAwareness: 75, objectivePriority: 80, rangePreference: 50, tags: ['SUPPRESSOR', 'TACTICAL'], weaponPreferences: ['core.launcher', 'core.rockets', 'core.lmg'] }),
     // Hunts in packs and never lets a wounded target go.
     character('core.hyena', 'Hyena Warrior', { aggression: 80, pursuitPersistence: 95, teamLoyalty: 80, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.shotgun', 'core.burst_rifle'] }),
     // Patient, unhurried, and somehow always in the right place.
