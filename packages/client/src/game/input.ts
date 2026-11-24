@@ -13,6 +13,12 @@ export interface MousePrefs {
   sensitivity: number;
   /** Multiplier on look speed while aiming down the sights or scoped (0.2–3), on top of the zoom's own 1:1 scaling. */
   zoomSensitivity: number;
+  /** The right stick's look speed (0.2–3), apart from the mouse's: it does not follow `sensitivity`. */
+  padLook: number;
+  /** The right stick's look speed while aiming (0.2–3), as `zoomSensitivity` is the mouse's. */
+  padZoom: number;
+  /** How far a stick must move before it counts (0.05–0.3). */
+  padDeadzone: number;
   invertY: boolean;
   /** Gently pulls the sights onto enemies near the crosshair (touchpads, controllers). */
   aimAssist: boolean;
@@ -24,11 +30,14 @@ export function loadMousePrefs(): MousePrefs {
     return {
       sensitivity: Math.min(4, Math.max(0.2, Number(p.sensitivity) || 1)),
       zoomSensitivity: Math.min(3, Math.max(0.2, Number(p.zoomSensitivity) || 1)),
+      padLook: Math.min(3, Math.max(0.2, Number(p.padLook) || 1)),
+      padZoom: Math.min(3, Math.max(0.2, Number(p.padZoom) || 1)),
+      padDeadzone: Math.min(0.3, Math.max(0.05, Number(p.padDeadzone) || STICK_DEADZONE)),
       invertY: p.invertY === true,
       aimAssist: p.aimAssist === true,
     };
   } catch {
-    return { sensitivity: 1, zoomSensitivity: 1, invertY: false, aimAssist: false };
+    return { sensitivity: 1, zoomSensitivity: 1, padLook: 1, padZoom: 1, padDeadzone: STICK_DEADZONE, invertY: false, aimAssist: false };
   }
 }
 
@@ -60,10 +69,13 @@ const KEY_TURN = 2.4;
 const STICK_TURN = 3.4;
 const STICK_DEADZONE = 0.15;
 
-/** Standard-mapping gamepad buttons. */
-const PAD = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, back: 8, l3: 10, r3: 11, up: 12, down: 13, left: 14, right: 15 } as const;
+/** How long B is held for prone (a tap is the crouch), ms. */
+const PAD_PRONE_MS = 400;
 
-const deadzone = (v: number) => (Math.abs(v) < STICK_DEADZONE ? 0 : Math.sign(v) * ((Math.abs(v) - STICK_DEADZONE) / (1 - STICK_DEADZONE)));
+/** Standard-mapping gamepad buttons. */
+const PAD = { a: 0, b: 1, x: 2, y: 3, lb: 4, rb: 5, lt: 6, rt: 7, back: 8, start: 9, l3: 10, r3: 11, up: 12, down: 13, left: 14, right: 15 } as const;
+
+const deadzone = (v: number, dz = STICK_DEADZONE) => (Math.abs(v) < dz ? 0 : Math.sign(v) * ((Math.abs(v) - dz) / (1 - dz)));
 
 /** Keyboard + pointer-lock mouse. View angles accumulate here; movement is sampled once per tick. */
 export class InputState {
@@ -71,6 +83,8 @@ export class InputState {
   pitch = 0;
   /** Zoomed aim lowers look speed by this factor (set by the session each frame: zoomLookScale). */
   sensitivityScale = 1;
+  /** The same for the right stick (set by the session each frame: zoomLookScale with the stick's own aim sensitivity). */
+  padSensitivityScale = 1;
   /** Locked-pointer deltas, cleaned and summed until the next frame (see lookFilter.ts). */
   readonly look = new LookFilter(browserLookScale(navigator.userAgent, HAS_COALESCED));
   /** The player's own look settings (Options / pause menu). */
@@ -156,7 +170,16 @@ export class InputState {
   /** A spectator control was used (a pick, the camera toggle, Y): the session sends it as activity. */
   private specUsed = false;
   /** Gamepad state from the last frame: sticks, and which buttons were down (for presses). */
-  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, use: false, prev: [] as boolean[] };
+  private pad = { move: { x: 0, y: 0 }, fire: false, zoom: false, sprint: false, jump: false, use: false, leanL: false, leanR: false, back: false, prev: [] as boolean[] };
+  /**
+   * The d-pad's left and right, each press told apart where it began: pressed while aiming it is a lean (held, until let
+   * go or the aim ends; never a weapon switch); pressed otherwise it is a weapon switch, made when let go, unless the
+   * aim began meanwhile. `at` is when it went down, 0 for not held.
+   */
+  private dpad = { l: { at: 0, lean: false, aimed: false }, r: { at: 0, lean: false, aimed: false } };
+  /** When B went down (0: not held), and whether the hold already made prone (a tap is the crouch). */
+  private padBAt = 0;
+  private padBProne = false;
   /** A controller has been used since the page loaded (its sticks and triggers count). */
   padActive = false;
   /** Weapon wheel: whether it's open, and where it points (x right, y down; length up to 1). */
@@ -189,6 +212,7 @@ export class InputState {
     this.setBindings(this.b);
     const off = onBindingsChange((b) => this.setBindings(b));
     this.abort.signal.addEventListener?.('abort', off);
+    window.addEventListener('gamepadconnected', () => this.checkPadMapping(), opts);
     window.addEventListener(
       'keydown',
       (e) => {
@@ -464,7 +488,7 @@ export class InputState {
 
   /** Whether the scoreboard shows: pinned (a tap, touch's Scores), or its own key held (one it shares with the wheel only while the wheel can't open). */
   get scoreboardShown(): boolean {
-    if (this.scoreboardPinned) return true;
+    if (this.scoreboardPinned || this.pad.back) return true;
     if (!this.active('scoreboard')) return false;
     const wheel = this.b.weaponWheel ?? ['', ''];
     const shared = (this.b.scoreboard ?? ['', '']).every((k) => !k || !this.keys.has(k) || wheel.includes(k));
@@ -659,17 +683,37 @@ export class InputState {
     this.pollPad(dt, scale, invert);
   }
 
+  /** Told once per pad (by id) that its layout isn't standard, so the game ignores it. Set by the session (a HUD message). */
+  onNotice: ((text: string) => void) | null = null;
+  private noticed = new Set<string>();
+
+  /** A connected pad without the standard layout, and no standard one: say so once per pad (calm, a message, no flash). */
+  checkPadMapping(): void {
+    const pads = [...(navigator.getGamepads?.() ?? [])].filter((g): g is Gamepad => !!g?.connected);
+    if (pads.some((g) => g.mapping === 'standard')) return;
+    for (const g of pads) {
+      if (this.noticed.has(g.id)) continue;
+      this.noticed.add(g.id);
+      this.onNotice?.("Controller found, but this browser doesn't report a standard layout for it. Try Chrome or Edge, or an Xbox or PlayStation controller.");
+    }
+  }
+
   private pollPad(dt: number, scale: number, invert: number): void {
+    this.checkPadMapping();
     const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected && g.mapping === 'standard');
     const p = this.pad;
     if (!pad) {
       p.move = { x: 0, y: 0 };
-      p.fire = p.zoom = p.sprint = p.jump = p.use = false;
+      p.fire = p.zoom = p.sprint = p.jump = p.use = p.leanL = p.leanR = p.back = false;
+      this.dpad.l.at = this.dpad.r.at = this.padBAt = 0;
       return;
     }
     const down = pad.buttons.map((b) => b.pressed || b.value > 0.4);
     const pressed = (i: number) => !!down[i] && !p.prev[i];
-    const [lx = 0, ly = 0, rx = 0, ry = 0] = pad.axes.map(deadzone);
+    const dz = this.mouse.padDeadzone;
+    const [lx = 0, ly = 0, rx = 0, ry = 0] = pad.axes.map((v) => deadzone(v, dz));
+    // The stick has its own look and aim speeds, apart from the mouse's.
+    scale = this.padSensitivityScale * this.mouse.padLook;
     if (down.some(Boolean) || lx || ly || rx || ry) this.padActive = true;
     p.move = { x: lx, y: -ly };
     // Squared response: fine aim near the centre, fast turns at full tilt. With the wheel open the right stick points it.
@@ -681,6 +725,9 @@ export class InputState {
     }
     p.fire = !!down[PAD.rt];
     p.zoom = !!down[PAD.lt];
+    // View / Back shows the scoreboard while held; Menu opens the pause menu (the page lets the mouse go).
+    p.back = !!down[PAD.back];
+    if (pressed(PAD.start)) document.exitPointerLock?.();
     if (pressed(PAD.lt) && !this.spectating) this.aimLatch.press();
     p.jump = !!down[PAD.a];
     p.use = !!down[PAD.rb];
@@ -690,6 +737,8 @@ export class InputState {
       if (pressed(PAD.lb)) this.specStep--;
       if (pressed(PAD.y)) this.specToggle = true;
       if (down.some(Boolean) || lx || ly || rx || ry) this.specUsed = true;
+      p.leanL = p.leanR = false;
+      this.dpad.l.at = this.dpad.r.at = this.padBAt = 0;
       p.prev = down;
       return;
     }
@@ -704,9 +753,29 @@ export class InputState {
     }
     if (pressed(PAD.x)) this.reloadQueued = true;
     if (pressed(PAD.rb)) this.useQueued = true;
-    if (pressed(PAD.b)) {
-      this.crouchOn = !this.crouchOn;
-      this.proneOn = false;
+    // B: a tap is crouch (a toggle, made when let go); held PAD_PRONE_MS on foot it is prone (a toggle); in a vehicle it
+    // is the duck at once.
+    if (this.inVehicle) {
+      if (pressed(PAD.b)) this.crouchOn = !this.crouchOn;
+      this.padBAt = 0;
+    } else {
+      const now = performance.now();
+      if (pressed(PAD.b)) {
+        this.padBAt = now;
+        this.padBProne = false;
+      }
+      if (down[PAD.b] && this.padBAt && !this.padBProne && now - this.padBAt >= PAD_PRONE_MS) {
+        this.padBProne = true;
+        this.proneOn = !this.proneOn;
+        this.crouchOn = false;
+      }
+      if (!down[PAD.b] && p.prev[PAD.b] && this.padBAt) {
+        if (!this.padBProne) {
+          this.crouchOn = !this.crouchOn;
+          this.proneOn = false;
+        }
+        this.padBAt = 0;
+      }
     }
     // Y: a tap is the next weapon; held, it opens the weapon wheel (the right stick points, let go to switch).
     if (pressed(PAD.y)) this.padWheelAt = performance.now();
@@ -716,8 +785,31 @@ export class InputState {
       else if (this.padWheelAt && performance.now() - this.padWheelAt < WHEEL_HOLD_MS) this.wheelSteps += 1;
       this.padWheelAt = 0;
     }
-    if (pressed(PAD.right)) this.wheelSteps += 1;
-    if (pressed(PAD.left)) this.wheelSteps -= 1;
+    // D-pad left / right: aiming (LT held, or the aim toggled on) they lean; otherwise the previous and next weapon.
+    // (Held aim is read fresh: the last sample's answer is a frame old. A toggled aim is the latch.)
+    const aimingNow = this.altTrigger || combatPrefs().aim === 'hold' ? p.zoom || this.active('aim') : this.aimShown;
+    const dpadSide = (d: { at: number; lean: boolean; aimed: boolean }, i: number): { lean: boolean; switched: boolean } => {
+      let switched = false;
+      if (pressed(i)) {
+        d.at = performance.now();
+        d.lean = d.aimed = aimingNow;
+      }
+      if (d.at) {
+        if (aimingNow) d.aimed = true;
+        if (!down[i]) {
+          switched = !d.aimed;
+          d.at = 0;
+          d.lean = false;
+        }
+      }
+      return { lean: !!d.at && d.lean && aimingNow, switched };
+    };
+    const r = dpadSide(this.dpad.r, PAD.right);
+    const l = dpadSide(this.dpad.l, PAD.left);
+    p.leanR = r.lean;
+    p.leanL = l.lean;
+    if (r.switched) this.wheelSteps += 1;
+    if (l.switched) this.wheelSteps -= 1;
     // D-pad up: a tap pings; held (Fireteams, leading a squad), the order wheel (the right stick points, let go to give it).
     if (!this.ordersOn) {
       if (pressed(PAD.up)) this.sayQueued = PING;
@@ -880,8 +972,8 @@ export class InputState {
     // The use key (F; or the pad's RB, or the touch Use button) still down: a hold to use (resupplying) goes on while it is.
     if (this.active('use') || this.pad.use) buttons |= BUTTON_USE_HOLD;
     // The lean keys (Q and E), held (both: upright).
-    if (this.active('leanLeft')) buttons |= BUTTON_LEAN_LEFT;
-    if (this.active('leanRight')) buttons |= BUTTON_LEAN_RIGHT;
+    if (this.active('leanLeft') || this.pad.leanL) buttons |= BUTTON_LEAN_LEFT;
+    if (this.active('leanRight') || this.pad.leanR) buttons |= BUTTON_LEAN_RIGHT;
     if (this.respawnQueued) buttons |= BUTTON_RESPAWN;
     this.respawnQueued = false;
     this.jumpQueued = this.jumpNext;
