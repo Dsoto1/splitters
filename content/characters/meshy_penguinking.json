@@ -6,7 +6,6 @@
   "name": "King Waddleston",
   "look": "core.penguinking",
   "group": "animals",
-  "tier": "experimental",
   "blood": "red",
   "nameTheme": "critter",
   "bio": "Rules the ice shelf with a short temper.",

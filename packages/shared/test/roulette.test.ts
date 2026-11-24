@@ -83,7 +83,7 @@ const hurt = (m: Match, victim: Combatant, amount: number, by: Combatant | null)
 function roulette(extra: Partial<MatchRules> = {}, seed = 7) {
   const match = new Match(yard(), { ...DEFAULT_ROULETTE_RULES, respawnDelayTicks: 1, scoreLimit: 0, ...extra }, seed);
   const d = new Driver(match);
-  const a = match.addHuman('a', 'core.sprout')!;
+  const a = match.addHuman('a', 'core.bandit')!;
   const b = match.addHuman('b', 'core.knight')!;
   return { match, d, a, b };
 }
@@ -93,7 +93,7 @@ function director(rules: Partial<MatchRules> = {}, seed = 3) {
   let tick = 0;
   const events: GameEvent[] = [];
   const dir = new RouletteDirector({ seed, rules: { ...DEFAULT_ROULETTE_RULES, ...rules }, tick: () => tick, emit: (e) => events.push(e), weaponSet: () => getWeaponSet('standard'), baseGravity: 0.4 });
-  const body = (slot: number, kind: RouletteBody['kind'] = 'human'): RouletteBody => ({ slot, kind, look: 'core.ranger', alive: true, respawnTick: 0, kills: 0, size: 1, speedMul: 1, armor: 0, name: `p${slot}`, move: { grounded: true } });
+  const body = (slot: number, kind: RouletteBody['kind'] = 'human'): RouletteBody => ({ slot, kind, look: 'core.dale', alive: true, respawnTick: 0, kills: 0, size: 1, speedMul: 1, armor: 0, name: `p${slot}`, move: { grounded: true } });
   return { dir, events, body, advance: (n: number) => (tick += n), now: () => tick };
 }
 
@@ -249,7 +249,7 @@ describe('jackpot rolls', () => {
 
   it('Giant Slayer: a small character downing a large one scores a bonus point', () => {
     const { match, a, b } = roulette();
-    a.look = 'core.sprout';
+    a.look = 'core.bandit';
     b.look = 'core.knight';
     expect(bodyClass(a.look, match.rules)).toBe('small');
     expect(bodyClass(b.look, match.rules)).toBe('large');
@@ -364,7 +364,7 @@ describe('variants', () => {
   it('Swap on kill: the killer becomes the victim’s character at once, keeping its share of health and its weapons', () => {
     const { match, d, a, b } = roulette({ rouletteSwapOnKill: true });
     d.run(2);
-    a.look = 'core.ranger';
+    a.look = 'core.dale';
     b.look = 'core.knight';
     a.health = a.maxHealth / 2;
     const weapons = [...a.weapons.keys()];
@@ -380,7 +380,7 @@ describe('variants', () => {
 
   it('Variety bonus: a point each time the characters you scored as reach another 3', () => {
     const { match, a, b } = roulette({ rouletteVariety: true, rouletteJackpots: false });
-    a.look = 'core.ranger';
+    a.look = 'core.hyena';
     kill(match, b, a);
     kill(match, b, a);
     a.look = 'core.dapper';
@@ -389,7 +389,7 @@ describe('variants', () => {
     a.look = 'core.dale';
     kill(match, b, a);
     expect(a.kills).toBe(5);
-    a.look = 'core.ranger';
+    a.look = 'core.hyena';
     kill(match, b, a);
     expect(a.kills).toBe(6);
   });
@@ -436,7 +436,7 @@ describe('variants', () => {
     expect(rulesFromSetup(setVariant(base, 'lunar', true), map).rules).toMatchObject({ gravity: 0.4, fallDamage: false, lunar: true });
     // In a match: two sides, each player dealt from the deck.
     const m = new Match(map, { ...teams.rules, respawnDelayTicks: 1 }, 4);
-    const x = m.addHuman('x', 'core.sprout')!;
+    const x = m.addHuman('x', 'core.bandit')!;
     m.step();
     expect(x.faction).not.toBeNull();
     expect(m.roulette).not.toBeNull();
@@ -452,7 +452,7 @@ describe('awards', () => {
     for (const p of [a, b, c]) p.look = dir.deal(p).look;
     advance(TICK_RATE * 10);
     // a: small kills large (Giant Slayer), in the air (Moonwalker).
-    a.look = 'core.sprout';
+    a.look = 'core.bandit';
     b.look = 'core.knight';
     a.move.grounded = false;
     dir.onKill(b, a, true);
@@ -476,10 +476,10 @@ describe('awards', () => {
   it('in a match: the awards go out with the round’s end', () => {
     const { match, d, a, b } = roulette({ scoreLimit: 3 });
     d.run(2);
-    a.look = 'core.sprout';
+    a.look = 'core.bandit';
     for (let i = 0; i < 3; i++) {
       b.alive = true;
-      b.look = 'core.ranger';
+      b.look = 'core.dale';
       kill(match, b, a);
     }
     const ev = d.run(1);

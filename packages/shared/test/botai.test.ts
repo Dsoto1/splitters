@@ -83,7 +83,7 @@ function hitRate(difficulty: BotDifficulty, opts: { weapon?: string; range?: num
   for (const seed of opts.seeds ?? [1, 2, 3, 4]) {
     const match = new Match(yard(), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, seed);
     const target = match.addHuman('target')!;
-    const bot = match.addBot('shooter', { ...CORE_BOT_PROFILES[3]!, accuracy: 50, rangePreference: ((range - 4) / 22) * 100, tags: [] }, difficulty, false, { look: 'core.ranger' })!; // a standard build: the rates don't follow the roster's order
+    const bot = match.addBot('shooter', { ...CORE_BOT_PROFILES[3]!, accuracy: 50, rangePreference: ((range - 4) / 22) * 100, tags: [] }, difficulty, false, { look: 'core.dale' })!; // a standard build: the rates don't follow the roster's order
     bot.move = { pos: { x: 0, y: 0, z: 8 }, velY: 0, grounded: true };
     target.move = { pos: { x: range, y: 0, z: 8 }, velY: 0, grounded: true };
     give(bot, weapon);
@@ -154,7 +154,7 @@ describe('bot tactics', () => {
     // A waist-high wall across the yard at z = 8 from x = 4 to 12 (gap in the middle).
     const match = new Match(yard([], (x, z) => (x === 1 && z === 1 ? 'core.yard_wall' : 'core.yard')), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, 5);
     const shooter = match.addHuman('shooter')!;
-    const bot = match.addBot('bot', { ...CORE_BOT_PROFILES[3]!, tags: [] }, BOT_DIFFICULTIES.normal, false, { look: 'core.ranger' })!; // a standard build: a large one crouched (1.42 m) doesn't fit behind a waist-high wall
+    const bot = match.addBot('bot', { ...CORE_BOT_PROFILES[3]!, tags: [] }, BOT_DIFFICULTIES.normal, false, { look: 'core.dale' })!; // a standard build: a large one crouched (1.42 m) doesn't fit behind a waist-high wall
     place(shooter, 6, 18, Math.PI);
     place(bot, 14, 6, 0);
     give(shooter, 'core.rifle');
