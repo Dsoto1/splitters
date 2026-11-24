@@ -12,20 +12,37 @@
 //         "hidden": true | false,                      true hides it, false shows it again
 //         "category": "smg",                           one of WEAPON_CATEGORIES (only for a weapon that has one)
 //         "description": "One line for the team",      its `notes.description` ("" removes it)
-//         "sounds": { "fire": "<sound id>", "alt": "<sound id>", "reload": "<sound id>" },
+//         "sounds": { "fire": "<sound id>", "alt": "<sound id>", "reload": "<sound id>",
+//                     "explosion": "<sound id>" | "none", "impact": "<sound id>" | "none" },
 //         "sets": { "<set id>": true | false },        in or out of a weapon set's list
 //         "stats": { "<path>": <number or list> },     STAT_FIELDS below, within their ranges
 //         "note": "free text for the team",            becomes a QUEUE line ("Weapon notes from the owner")
 //         "was": { ... }                               what the page saw before the edit (for review; never applied)
 //       }
+//     },
+//     "throwables": {                                optional: thrown equipment (content/throwables.json), by kind
+//       "<kind>": { "sounds": { "explosion": "<sound id>" | "none" }, "note": "free text", "was": { ... } }
 //     }
 //   }
 
 export const CHANGE_SET_FORMAT = 'tiletrigger.weapon-edits';
 export const CHANGE_SET_VERSION = 1;
 export const TEXT_LIMITS = { name: 40, description: 300, note: 1000 };
-/** The sounds a weapon can pick: its shot, its second trigger's shot (only a weapon with one) and its reload's start. */
-export const SOUND_SLOTS = ['fire', 'alt', 'reload'];
+/**
+ * The sounds a weapon can pick: its shot, its second trigger's shot (only a weapon with one), its reload's start, its
+ * explosion (only a weapon that blows something up: in place of the shared `explosion`, the debris still under it) and
+ * its impact (a hit sound layered on the struck surface's own). Explosion and impact are none until picked, and
+ * "none" (NO_SOUND) puts one back to none.
+ */
+export const SOUND_SLOTS = ['fire', 'alt', 'reload', 'explosion', 'impact'];
+/** The slots that may be "none" (nothing of the weapon's own: the shared sounds only). */
+export const OPTIONAL_SOUND_SLOTS = ['explosion', 'impact'];
+export const NO_SOUND = 'none';
+/** The sounds a throwable can pick: its explosion (only one that blows up). */
+export const THROWABLE_SOUND_SLOTS = ['explosion'];
+export const THROWABLE_EDIT_KEYS = ['sounds', 'note', 'was'];
+/** Where a weapon or throwable keeps each optional sound: `view.<key>` of a weapon, `<key>` of a throwable. */
+export const SOUND_KEYS = { explosion: 'explosionSound', impact: 'impactSound' };
 export const EDIT_KEYS = ['name', 'hidden', 'category', 'description', 'sounds', 'sets', 'stats', 'note', 'was'];
 
 /**
@@ -83,9 +100,13 @@ export function weaponInfo(def, family) {
     hasBallistic: def.kind === 'hitscan' && !def.view?.beam && def.ballistic !== null && !!(def.ballistic ?? family?.ballistic),
     hasProjectile: !!def.projectile,
     hasAlt: !!def.view?.altShot,
+    blowsUp: blowsUp(def.projectile) || blowsUp(def.alt?.projectile),
     category: def.category ?? null,
   };
 }
+
+/** Whether a projectile bursts with a blast (splash damage over a radius): what an explosion sound is for. */
+export const blowsUp = (p) => !!p && (p.splashRadius ?? 0) > 0;
 
 export const applicableStats = (info) => STAT_FIELDS.filter((f) => f.when(info));
 
@@ -101,8 +122,14 @@ export function isEmptyEdit(e) {
   );
 }
 
-/** One change set from the page's edits (weapon id -> edit), empty edits left out, weapons in id order. */
-export function buildChangeSet(edits, { created = new Date().toISOString(), from = 'Weapon Manager' } = {}) {
+/** Whether a throwable's edit changes nothing. */
+export const isEmptyThrowableEdit = (e) => !e || (!Object.keys(e.sounds ?? {}).length && !e.note?.trim());
+
+/**
+ * One change set from the page's edits (weapon id -> edit; `throwables`: kind -> edit), empty edits left out, in id
+ * order. The `throwables` block is there only when one is edited.
+ */
+export function buildChangeSet(edits, { created = new Date().toISOString(), from = 'Weapon Manager', throwables = {} } = {}) {
   const weapons = {};
   for (const id of Object.keys(edits).sort()) {
     const e = edits[id];
@@ -117,7 +144,13 @@ export function buildChangeSet(edits, { created = new Date().toISOString(), from
     }
     weapons[id] = out;
   }
-  return { format: CHANGE_SET_FORMAT, version: CHANGE_SET_VERSION, created, from, weapons };
+  const thrown = {};
+  for (const kind of Object.keys(throwables).sort()) {
+    const e = throwables[kind];
+    if (isEmptyThrowableEdit(e)) continue;
+    thrown[kind] = Object.fromEntries(THROWABLE_EDIT_KEYS.filter((k) => e[k] !== undefined && !(k === 'note' && !String(e[k]).trim()) && !(typeof e[k] === 'object' && !Object.keys(e[k]).length)).map((k) => [k, e[k]]));
+  }
+  return { format: CHANGE_SET_FORMAT, version: CHANGE_SET_VERSION, created, from, weapons, ...(Object.keys(thrown).length ? { throwables: thrown } : {}) };
 }
 
 const isObj = (v) => !!v && typeof v === 'object' && !Array.isArray(v);
@@ -153,6 +186,7 @@ export function statProblems(path, value, info) {
  *   categories  the weapon categories (WEAPON_CATEGORIES)
  *   blockers    (id) -> reasons it can't be hidden (tools/content/weapons.mjs hideBlockers)
  *   canJoinSet  (id) -> null, or why it can't be in a set's list
+ *   throwables  Map of throwable kind -> { name, blowsUp } (absent: a change set with throwables is refused)
  * Returns { problems, warnings }: problems refuse the whole set; warnings (a value changed in the repo since the
  * page saw it) are printed.
  */
@@ -223,6 +257,8 @@ export function validateChangeSet(cs, ctx) {
         for (const [slot, sid] of Object.entries(e.sounds)) {
           if (!SOUND_SLOTS.includes(slot)) at(`sounds.${slot}: the slots are ${SOUND_SLOTS.join(', ')}`);
           else if (slot === 'alt' && !w.info.hasAlt) at('sounds.alt: this weapon has no second-trigger shot');
+          else if (slot === 'explosion' && !w.info.blowsUp) at('sounds.explosion: nothing this weapon fires blows up');
+          else if (sid === NO_SOUND && OPTIONAL_SOUND_SLOTS.includes(slot)) continue;
           else if (typeof sid !== 'string' || !ctx.sounds.has(sid)) at(`sounds.${slot}: ${JSON.stringify(sid)} is not a sound in the game (content/sounds.json)`);
         }
     }
@@ -259,6 +295,33 @@ export function validateChangeSet(cs, ctx) {
           if (now !== undefined && JSON.stringify(now) !== JSON.stringify(v)) warnings.push(`${id}: ${path} is ${JSON.stringify(now)} in the repo now, not ${JSON.stringify(v)} as the page saw`);
         }
     }
+  }
+  if (cs.throwables !== undefined) {
+    if (!isObj(cs.throwables)) problems.push('"throwables" must be an object of throwable kind -> edit');
+    else
+      for (const [kind, e] of Object.entries(cs.throwables)) {
+        const at = (m) => problems.push(`throwable ${kind}: ${m}`);
+        const t = ctx.throwables?.get(kind);
+        if (!t) {
+          at('no throwable has this kind');
+          continue;
+        }
+        if (!isObj(e)) {
+          at('the edit must be an object');
+          continue;
+        }
+        for (const k of Object.keys(e)) if (!THROWABLE_EDIT_KEYS.includes(k)) at(`unknown field "${k}" (${THROWABLE_EDIT_KEYS.join(', ')})`);
+        if (e.note !== undefined && (typeof e.note !== 'string' || e.note.length > TEXT_LIMITS.note)) at(`note must be text of at most ${TEXT_LIMITS.note} characters`);
+        if (e.sounds !== undefined) {
+          if (!isObj(e.sounds)) at('sounds must be an object of slot -> sound id');
+          else
+            for (const [slot, sid] of Object.entries(e.sounds)) {
+              if (!THROWABLE_SOUND_SLOTS.includes(slot)) at(`sounds.${slot}: a throwable's slots are ${THROWABLE_SOUND_SLOTS.join(', ')}`);
+              else if (slot === 'explosion' && !t.blowsUp) at("sounds.explosion: it doesn't blow up");
+              else if (sid !== NO_SOUND && (typeof sid !== 'string' || !ctx.sounds.has(sid))) at(`sounds.${slot}: ${JSON.stringify(sid)} is not a sound in the game (content/sounds.json)`);
+            }
+        }
+      }
   }
   return { problems, warnings };
 }

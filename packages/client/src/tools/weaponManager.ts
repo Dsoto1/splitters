@@ -1,7 +1,7 @@
-import { CORE_WEAPONS, WEAPON_CATEGORIES, WEAPON_CATEGORY_LABELS, firingOf, gunplayOf, TICK_RATE, type Ballistics, type WeaponDefinition } from '@tiletrigger/shared';
+import { CORE_WEAPONS, THROWABLE_DEFS, type ThrowableKind, WEAPON_CATEGORIES, WEAPON_CATEGORY_LABELS, firingOf, gunplayOf, TICK_RATE, type Ballistics, type WeaponDefinition } from '@tiletrigger/shared';
 import { AudioSystem, type SoundId } from '../audio/audio.ts';
 import { weaponIcon } from '../frontend/weaponIcons.ts';
-import { TEXT_LIMITS, statField, type SoundSlot, type StatField, type WeaponEdit } from '../../../../tools/content/weapon-edits-format.mjs';
+import { NO_SOUND, OPTIONAL_SOUND_SLOTS, TEXT_LIMITS, blowsUp, statField, type SoundSlot, type StatField, type WeaponEdit } from '../../../../tools/content/weapon-edits-format.mjs';
 import { SERIES, barsSection, conesSection, drawCharts, fmt, lineSection, recoilSection, type CompareCtx, type Pick } from './weaponCompare.ts';
 import type { WeaponStats } from './weaponTuningData.ts';
 import {
@@ -15,7 +15,15 @@ import {
   hideBlockers,
   infoOf,
   loadEdits,
+  loadThrowEdits,
   saveEdits,
+  saveThrowEdits,
+  SLOT_LABELS,
+  slotSoundLabel,
+  throwableList,
+  throwableSound,
+  tidyThrowable,
+  type ThrowEdits,
   setsOf,
   soundGroups,
   soundLabel,
@@ -86,6 +94,8 @@ const CSS = `
 #weapon-tuning .wm-row .id { color: var(--wt-muted); font-size: 12px; }
 #weapon-tuning .wm-play { width: 30px; height: 30px; border-radius: 50%; border: 1px solid var(--wt-line); background: var(--wt-surface); color: var(--wt-ink); cursor: pointer; font-size: 12px; }
 #weapon-tuning .wm-play:hover { border-color: #3987e5; }
+#weapon-tuning .wm-play-none { width: 30px; height: 30px; }
+#wm-root .wm-group { grid-column: 1 / -1; margin: 14px 0 0; font: italic 700 16px 'Chakra Petch', sans-serif; text-transform: none; }
 #weapon-tuning .wm-warn { color: #e8c872; font-size: 12.5px; }
 #weapon-tuning .wm-bad { color: #f08a8a; font-size: 12.5px; }
 #weapon-tuning .wm-ok { color: #7fd1a8; font-size: 12.5px; }
@@ -146,11 +156,15 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
   const page = host.closest<HTMLElement>('#weapon-tuning') ?? document.body;
 
   let edits: Edits = loadEdits();
+  let thrown: ThrowEdits = loadThrowEdits();
   const ui = { filter: 'all' as 'all' | 'edited' | 'hidden', search: '' };
   let audio: AudioSystem | null = null;
   let copied = 0;
 
-  const save = () => saveEdits(edits);
+  const save = () => {
+    saveEdits(edits);
+    saveThrowEdits(thrown);
+  };
   const edit = (id: string): WeaponEdit => edits[id] ?? {};
   /** Change one weapon's edit, tidy it (values back at the game's drop out), keep it, redraw. */
   function change(id: string, f: (e: WeaponEdit) => WeaponEdit, redraw = true): void {
@@ -187,8 +201,16 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
     <div class="wm-list" id="wm-list"></div>`;
   const list = host.querySelector<HTMLElement>('#wm-list')!;
 
+  /** Change one throwable's edit (its sounds and note), tidy it, keep it, redraw. */
+  function changeThrow(kind: string, f: (e: ThrowEdits[string]) => ThrowEdits[string]): void {
+    const next = tidyThrowable(THROWABLE_DEFS[kind as ThrowableKind], f(structuredClone(thrown[kind] ?? {})));
+    if (next) thrown[kind] = next;
+    else delete thrown[kind];
+    save();
+    renderList();
+  }
   function renderList(): void {
-    const n = Object.keys(edits).length;
+    const n = Object.keys(edits).length + Object.keys(thrown).length;
     const send = host.querySelector<HTMLButtonElement>('#wm-send')!;
     send.textContent = n ? `Send changes (${n})` : 'Send changes';
     send.disabled = !n;
@@ -219,7 +241,7 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
         <div class="wm-body">
           <p class="wm-desc${desc ? '' : ' muted'}">${esc(desc || designNoteOf(base.id) || 'No description yet.')}</p>
           <div class="wm-line">${esc(statLine(def))}</div>
-          <div class="wm-line">Sounds: ${soundSlots(def).map((s) => esc(soundLabel(currentSound(def, s) ?? ''))).join(', ')}</div>
+          <div class="wm-line">Sounds: ${soundSlots(def).filter((s) => currentSound(def, s) !== NO_SOUND).map((s) => esc(soundLabel(currentSound(def, s) ?? ''))).join(', ')}</div>
           <div>${sets.map((m) => `<span class="wm-chip">${esc(m.name)}</span>`).join('') || '<span class="wm-line">In no weapon set list</span>'}${e?.note ? '<span class="wm-chip">Note</span>' : ''}</div>
         </div>`;
       const icon = weaponIcon(base.id, '');
@@ -230,6 +252,30 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
       list.append(card);
     }
     if (!list.childElementCount) list.innerHTML = '<p class="note">No weapon matches.</p>';
+    // Thrown equipment (G): only its explosion sound is edited here.
+    const throws = throwableList().filter((t) => {
+      if (ui.filter === 'hidden') return false;
+      if (ui.filter === 'edited' && !thrown[t.kind]) return false;
+      return !q || `${t.displayName} ${t.kind} throwable grenade`.toLowerCase().includes(q);
+    });
+    if (!throws.length) return;
+    const head = document.createElement('h2');
+    head.className = 'wm-group';
+    head.textContent = 'Throwables';
+    list.append(head);
+    for (const t of throws) {
+      const card = document.createElement('button');
+      card.type = 'button';
+      card.className = 'wm-card';
+      card.dataset.throwable = t.kind;
+      const now = thrown[t.kind]?.sounds?.explosion ?? throwableSound(t);
+      card.innerHTML = `
+        <div class="wm-pic">${esc(t.kind)}</div>
+        <div><h3>${esc(t.displayName)}${thrown[t.kind] ? '<span class="wm-badge edited">Edited</span>' : ''}</h3><div class="wm-sub">Throwable (G) · up to ${t.max}</div></div>
+        <div class="wm-body"><div class="wm-line">${blowsUp(t.projectile) ? `Explosion: ${esc(slotSoundLabel('explosion', now))}` : "Doesn't blow up: no sounds to pick"}</div></div>`;
+      card.addEventListener('click', () => openThrowable(t.kind));
+      list.append(card);
+    }
   }
 
   host.querySelector('#wm-search')!.addEventListener('input', (ev) => {
@@ -245,6 +291,7 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
   host.querySelector('#wm-reset-all')!.addEventListener('click', () => {
     if (!confirm('Reset every weapon to how it is in the game? Your edits and notes on this page are cleared.')) return;
     edits = {};
+    thrown = {};
     save();
     renderList();
   });
@@ -276,6 +323,51 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
     return { root, box, close };
   }
 
+  /** One sound slot's row: its name, ▶ (when it has a sound), what plays, Change… and ↺ back to the game's. */
+  function soundRow(slot: SoundSlot, now: string, was: string): string {
+    const play = now === NO_SOUND ? '<span class="wm-play-none" aria-hidden="true"></span>' : `<button type="button" class="wm-play" data-play="${esc(now)}" aria-label="Play ${esc(now)}">▶</button>`;
+    return `<div class="wm-row" data-slot="${slot}"><strong style="width:90px">${SLOT_LABELS[slot]}</strong>${play}<span class="grow" title="${esc(now)}">${esc(slotSoundLabel(slot, now))}${now !== was ? ` <span class="was changed">(in the game: ${esc(slotSoundLabel(slot, was))})</span>` : ''}</span><button type="button" class="wm-btn wm-small" data-pick="${slot}">Change…</button>${now !== was ? `<button type="button" class="wm-x" data-unsound="${slot}" title="Back to the game's" aria-label="Back to the game's sound">↺</button>` : ''}</div>`;
+  }
+  // ---------------------------------------------------------------- one throwable's sounds
+  function openThrowable(kind: string): void {
+    const t = THROWABLE_DEFS[kind as ThrowableKind];
+    const { box, close } = overlay('dialog', 'wm-throwable', `Sounds for ${t.displayName}`, () => renderList());
+    function draw(): void {
+      const e = thrown[kind] ?? {};
+      const was = throwableSound(t);
+      box.innerHTML = `
+        <div class="wm-head"><h2>${esc(t.displayName)}</h2><button type="button" class="wm-btn" id="wm-reset-one"${thrown[kind] ? '' : ' disabled'}>Reset</button><button type="button" class="wm-btn wm-primary" id="wm-done">Done</button></div>
+        <section><h2>Sounds</h2><p class="note">From the game's own sound library (content/sounds.json); press ▶ to hear one. Explosion plays in place of the shared one, the debris under it.</p>
+          ${blowsUp(t.projectile) ? soundRow('explosion', e.sounds?.explosion ?? was, was) : `<p class="note">${esc(t.displayName)} doesn't blow up: it has no explosion to sound.</p>`}</section>
+        <section><h2>Note for the team</h2><textarea id="wm-note" maxlength="${TEXT_LIMITS.note}" placeholder="A note or suggestion">${esc(e.note ?? '')}</textarea></section>`;
+    }
+    box.addEventListener('input', (ev) => {
+      const el = ev.target as HTMLTextAreaElement;
+      if (el.id !== 'wm-note') return;
+      changeThrow(kind, (e) => ({ ...e, note: el.value }));
+      box.querySelector<HTMLButtonElement>('#wm-reset-one')!.disabled = !thrown[kind];
+    });
+    box.addEventListener('click', (ev) => {
+      const b = (ev.target as HTMLElement).closest<HTMLElement>('button');
+      if (!b) return;
+      if (b.id === 'wm-done') return close();
+      if (b.id === 'wm-reset-one') {
+        delete thrown[kind];
+        save();
+        return draw();
+      }
+      if (b.dataset.play) return void play(b.dataset.play);
+      if (b.dataset.pick) return pickSound(t.displayName, 'explosion', thrown[kind]?.sounds?.explosion ?? throwableSound(t), (sid) => {
+        changeThrow(kind, (e) => ({ ...e, sounds: { ...e.sounds, explosion: sid } }));
+        draw();
+      });
+      if (b.dataset.unsound) {
+        changeThrow(kind, (e) => ({ ...e, sounds: {} }));
+        draw();
+      }
+    });
+    draw();
+  }
   // ---------------------------------------------------------------- one weapon's edit panel
 
   function openEditor(id: string): void {
@@ -317,11 +409,7 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
         </section>
         <section><h2>Sounds</h2><p class="note">From the game's own sound library (content/sounds.json); press ▶ to hear one.</p>
           ${soundSlots(base)
-            .map((slot) => {
-              const now = currentSound(def, slot)!;
-              const was = currentSound(base, slot)!;
-              return `<div class="wm-row"><strong style="width:90px">${slot === 'fire' ? 'Fire' : slot === 'alt' ? 'Alt-fire' : 'Reload'}</strong><button type="button" class="wm-play" data-play="${esc(now)}" aria-label="Play ${esc(now)}">▶</button><span class="grow" title="${esc(now)}">${esc(soundLabel(now))}${now !== was ? ` <span class="was changed">(in the game: ${esc(soundLabel(was))})</span>` : ''}</span><button type="button" class="wm-btn wm-small" data-pick="${slot}">Change…</button>${now !== was ? `<button type="button" class="wm-x" data-unsound="${slot}" title="Back to the game's" aria-label="Back to the game's sound">↺</button>` : ''}</div>`;
-            })
+            .map((slot) => soundRow(slot, currentSound(def, slot)!, currentSound(base, slot)!))
             .join('')}
         </section>
         <section class="wm-sets"><h2>Weapon sets</h2>
@@ -447,7 +535,7 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
         return draw();
       }
       if (t.dataset.play) return void play(t.dataset.play);
-      if (t.dataset.pick) return pickSound(base, t.dataset.pick as SoundSlot, (sid) => {
+      if (t.dataset.pick) return pickSound(editedDef(base, edits[id]).displayName, t.dataset.pick as SoundSlot, currentSound(editedDef(base, edits[id]), t.dataset.pick as SoundSlot), (sid) => {
         change(id, (e) => ({ ...e, sounds: { ...e.sounds, [t.dataset.pick!]: sid } }), false);
         draw();
       });
@@ -468,17 +556,20 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
 
   // ---------------------------------------------------------------- the sound picker
 
-  function pickSound(def: WeaponDefinition, slot: SoundSlot, use: (id: string) => void): void {
+  function pickSound(name: string, slot: SoundSlot, current: string | null, use: (id: string) => void): void {
     const { box, close } = overlay('dialog', 'wm-picker', 'Pick a sound');
-    const current = currentSound(editedDef(def, edits[def.id]), slot);
     box.innerHTML = `
-      <div class="wm-head"><h2>${slot === 'fire' ? 'Fire' : slot === 'alt' ? 'Alt-fire' : 'Reload'} sound for ${esc(editedDef(def, edits[def.id]).displayName)}</h2><button type="button" class="wm-btn" id="wm-picker-close">Close</button></div>
+      <div class="wm-head"><h2>${SLOT_LABELS[slot]} sound for ${esc(name)}</h2><button type="button" class="wm-btn" id="wm-picker-close">Close</button></div>
       <p class="note">Only sounds already in the game (content/sounds.json, recorded in content/provenance.json). No uploads.</p>
       <input type="search" id="wm-picker-search" placeholder="Find a sound" aria-label="Find a sound" style="width:100%">
       <div id="wm-picker-list"></div>`;
     const listEl = box.querySelector<HTMLElement>('#wm-picker-list')!;
     const fill = (q: string) => {
-      listEl.innerHTML = soundGroups()
+      // Explosion and impact may be none: the shared sounds only.
+      const none = OPTIONAL_SOUND_SLOTS.includes(slot)
+        ? `<div class="wm-row" data-sound="${NO_SOUND}"><span class="grow">${esc(slotSoundLabel(slot, NO_SOUND))}${current === NO_SOUND ? ' <span class="wm-ok">(now)</span>' : ''}</span><button type="button" class="wm-btn wm-small" data-use="${NO_SOUND}"${current === NO_SOUND ? ' disabled' : ''}>Use</button></div>`
+        : '';
+      listEl.innerHTML = none + soundGroups()
         .map((g) => {
           const ids = g.ids.filter((sid) => !q || sid.includes(q.toLowerCase()) || soundLabel(sid).toLowerCase().includes(q.toLowerCase()));
           if (!ids.length) return '';
@@ -505,9 +596,9 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
   // ---------------------------------------------------------------- send
 
   function openSend(): void {
-    const { set, problems } = changeSet(edits);
+    const { set, problems } = changeSet(edits, undefined, thrown);
     const json = `${JSON.stringify(set, null, 2)}\n`;
-    const n = Object.keys(set.weapons).length;
+    const n = Object.keys(set.weapons).length + Object.keys(set.throwables ?? {}).length;
     const { box, close } = overlay('dialog', 'wm-send-dialog', 'Send changes');
     const lines = Object.entries(set.weapons).map(([id, e]) => {
       const parts: string[] = [];
@@ -521,9 +612,13 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
       if (e.note) parts.push('a note');
       return `<li><strong>${esc(CORE_WEAPONS[id]!.displayName)}</strong>: ${esc(parts.join(', '))}</li>`;
     });
+    for (const [kind, e] of Object.entries(set.throwables ?? {})) {
+      const parts = [...(e.sounds ? [`sounds (${Object.keys(e.sounds).join(', ')})`] : []), ...(e.note ? ['a note'] : [])];
+      lines.push(`<li><strong>${esc(THROWABLE_DEFS[kind as ThrowableKind].displayName)}</strong>: ${esc(parts.join(', '))}</li>`);
+    }
     box.innerHTML = `
       <div class="wm-head"><h2>Send changes</h2><button type="button" class="wm-btn" id="wm-send-close">Close</button></div>
-      <section><p>${n} weapon${n === 1 ? '' : 's'} changed:</p><ul class="wm-steps">${lines.join('')}</ul></section>
+      <section><p>${n} changed:</p><ul class="wm-steps">${lines.join('')}</ul></section>
       ${problems.length ? `<section><p class="wm-bad">Fix these first (the repo would refuse the file):</p><ul class="wm-steps">${problems.map((p) => `<li class="wm-bad">${esc(p)}</li>`).join('')}</ul></section>` : ''}
       <section><h2>How it reaches the game</h2><ol class="wm-steps">
         <li>Download the file (put it in your Google Drive) or Copy it (paste it to a session in chat).</li>
@@ -563,7 +658,8 @@ export function openWeaponManager(host: HTMLElement, opts: ManagerOptions): void
 
   (window as unknown as { __weaponManager: unknown }).__weaponManager = {
     edits: () => structuredClone(edits),
-    changeSet: () => changeSet(edits, 'test').set,
+    changeSet: () => changeSet(edits, 'test', thrown).set,
+    thrown: () => structuredClone(thrown),
     played: () => audio?.stats.played ?? 0,
     /** Whether a sound is loaded (the picker's alternates load on their first press). */
     loaded: (id: string) => audio?.isLoaded(id) ?? false,

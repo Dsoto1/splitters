@@ -6,14 +6,21 @@ import {
   WEAPON_CATEGORIES,
   WEAPON_SET_DEFS,
   WEAPON_SET_IDS,
+  THROWABLE_DEFS,
+  THROWABLES,
   gunplayOf,
   pickupWeapons,
+  type ThrowableDefinition,
+  type ThrowableKind,
   type WeaponDefinition,
 } from '@tiletrigger/shared';
 import soundManifest from '../../../../content/sounds.json';
 import {
+  NO_SOUND,
   SOUND_SLOTS,
   applicableStats,
+  blowsUp,
+  isEmptyThrowableEdit,
   buildChangeSet,
   getPath,
   isEmptyEdit,
@@ -22,6 +29,7 @@ import {
   type ChangeSet,
   type SoundSlot,
   type StatValue,
+  type ThrowableEdit,
   type ValidationContext,
   type WeaponEdit,
   type WeaponInfo,
@@ -84,15 +92,32 @@ export function currentStat(def: WeaponDefinition, path: string): StatValue | un
   }
 }
 
-/** The sound a weapon plays in a slot now (fire: its own or `fire.<name>`; reload: its own or every weapon's). */
+/**
+ * The sound a weapon plays in a slot now (fire: its own or `fire.<name>`; reload: its own or every weapon's;
+ * explosion and impact: its own or none, NO_SOUND).
+ */
 export function currentSound(def: WeaponDefinition, slot: SoundSlot): string | null {
   if (slot === 'fire') return def.view.sound ?? `fire.${def.id.replace(/^core\./, '')}`;
   if (slot === 'alt') return def.view.altShot?.sound ?? null;
+  if (slot === 'explosion') return def.view.explosionSound ?? NO_SOUND;
+  if (slot === 'impact') return def.view.impactSound ?? NO_SOUND;
   return def.view.reloadSound ?? 'reload.start';
 }
 
-/** The sound slots a weapon has (alt only with a second-trigger shot). */
-export const soundSlots = (def: WeaponDefinition): SoundSlot[] => SOUND_SLOTS.filter((s) => s !== 'alt' || !!def.view.altShot);
+/** Whether anything a weapon fires blows up (an explosion sound is for it). */
+export const weaponBlowsUp = (def: WeaponDefinition): boolean => blowsUp(def.projectile) || blowsUp(def.alt?.projectile);
+
+/** The sound slots a weapon has (alt only with a second-trigger shot, explosion only when something it fires blows up). */
+export const soundSlots = (def: WeaponDefinition): SoundSlot[] => SOUND_SLOTS.filter((s) => (s !== 'alt' || !!def.view.altShot) && (s !== 'explosion' || weaponBlowsUp(def)));
+
+/** A slot's title on the page. */
+export const SLOT_LABELS: Record<SoundSlot, string> = { fire: 'Fire', alt: 'Alt-fire', reload: 'Reload', explosion: 'Explosion', impact: 'Impact' };
+
+/** A sound's name on the page, "None" for NO_SOUND (with what plays instead). */
+export function slotSoundLabel(slot: SoundSlot, id: string): string {
+  if (id !== NO_SOUND) return soundLabel(id);
+  return slot === 'explosion' ? 'None (the shared explosion)' : slot === 'impact' ? "None (the surface's own)" : 'None';
+}
 
 const clone = <T>(v: T): T => JSON.parse(JSON.stringify(v)) as T;
 
@@ -110,6 +135,8 @@ export function editedDef(def: WeaponDefinition, e: WeaponEdit | undefined): Wea
   if (s.fire) d.view.sound = s.fire;
   if (s.alt && d.view.altShot) d.view.altShot.sound = s.alt;
   if (s.reload) d.view.reloadSound = s.reload;
+  if (s.explosion) d.view.explosionSound = s.explosion === NO_SOUND ? undefined : s.explosion;
+  if (s.impact) d.view.impactSound = s.impact === NO_SOUND ? undefined : s.impact;
   for (const [path, v] of Object.entries(e!.stats ?? {})) {
     const [head, leaf] = path.split('.') as [string, string | undefined];
     if (!leaf) {
@@ -212,6 +239,7 @@ export function validationContext(): ValidationContext {
     categories: WEAPON_CATEGORIES,
     blockers: hideBlockers,
     canJoinSet,
+    throwables: new Map(throwableList().map((t) => [t.kind, { name: t.displayName, blowsUp: blowsUp(t.projectile) }])),
   };
 }
 
@@ -230,10 +258,17 @@ export function withWas(def: WeaponDefinition, e: WeaponEdit): WeaponEdit {
 }
 
 /** The change set the page sends, and its problems (the repo tool would refuse it with any). */
-export function changeSet(edits: Edits, created = new Date().toISOString()): { set: ChangeSet; problems: string[] } {
+export function changeSet(edits: Edits, created = new Date().toISOString(), thrown: ThrowEdits = {}): { set: ChangeSet; problems: string[] } {
   const withPrev: Edits = {};
   for (const [id, e] of Object.entries(edits)) if (CORE_WEAPONS[id] && !isEmptyEdit(e)) withPrev[id] = withWas(CORE_WEAPONS[id]!, e);
-  const set = buildChangeSet(withPrev, { created, from: 'Weapon Manager (?mode=weapons, Manage)' });
+  const throwables: ThrowEdits = {};
+  for (const [kind, e] of Object.entries(thrown)) {
+    const t = THROWABLE_DEFS[kind as ThrowableKind];
+    if (!t || isEmptyThrowableEdit(e)) continue;
+    const { was: _w, ...rest } = e;
+    throwables[kind] = e.sounds && Object.keys(e.sounds).length ? { ...rest, was: { sounds: Object.fromEntries(Object.keys(e.sounds).map((k) => [k, throwableSound(t)])) } } : rest;
+  }
+  const set = buildChangeSet(withPrev, { created, from: 'Weapon Manager (?mode=weapons, Manage)', throwables });
   return { set, problems: validateChangeSet(set, validationContext()).problems };
 }
 
@@ -259,6 +294,45 @@ export function tidy(def: WeaponDefinition, e: WeaponEdit): WeaponEdit | undefin
 }
 
 export { applicableStats };
+
+// ---------------------------------------------------------------- throwables (their sounds only)
+
+export type ThrowEdits = Record<string, ThrowableEdit>;
+export const THROW_STORAGE_KEY = 'tt.weaponManager.throwables.v1';
+
+/** Every throwable, in code order. */
+export const throwableList = (): ThrowableDefinition[] => THROWABLES.map((k) => THROWABLE_DEFS[k]);
+
+/** A throwable's explosion sound now: its own or none (NO_SOUND). */
+export const throwableSound = (t: ThrowableDefinition): string => t.explosionSound ?? NO_SOUND;
+
+/** A throwable's edit tidied (a sound back at the game's drops out); undefined when nothing is left. */
+export function tidyThrowable(t: ThrowableDefinition, e: ThrowableEdit): ThrowableEdit | undefined {
+  const out: ThrowableEdit = {};
+  const sounds = Object.fromEntries(Object.entries(e.sounds ?? {}).filter(([, v]) => v !== throwableSound(t)));
+  if (Object.keys(sounds).length && blowsUp(t.projectile)) out.sounds = sounds;
+  if (e.note?.trim()) out.note = e.note;
+  return isEmptyThrowableEdit(out) ? undefined : out;
+}
+
+export function loadThrowEdits(storage: Pick<Storage, 'getItem'> | null = safeStorage()): ThrowEdits {
+  try {
+    const v = JSON.parse(storage?.getItem(THROW_STORAGE_KEY) ?? 'null') as unknown;
+    if (!v || typeof v !== 'object' || Array.isArray(v)) return {};
+    return Object.fromEntries(Object.entries(v as ThrowEdits).filter(([k, e]) => THROWABLE_DEFS[k as ThrowableKind] && e && typeof e === 'object'));
+  } catch {
+    return {};
+  }
+}
+
+export function saveThrowEdits(edits: ThrowEdits, storage: Pick<Storage, 'setItem' | 'removeItem'> | null = safeStorage()): void {
+  try {
+    if (Object.keys(edits).length) storage?.setItem(THROW_STORAGE_KEY, JSON.stringify(edits));
+    else storage?.removeItem(THROW_STORAGE_KEY);
+  } catch {
+    // As saveEdits.
+  }
+}
 
 // ---------------------------------------------------------------- kept in this browser until sent
 

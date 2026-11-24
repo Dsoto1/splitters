@@ -283,6 +283,10 @@ export interface WeaponPresentation {
   sound?: string;
   /** Sound a reload starts with (default `reload.start`, every weapon's). */
   reloadSound?: string;
+  /** Its own blast sound, in place of the shared `explosion` (the debris still under it); absent: the shared one (the Weapon Manager picks it). */
+  explosionSound?: string;
+  /** Its own hit sound, layered on the struck surface's own; absent: the surface's only (the Weapon Manager picks it). */
+  impactSound?: string;
   /**
    * A pump or bolt worked after each shot (the pump shotgun's recorded pump): its sound and when it starts, in seconds
    * after the shot, inside the gun's own fire interval. Heard by everyone, from the gun.
@@ -551,6 +555,8 @@ export interface ThrowableDefinition {
   max: number;
   throwIntervalTicks: number;
   projectile: ProjectileSpec;
+  /** Its own blast sound, in place of the shared `explosion`; absent: the shared one (the Weapon Manager picks it). */
+  explosionSound?: string;
   /** Its model: in your hand while you line up a throw, in flight, and lying as a pickup (absent: drawn in code). */
   view?: ThrowableView;
 }

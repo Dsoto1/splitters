@@ -81,7 +81,7 @@ export function schemas(root = ROOT, families = []) {
   const hold = obj({ style: en(['pistol', 'long', 'melee']), grip: vec3, 'support?': vec3, 'shoulder?': vec3, 'rake?': num });
   const flash = obj({ effect: str, 'scale?': num });
   const view = obj({
-    model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'reloadSound?': str, 'cycle?': obj({ sound: str, at: num }), 'beam?': bool,
+    model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'reloadSound?': str, 'explosionSound?': str, 'impactSound?': str, 'cycle?': obj({ sound: str, at: num }), 'beam?': bool,
     'muzzle?': flash, 'muzzleAt?': vec3, 'altShot?': obj({ sound: str, 'rate?': num, flash, 'smoke?': num }),
     'held?': obj({ medium: str, high: str }),
     'optic?': obj({ mag: num, eye: vec3, radius: num, 'relief?': num, 'reticle?': en(['duplex', 'chevron']) }),
@@ -106,7 +106,7 @@ export function schemas(root = ROOT, families = []) {
   });
   const family = obj({ ballistic: nullable(obj(ballistic)), accuracy: obj(accuracy), kick: obj(kick), falloff, handling: obj(handling), 'akimbo?': partial(akimbo), head: num, legs: num, arms: num, 'notes?': notes });
   const throwableView = obj({ model: str, 'fallback?': str, 'cover?': str, 'fit?': num, 'handOnly?': bool, 'looks?': obj({ 'military?': str, 'scifi?': str }) });
-  const throwable = obj({ kind: str, code: int, displayName: str, max: int, throwIntervalTicks: int, projectile, 'view?': throwableView, 'notes?': notes });
+  const throwable = obj({ kind: str, code: int, displayName: str, max: int, throwIntervalTicks: int, projectile, 'explosionSound?': str, 'view?': throwableView, 'notes?': notes });
   return { weapon, family, throwable, projectile, akimbo: obj(akimbo) };
 }
 
@@ -295,6 +295,7 @@ export function build(content, root = ROOT) {
     if (!sounds.has(sound)) problems.push(`${file}: sound ${sound} is not in content/sounds.json`);
     if (def.view.altShot && !sounds.has(def.view.altShot.sound)) problems.push(`${file}: sound ${def.view.altShot.sound} is not in content/sounds.json`);
     if (def.view.reloadSound && !sounds.has(def.view.reloadSound)) problems.push(`${file}: sound ${def.view.reloadSound} is not in content/sounds.json`);
+    for (const k of ['explosionSound', 'impactSound']) if (def.view[k] && !sounds.has(def.view[k])) problems.push(`${file}: view.${k} ${def.view[k]} is not in content/sounds.json`);
     if (def.view.cycle && !sounds.has(def.view.cycle.sound)) problems.push(`${file}: sound ${def.view.cycle.sound} is not in content/sounds.json`);
     // The pump or bolt is done before the next shot can come (60 ticks a second).
     if (def.view.cycle && (def.view.cycle.at < 0 || def.view.cycle.at >= def.fireIntervalTicks / 60)) problems.push(`${file}: view.cycle.at starts the pump within the fire interval (0 to ${(def.fireIntervalTicks / 60).toFixed(2)} s)`);
@@ -340,6 +341,7 @@ export function build(content, root = ROOT) {
       const where = `content/throwables.json: throwables[${i}]`;
       problems.push(...check(t, S.throwable, where));
       for (const m of [t?.view?.model, t?.view?.fallback, t?.view?.cover, ...Object.values(t?.view?.looks ?? {})]) if (m && !modelExists(m)) problems.push(`${where}: model ${m} not found under packages/client/public/models`);
+      if (t?.explosionSound && !sounds.has(t.explosionSound)) problems.push(`${where}: explosionSound ${t.explosionSound} is not in content/sounds.json`);
       if (t && typeof t === 'object') throwables.push({ code: t.code, kind: t.kind, notes: t.notes, def: strip(t), where });
     }
     codes('throwables', throwables.map((t) => ({ id: t.kind, code: t.code, where: t.where })), 0);
