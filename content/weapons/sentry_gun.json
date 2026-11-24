@@ -21,7 +21,7 @@
     "viewOffset": [0, 0, 0],
     "tracer": "#ff6a5a",
     "hold": { "style": "long", "grip": [0, 0, 0] },
-    "sound": "fire.smg"
+    "sound": "fire.launcher"
   },
   "notes": {
     "design": "A gun on a turret or vehicle (slot 0: never carried or picked up). It runs on heat, so a gunner never reloads but has to pace the trigger.",

@@ -15,6 +15,13 @@ export interface SoundDef {
   jitter?: number;
   rate?: number;
   synth?: string;
+  /** The name the Weapon Manager's sound picker shows. */
+  label?: string;
+  /**
+   * A picker-only sound (the Weapon Manager's alternates and the old synth recipes): not loaded with the game's sounds,
+   * only when something wants it (a weapon that uses it, `want`; the picker's play button, `ensure`).
+   */
+  lazy?: boolean;
   variants: number | { pack: string; file: string }[];
 }
 
@@ -33,6 +40,20 @@ const MAX_VOICES_PER_SOUND = 6;
 const MAX_VOICES = 40;
 /** Seconds a voice cut to make room fades over. */
 const STEAL_FADE = 0.015;
+
+/** A world copy of a gun's report longer than this (s) is let ring less the farther it is (worldTail). */
+export const WORLD_TAIL_FROM = 0.6;
+/**
+ * How long (s) a world copy of a weapon report rings, given its length `seconds` and its distance against its range's
+ * cull distance (owner, 2026-11-23: the slow guns' reports ring 1-1.5 s now, docs/AUDIO.md "Slow guns ring out"). Your
+ * own shots and anything up to WORLD_TAIL_FROM ring whole; past it a far copy is let go sooner, `seconds × (1 - dist /
+ * cull)` but never under WORLD_TAIL_FROM, fading out over its last quarter. A far report's tail is quiet and muffled
+ * anyway, and in a 64-bot match on slow guns the long tails held the world's voices: the far ones now give them back.
+ */
+export function worldTail(seconds: number, dist: number, cull: number): number {
+  if (seconds <= WORLD_TAIL_FROM) return seconds;
+  return Math.min(seconds, Math.max(WORLD_TAIL_FROM, seconds * (1 - dist / cull)));
+}
 
 interface Voice {
   id: string;
@@ -118,6 +139,9 @@ export class AudioSystem {
   private buffers = new Map<string, AudioBuffer[]>();
   private voices: Voice[] = [];
   private loading: Promise<void> | null = null;
+  /** Lazy sounds asked for (`want`), loaded with the rest; and each lazy sound's own load once started. */
+  private readonly wanted = new Set<string>();
+  private readonly loadingOne = new Map<string, Promise<void>>();
   private listener: Vec3 = { x: 0, y: 0, z: 0 };
   private volume = 0.8;
   /** The music's and the announcer's own volumes (Options), under the master volume. */
@@ -229,9 +253,36 @@ export class AudioSystem {
     return this.buffers.get(id)?.[0]?.duration ?? null;
   }
 
-  /** Number of sounds in the manifest. */
+  /** Number of sounds this page loads: every sound but the lazy ones, plus the lazy ones wanted. */
   get total(): number {
-    return Object.keys(SOUNDS).length;
+    let n = 0;
+    for (const [id, def] of Object.entries(SOUNDS)) if (!def.lazy || this.wanted.has(id)) n++;
+    return n;
+  }
+
+  /**
+   * Lazy sounds something will play (the weapons' own picks: SessionAudio asks for every weapon's): loaded with the
+   * game's sounds, or now if those are already loading. Unknown ids and sounds already loaded are ignored.
+   */
+  want(ids: Iterable<string>): void {
+    for (const id of ids) {
+      if (!SOUNDS[id]?.lazy || this.wanted.has(id)) continue;
+      this.wanted.add(id);
+      if (this.loading) void this.ensure(id);
+    }
+  }
+
+  /** Whether a sound's buffers are in. */
+  isLoaded(id: string): boolean {
+    return this.buffers.has(id);
+  }
+
+  /** Load one sound now if it isn't (the Weapon Manager's play button): resolves when it has loaded or failed. */
+  ensure(id: string): Promise<void> {
+    const ctx = this.ctx;
+    const def = SOUNDS[id];
+    if (!ctx || !def) return Promise.resolve();
+    return this.ensureAt(ctx, id, def, 0);
   }
 
   get ready(): boolean {
@@ -247,44 +298,57 @@ export class AudioSystem {
     return this.volume;
   }
 
-  /** Load every sound in the manifest. Resolves when all have loaded or failed. */
+  /** Load every sound in the manifest but the lazy ones not wanted. Resolves when all have loaded or failed. */
   load(): Promise<void> {
     const ctx = this.ctx;
     if (!ctx) return Promise.resolve();
     this.loading ??= Promise.all(
-      Object.entries(SOUNDS).map(async ([id, def], n) => {
-        try {
-          let list: AudioBuffer[];
-          if (def.synth) {
-            // One sound per task, spread out: synthesising them all at once froze the page for most of a second
-            // right after the first click (which is usually opening a menu screen).
-            await new Promise((r) => setTimeout(r, n * 8));
-            const count = def.variants as number;
-            list = Array.from({ length: count }, (_, v) => {
-              const samples = synthesize(def.synth as SynthRecipe, v);
-              const buf = ctx.createBuffer(1, samples.length, SYNTH_RATE);
-              buf.copyToChannel(samples, 0);
-              return buf;
-            });
-          } else {
-            const files = def.variants as { file: string }[];
-            list = await Promise.all(
-              files.map(async (_, i) => {
-                const res = await fetch(versioned(`${SOUND_BASE}${id}_${i}.ogg`));
-                if (!res.ok) throw new Error(`${res.status}`);
-                return ctx.decodeAudioData(await res.arrayBuffer());
-              }),
-            );
-          }
-          this.buffers.set(id, list);
-          this.stats.loaded++;
-        } catch (err) {
-          this.stats.failed++;
-          console.warn(`sound ${id} failed to load`, err);
-        }
-      }),
+      Object.entries(SOUNDS)
+        .filter(([id, def]) => !def.lazy || this.wanted.has(id))
+        .map(([id, def], n) => this.ensureAt(ctx, id, def, n)),
     ).then(() => undefined);
     return this.loading;
+  }
+
+  private ensureAt(ctx: AudioContext, id: string, def: SoundDef, n: number): Promise<void> {
+    let p = this.loadingOne.get(id);
+    if (!p) {
+      p = this.loadOne(ctx, id, def, n);
+      this.loadingOne.set(id, p);
+    }
+    return p;
+  }
+
+  private async loadOne(ctx: AudioContext, id: string, def: SoundDef, n: number): Promise<void> {
+    try {
+      let list: AudioBuffer[];
+      if (def.synth) {
+        // One sound per task, spread out: synthesising them all at once froze the page for most of a second
+        // right after the first click (which is usually opening a menu screen).
+        await new Promise((r) => setTimeout(r, n * 8));
+        const count = def.variants as number;
+        list = Array.from({ length: count }, (_, v) => {
+          const samples = synthesize(def.synth as SynthRecipe, v);
+          const buf = ctx.createBuffer(1, samples.length, SYNTH_RATE);
+          buf.copyToChannel(samples, 0);
+          return buf;
+        });
+      } else {
+        const files = def.variants as { file: string }[];
+        list = await Promise.all(
+          files.map(async (_, i) => {
+            const res = await fetch(versioned(`${SOUND_BASE}${id}_${i}.ogg`));
+            if (!res.ok) throw new Error(`${res.status}`);
+            return ctx.decodeAudioData(await res.arrayBuffer());
+          }),
+        );
+      }
+      this.buffers.set(id, list);
+      this.stats.loaded++;
+    } catch (err) {
+      this.stats.failed++;
+      console.warn(`sound ${id} failed to load`, err);
+    }
   }
 
   /** Move the listener (call once per frame with the camera). */
@@ -329,7 +393,8 @@ export class AudioSystem {
     }
 
     const src = ctx.createBufferSource();
-    src.buffer = list[Math.floor(Math.random() * list.length)]!;
+    const buffer = list[Math.floor(Math.random() * list.length)]!;
+    src.buffer = buffer;
     src.playbackRate.value = (def.rate ?? 1) * (opts.rate ?? 1) * (1 + (Math.random() * 2 - 1) * (def.jitter ?? 0));
     const gain = ctx.createGain();
     gain.gain.value = (def.gain ?? 1) * (opts.gain ?? 1);
@@ -381,6 +446,18 @@ export class AudioSystem {
       tail.disconnect();
     };
     src.start(when);
+    // A far world copy of a long gun report rings shorter (worldTail): faded over its last quarter, then stopped,
+    // which frees its voice.
+    if (at && id.startsWith('fire.')) {
+      const full = buffer.duration / src.playbackRate.value;
+      const keep = worldTail(full, dist, range.cull);
+      if (keep < full) {
+        const g = gain.gain.value;
+        gain.gain.setValueAtTime(g, when + keep * 0.75);
+        gain.gain.linearRampToValueAtTime(0, when + keep);
+        src.stop(when + keep);
+      }
+    }
     this.stats.played++;
   }
 

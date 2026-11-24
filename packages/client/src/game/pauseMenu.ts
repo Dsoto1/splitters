@@ -3,12 +3,13 @@
  * a dialog or picker over them at most. Esc / gamepad B / the Back button
  * (top left) go back one level per press (dialog → tab → Match), then resume;
  * from the Host tab (it has Resume in its foot, beside Apply) they resume.
- * Q / E and LB / RB switch tabs; ↑ / ↓ and the d-pad move the focus, Enter /
+ * Q / E (the menus' tab keys: Options → Controls) and LB / RB switch tabs; ↑ / ↓ and the d-pad move the focus, Enter /
  * A presses. The footer's key hints are buttons too (Back, Tabs, Fullscreen),
  * with the controller's glyphs when a controller was used last.
  */
 import { fullscreenSupported, isFullscreen, toggleFullscreen } from '../fullscreen.ts';
 import { PAD, glyphs } from '../inputMode.ts';
+import { isMenuKey, keyFor } from './keyBindings.ts';
 
 export type PauseTab = 'match' | 'host' | 'settings';
 
@@ -71,7 +72,8 @@ export class PauseMenu {
     };
     bar.replaceChildren();
     this.backLabels.push(hint('pause-hint-back', glyphs('Esc', 'B', 'b'), 'Back', 'Back one level (Esc, controller B)', () => this.back()));
-    hint('pause-hint-tabs', [...glyphs('Q', 'LB'), ...glyphs('E', 'RB')], 'Tabs', 'Next tab (Q / E, controller LB / RB)', () => this.cycle(1));
+    const [prev, next] = [keyFor('menuPrev'), keyFor('menuNext')];
+    hint('pause-hint-tabs', [...glyphs(prev, 'LB'), ...glyphs(next, 'RB')], 'Tabs', `Next tab (${prev} / ${next}, controller LB / RB)`, () => this.cycle(1));
     if (fullscreenSupported()) this.fullscreenLabel = hint('pause-hint-fullscreen', glyphs('F11'), 'Fullscreen', 'Fullscreen on or off (F11)', () => void toggleFullscreen());
   }
 
@@ -161,8 +163,9 @@ export class PauseMenu {
     const t = e.target as HTMLElement | null;
     const typing = !!t && (t.tagName === 'INPUT' && (t as HTMLInputElement).type !== 'checkbox' && (t as HTMLInputElement).type !== 'range' ? true : t.tagName === 'SELECT');
     if (typing) return false;
-    if (e.code === 'KeyQ' || e.code === 'KeyE') {
-      this.cycle(e.code === 'KeyE' ? 1 : -1);
+    // The menus' tab keys (Q / E; Options → Controls → Menus).
+    if (isMenuKey('menuPrev', e.code) || isMenuKey('menuNext', e.code)) {
+      this.cycle(isMenuKey('menuNext', e.code) ? 1 : -1);
       return true;
     }
     if ((e.code === 'ArrowDown' || e.code === 'ArrowUp') && (t as HTMLInputElement | null)?.type !== 'range') {

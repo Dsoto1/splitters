@@ -235,9 +235,9 @@ export const isStaticCaster = (m: AbstractMesh): boolean => {
  * stands for every copy) and no thin instances (destructibles change theirs without moving), unless the mesh says when
  * its copies change (`thinVersion`, counted up each time: the prop batches of breakable props, propBatches.ts).
  */
-function stillable(m: AbstractMesh): boolean {
+export function stillable(m: AbstractMesh): boolean {
   const mesh = m as AbstractMesh & { hasInstances?: boolean; morphTargetManager?: unknown };
-  return !m.skeleton && !mesh.morphTargetManager && !m.isAnInstance && !mesh.hasInstances && (!m.hasThinInstances || thinVersion(m) !== null) && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster;
+  return !m.skeleton && !mesh.morphTargetManager && !m.isAnInstance && (!mesh.hasInstances || instancesVersion(m) !== null) && (!m.hasThinInstances || thinVersion(m) !== null) && !(m.metadata as { smallCaster?: boolean } | null)?.smallCaster;
 }
 
 /** A thin-instanced caster's count of changes to its copies (null: it doesn't say). */
@@ -245,6 +245,18 @@ const thinVersion = (m: AbstractMesh): number | null => {
   const v = (m.metadata as { thinVersion?: number } | null)?.thinVersion;
   return typeof v === 'number' ? v : null;
 };
+
+/**
+ * An instance source that says where its instances are (`instancesVersion`, a hash of their places and whether they show:
+ * the doors' shared parts, scenarioVisuals.ts instanceRigidParts): cached while none of them moves (null: it doesn't say).
+ */
+const instancesVersion = (m: AbstractMesh): number | null => {
+  const f = (m.metadata as { instancesVersion?: () => number } | null)?.instancesVersion;
+  return typeof f === 'function' ? f() : null;
+};
+
+/** The version watchStill compares: a thin-instanced batch's count, or an instance source's hash. */
+const copiesVersion = (m: AbstractMesh): number | null => thinVersion(m) ?? instancesVersion(m);
 
 export class ShadowCache {
   /** Per layer: draw the static casters this frame. */
@@ -296,11 +308,16 @@ export class ShadowCache {
    */
   isStatic(m: AbstractMesh): boolean {
     if (isStaticCaster(m)) return true;
+    // An instance is drawn with its source: cached when its source is (one whose instances say where they are).
+    if (m.isAnInstance) {
+      const src = (m as AbstractMesh & { sourceMesh?: AbstractMesh }).sourceMesh;
+      return src && instancesVersion(src) !== null ? this.isStatic(src) : false;
+    }
     const r = this.still.get(m);
     if (r) return r.cached;
     if (stillable(m)) {
       const w = m.getWorldMatrix();
-      this.still.set(m, { flag: w.updateFlag, since: this.frame, cached: false, at: Float32Array.from(w.m), version: thinVersion(m) });
+      this.still.set(m, { flag: w.updateFlag, since: this.frame, cached: false, at: Float32Array.from(w.m), version: copiesVersion(m) });
     }
     return false;
   }
@@ -318,7 +335,7 @@ export class ShadowCache {
       // Worked out again isn't moved: a door whose logic sets its turn every frame keeps the same matrix.
       if (flag !== r.flag && sameMatrix(r.at, w.m)) r.flag = flag;
       // A batch whose copies changed (a prop broken, back at a new round, or at another level of detail) moved too.
-      const version = thinVersion(m);
+      const version = copiesVersion(m);
       if (flag !== r.flag || version !== r.version || !m.isEnabled() || !m.isVisible) {
         r.flag = flag;
         r.version = version;

@@ -31,6 +31,8 @@ export interface FrameSplit {
   charAnim: number;
   /** Of `characters`: skinning (bone matrices). */
   charSkin: number;
+  /** Of `charAnim`: the hands put on the guns (the gun placed, arm IK, fingers closed). */
+  charHands: number;
   effects: number;
   ragdolls: number;
   flames: number;
@@ -47,7 +49,7 @@ export interface FrameSplit {
   renderPost: number;
 }
 
-export const SPLIT_KEYS: (keyof FrameSplit)[] = ['characters', 'charAnim', 'charSkin', 'effects', 'ragdolls', 'flames', 'hud', 'net', 'game', 'renderScene', 'renderCull', 'renderShadow', 'renderPost'];
+export const SPLIT_KEYS: (keyof FrameSplit)[] = ['characters', 'charAnim', 'charSkin', 'charHands', 'effects', 'ragdolls', 'flames', 'hud', 'net', 'game', 'renderScene', 'renderCull', 'renderShadow', 'renderPost'];
 
 export function frameSplit(f: FrameSample): FrameSplit {
   const y = f.sys ?? [];
@@ -58,6 +60,7 @@ export function frameSplit(f: FrameSample): FrameSplit {
     characters: at(SYS.avatars) + inRender,
     charAnim: at(SYS.anim),
     charSkin: at(SYS.skin),
+    charHands: at(SYS.hands),
     effects: at(SYS.fx),
     ragdolls: at(SYS.ragdoll),
     flames: at(SYS.flames),
@@ -124,6 +127,7 @@ const SPLIT_LABEL: Record<keyof FrameSplit, string> = {
   characters: 'chars',
   charAnim: ' clips',
   charSkin: ' skin',
+  charHands: ' hands',
   effects: 'effects',
   ragdolls: 'ragdolls',
   flames: 'flames',
@@ -207,7 +211,7 @@ export class PerfOverlay {
       hitches: `${hitches} over ${HITCH_MS} ms in the last minute`,
       'frame split': `sim ${onWorker(frames) ? 'on a worker' : sim.toFixed(1)} · net ${net.toFixed(1)} · game ${game.toFixed(1)} · render ${render.toFixed(1)} ms`,
       render: `scene ${sp('renderScene')} (culling ${sp('renderCull')}) · shadows ${sp('renderShadow')} · post ${sp('renderPost')} ms`,
-      systems: `characters ${sp('characters')} (clips ${sp('charAnim')}, skinning ${sp('charSkin')}) · effects ${sp('effects')} · ragdolls ${sp('ragdolls')} · flames ${sp('flames')} · hud ${sp('hud')} · other game ${sp('game')} ms`,
+      systems: `characters ${sp('characters')} (clips ${sp('charAnim')}, of which hands ${sp('charHands')}, skinning ${sp('charSkin')}) · effects ${sp('effects')} · ragdolls ${sp('ragdolls')} · flames ${sp('flames')} · hud ${sp('hud')} · other game ${sp('game')} ms`,
       drawn: `${c('draws')} draws · ${c('meshes')} meshes · ${c('casters')} shadow casters`,
       '': `${c('characters')} characters (${cn('animated')} animated, ${cn('skinned')} skinned a frame) · ${c('effects')} effects · ${cn('lasting')} lasting · ${cn('ragdolls')} ragdolls awake`,
       memory: this.memory(),

@@ -40,7 +40,7 @@
       "support": [0, -0.054, 0.328],
       "shoulder": [0, 0.069, -0.455]
     },
-    "sound": "fire.flame"
+    "sound": "fire.flame.c"
   },
   "notes": { "group": "The extended arsenal: every one fires differently. 9: energy and chemical." }
 }

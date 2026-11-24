@@ -13,7 +13,7 @@ import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { Vector4 } from '@babylonjs/core/Maths/math.vector';
 import type { WeaponDefinition } from '@tiletrigger/shared';
-import { MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, RING_TICK, builtHousing, glassCentre, glassHalf, hasGlass, opticOf, ringWidth, type CarriedOptic } from './optics.ts';
+import { MARK_COLOUR, MARK_GAIN, MARK_GAIN_CALM, RING_TICK, builtHousing, glassAt, glassCentre, glassHalf, hasGlass, opticOf, ringWidth, type CarriedOptic } from './optics.ts';
 import { reduceFlashing } from './reduceFlashing.ts';
 
 /**
@@ -146,8 +146,14 @@ function tubeParts(scene: Scene, o: CarriedOptic): Mesh[] {
   const r = g.half[1];
   const out = r + 0.0025;
   const parts: Mesh[] = [];
-  parts.push(box(scene, 0.03, 0.006, g.length * 0.86, 0, 0, 0));
-  parts.push(box(scene, 0.018, g.rise - out - 0.004, g.length * 0.6, 0, 0.005, 0));
+  // A low clamp on the gun's top and a tapered riser under the tube (owner, 2026-11-23, "that scope tho": a square
+  // block on a square slab read as crude once the sight picture drew it larger).
+  parts.push(box(scene, 0.024, 0.0045, g.length * 0.7, 0, 0, 0));
+  const lift = g.rise - out + 0.002 - 0.004;
+  const riser = CreateCylinder('opticPart', { height: lift, diameterTop: 0.011, diameterBottom: 0.018, tessellation: 16 }, scene);
+  riser.scaling.z = (g.length * 0.5) / 0.018;
+  riser.position.set(0, 0.004 + lift / 2, 0);
+  parts.push(riser);
   const tube = CreateCylinder('opticPart', { height: g.length, diameter: out * 2, tessellation: 28, cap: Mesh.NO_CAP, sideOrientation: Mesh.DOUBLESIDE }, scene);
   tube.rotation.x = Math.PI / 2;
   tube.position.set(0, g.rise, 0);
@@ -268,7 +274,7 @@ export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinit
     glass.material = glassMaterial(scene, optic);
     // On the gun itself (not under the housing's scale): the window's middle, a little ahead of a built housing's.
     glass.parent = gun;
-    glass.position.set(c[0], c[1], c[2] + (mount ? optic.kind.glass.length * mount.scale * (round ? 0.3 : 0.22) : 0));
+    glass.position.set(...glassAt(optic));
     glass.renderingGroupId = 1;
     glass.isPickable = false;
     glass.metadata = { effect: true };

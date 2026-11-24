@@ -28,7 +28,8 @@
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#ffb38a",
     "hold": { "style": "long", "grip": [0, -0.06, -0.165], "support": [0, -0.04, 0.066], "shoulder": [0, 0, -0.275] },
-    "sound": "fire.shotgun"
+    "sound": "fire.shotgun.b",
+    "reloadSound": "reload.end.b"
   },
   "notes": {
     "range": "Best within 8 m: full damage, 1 body blast. Down to 25 % (3 blasts) by 28 m; reaches 25 m. Body shots count every pellet on the body (hitscan pellets: by distance).",

@@ -44,6 +44,8 @@
     "viewOffset": [0.2, -0.2, 0.55],
     "tracer": "#ffd36b",
     "hold": { "style": "long", "grip": [0, -0.012, -0.175], "support": [0, 0.048, 0.13], "shoulder": [0, 0.02, -0.43] },
+    "sound": "fire.rifle.ak74",
+    "reloadSound": "reload.ak",
     "muzzleAt": [0, 0.068, 0.44]
   },
   "notes": {

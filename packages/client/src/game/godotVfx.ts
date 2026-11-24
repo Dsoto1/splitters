@@ -12,6 +12,7 @@ import { Matrix, Quaternion, Vector2, Vector3, Vector4 } from '@babylonjs/core/M
 import { Color3 } from '@babylonjs/core/Maths/math.color';
 import { versioned } from '../assetUrl.ts';
 import { sampleCurve } from './muzzleFlash.ts';
+import { perfOn } from './perfSwitches.ts';
 
 /**
  * Plays Binbun's hit and explosion effects (CC0 Godot 4 packs; the full editions, content/vfx.json). The packs
@@ -2135,6 +2136,21 @@ export class GodotVfx {
     this.caps = QUALITY[q] ?? QUALITY.medium;
   }
 
+  /** Materials that have the sun as `litAt` holds it (`fxlight`). */
+  private lit = new WeakSet<ShaderMaterial>();
+  private litAt: { dir: Vector3; color: Color3; ambient: Color3 } | null = null;
+
+  /** Whether the sun is as the materials in `lit` have it (false: it changed, and `lit` starts again; or `fxlight` off). */
+  private litNow(): boolean {
+    if (!perfOn('fxlight')) return false;
+    const a = this.litAt;
+    const s = this.sun;
+    if (a && a.dir.equals(s.dir) && a.color.equals(s.color) && a.ambient.equals(s.ambient)) return true;
+    this.litAt = { dir: s.dir.clone(), color: s.color.clone(), ambient: s.ambient.clone() };
+    this.lit = new WeakSet();
+    return true;
+  }
+
   /** Light the lit effects (smoke) like the scene: the sun's direction and colour, and the sky's. */
   setLight(dir: Vector3, sunColor: Color3, ambient: Color3): void {
     this.sun = { dir: dir.normalize(), color: sunColor, ambient };
@@ -2339,11 +2355,18 @@ export class GodotVfx {
     if (!this.playing.length) return;
     const wall = Math.min(0.05, dtMs / 1000);
     const now = performance.now() / 1000;
+    // The sun's direction and colours are set on a material only when they changed since it last had them (`fxlight`:
+    // each set is a lookup through the material's uniform list, five a material a frame for every effect material made;
+    // docs/PERF_DRAWS_2026-11-23.md). The time and the eye change every frame.
+    const lit = this.litNow();
     for (const m of this.materials.values()) {
       m.setFloat('u_time', this.still.has(m) ? 0 : (now % 1000) * (this.slowed.get(m) ?? 1));
-      m.setVector3('u_sunDir', this.sun.dir);
-      m.setColor3('u_sunColor', this.sun.color);
-      m.setColor3('u_ambient', this.sun.ambient);
+      if (!lit || !this.lit.has(m)) {
+        m.setVector3('u_sunDir', this.sun.dir);
+        m.setColor3('u_sunColor', this.sun.color);
+        m.setColor3('u_ambient', this.sun.ambient);
+        if (lit) this.lit.add(m);
+      }
       m.setVector3('eye', this.scene.activeCamera?.globalPosition ?? Vector3.Zero());
     }
     const cam = this.scene.activeCamera;

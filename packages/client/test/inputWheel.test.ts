@@ -13,7 +13,6 @@ const key = (type: 'keydown' | 'keyup', code: string) => window.dispatchEvent(Ob
 async function make() {
   const { InputState } = await import('../src/game/input.ts');
   const input = new InputState(new EventTarget() as unknown as HTMLCanvasElement);
-  input.wheelKey = 'KeyQ';
   input.setTouchEngaged(true);
   return input;
 }
@@ -46,24 +45,84 @@ describe('weapon wheel input', () => {
   afterEach(() => vi.restoreAllMocks());
   const clock = () => vi.spyOn(performance, 'now').mockImplementation(() => now);
 
-  it('a tap of Q is still the quick switch; holding it opens the wheel', async () => {
+  it('hold Tab opens the wheel; a tap of Tab shows the scoreboard (another hides it); X goes back to the last weapon', async () => {
     clock();
     const input = await make();
     const quick = vi.fn();
-    input.onToggle.set('KeyQ', quick);
-    key('keydown', 'KeyQ');
+    input.onAction.set('lastWeapon', quick);
+    key('keydown', 'Tab');
     now += 60;
     input.frame(1 / 60);
-    key('keyup', 'KeyQ');
-    expect(quick).toHaveBeenCalledTimes(1);
+    key('keyup', 'Tab');
     expect(input.wheelOpen).toBe(false);
-    key('keydown', 'KeyQ');
+    expect(input.scoreboardShown).toBe(true);
+    key('keydown', 'Tab');
     now += 250;
     input.frame(1 / 60);
     expect(input.wheelOpen).toBe(true);
-    key('keyup', 'KeyQ');
-    expect(quick).toHaveBeenCalledTimes(1);
+    key('keyup', 'Tab');
     expect(input.takeWheelClose()).toBe(true);
+    // The hold didn't touch the board; a second tap hides it.
+    expect(input.scoreboardShown).toBe(true);
+    key('keydown', 'Tab');
+    now += 50;
+    key('keyup', 'Tab');
+    expect(input.scoreboardShown).toBe(false);
+    // While the wheel can't open (dead, in a vehicle) Tab held shows the board, and a long hold isn't a tap.
+    input.canOpenWheel = false;
+    key('keydown', 'Tab');
+    expect(input.scoreboardShown).toBe(true);
+    now += 900;
+    key('keyup', 'Tab');
+    expect(input.scoreboardShown).toBe(false);
+    input.canOpenWheel = true;
+    key('keydown', 'KeyX');
+    key('keyup', 'KeyX');
+    expect(quick).toHaveBeenCalledTimes(1);
+    input.dispose();
+  });
+
+  it('Q and E lean, held; F uses; in a vehicle Space and C are the vehicle\'s keys', async () => {
+    const { BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, BUTTON_USE, BUTTON_USE_HOLD } = await import('@tiletrigger/shared');
+    const input = await make();
+    key('keydown', 'KeyQ');
+    expect(input.sample().buttons & (BUTTON_LEAN_LEFT | BUTTON_LEAN_RIGHT)).toBe(BUTTON_LEAN_LEFT);
+    key('keydown', 'KeyE');
+    expect(input.sample().buttons & (BUTTON_LEAN_LEFT | BUTTON_LEAN_RIGHT)).toBe(BUTTON_LEAN_LEFT | BUTTON_LEAN_RIGHT);
+    key('keyup', 'KeyQ');
+    key('keyup', 'KeyE');
+    expect(input.sample().buttons & (BUTTON_LEAN_LEFT | BUTTON_LEAN_RIGHT)).toBe(0);
+    key('keydown', 'KeyF');
+    expect(input.sample().buttons & (BUTTON_USE | BUTTON_USE_HOLD)).toBe(BUTTON_USE | BUTTON_USE_HOLD);
+    key('keyup', 'KeyF');
+    expect(input.sample().buttons & BUTTON_FIRE).toBe(0);
+    // Seated: C is held down (not the crouch toggle), Space held climbs or brakes.
+    input.inVehicle = true;
+    key('keydown', 'KeyC');
+    expect(input.sample().buttons & BUTTON_CROUCH).toBe(BUTTON_CROUCH);
+    key('keyup', 'KeyC');
+    expect(input.sample().buttons & BUTTON_CROUCH).toBe(0);
+    key('keydown', 'Space');
+    input.sample();
+    expect(input.sample().buttons & BUTTON_JUMP).toBe(BUTTON_JUMP);
+    key('keyup', 'Space');
+    expect(input.sample().buttons & BUTTON_JUMP).toBe(0);
+    input.inVehicle = false;
+    input.dispose();
+  });
+
+  it('a rebind takes effect at once (Options → Controls while a match runs)', async () => {
+    const { BUTTON_LEAN_LEFT } = await import('@tiletrigger/shared');
+    const { defaultBindings, setKey } = await import('../src/game/keyBindings.ts');
+    const input = await make();
+    input.setBindings(setKey(defaultBindings(), 'leanLeft', 0, 'KeyP'));
+    key('keydown', 'KeyQ');
+    expect(input.sample().buttons & BUTTON_LEAN_LEFT).toBe(0);
+    key('keyup', 'KeyQ');
+    key('keydown', 'KeyP');
+    expect(input.sample().buttons & BUTTON_LEAN_LEFT).toBe(BUTTON_LEAN_LEFT);
+    key('keyup', 'KeyP');
+    input.setBindings(defaultBindings());
     input.dispose();
   });
 
@@ -71,7 +130,7 @@ describe('weapon wheel input', () => {
     clock();
     const input = await make();
     input.openWheel('touch');
-    key('keydown', 'KeyF');
+    key('keydown', 'AltLeft');
     expect(input.sample().buttons & BUTTON_FIRE).toBe(0);
     const yaw = input.yaw;
     input.addTouchLook(200, 0);
@@ -80,7 +139,7 @@ describe('weapon wheel input', () => {
     input.closeWheel(false);
     expect(input.takeWheelClose()).toBe(false);
     expect(input.sample().buttons & BUTTON_FIRE).toBe(BUTTON_FIRE);
-    key('keyup', 'KeyF');
+    key('keyup', 'AltLeft');
     input.dispose();
   });
 
@@ -94,17 +153,17 @@ describe('weapon wheel input', () => {
 });
 
 describe('touch input', () => {
-  it('feeds the same path as the keyboard: the pad moves, a drag looks, virtual keys jump and crouch', async () => {
+  it('feeds the same path as the keyboard: the pad moves, a drag looks, virtual actions jump and crouch', async () => {
     const input = await make();
     input.setTouchMove(0.5, 1);
-    input.virtualKey('Space', true);
-    input.virtualKey('Space', false);
+    input.virtualAction('jump', true);
+    input.virtualAction('jump', false);
     const s = input.sample();
     expect(s.forward).toBe(1);
     expect(s.right).toBe(0.5);
     expect(s.buttons & BUTTON_JUMP).toBe(BUTTON_JUMP);
-    input.virtualKey('KeyC', true);
-    input.virtualKey('KeyC', false);
+    input.virtualAction('crouch', true);
+    input.virtualAction('crouch', false);
     expect(input.sample().buttons & BUTTON_CROUCH).toBe(BUTTON_CROUCH);
     const yaw = input.yaw;
     input.addTouchLook(100, 0);
@@ -141,12 +200,12 @@ describe('touch pad tap read late as a hold', () => {
   it('stands back up on the next tick and jumps on the one after (a jump pressed while crouched only stands you up)', async () => {
     const input = await make();
     // The hold timer ran before the lift was handled: crouched…
-    input.virtualKey('KeyC', true);
-    input.virtualKey('KeyC', false);
+    input.virtualAction('crouch', true);
+    input.virtualAction('crouch', false);
     expect(input.sample().buttons & BUTTON_CROUCH).toBe(BUTTON_CROUCH);
     // …then the lift: a tap after all. Uncrouch, and the jump waits a tick.
-    input.virtualKey('KeyC', true);
-    input.virtualKey('KeyC', false);
+    input.virtualAction('crouch', true);
+    input.virtualAction('crouch', false);
     input.jumpAfterStanding();
     expect(input.sample().buttons & (BUTTON_CROUCH | BUTTON_JUMP)).toBe(0);
     expect(input.sample().buttons & BUTTON_JUMP).toBe(BUTTON_JUMP);
@@ -211,8 +270,8 @@ describe('Fireteams order wheel input', () => {
     input.ordersOn = true;
     expect(input.openWheel('touch', 'order')).toBe(true);
     expect(input.openWheel('key')).toBe(false);
-    key('keydown', 'KeyQ');
-    key('keyup', 'KeyQ');
+    key('keydown', 'Tab');
+    key('keyup', 'Tab');
     expect(input.wheelOpen).toBe(true);
     input.closeWheel(false);
     expect(input.takeOrderClose()).toBe(false);

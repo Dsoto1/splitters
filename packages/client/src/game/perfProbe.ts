@@ -29,6 +29,8 @@ export const SYS = {
   post: 8,
   /** The active-mesh evaluation (culling, LOD choice, world matrices), inside render, without skinning. */
   cull: 9,
+  /** Of `anim`: the hands put on the guns after the clips (placing the gun, arm IK, closing the fingers; your own too). */
+  hands: 10,
 } as const;
 export type SysName = keyof typeof SYS;
 export const SYS_NAMES = Object.keys(SYS) as SysName[];
@@ -44,6 +46,7 @@ export const SYS_LABELS: Record<SysName, string> = {
   shadow: 'tt:render: shadow + depth maps',
   post: 'tt:render: post-processing',
   cull: 'tt:render: mesh evaluation',
+  hands: 'tt:characters (hands on guns)',
 };
 
 /** Per-frame counts that don't depend on timing (docs/PERF_TOOLS.md). */
