@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "frost_basin",
     "name": "Frost Basin",
@@ -19,12 +19,30 @@
     ],
     "release": {
       "mapId": "m_wm4ypl2enajhiaqu",
-      "versionId": "v_kuxoctiivisritjb",
-      "revision": 8,
-      "contentHash": "sha256:16e6bd97dd117607db3b2c9994e905a801afe7ab8006f18760226556e29ece14",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T20:35:54.986Z"
-    }
+      "versionId": "v_ohpgzxy5z3ujdzfc",
+      "revision": 10,
+      "contentHash": "sha256:9be461821707930a80e773e0e60c129fe3c38e8a29b44dec1da04fccb1dff78e",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:08:24.876Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "arctic"
+      },
+      {
+        "category": "environmental",
+        "tag": "mountain"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -2734,8 +2752,8 @@
       "yaw": 0.428,
       "scale": 1.459,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_225",
@@ -2749,8 +2767,8 @@
       "yaw": 4.484,
       "scale": 1.444,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_226",
@@ -2764,8 +2782,8 @@
       "yaw": 4.959,
       "scale": 0.73,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_227",
@@ -2779,8 +2797,8 @@
       "yaw": 1.364,
       "scale": 1.544,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_228",
@@ -2794,8 +2812,8 @@
       "yaw": 5.973,
       "scale": 0.779,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_229",
@@ -2809,8 +2827,8 @@
       "yaw": 2.997,
       "scale": 0.968,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_230",
@@ -2824,8 +2842,8 @@
       "yaw": 4.772,
       "scale": 1.401,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_231",
@@ -2839,8 +2857,8 @@
       "yaw": 2.743,
       "scale": 1.463,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_232",
@@ -2854,8 +2872,8 @@
       "yaw": 3.431,
       "scale": 1.025,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_233",
@@ -2869,8 +2887,8 @@
       "yaw": 2.393,
       "scale": 1.825,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_234",
@@ -2884,8 +2902,8 @@
       "yaw": 2.495,
       "scale": 0.713,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_235",
@@ -2899,8 +2917,8 @@
       "yaw": 0.354,
       "scale": 1.017,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_236",
@@ -2914,8 +2932,8 @@
       "yaw": 2.857,
       "scale": 1.45,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_237",
@@ -2929,8 +2947,8 @@
       "yaw": 2.206,
       "scale": 1.45,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_238",
@@ -2944,8 +2962,8 @@
       "yaw": 2.106,
       "scale": 0.853,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_239",
@@ -2959,8 +2977,8 @@
       "yaw": 0.345,
       "scale": 1.644,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_240",
@@ -2974,8 +2992,8 @@
       "yaw": 4.115,
       "scale": 0.984,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_241",
@@ -2989,8 +3007,8 @@
       "yaw": 1.103,
       "scale": 0.771,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_242",
@@ -3004,8 +3022,8 @@
       "yaw": 2.871,
       "scale": 0.918,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_243",
@@ -3019,8 +3037,8 @@
       "yaw": 0.626,
       "scale": 0.886,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_244",
@@ -3034,8 +3052,8 @@
       "yaw": 1.201,
       "scale": 0.976,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_245",
@@ -3049,8 +3067,8 @@
       "yaw": 4.286,
       "scale": 0.91,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_246",
@@ -3064,8 +3082,8 @@
       "yaw": 1.605,
       "scale": 0.812,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_247",
@@ -3079,8 +3097,8 @@
       "yaw": 0.332,
       "scale": 0.959,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_248",
@@ -3094,8 +3112,8 @@
       "yaw": 1.962,
       "scale": 1.041,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_249",

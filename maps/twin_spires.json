@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "twin_spires",
     "name": "Twin Spires",
@@ -33,12 +33,26 @@
     },
     "release": {
       "mapId": "m_i2jy7vkt55pclgvj",
-      "versionId": "v_v2r77fwfyixvdd3l",
-      "revision": 3,
-      "contentHash": "sha256:34a6a7ebeaae124596c4fe70a284027a3a85dca85c71442de2e0a64135bd2c3a",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T09:46:11.153Z"
-    }
+      "versionId": "v_svgfhm5ahr7s4lov",
+      "revision": 5,
+      "contentHash": "sha256:458dc10eadc128c192c9f4d1b8b4efee74df0cb12043c0a4b97f464ed462ec3c",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:17:52.953Z"
+    },
+    "categories": [
+      {
+        "category": "environmental",
+        "tag": "space"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      },
+      {
+        "category": "anomalous",
+        "tag": "impossible"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

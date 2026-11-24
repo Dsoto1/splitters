@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "jungle_steps",
     "name": "Cradle of Idols",
@@ -19,12 +19,26 @@
     ],
     "release": {
       "mapId": "m_avupmkddw4sadpi2",
-      "versionId": "v_ctgmoenrvohzcqxq",
-      "revision": 5,
-      "contentHash": "sha256:a27c442a8ff6b0e5f3b6d1cdf60a467a1a5c97eff7e99145ba23f530b8da816d",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:35:29.128Z"
-    }
+      "versionId": "v_csvnqxbmigbcatlt",
+      "revision": 7,
+      "contentHash": "sha256:bca784fa3620ba5f9404d2c455b90d30a72e309afb73d7df5d9d6364358ebfae",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:11:20.896Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "ancient"
+      },
+      {
+        "category": "environmental",
+        "tag": "forest"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

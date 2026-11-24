@@ -1,4 +1,6 @@
 import {
+  MAP_CATEGORIES,
+  normalizeMapCategories,
   MAP_TIERS,
   MAP_TIER_LABELS,
   mapGates,
@@ -469,6 +471,55 @@ export class MapProperties {
   }
 
   /**
+   * The map's categories (map format v50; map/categories.ts): a tick per sub-tag under each of the five categories a
+   * file names (Custom is worked out, never ticked). Match Setup's category tabs filter by them. One undo step a tick.
+   */
+  private categoriesSection(): HTMLElement {
+    const doc = this.app.doc;
+    const box = document.createElement('div');
+    box.id = 'ed-prop-categories';
+    box.className = 'ed-cats';
+    const now = normalizeMapCategories(doc.metadata.categories);
+    const has = (c: string, t: string) => now.some((p) => p.category === c && p.tag === t);
+    const head = document.createElement('div');
+    head.className = 'ed-cats-head';
+    head.textContent = 'Categories';
+    head.title = "Where Match Setup lists the map: tick every tag that fits (several categories and tags are fine). Custom (players' own and community maps) is worked out, not ticked.";
+    box.append(head);
+    for (const c of MAP_CATEGORIES) {
+      if (c.id === 'custom') continue;
+      const cat = c.id;
+      const group = document.createElement('div');
+      group.className = 'ed-layers ed-cat';
+      group.dataset.category = cat;
+      const title = document.createElement('b');
+      title.className = 'ed-cat-title';
+      title.textContent = c.label;
+      title.title = c.blurb;
+      group.append(title);
+      for (const [tag, label] of c.tags) {
+        const tick = document.createElement('input');
+        tick.type = 'checkbox';
+        tick.id = `ed-prop-cat-${cat}-${tag}`;
+        tick.dataset.category = cat;
+        tick.dataset.tag = tag;
+        tick.checked = has(cat, tag);
+        tick.addEventListener('change', () => {
+          const before = this.app.doc.metadata.categories;
+          const rest = (before ?? []).filter((p) => !(p.category === cat && p.tag === tag));
+          const next = normalizeMapCategories(tick.checked ? [...rest, { category: cat, tag }] : rest);
+          this.app.run(`${tick.checked ? 'Tag' : 'Untag'} ${c.label}: ${label}`, { kind: 'setMetadata', before: { categories: before }, after: { categories: next.length ? next : undefined } });
+        });
+        const lab = document.createElement('label');
+        lab.append(tick, document.createTextNode(label));
+        group.append(lab);
+      }
+      box.append(group);
+    }
+    return box;
+  }
+
+  /**
    * Map settings (mapSettingsView.ts, in the right dock): name, description, theme, picture and card shot (General);
    * modes, teams, players, weapons, bots, breaking, gravity and the boundary (Gameplay); time and weather, blood and
    * the sky (Presentation); the map ID, tier and test map (Advanced). Every field is an undoable command. The map
@@ -536,6 +587,7 @@ export class MapProperties {
     desc.addEventListener('change', () => this.app.run('Edit description', { kind: 'setMetadata', before: { description: doc.metadata.description }, after: { description: desc.value.slice(0, 2000) } }));
     desc.setAttribute('aria-label', 'Description');
     el.append(desc);
+    el.append(this.categoriesSection());
     const occupied = [...doc.classicStructure.tiles.flatMap((t) => placementCells(t) ?? []), ...[...this.app.expansion.footprints.values()].flat()];
     if (occupied.length) {
       const span = (i: 0 | 1 | 2) => Math.max(...occupied.map((c) => c[i])) - Math.min(...occupied.map((c) => c[i])) + 1;

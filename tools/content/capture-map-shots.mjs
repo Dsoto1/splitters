@@ -16,6 +16,7 @@
 // is used as it is when there is one; else a fixed metadata.thumbnailCamera (position, target); else the
 // automatic choice. The lens (FOV, vertical) and the 16:9 frame are MapMaker's card frame's (shared editor/cardShot.ts).
 //
+// Afterwards run node tools/content/map-cards.mjs: the map cards' small copies (Match Setup).
 // Run against a built client being served (pnpm build, then vite preview):
 //   pnpm --filter @tiletrigger/client exec vite preview --port 4799
 //   node tools/content/capture-map-shots.mjs http://localhost:4799 [map ids…]

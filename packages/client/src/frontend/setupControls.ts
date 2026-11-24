@@ -236,6 +236,13 @@ export const GLYPHS = {
   save: 'M5 4h11l3 3v13H5Z M8 4v5h7V4 M8 20v-6h8v6',
   play: 'M7 4.5v15l12-7.5Z',
   swap: 'M4 9h15 M15.5 5.5 19 9l-3.5 3.5 M20 15H5 M8.5 11.5 5 15l3.5 3.5',
+  // Map categories (Match Setup's category tabs).
+  infinity: 'M12 12c-2-2.7-3.6-4-5.5-4a4 4 0 0 0 0 8c1.9 0 3.5-1.3 5.5-4Zm0 0c2 2.7 3.6 4 5.5 4a4 4 0 0 0 0-8c-1.9 0-3.5 1.3-5.5 4Z',
+  clock: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 0 0 0-17Z M12 7.5V12l3 2',
+  planet: 'M12 6.5a5.5 5.5 0 1 0 0 11 5.5 5.5 0 0 0 0-11Z M3.5 15.5c-1.5 2.3 2.4 3.3 8.5 1.5s10-5.3 8.5-7.5c-.5-.8-1.8-1-3.5-.8',
+  mountain: 'M2.5 19.5 9 8l3.5 6 2.5-4 6.5 9.5Z M7.3 11.2l1.7 1.3 1.7-1.3',
+  clapper: 'M4 10h16v10H4Z M4 10l1.2-4.6 15 2.6L20 10 M8.5 6.2 7 10 M13 7l-1.5 3 M17.4 7.7 16 10',
+  bolt: 'M13.5 3 5.5 13.5H12L10.5 21l8-10.5H12Z',
 } as const;
 
 /**
@@ -368,7 +375,12 @@ export interface TeamEditorOptions {
    * cards, one line with the total. `extra`: more controls for that line (Your team); `countTo`: where the
    * number of teams goes instead of that line (the section's title line).
    */
-  compact?: { extra?: HTMLElement[]; countTo?: HTMLElement };
+  /**
+   * Match Setup's compact cards. `sizeSteps` false: the cards show who plays (players and bots) and no size stepper of
+   * their own: the size is the setup's one control (the size chips and Per team; owner, 2026-11-23). Match Setup
+   * shows them only with Even teams off, for uneven teams.
+   */
+  compact?: { extra?: HTMLElement[]; countTo?: HTMLElement; sizeSteps?: boolean };
   /** The new teams, and why the change stopped short of what was asked (null: it didn't). */
   onChange: (next: TeamEditorState, stopped: string | null) => void;
 }
@@ -515,7 +527,8 @@ export function teamEditor(o: TeamEditorOptions): HTMLElement {
       // "1 player (you) · 23 bots": who's on it, under its size. With more than two teams (or yours random), Join picks yours.
       who.textContent = `${mine} ${mine === 1 ? 'player' : 'players'}${s.you === i ? ' (you)' : ''} · ${bots} ${bots === 1 ? 'bot' : 'bots'}`;
       const join = roster.querySelector<HTMLElement>('.team-join');
-      card.append(el('div', { class: 'team-top' }, swatch, name, ...(join && !swapSides ? [join] : [])), sizeStep, who);
+      card.append(el('div', { class: 'team-top' }, swatch, name, ...(join && !swapSides ? [join] : [])), ...(o.compact.sizeSteps === false ? [] : [sizeStep]), who);
+      if (o.compact.sizeSteps === false) card.classList.add('who-only');
     } else card.append(el('div', { class: 'team-top' }, swatch, name), el('div', { class: 'team-mid' }, who, sizeStep), roster);
     cards.append(card);
   });

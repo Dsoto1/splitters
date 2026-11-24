@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "apex_ring",
     "name": "Apex Ring",
@@ -21,12 +21,22 @@
     ],
     "release": {
       "mapId": "m_snj2ivjohajuozh5",
-      "versionId": "v_s3yhyeuv3ps7otrk",
-      "revision": 9,
-      "contentHash": "sha256:ac0d5a32fd93e32ca01d0cc8a8683fdc14115061f302275a4eb6a710027b5a43",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:36:55.794Z"
-    }
+      "versionId": "v_4ha2aqhzqaq3gixk",
+      "revision": 10,
+      "contentHash": "sha256:0be0547aa7eb04df6bb1d2df35c1cb321b91eca2162101eec3b65b3eb281b062",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T15:37:14.576Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "urban"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

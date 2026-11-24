@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "obsidian_orb",
     "name": "Obsidian Orb",
@@ -22,12 +22,26 @@
     ],
     "release": {
       "mapId": "m_oyvr2rvdsjvrhwut",
-      "versionId": "v_qfvkep32ed6yjo5n",
-      "revision": 5,
-      "contentHash": "sha256:f484f0aea4583430063bf2a7a3d01f38dc83213a3bfc8f7df2b711903c543d2e",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T15:13:00.107Z"
-    }
+      "versionId": "v_dwei6iyn4fvxgri5",
+      "revision": 6,
+      "contentHash": "sha256:fbdbbcf386d686e52a903cf12e4b6f5422ba4cbbcaf389fcb97440198b242b17",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:46:14.927Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "environmental",
+        "tag": "space"
+      },
+      {
+        "category": "fictional",
+        "tag": "film"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

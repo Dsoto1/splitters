@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 47,
+  "formatVersion": 50,
   "metadata": {
     "id": "shingle_point",
     "name": "Shingle Point",
@@ -29,12 +29,22 @@
     },
     "release": {
       "mapId": "m_vql6e6ixmth3q6cb",
-      "versionId": "v_h43njaeatr6j7ppe",
-      "revision": 11,
-      "contentHash": "sha256:478a2091616d1ec41cb71328cf872a4080bcd65f75e8445c5150aa27c4fa6c0d",
-      "schemaVersion": 47,
-      "releasedAt": "2026-11-18T09:48:41.463Z"
-    }
+      "versionId": "v_rihvawxhq4q5nq7x",
+      "revision": 12,
+      "contentHash": "sha256:a5c9d4f8d422be002b85014723798a8eb9fd9342f006e5f4596806325fce2370",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:58:52.968Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "coastal"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -10554,6 +10564,9 @@
       12
     ]
   },
+  "botCast": [
+    "army"
+  ],
   "weaponSet": "military",
   "dependencies": [],
   "setPieces": [
@@ -10602,8 +10615,5 @@
       "rotation": 2,
       "mirror": false
     }
-  ],
-  "botCast": [
-    "army"
   ]
 }

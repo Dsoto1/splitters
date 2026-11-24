@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "glacier_line",
     "name": "Glacier Line",
@@ -22,12 +22,26 @@
     ],
     "release": {
       "mapId": "m_6jrvegnpqp5udvrt",
-      "versionId": "v_nqm4ywodpol63rlh",
-      "revision": 7,
-      "contentHash": "sha256:84d6e6e590bd2ce46f2a468f80778dd031b283b389efd0c1cbd40a948be7c201",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-18T23:33:46.665Z"
-    }
+      "versionId": "v_prsljpzmcexcm2o5",
+      "revision": 8,
+      "contentHash": "sha256:ea533f27dbfc5ef388b9484bc8f326bdb30c0de55755c2e32b2ed9fab457188e",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:27:15.010Z"
+    },
+    "categories": [
+      {
+        "category": "dimensional",
+        "tag": "alien"
+      },
+      {
+        "category": "environmental",
+        "tag": "arctic"
+      },
+      {
+        "category": "fictional",
+        "tag": "film"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -6024,8 +6038,8 @@
       "yaw": 5.93,
       "scale": 1.436,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_235",
@@ -6039,8 +6053,8 @@
       "yaw": 4.74,
       "scale": 2.484,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_236",
@@ -6054,8 +6068,8 @@
       "yaw": 1.54,
       "scale": 2.538,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_237",
@@ -6083,8 +6097,8 @@
       "yaw": 0.82,
       "scale": 1.415,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_239",
@@ -6098,8 +6112,8 @@
       "yaw": 4.19,
       "scale": 3.154,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_240",
@@ -6113,8 +6127,8 @@
       "yaw": 5.72,
       "scale": 1.793,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_241",
@@ -6128,8 +6142,8 @@
       "yaw": 5.56,
       "scale": 1.501,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_242",
@@ -6171,8 +6185,8 @@
       "yaw": 4.25,
       "scale": 1.998,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_245",
@@ -6186,8 +6200,8 @@
       "yaw": 0,
       "scale": 3.154,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_246",
@@ -6201,8 +6215,8 @@
       "yaw": 3.4,
       "scale": 1.361,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_247",
@@ -6272,8 +6286,8 @@
       "yaw": 2.14,
       "scale": 2.905,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_252",
@@ -6357,8 +6371,8 @@
       "yaw": 2.21,
       "scale": 2.257,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_258",
@@ -6386,8 +6400,8 @@
       "yaw": 3.34,
       "scale": 1.685,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_260",
@@ -6415,8 +6429,8 @@
       "yaw": 3.2,
       "scale": 1.987,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_262",
@@ -6528,8 +6542,8 @@
       "yaw": 3.04,
       "scale": 2.754,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_270",
@@ -6543,8 +6557,8 @@
       "yaw": 3.67,
       "scale": 2.776,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_271",
@@ -6586,8 +6600,8 @@
       "yaw": 2.4,
       "scale": 2.484,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_274",
@@ -6601,8 +6615,8 @@
       "yaw": 0.68,
       "scale": 1.372,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_275",
@@ -6630,8 +6644,8 @@
       "yaw": 5.85,
       "scale": 2.538,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_277",
@@ -6687,8 +6701,8 @@
       "yaw": 4.36,
       "scale": 2.689,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_281",
@@ -6702,8 +6716,8 @@
       "yaw": 5.88,
       "scale": 2.225,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_282",
@@ -6717,8 +6731,8 @@
       "yaw": 0.92,
       "scale": 2.624,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_283",
@@ -6774,8 +6788,8 @@
       "yaw": 0.13,
       "scale": 2.452,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_287",
@@ -6789,8 +6803,8 @@
       "yaw": 3.6,
       "scale": 3.013,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_288",
@@ -6804,8 +6818,8 @@
       "yaw": 6.21,
       "scale": 1.447,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_289",
@@ -6819,8 +6833,8 @@
       "yaw": 0.76,
       "scale": 2.257,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_290",
@@ -6862,8 +6876,8 @@
       "yaw": 5.28,
       "scale": 2.354,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_293",
@@ -6877,8 +6891,8 @@
       "yaw": 3.42,
       "scale": 1.372,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_294",
@@ -6906,8 +6920,8 @@
       "yaw": 1.85,
       "scale": 1.35,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_296",
@@ -6935,8 +6949,8 @@
       "yaw": 4.99,
       "scale": 1.879,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_298",
@@ -6964,8 +6978,8 @@
       "yaw": 2.6,
       "scale": 1.49,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_300",
@@ -6979,8 +6993,8 @@
       "yaw": 4.93,
       "scale": 2.819,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_301",
@@ -7022,8 +7036,8 @@
       "yaw": 1.49,
       "scale": 1.296,
       "solid": true,
-      "tint": null,
-      "variant": 2
+      "variant": 2,
+      "tint": null
     },
     {
       "id": "prop_304",
@@ -7037,8 +7051,8 @@
       "yaw": 0.96,
       "scale": 1.058,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_305",
@@ -7080,8 +7094,8 @@
       "yaw": 2.89,
       "scale": 0.845,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_308",
@@ -7123,8 +7137,8 @@
       "yaw": 3.11,
       "scale": 1.017,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_311",
@@ -7138,8 +7152,8 @@
       "yaw": 0.96,
       "scale": 0.992,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_312",
@@ -7153,8 +7167,8 @@
       "yaw": 4.52,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_313",
@@ -7168,8 +7182,8 @@
       "yaw": 0.62,
       "scale": 1.148,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_314",
@@ -7183,8 +7197,8 @@
       "yaw": 1,
       "scale": 1.017,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_315",
@@ -7198,8 +7212,8 @@
       "yaw": 1.89,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_316",
@@ -7213,8 +7227,8 @@
       "yaw": 3.31,
       "scale": 1.197,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_317",
@@ -7242,8 +7256,8 @@
       "yaw": 2.32,
       "scale": 0.968,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_319",
@@ -7257,8 +7271,8 @@
       "yaw": 3.77,
       "scale": 1,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_320",
@@ -7272,8 +7286,8 @@
       "yaw": 3.01,
       "scale": 0.918,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_321",
@@ -7287,8 +7301,8 @@
       "yaw": 4.67,
       "scale": 1.132,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_322",
@@ -7316,8 +7330,8 @@
       "yaw": 1.33,
       "scale": 0.795,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_324",
@@ -7345,8 +7359,8 @@
       "yaw": 2.26,
       "scale": 0.836,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_326",
@@ -7360,8 +7374,8 @@
       "yaw": 2.26,
       "scale": 1.091,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_327",
@@ -7375,8 +7389,8 @@
       "yaw": 3.37,
       "scale": 1.099,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_328",
@@ -7418,8 +7432,8 @@
       "yaw": 3.84,
       "scale": 1.156,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_331",
@@ -7433,8 +7447,8 @@
       "yaw": 0.8,
       "scale": 0.976,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_332",
@@ -7448,8 +7462,8 @@
       "yaw": 2.09,
       "scale": 0.869,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "prop_333",
@@ -7463,8 +7477,8 @@
       "yaw": 4.31,
       "scale": 1.115,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "block_334",

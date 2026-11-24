@@ -16,8 +16,8 @@ export const QUICK_MODES: readonly QuickMode[] = ['core.tdm', 'core.deathmatch']
  */
 export const QUICK_MAPS: Record<QuickMode, readonly string[]> = {
   'core.tdm': ['sandgate', 'canyon', 'crossroads', 'halcyon_station', 'frost_basin'],
-  // (Citadel was here until it was retired, owner 2026-11-24.)
-  'core.deathmatch': ['crossroads', 'bunker_cross', 'halcyon_station'],
+  // (Citadel was here until it was retired; St. John's took its place: owner, 2026-11-24.)
+  'core.deathmatch': ['crossroads', 'bunker_cross', 'halcyon_station', 'st_johns'],
 };
 
 /** A map Quick Play might pick: its key, the modes it plays, its recommended most (metadata), and whether it's ours. */

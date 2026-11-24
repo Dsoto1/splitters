@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 36,
+  "formatVersion": 50,
   "metadata": {
     "id": "neon_spire",
     "name": "Neon Spire",
@@ -20,12 +20,22 @@
     ],
     "release": {
       "mapId": "m_blh4e3anqsjhglti",
-      "versionId": "v_py5fjdorv4gf7l6k",
-      "revision": 3,
-      "contentHash": "sha256:c9dc56422b4a1bdf00a28a2683a636c22f997dabd1a7c2973f42aa956170503e",
-      "schemaVersion": 36,
-      "releasedAt": "2026-11-12T12:57:25.042Z"
-    }
+      "versionId": "v_v32bv34eky3fceaq",
+      "revision": 4,
+      "contentHash": "sha256:b24604f605c34fc465deddfc5866ffc7b8ea36e0c2e9749ff59929eeb4e0b01b",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:44:46.651Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "future"
+      },
+      {
+        "category": "environmental",
+        "tag": "urban"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -14857,10 +14867,6 @@
       "style": "asphalt",
       "lay": false,
       "race": {
-        "laps": 3,
-        "grid": 14,
-        "vehicle": "speeder",
-        "combat": false,
         "curbs": false,
         "ambient": 2,
         "ambientVehicle": "speeder",

@@ -7,7 +7,9 @@ export const ARENA_PATH = fileURLToPath(new URL('../../../maps/phase0_arena.json
 export function loadArena(): MapDocument {
   const result = loadMap(readFileSync(ARENA_PATH, 'utf8'));
   if (!result.ok) throw new Error(`arena failed to load: ${JSON.stringify(result.issues)}`);
-  return result.map;
+  // As a fresh map: no release stamp (its file got one when MapMaker exported it with its categories, map format v50).
+  const { release: _release, ...metadata } = result.map.metadata;
+  return { ...result.map, metadata };
 }
 
 /** Minimal valid map with the given tiles and spawns. */

@@ -116,7 +116,12 @@ import {
   readEmblem,
   earnedTitles,
   TITLES,
+  categoryCounts,
+  inMapCategory,
+  isListedMap,
+  type CategoryFilter,
 } from '@tiletrigger/shared';
+import { drawCategoryTabs } from './mapCategoriesUi.ts';
 import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
 import { emblemSvg } from '../game/emblemSvg.ts';
 import { setMyOptic } from '../opticPrefs.ts';
@@ -132,7 +137,7 @@ import { installTooltips } from './tooltip.ts';
 import { deviceMaxPlayers, isTouchDevice } from '../touchDevice.ts';
 import { FIRST_PERSON_LABELS, FIRST_PERSON_MODES, FRAME_CAPS, GRAPHICS_QUALITIES, RENDER_SCALES, RENDER_SCALE_LABELS, currentFrameCap, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale, saveFirstPersonMode, saveFrameCap, saveGraphicsQuality, saveRenderScale, type FirstPersonMode, type FrameCap, type GraphicsQuality, type RenderScale } from '../game/graphicsSettings.ts';
 import { loadPerfOverlay, savePerfOverlay } from '../game/perfPrefs.ts';
-import { reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
+import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from '../game/reduceFlashing.ts';
 import { ranksOn, saveRanksOn } from '../game/ranksSetting.ts';
 import { MIN_TOUCH_OPACITY, TOUCH_SIZES, TOUCH_SIZE_LABELS, saveTouchLayout, touchLayout, type TouchSize } from '../game/touchLayout.ts';
 import { AIM_LABELS, AIM_MODES, SHAKE_LABELS, SHAKE_LEVELS, combatPrefs, saveCombatPrefs, type AimMode, type ShakeLevel } from '../game/combatPrefs.ts';
@@ -153,7 +158,8 @@ import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STY
 import type { PortraitRenderer } from './portraits.ts';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
 import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscreen, toggleFullscreen } from '../fullscreen.ts';
-import { PAD, glyphs, onPadPress } from '../inputMode.ts';
+import { PAD, glyphs, onPadPress, onPadScroll } from '../inputMode.ts';
+import { nextInDirection, type Dir } from './padNav.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
 import { botManager } from './botManager.ts';
 import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
@@ -172,7 +178,7 @@ function inspired(key: string): HTMLElement[] {
 /** A built-in map the Arcade offers. */
 /** A map card's picture (on top) and plan (beside the name): built-in maps have an automatic picture, your own MapMaker maps don't. */
 function cardThumbs(m: ArcadeMap): MapThumbs {
-  const t = mapThumbs(m, isBuiltInEntry(m));
+  const t = mapThumbs(m, isBuiltInEntry(m), { card: true });
   t.pic.classList.add('card-pic');
   t.plan.classList.add('card-plan');
   return t;
@@ -190,7 +196,7 @@ function mapCard(m: ArcadeMap, on: boolean, note?: string, fav?: { on: boolean; 
   const shown = m.modes.slice(0, 3);
   const tags = el('span', { class: 'card-modes' }, ...shown.map((x) => el('i', { textContent: MODE_SHORT[x] })), ...(m.modes.length > shown.length ? [el('i', { class: 'more', textContent: `+${m.modes.length - shown.length}`, title: m.modes.slice(3).map((x) => MODE_LABEL[x]).join(', ') })] : []));
   const card = el('button', { class: `map-card${on ? ' on' : ''}`, title: m.metadata.name }, pic.pic, el('div', { class: 'meta' }, el('span', { class: 'meta-text' }, el('b', { textContent: m.metadata.name }), tags), pic.plan));
-  if (note) card.append(el('span', { class: 'card-note', textContent: note }));
+  if (note) card.append(el('span', { class: `card-note${note === 'Community map' ? ' community' : ''}`, textContent: note }));
   if (fav) {
     // A span, not a button: buttons can't hold buttons.
     const star = el('span', { class: `card-fav${fav.on ? ' on' : ''}`, role: 'button', tabIndex: 0, title: 'Favourite', textContent: fav.on ? '★' : '☆' });
@@ -212,7 +218,7 @@ function mapCard(m: ArcadeMap, on: boolean, note?: string, fav?: { on: boolean; 
 }
 
 /** Maps the Featured sort puts first and badges (the home screen shows the first). */
-const FEATURED_MAPS: readonly string[] = ['sandgate', 'canyon'];
+const FEATURED_MAPS: readonly string[] = ['sandgate', 'canyon', 'st_johns'];
 
 /** How the map list is shown (kept in this browser). */
 interface MapBrowsePrefs {
@@ -560,6 +566,7 @@ export class FrontEnd {
     root.replaceChildren(this.body, this.status, this.footer);
     window.addEventListener('keydown', this.keyHandler);
     onPadPress((b) => this.onPad(b));
+    onPadScroll((px) => this.padScroll(px));
     this.go('home');
     (window as unknown as { __front: FrontEnd }).__front = this;
     void loadProfile().then((p) => {
@@ -622,8 +629,8 @@ export class FrontEnd {
     if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
     // Back (and Choose) on Character Select return to the screen that opened it.
     if (screen === 'characters' && this.screen !== 'characters') this.charFrom = this.screen;
-    // The map picker (a phone's Match Setup) is open only on Match Setup.
-    if (screen !== 'play') this.mapPicking = false;
+    // A phone's settings sheet opens on Match Setup only (and starts down: the map grid first).
+    if (screen !== 'play') this.sheetOpen = false;
     if (screen !== 'characters') {
       this.charSheet = false;
       this.charQuery = '';
@@ -664,10 +671,27 @@ export class FrontEnd {
           main('Select', 'Open the highlighted item (Enter, controller A)', () => this.navItems[this.navIndex]!.act()),
         ];
         break;
-      case 'play':
-        moves.push(cycle('Mode'), hintButton('hint-filter', glyphs(keyFor('menuFilter')), 'Filters', `Filter maps: choose which game modes to list maps for (${keyFor('menuFilter')})`, () => this.openMapFilter()));
-        acts = [main('Start', 'Start the match (Enter, controller A)', () => this.start())];
+      case 'play': {
+        // A controller's own hints (data-input="pad"; the keyboard's hide then, and these with the keyboard): LB / RB
+        // step the categories, A selects, Y stars a card, Menu starts (owner, 2026-11-23).
+        const only = (e: HTMLElement, input: 'pad' | 'kbm') => (e.classList.add(`hint-${input}`), e);
+        const modeHint = only(cycle('Mode'), 'kbm');
+        modeHint.querySelectorAll('kbd.g-pad').forEach((k) => k.remove());
+        moves.push(
+          modeHint,
+          only(hintButton('hint-category', glyphs('LB', 'LB').slice(1).concat(glyphs('RB', 'RB').slice(1)), 'Category', 'Previous / next category (controller LB / RB)', () => this.padPlay(PAD.rb)), 'pad'),
+          hintButton('hint-filter', glyphs(keyFor('menuFilter'), 'X'), 'Filters', `Filter maps: choose which game modes to list maps for (${keyFor('menuFilter')}, controller X)`, () => this.openMapFilter()),
+        );
+        acts = [
+          only(hintButton('hint-fav', glyphs('Y', 'Y', 'y').slice(1), 'Favourite', 'Star the focused map (controller Y)', () => this.padPlay(PAD.y)), 'pad'),
+          only(hintButton('hint-select', glyphs('A', 'A', 'a').slice(1), 'Select', 'Pick the focused map or press the focused control (controller A)', () => this.padPlay(PAD.a)), 'pad'),
+          main('Start', 'Start the match (Enter, controller Menu)', () => this.start()),
+        ];
+        // Start's controller glyph is Menu (A selects here).
+        const startPad = acts[2]!.querySelector('kbd.g-pad');
+        if (startPad) startPad.textContent = '☰';
         break;
+      }
       case 'characters':
         moves.push(cycle('Section'));
         acts = [
@@ -736,11 +760,158 @@ export class FrontEnd {
     }
   }
 
+  /**
+   * A controller on Match Setup (owner, 2026-11-23: "unable to really navigate or select a map easily … i also cannot
+   * start the match easily"). The d-pad and left stick move a focus ring over the map cards in two dimensions (held,
+   * they repeat), up from the top row onto the list's bars, right off the grid into the settings and left off the
+   * settings back to the grid; a focused stepper takes left and right itself. A selects (a card picks its map), B goes
+   * back or puts a phone's sheet away, Menu starts the match from anywhere, Y stars the focused card, X opens Filter
+   * maps, LB / RB step the categories, LT / RT the settings' tabs, and the right stick scrolls (padScroll). Returns
+   * false for what the menus' general handling does.
+   */
+  private padPlay(button: number): boolean {
+    const f = document.activeElement as HTMLElement | null;
+    const card = f?.closest<HTMLElement>('#map-cards .map-card') ?? null;
+    switch (button) {
+      case PAD.start:
+        this.start();
+        return true;
+      case PAD.b:
+        if (this.sheetUp()) this.setSheet(false);
+        else this.back();
+        return true;
+      case PAD.a:
+        if (!f || f === document.body || !this.root.contains(f)) this.padFocus(this.padHome());
+        else f.click();
+        return true;
+      case PAD.y:
+        card?.querySelector<HTMLElement>('.card-fav')?.click();
+        return true;
+      case PAD.x:
+        this.openMapFilter();
+        return true;
+      case PAD.lb:
+      case PAD.rb: {
+        const tabs = [...this.body.querySelectorAll<HTMLElement>('#map-cats .map-cat')];
+        const at = Math.max(0, tabs.findIndex((t) => t.classList.contains('on')));
+        const to = tabs[(at + (button === PAD.rb ? 1 : tabs.length - 1)) % tabs.length];
+        // The category's tab (it redraws the cards): the ring goes to the first card it lists.
+        if (to) {
+          to.click();
+          const first = this.body.querySelector<HTMLElement>('#map-cards .map-card');
+          if (first && (!f || card || f === document.body)) this.padFocus(first);
+        }
+        return true;
+      }
+      case PAD.lt:
+      case PAD.rt: {
+        const order = SETUP_TABS.map(([t]) => t);
+        const next = order[(order.indexOf(this.setupTab) + (button === PAD.rt ? 1 : order.length - 1)) % order.length]!;
+        this.showSetupTab(next);
+        if (narrowSetup() && !this.sheetOpen) this.setSheet(true);
+        this.padFocus(document.getElementById(`setup-tab-${next}`));
+        return true;
+      }
+      case PAD.up:
+      case PAD.down:
+      case PAD.left:
+      case PAD.right:
+        this.padMove(button === PAD.up ? 'up' : button === PAD.down ? 'down' : button === PAD.left ? 'left' : 'right');
+        return true;
+    }
+    return false;
+  }
+
+  /** Where the ring starts: the card of the map picked (in view), else the first card. */
+  private padHome(): HTMLElement | null {
+    return this.body.querySelector<HTMLElement>('#map-cards .map-card.on') ?? this.body.querySelector<HTMLElement>('#map-cards .map-card');
+  }
+
+  /** Focus `el` with the ring (only a controller's focus shows it) and bring it into view in its scrolling box. */
+  private padFocus(el: HTMLElement | null): void {
+    if (!el) return;
+    for (const o of this.root.querySelectorAll('.pad-focus')) o.classList.remove('pad-focus');
+    el.classList.add('pad-focus');
+    el.focus({ preventScroll: true });
+    el.scrollIntoView({ block: 'nearest', inline: 'nearest' });
+  }
+
+  /** What a controller can reach in one of Match Setup's zones (shown, enabled, not in a closed part). */
+  private padZone(zone: 'cards' | 'bars' | 'panel'): HTMLElement[] {
+    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '.map-bar :is(button, input, select), #map-cats .map-cat, #map-subtags .map-subtag' : '#match-setup :is(button, input, select, summary)';
+    return [...this.body.querySelectorAll<HTMLElement>(sel)].filter((e) => {
+      if ((e as HTMLButtonElement).disabled || e.closest('[hidden]') || !e.getClientRects().length) return false;
+      // (A phone's sheet, down: its settings are there but hidden; the strip along the bottom stays in reach.)
+      if (zone === 'panel' && narrowSetup() && !this.sheetOpen && !e.closest('.sheet-peek')) return false;
+      const ck = (e as HTMLElement & { checkVisibility?: (o: object) => boolean }).checkVisibility;
+      return !ck || ck.call(e, { visibilityProperty: true });
+    });
+  }
+
+  /** One step of the ring in `dir` (padPlay). */
+  private padMove(dir: Dir): void {
+    const f = document.activeElement as HTMLElement | null;
+    const zoneOf = (e: HTMLElement | null): 'cards' | 'bars' | 'panel' | null =>
+      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('.map-bar, #map-cats, #map-subtags') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
+    const zone = zoneOf(f);
+    if (!zone || !f) return this.padFocus(this.padHome());
+    const from = zone === 'cards' ? f.closest<HTMLElement>('.map-card')! : f;
+    // A stepper takes left and right: one less or one more.
+    const step = zone === 'panel' && (dir === 'left' || dir === 'right') ? f.closest<HTMLElement>('.stepper') : null;
+    if (step) {
+      const b = step.querySelectorAll<HTMLButtonElement>('button')[dir === 'left' ? 0 : 1];
+      const id = f.id || step.querySelector('input')?.id;
+      if (b && !b.disabled) b.click();
+      // (The panel redraws: the ring stays on the stepper.)
+      const again = id ? document.getElementById(id) : null;
+      if (again) this.padFocus(again);
+      return;
+    }
+    const pick = (list: HTMLElement[], r: DOMRect = from.getBoundingClientRect()) => {
+      const i = nextInDirection(r, list.map((e) => e.getBoundingClientRect()), dir);
+      return i === null ? null : list[i]!;
+    };
+    let to = pick(this.padZone(zone).filter((e) => e !== from));
+    if (!to) {
+      // Off a zone's edge: up from the cards onto the bars, down from the bars onto the cards in view, right off the
+      // map list into the settings, left off the settings back to the grid.
+      const cards = this.padZone('cards');
+      const shown = (() => {
+        const box = this.body.querySelector('#map-cards')?.getBoundingClientRect();
+        return box ? cards.filter((c) => {
+          const r = c.getBoundingClientRect();
+          return r.bottom > box.top && r.top < box.bottom;
+        }) : cards;
+      })();
+      if (zone === 'cards' && dir === 'up') to = pick(this.padZone('bars'));
+      else if (zone === 'bars' && dir === 'down') to = pick(shown);
+      else if (zone !== 'panel' && dir === 'right') {
+        if (narrowSetup() && !this.sheetOpen) to = null;
+        else to = pick(this.padZone('panel')) ?? this.padZone('panel')[0] ?? null;
+      } else if (zone === 'panel' && dir === 'left') {
+        const on = this.body.querySelector<HTMLElement>('#map-cards .map-card.on');
+        to = on && shown.includes(on) ? on : (pick(shown) ?? shown[0] ?? null);
+      }
+    }
+    if (to) this.padFocus(to);
+  }
+
+  /** The right stick: scroll the settings when the ring is in them (or a phone's sheet is up), else the map grid. */
+  private padScroll(px: number): void {
+    if (this.root.hidden || this.screen !== 'play') return;
+    const inPanel = !!(document.activeElement as HTMLElement | null)?.closest('#match-setup') || this.sheetUp();
+    const box = this.body.querySelector<HTMLElement>(inPanel ? '#match-setup .setup-body' : '#map-cards');
+    if (box) box.scrollTop += px;
+  }
+
   /** A controller in the menus: the d-pad moves, A presses, B goes back, LB / RB switch, X / Y design. */
   private onPad(button: number): void {
     if (this.root.hidden) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
-    const top = document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play') ?? (this.mapPicking ? document.getElementById('map-browse') : null);
+    // Match Setup has its own (padPlay): a grid and a panel moved over in two dimensions.
+    if (this.screen === 'play' && !document.getElementById('bm-pick-wrap') && !document.getElementById('bot-manager') && !document.querySelector('dialog[open]') && this.padPlay(button)) return;
+    const dialog = document.querySelector<HTMLDialogElement>('dialog[open]');
+    const top = dialog ?? document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('quick-play') ?? (this.sheetUp() ? this.setupPanel : null);
     const scope: HTMLElement = top ?? this.root;
     const move = (dir: 1 | -1) => {
       const items = [...scope.querySelectorAll<HTMLElement>('button, input, select, summary, [tabindex="0"]')].filter((e) => !(e as HTMLButtonElement).disabled && e.offsetParent !== null);
@@ -751,6 +922,7 @@ export class FrontEnd {
       next.scrollIntoView({ block: 'nearest' });
     };
     if (button === PAD.b) {
+      if (dialog) return dialog.close();
       if (top) return top.querySelector<HTMLButtonElement>('[data-cancel]')?.click();
       return this.back();
     }
@@ -916,7 +1088,7 @@ export class FrontEnd {
     const pick = el('button', { type: 'button', class: 'qp-mode qp-pick', id: 'qp-pick' }, el('span', { class: 'qp-pick-icon', textContent: '▦' }), el('b', { textContent: 'Pick a map' }), el('small', { textContent: 'Choose the map, then play' }));
     pick.addEventListener('click', () => {
       this.quickOpen = false;
-      this.mapPicking = narrowSetup();
+      this.sheetOpen = false;
       this.go('play');
     });
     modes.append(pick);
@@ -1047,6 +1219,8 @@ export class FrontEnd {
   /** The map list's mode tab and search (this visit) and its sort, view and favourites (kept). */
   /** The map list's tab: all maps, your own, the featured, the ones played last, your favourites, or the Community Picks (docs/COMMUNITY_MAPS.md). */
   private mapTab: MapTab = 'all';
+  /** The category tab and sub-tag picked (null: All dimensions; shared map/categories.ts), kept while the page is. */
+  private mapCat: CategoryFilter | null = null;
   private mapQuery = '';
   private readonly browse = loadBrowsePrefs();
   /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
@@ -1062,6 +1236,11 @@ export class FrontEnd {
 
   private currentMap(): ArcadeMap {
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
+  }
+
+  /** The maps Match Setup lists (grid, categories, counts, search, the map select): never a retired or training map. */
+  private listedMaps(): ArcadeMap[] {
+    return this.maps.filter((m) => isListedMap({ key: m.key, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP }));
   }
 
   /** Load the map Play opens on (main.ts asks while the menu is idle), so the setup panel and Start don't wait for it. */
@@ -1184,45 +1363,61 @@ export class FrontEnd {
     });
   }
 
-  /** A phone's (narrow window's) Match Setup: the map cards open full screen over the setup. */
-  private mapPicking = false;
+  /**
+   * A phone's (narrow window's) Match Setup (owner, 2026-11-23): the map grid first, the settings a sheet along the
+   * bottom. Down, a strip names the map and setup (a tap pulls it up) beside Start; up, the whole setup.
+   */
+  private sheetOpen = false;
 
-  private openMapPicker(): void {
-    this.mapPicking = true;
+  /** The settings sheet is up (a narrow window only: wider, the settings sit beside the grid). */
+  private sheetUp(): boolean {
+    return this.sheetOpen && narrowSetup();
+  }
+
+  private setSheet(open: boolean): void {
+    this.sheetOpen = open;
     const screen = this.body.querySelector<HTMLElement>('.screen.play');
     if (!screen) return;
-    screen.classList.add('picking');
-    // The map played now, in view.
-    const cards = screen.querySelector<HTMLElement>('#map-cards');
-    const on = cards?.querySelector<HTMLElement>('.map-card.on');
-    if (cards && on) cards.scrollTop = this.mapScroll = Math.max(0, on.offsetTop - cards.offsetTop - 8);
-    screen.querySelector<HTMLElement>('#map-pick-close')?.focus({ preventScroll: true });
+    screen.classList.toggle('sheet-open', open);
+    const toggle = document.getElementById('setup-sheet-toggle');
+    toggle?.setAttribute('aria-expanded', String(open));
+    if (open) toggle?.focus({ preventScroll: true });
+    else {
+      // Back to the grid, the map played now in view.
+      const cards = screen.querySelector<HTMLElement>('#map-cards');
+      const on = cards?.querySelector<HTMLElement>('.map-card.on');
+      if (cards && on && (on.offsetTop < cards.scrollTop || on.offsetTop > cards.scrollTop + cards.clientHeight)) cards.scrollTop = this.mapScroll = Math.max(0, on.offsetTop - cards.offsetTop - 8);
+      on?.focus({ preventScroll: true });
+    }
   }
 
-  private closeMapPicker(): void {
-    this.mapPicking = false;
-    this.body.querySelector('.screen.play')?.classList.remove('picking');
-    document.getElementById('arcade-map-pick')?.focus({ preventScroll: true });
-  }
+  private calmWatched = false;
 
   private arcade(): HTMLElement {
+    // The glow on the map picked and Start match is dimmer with Reduce flashing on (style.css, html.calm).
+    document.documentElement.classList.toggle('calm', reduceFlashing());
+    if (!this.calmWatched) {
+      this.calmWatched = true;
+      window.addEventListener(REDUCE_FLASHING_EVENT, () => document.documentElement.classList.toggle('calm', reduceFlashing()));
+    }
     const cards = el('div', { class: `map-cards${this.browse.view === 'list' ? ' list' : ''}`, id: 'map-cards' });
     // Picking a map redraws the setup only: the list stays where it was.
     cards.addEventListener('scroll', () => (this.mapScroll = cards.scrollTop), { passive: true });
     requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
 
     // ---- the list's controls: tabs for which maps, the Filter maps window (which modes), search, sort, grid or list
-    const used = GAME_MODES.filter((g) => this.maps.some((m) => m.group !== PICK_GROUP && m.modes.includes(g)));
+    const used = GAME_MODES.filter((g) => this.listedMaps().some((m) => m.group !== PICK_GROUP && m.modes.includes(g)));
     // The Community Picks tab: when the hub has any (players' maps that earned it by being played).
     const picks = this.maps.some((m) => m.group === PICK_GROUP);
     const mine = this.maps.some((m) => m.group === OWN_GROUP);
-    if ((this.mapTab === 'picks' && !picks) || (this.mapTab === 'mine' && !mine)) this.mapTab = 'all';
+    if (this.mapTab === 'picks' && !picks) this.mapTab = 'all';
     // (A mode no map here plays any more can't stay ticked.)
     this.browse.modes = this.browse.modes.filter((g) => used.includes(g));
     const tabs = el('div', { class: 'map-tabs', id: 'map-tabs', role: 'tablist' });
     const drawTabs = () =>
       tabs.replaceChildren(
-        ...MAP_TABS.filter(([t]) => (t !== 'picks' || picks) && (t !== 'mine' || mine)).map(([t, label]) => {
+        // My maps always shows (owner's mock-up, 2026-11-23); Community Picks when the hub has any.
+        ...MAP_TABS.filter(([t]) => t !== 'picks' || picks).map(([t, label]) => {
           const b = el('button', { type: 'button', class: `map-tab${t === this.mapTab ? ' on' : ''}${t === 'picks' ? ' picks' : ''}`, textContent: label, role: 'tab' });
           b.setAttribute('aria-selected', String(t === this.mapTab));
           b.dataset.tab = t;
@@ -1248,7 +1443,7 @@ export class FrontEnd {
     };
     const playsTicked = (m: { modes: readonly GameMode[] }) => !this.browse.modes.length || this.browse.modes.some((g) => m.modes.includes(g));
     filterBtn.addEventListener('click', () => {
-      const count = (g: GameMode) => this.maps.filter((m) => m.group !== PICK_GROUP && m.modes.includes(g)).length;
+      const count = (g: GameMode) => this.listedMaps().filter((m) => m.group !== PICK_GROUP && m.modes.includes(g)).length;
       const boxes = used.map((g) => {
         const box = el('input', { type: 'checkbox', checked: this.browse.modes.includes(g) });
         box.dataset.mode = g;
@@ -1265,7 +1460,7 @@ export class FrontEnd {
       const done = el('button', { type: 'button', class: 'primary', id: 'mf-done' });
       const clear = el('button', { type: 'button', id: 'mf-clear', textContent: 'Clear all' });
       const drawFoot = () => {
-        const n = this.maps.filter((m) => m.group !== PICK_GROUP && playsTicked(m)).length;
+        const n = this.listedMaps().filter((m) => m.group !== PICK_GROUP && playsTicked(m)).length;
         done.textContent = this.browse.modes.length ? `Show ${n} map${n === 1 ? '' : 's'}` : 'Show every map';
         clear.disabled = !this.browse.modes.length;
       };
@@ -1319,17 +1514,39 @@ export class FrontEnd {
     };
     const tools = el('div', { class: 'map-tools' }, filterBtn, search, sort, el('div', { class: 'view-pick' }, viewBtn('grid', '▦', 'Grid'), viewBtn('list', '☰', 'List')));
 
+    // The category tabs (the owner's six, shared map/categories.ts) and the picked one's sub-tags, over the cards.
+    const catBar = el('div', { class: 'map-cats', id: 'map-cats', role: 'tablist' });
+    catBar.setAttribute('aria-label', 'Map categories');
+    const tagRow = el('div', { class: 'map-subtags', id: 'map-subtags', role: 'group' });
+    tagRow.setAttribute('aria-label', 'Sub-tags');
+    const catOf = (m: ArcadeMap) => ({ categories: m.metadata.categories, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
     const drawCards = () => {
       const current = this.currentMap();
       const lazy = lazyPlans(cards);
       const q = this.mapQuery.trim().toLowerCase();
       const favs = new Set(this.browse.favs);
-      const built = this.maps.map((m, i) => ({ m, i }));
+      const built = this.listedMaps().map((m, i) => ({ m, i }));
       const tab = this.mapTab;
       const recent = this.browse.recent;
+      const cat = this.mapCat;
       const inTab = (m: (typeof this.maps)[number]) =>
         tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
-      const shown = built.filter(({ m }) => inTab(m) && playsTicked(m) && (!q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q))));
+      // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under All maps.
+      const found = (m: ArcadeMap) => !q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q));
+      const base = built.filter(({ m }) => (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
+      const plain = base.filter(({ m }) => inTab(m));
+      drawCategoryTabs(catBar, tagRow, {
+        filter: cat,
+        counts: categoryCounts(base.map(({ m }) => catOf(m))),
+        total: plain.length,
+        onPick: (f) => {
+          this.mapCat = f;
+          this.mapScroll = 0;
+          cards.scrollTop = 0;
+          drawCards();
+        },
+      });
+      const shown = cat ? base.filter(({ m }) => inMapCategory(catOf(m), cat)) : plain;
       const rank = (key: string) => {
         const f = FEATURED_MAPS.indexOf(key);
         return f < 0 ? FEATURED_MAPS.length : f;
@@ -1353,7 +1570,8 @@ export class FrontEnd {
           if (group) cards.append(el('h4', { class: 'map-group', textContent: group === PICK_GROUP ? 'Community Picks' : `${group} maps` }));
         }
         const featured = !m.group && FEATURED_MAPS.includes(m.key);
-        const { card, draw } = mapCard(m, m.key === current.key, featured ? 'Featured' : undefined, {
+        // Community maps say so on the card (docs/COMMUNITY_MAPS.md; owner: a clear "Community map" label).
+        const { card, draw } = mapCard(m, m.key === current.key, m.group === PICK_GROUP ? 'Community map' : featured ? 'Featured' : undefined, {
           on: favs.has(m.key),
           toggle: () => {
             const now = !this.browse.favs.includes(m.key);
@@ -1372,17 +1590,24 @@ export class FrontEnd {
           const only = this.browse.modes.length === 1 ? this.browse.modes[0]! : null;
           if (only && m.modes.includes(only) && this.setup.mode !== only) this.setMode(only);
           this.refreshSetup();
-          if (this.mapPicking) this.closeMapPicker();
+          // A phone: the pick pulls the settings up (the strip at the bottom names it; ▼ goes back to the grid).
+          if (narrowSetup()) this.setSheet(true);
         });
         cards.append(card);
         lazy(card, draw);
       }
       const none = q
         ? `No maps match "${this.mapQuery.trim()}".`
+        : cat?.category === 'custom'
+          ? 'No maps here yet: your own MapMaker maps and the community maps on the server show here.'
+          : cat
+            ? 'No maps here under this category.'
         : tab === 'picks'
           ? 'No Community Picks yet.'
           : tab === 'recent' && !recent.length
             ? 'No maps played yet: the ones you play show here, newest first.'
+            : tab === 'mine' && !mine
+              ? 'No maps of your own yet: the maps you save in MapMaker show here.'
             : tab === 'favs' && !favs.size
               ? 'No favourites yet: the star on a map card keeps it here.'
               : this.browse.modes.length
@@ -1396,19 +1621,12 @@ export class FrontEnd {
     const panel = el('div', { class: 'setup panel', id: 'match-setup' });
     this.setupPanel = panel;
     this.fillSetup(panel);
-    // A phone's picker: its own head with Close (hidden where the list sits beside the setup).
-    const closePick = el('button', { type: 'button', class: 'qp-close', id: 'map-pick-close', title: 'Close (Esc)', textContent: '✕' });
-    closePick.setAttribute('aria-label', 'Close');
-    closePick.dataset.cancel = '';
-    closePick.addEventListener('click', () => this.closeMapPicker());
-    const pickHead = el('div', { class: 'map-pick-head' }, el('h3', { textContent: 'Pick a map' }), closePick);
-    if (this.mapPicking) requestAnimationFrame(() => this.openMapPicker());
     // (The stylesheet lays these out as the mock-up does: the title over the map list, the setup panel the screen's whole height beside them.)
     return el(
       'div',
-      { class: `screen play${this.mapPicking ? ' picking' : ''}` },
+      { class: `screen play${this.sheetOpen ? ' sheet-open' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, pickHead, el('div', { class: 'map-bar' }, tabs, tools), cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-bar' }, tabs, tools), catBar, tagRow, cards), panel),
     );
   }
 
@@ -1456,8 +1674,8 @@ export class FrontEnd {
     // The list is hidden on narrow screens: there, this button opens it full screen (docs/MOBILE_AUDIT.md, proposal
     // 2). The plain list stays in the page, hidden (tests and anything that reads it).
     const mapPick = el('button', { type: 'button', id: 'arcade-map-pick', class: 'map-pick-btn', title: 'Pick a map: pictures, modes, search and favourites' }, el('b', { textContent: map.metadata.name }), el('span', { textContent: 'Change map' }));
-    mapPick.addEventListener('click', () => this.openMapPicker());
-    const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
+    mapPick.addEventListener('click', () => this.setSheet(false));
+    const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.listedMaps().map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
       this.saveSetup();
@@ -1692,7 +1910,8 @@ export class FrontEnd {
       playerRows.push(
         teamEditor({
           id: 'arcade',
-          compact: { extra: [yourTeam], countTo: teamCountSlot },
+          // One size control (the chips and Per team): the cards show who plays; with Even teams off, each its own size too.
+          compact: { extra: [yourTeam], countTo: teamCountSlot, sizeSteps: !even },
           state: { sizes, names: sizes.map((_, i) => s.teamNames?.[i] || sides[i]!.name), colors: sizes.map((_, i) => s.teamColors?.[i] || sides[i]!.color), you },
           countLocked: isTwoTeamMode(s.mode) ? `${MODE_LABEL[s.mode]} is always two teams.` : null,
           youLabel: 'You',
@@ -1888,7 +2107,17 @@ export class FrontEnd {
     );
     body.addEventListener('scroll', () => (this.setupScroll = body.scrollTop), { passive: true });
 
-    panel.replaceChildren(head, tabBar, body, this.setupFoot(map, players));
+    // A phone's strip along the bottom (the sheet down): the map and the setup in a line, ▲ pulls the settings up; Start.
+    const peekSize = team ? (sizes.length <= 4 ? sizes.join('v') : `${sizes.length} teams`) : `${players} players`;
+    const sheetToggle = el('button', { type: 'button', class: 'sheet-toggle', id: 'setup-sheet-toggle', title: 'Match settings: pull up or put away (Esc)' }, el('b', { textContent: map.metadata.name }), el('small', { textContent: `${MODE_SHORT[s.mode]} · ${peekSize} · ${length}` }), el('span', { class: 'sheet-caret', ariaHidden: 'true' }));
+    sheetToggle.dataset.cancel = '';
+    sheetToggle.setAttribute('aria-expanded', String(this.sheetOpen));
+    sheetToggle.setAttribute('aria-controls', 'match-setup');
+    sheetToggle.addEventListener('click', () => this.setSheet(!this.sheetOpen));
+    const peekStart = el('button', { type: 'button', class: 'primary go peek-start', id: 'setup-peek-start', title: 'Start the match (Enter)' }, glyph(GLYPHS.play, 'glyph solid'), el('span', { textContent: 'Start' }));
+    peekStart.addEventListener('click', () => this.start());
+    const peek = el('div', { class: 'sheet-peek' }, el('span', { class: 'sheet-grip', ariaHidden: 'true' }), sheetToggle, peekStart);
+    panel.replaceChildren(peek, head, tabBar, body, this.setupFoot(map, players));
     // Back where it was (a redraw), once the panel is on the page (the first draw is before the screen is).
     if (panel.isConnected) body.scrollTop = this.setupScroll;
     else requestAnimationFrame(() => (body.scrollTop = this.setupScroll));
@@ -3499,7 +3728,7 @@ export class FrontEnd {
       if (t && (t.tagName === 'TEXTAREA' || (t instanceof HTMLInputElement && !['checkbox', 'radio', 'range', 'button'].includes(t.type)))) return t.blur();
       // Match setup's saved setups menu, open: Esc closes it (one level per press).
       if (this.screen === 'home' && this.quickOpen) return this.closeQuickPlay();
-      if (this.screen === 'play' && this.mapPicking) return this.closeMapPicker();
+      if (this.screen === 'play' && this.sheetUp()) return this.setSheet(false);
       const menu = this.screen === 'play' ? this.root.querySelector<HTMLDetailsElement>('#setup-saved[open], #arcade-where-menu[open]') : null;
       if (menu) {
         menu.open = false;

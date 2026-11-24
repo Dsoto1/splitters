@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "rail_stockyard",
     "name": "Rail Stockyard",
@@ -21,12 +21,26 @@
     ],
     "release": {
       "mapId": "m_u372pfxzhqupkywj",
-      "versionId": "v_pryi7egxoqkko6rj",
-      "revision": 1,
-      "contentHash": "sha256:dfd26e2dc6c164605c2b6e0ee79c8d7c112dbd8cf1198e1f0db20dcf21b03cc9",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:15:09.753Z"
-    }
+      "versionId": "v_zhadr2jggkada44g",
+      "revision": 3,
+      "contentHash": "sha256:c07ece4056ebe589ee99b08c15524abd62b5f2a121bec57d1ded82a5fe79d8a0",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:12:18.420Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "modern"
+      },
+      {
+        "category": "environmental",
+        "tag": "industrial"
+      },
+      {
+        "category": "fictional",
+        "tag": "classic"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

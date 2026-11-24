@@ -7,6 +7,14 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Classic remake…) narrow it further. Retired maps and the Training Range are on no tab. Custom holds your own MapMaker maps and community maps, labelled "Community map".
+- **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).
+- **St. John's is Featured and in Quick Play Deathmatch**, in Citadel's place: Featured is Sandgate, Canyon and St. John's.
+- **Match Setup: lighter map cards.** Each card's picture is a small copy of the map's in-game shot, fetched as the card comes into view: opening Match Setup fetches 0.6 MB of pictures instead of 1.8 MB.
+- **Match Setup: one team size control.** The size chips and Teams / Per team set the teams; the team boxes show who plays (players and bots), and get their own sizes only with Even teams off.
+- **Match Setup: glow only on the map you picked and Start match**, steady, and dimmer with Reduce flashing on.
+- **Match Setup with a controller.** The d-pad or left stick moves a focus ring over the map cards and into the settings (held, it repeats); A picks, Menu starts the match, Y stars a map, LB / RB change category, LT / RT the settings tab, the right stick scrolls, and the hints show the controller's buttons.
+- **Match Setup on phones: the map grid first**, the settings a sheet that slides up from a strip along the bottom (the map, the setup and Start).
 - **St. John's: Memorial Hall's pass.** Its four corners are rounded, the roofs following (a rounded spire and a rounded hip end); its windows are real glass you see through, and a shot breaks a pane open; one spiral stair (the south one); more bookcases, taller; a bench along the upper floor's court wall to stand on and look and shoot out over the court; the small gabled annex moved over onto the middle of the hall's north end, and you go in at its red door and on into the library.
 - **St. John's: Welles's end bay by the clock tower.** Its 2nd and 3rd floors are washrooms (toilet stalls, showers, sinks with mirrors); its ground floor, reachable only from the lane, is closed up.
 - **Roofs: no more see-through edges.** A gabled roof's verge is closed by a barge board, so the slit along its edge where you could see into and through the roof is gone (St. John's library and its annex, and every roof of that kind).

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 15,
+  "formatVersion": 50,
   "metadata": {
     "id": "phase0_arena",
     "name": "Phase 0 Arena",
@@ -15,7 +15,21 @@
     },
     "supportedModes": [
       "core.deathmatch"
-    ]
+    ],
+    "categories": [
+      {
+        "category": "anomalous",
+        "tag": "abstract"
+      }
+    ],
+    "release": {
+      "mapId": "m_3na77zjcetoaf3h3",
+      "versionId": "v_s3ha44wljjblg43n",
+      "revision": 1,
+      "contentHash": "sha256:3f9a433210a02c5c09d659a2fd062081b5c17dd0eea2bfb879f854936f5a42d9",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:47:09.578Z"
+    }
   },
   "classicStructure": {
     "cellSize": 8,

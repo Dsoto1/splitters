@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "sky_islands",
     "name": "Sky Islands",
@@ -19,12 +19,18 @@
     ],
     "release": {
       "mapId": "m_ahbd2mxvginmqmtq",
-      "versionId": "v_3c3iomi5gcppmzab",
-      "revision": 1,
-      "contentHash": "sha256:a7e94d7b4e96344d66edd3b5de7275dc639db72cead932e1f0ce4e7bb5a86d1d",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T00:16:16.057Z"
-    }
+      "versionId": "v_7acvbov7xqsinr6j",
+      "revision": 2,
+      "contentHash": "sha256:c16dc689f6276f52be04c17135cadc64ef64321247d8ed29b5e6e197d22e21b0",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:59:41.434Z"
+    },
+    "categories": [
+      {
+        "category": "anomalous",
+        "tag": "impossible"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1921,8 +1927,8 @@
       "yaw": 0.9,
       "scale": 0.86,
       "solid": true,
-      "tint": null,
-      "variant": 1
+      "variant": 1,
+      "tint": null
     },
     {
       "id": "pad_uk0eh8m93m",

@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 48,
+  "formatVersion": 50,
   "metadata": {
     "id": "dustwater",
     "name": "Dustwater",
@@ -21,12 +21,22 @@
     ],
     "release": {
       "mapId": "m_esvroo7gpgf4ar7j",
-      "versionId": "v_2ljjedcwqwzmll5t",
-      "revision": 1,
-      "contentHash": "sha256:3ae651dc6c1cdc13b6c3f51043253456392418b99c7693b4d805be72b5b79147",
-      "schemaVersion": 48,
-      "releasedAt": "2026-11-19T10:21:04.309Z"
-    }
+      "versionId": "v_3qqynje2o4zvruln",
+      "revision": 2,
+      "contentHash": "sha256:c30e3fe56b27c4236202f224211b1764f38147d02f81d20f04b8372d00ab7b9d",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:16:58.664Z"
+    },
+    "categories": [
+      {
+        "category": "temporal",
+        "tag": "industrial"
+      },
+      {
+        "category": "environmental",
+        "tag": "desert"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1244,8 +1254,8 @@
       "yaw": 1.1,
       "scale": 1.29,
       "solid": true,
-      "tint": null,
-      "variant": 3
+      "variant": 3,
+      "tint": null
     },
     {
       "id": "prop_072",

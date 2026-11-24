@@ -28,14 +28,22 @@ export interface MapThumbs {
   draw: () => void;
 }
 
-/** The automatic picture shipped with a built-in map. */
+/** The automatic picture shipped with a built-in map (640 × 360 JPEG: the setup panel's banner). */
 export function shippedPicture(id: string): string {
   return `${import.meta.env.BASE_URL}maps/shots/${id}.jpg`;
 }
 
-/** The picture a map shows: its own, else (built-in maps) the automatic one, else none. */
-export function pictureSource(map: Pick<MapDocument, 'metadata'> | MapSource, shipped: boolean): string | null {
-  return map.metadata.thumbnail ?? (shipped ? shippedPicture(map.metadata.id) : null);
+/**
+ * The map card's copy of it: 480 × 270 WebP, about 10 KB (tools/content/map-cards.mjs makes it from the shot; the
+ * content check fails when a shipped map has none), so a list of 90 cards fetches about a tenth as much.
+ */
+export function shippedCardPicture(id: string): string {
+  return `${import.meta.env.BASE_URL}maps/cards/${id}.webp`;
+}
+
+/** The picture a map shows: its own, else (built-in maps) the automatic one (`card`: its small copy), else none. */
+export function pictureSource(map: Pick<MapDocument, 'metadata'> | MapSource, shipped: boolean, card = false): string | null {
+  return map.metadata.thumbnail ?? (shipped ? (card ? shippedCardPicture : shippedPicture)(map.metadata.id) : null);
 }
 
 function box(cls: string, label: string, title: string): HTMLDivElement {
@@ -46,8 +54,11 @@ function box(cls: string, label: string, title: string): HTMLDivElement {
   return d;
 }
 
-/** `shipped`: a built-in map, which has an automatic picture when its maker set none. A map still to load draws its plan once it has. */
-export function mapThumbs(map: MapDocument | MapSource, shipped: boolean): MapThumbs {
+/**
+ * `shipped`: a built-in map, which has an automatic picture when its maker set none. A map still to load draws its plan
+ * once it has. `card`: a map card's (the small picture, fetched once the card nears the view).
+ */
+export function mapThumbs(map: MapDocument | MapSource, shipped: boolean, opts: { card?: boolean } = {}): MapThumbs {
   const pic = box('pic', 'Picture', `${map.metadata.name}: a look at the map`);
   const plan = box('plan', 'Plan', `${map.metadata.name}: top-down plan (layout, spawns, pickups)`);
   const canvas = document.createElement('canvas');
@@ -57,12 +68,19 @@ export function mapThumbs(map: MapDocument | MapSource, shipped: boolean): MapTh
     pic.classList.add('none');
     pic.replaceChildren();
   };
-  const src = pictureSource(map, shipped);
+  const src = pictureSource(map, shipped, opts.card);
   if (src) {
-    // Decoded with the frame that shows it: a screen rebuilt around a cached picture never flashes without it.
     const img = document.createElement('img');
     img.alt = '';
-    img.decoding = 'sync';
+    if (opts.card) {
+      // A long list fetches only the cards near the view; the box keeps its size meanwhile.
+      img.loading = 'lazy';
+      img.decoding = 'async';
+      img.width = 480;
+      img.height = 270;
+    }
+    // Elsewhere decoded with the frame that shows it: a screen rebuilt around a cached picture never flashes without it.
+    else img.decoding = 'sync';
     img.addEventListener('error', none);
     img.src = src;
     pic.append(img);

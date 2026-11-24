@@ -40,10 +40,41 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
     Character Select, C / Y), you as a player (guest: your name, edited in Options, and Sign in with what it
     gets you; signed in: your username with Sign out, and the username form), region, and the privacy
     line with the Privacy link (and Copy my account ID when signed in).
-  - **Arcade:** map cards with the map's picture on top and its top-down plan beside the name (two
-    separate boxes, `mapThumbs.ts`); the setup panel shows the picture and the plan side by side; mode,
-    bots, skill, score and time. The featured map, the host's Change map picker and the game browser
-    (listings on built-in maps) show them the same way. See CONTENT_PIPELINE.md, Official maps.
+  - **Match Setup** (Play; the owner's mock-ups of 2026-11-11 and 2026-11-23): the map grid on the left, the
+    settings on the right.
+    - **Over the grid:** the tabs All maps / My maps (when you have some) / Featured / Recent / Favorites (and
+      Community Picks when the hub has any), Filter maps (F: a window with a tick per game mode), search, the sort
+      (Featured, A–Z, Size, Favourites) and grid / list. Under them the **category tabs**: All dimensions, then the
+      owner's six, each with its count (shared `map/categories.ts`): Temporal, Dimensional, Environmental,
+      Fictional, Anomalous, Custom. A category picked shows its sub-tags as chips (All, then each tag that has
+      maps). The tags live in each map's file (`metadata.categories`, map format v50), ticked in MapMaker's Map
+      properties → Categories; a map can sit in several. **Custom** is worked out, never ticked: your own
+      MapMaker maps and the community maps on the server (labelled "Community map").
+    - **Cards:** the map's picture (a 480 × 270 WebP, `public/maps/cards/<id>.webp`, made from its in-game shot by
+      `tools/content/map-cards.mjs` and loaded lazily) on top, then the name, the mode badges and the top-down
+      plan (two separate boxes, `mapThumbs.ts`); a favourite star, a Featured or Community map tag. Favourites and
+      Recent are this browser's (`tiletrigger.mapBrowse`). The list scrolls 90 cards smoothly: plans draw as they
+      come into view, pictures load as they near it.
+    - **Settings:** the map's banner (picture and plan), name, blurb and the setup in a line; the fit chip says
+      Fits, **Crowded** (more players than the map is made for) or Problem, its details with a fix. Tabs Match
+      Setup (1 game mode, 2 what wins, 3 teams & players, 4 variants), Bots & AI, Rules, Presets; the foot Save
+      preset, Offline / Host online, Spectate, Start match.
+    - **One team-size control:** the size chips (1v1 … 32v32, the map's pick, FFA) and Teams / Per team; the team
+      boxes show who plays (players and bots). With Even teams off each box gets its own size, for uneven teams.
+    - **Glow** on two things only: the map picked and Start match; steady, and dimmer with Reduce flashing on
+      (`html.calm`).
+    - **Controller** (owner, 2026-11-23; `frontend/padNav.ts`, `inputMode.ts`): the d-pad or left stick moves a
+      yellow focus ring over the cards in two dimensions (held, it repeats after a short delay), up from the top row
+      onto the list's bars, right off the grid into the settings and left off them back to the grid; a focused
+      stepper's value takes left and right. A selects, B goes back (or puts a phone's sheet away), Menu starts the
+      match from anywhere, Y stars the focused card, X opens Filter maps, LB / RB step the categories, LT / RT the
+      settings' tabs, the right stick scrolls the grid or the settings. The footer shows these glyphs while a
+      controller was used last. e2e flow `padsetup` plays it with a stubbed gamepad.
+    - **Phones** (900 px wide and under): the grid first; the settings are a sheet along the bottom. Down, a strip
+      names the map and the setup beside Start; a tap on it, or picking a map, pulls the sheet up; the strip or
+      Change map (or Esc / controller B) puts it away.
+    The featured map, the host's Change map picker and the game browser (listings on built-in maps) show the
+    picture and plan the same way. See CONTENT_PIPELINE.md, Official maps.
   - **Character Select** (from Profile → Change character, or Online → Character → Change): one portrait
     grid that scrolls through every section in turn (Soldiers, Knights & Legends, Everyday Folk, Undead &
     Horror, Animals, Creatures & Machines, Yours; CHARACTERS.md), each under a compact sticky header (name

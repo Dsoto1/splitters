@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 34,
+  "formatVersion": 50,
   "metadata": {
     "id": "skyward",
     "name": "Skyward Yard",
@@ -19,12 +19,22 @@
     ],
     "release": {
       "mapId": "m_z2qxhdlix5uawhum",
-      "versionId": "v_uvxoul2ddeseqczg",
-      "revision": 2,
-      "contentHash": "sha256:740e25ba04ecaa9ca543157bfb52eb3c5e31157a3ca10d634fd59c66ef1141dd",
-      "schemaVersion": 34,
-      "releasedAt": "2026-11-10T21:32:28.893Z"
-    }
+      "versionId": "v_hcxquslazxtlq4bt",
+      "revision": 3,
+      "contentHash": "sha256:c1bcd9ad2d21bc5a8481c86fa44ae9a2ffd812c099b14ef7f4e4f5ee172d6309",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-23T16:59:59.269Z"
+    },
+    "categories": [
+      {
+        "category": "environmental",
+        "tag": "space"
+      },
+      {
+        "category": "anomalous",
+        "tag": "impossible"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
