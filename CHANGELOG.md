@@ -7,6 +7,8 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Roofs and windows: no light through the seams.** A sloped timber roof over thin walls no longer shows sky along the wall tops (St. John's library annex and every roof of that kind), and the library's glass windows no longer show a slit of light up their sides and along their heads.
+- **St. John's dorm rooms: a mirror cabinet over every sink, a black footlocker at the foot of every bunk, and the two desks side by side in the corner by the window** (in every dorm piece in MapMaker; no extra props a room).
 - **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Classic remake…) narrow it further. Retired maps and the Training Range are on no tab. Custom holds your own MapMaker maps and community maps, labelled "Community map".
 - **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).
 - **St. John's is Featured and in Quick Play Deathmatch**, in Citadel's place: Featured is Sandgate, Canyon and St. John's.
