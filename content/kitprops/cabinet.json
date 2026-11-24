@@ -572,7 +572,7 @@
       "category": "Furniture",
       "assetVersion": 1,
       "notes": {
-        "1": "First version (St. John's dorm rooms; owner, 2026-11-21: \"every dorm room had a small mirror cabinet above their sinks\", folded into the sink, 2026-11-22, so a room gains no prop): a vanity unit 0.95 m wide and 0.9 m high (the Sink Unit's footprint) under a grey counter with a white basin and a tap, two doors; on the wall over it a small cabinet 0.6 m wide from 1.25 to 1.95 m with a mirror door. The mirror is a plain pale colour: it reflects nothing. Collides as the vanity's box and the cabinet's."
+        "1": "First version (St. John's dorm rooms; owner, 2026-11-21: \"every dorm room had a small mirror cabinet above their sinks\", folded into the sink, 2026-11-22, so a room gains no prop): a vanity unit 0.95 m wide and 0.9 m high (the Sink Unit's footprint) under a grey counter with a white basin and a tap, two doors; on the wall over it a small cabinet 0.6 m wide from 1.25 to 1.95 m with a mirror door. The mirror is a plain pale colour: it reflects nothing. Collides as the vanity's box (the cabinet over the counter, out of reach, collides as nothing: a room's collision boxes stay within the dorm bay's budget)."
       },
       "size": [
         0.95,

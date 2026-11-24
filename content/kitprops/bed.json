@@ -323,7 +323,7 @@
         {
           "index": 0,
           "name": "pine",
-          "seed": 9631,
+          "seed": 10401,
           "look": {
             "wood": "#a67c4e",
             "jitter": 0.08,
@@ -337,7 +337,7 @@
         {
           "index": 1,
           "name": "cadet",
-          "seed": 9636,
+          "seed": 10402,
           "look": {
             "wood": "#a67c4e",
             "jitter": 0.08,

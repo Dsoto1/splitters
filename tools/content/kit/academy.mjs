@@ -564,7 +564,7 @@ export function closetPairMesh(seed, size, g, look, level) {
  * ([width, from, to, depth] m) a small cabinet with a mirror door in a thin frame. Settings `g`: `vanity`, `mirror`,
  * `basin` ([width, depth] m). `look`: `wood` (the carcass), `top` (the counter), `basin`, `metal` (tap and pulls),
  * `frame` (the cabinet), `glass` (the mirror: a pale grey-blue, plain vertex colour; it reflects nothing, nothing glows),
- * `jitter`, `grime`. Collides as the vanity's box and the cabinet's (a head under it bumps it).
+ * `jitter`, `grime`. Collides as the vanity's box (the cabinet, over the counter and out of reach, as nothing).
  */
 export function sinkMirrorMesh(seed, size, g, look, level) {
   const [w, , d] = size;
@@ -582,7 +582,7 @@ export function sinkMirrorMesh(seed, size, g, look, level) {
   const r = rng(seed);
   const m = new Mesh();
   const tone = (c, k) => woodTone(c, r, look, seed + k);
-  if (level === 0) m.boxes = [[-X, 0, -Z, X, vh, Z], [-MX, my0, -Z, MX, my1, -Z + md]];
+  if (level === 0) m.boxes = [[-X, 0, -Z, X, vh, Z]];
   const ct = 0.04;
   // The vanity: a carcass on a recessed plinth, a counter over it.
   box(m, [-X + 0.01, 0, -Z], [X - 0.01, 0.08, Z - 0.06], scale3(wood, 0.55), ['ny', 'nz']);
@@ -604,6 +604,7 @@ export function sinkMirrorMesh(seed, size, g, look, level) {
   quadN(m, [-bw / 2, by, bz - bd / 2], [bw / 2, by, bz - bd / 2], [bw / 2, by, bz + bd / 2], [-bw / 2, by, bz + bd / 2], [0, 1, 0], basin);
   quadN(m, [-bw / 2 + 0.04, by + 0.001, bz - bd / 2 + 0.04], [bw / 2 - 0.04, by + 0.001, bz - bd / 2 + 0.04], [bw / 2 - 0.04, by + 0.001, bz + bd / 2 - 0.04], [-bw / 2 + 0.04, by + 0.001, bz + bd / 2 - 0.04], [0, 1, 0], scale3(basin, 0.78));
   quadN(m, [-0.025, by + 0.002, bz - 0.025], [0.025, by + 0.002, bz - 0.025], [0.025, by + 0.002, bz + 0.025], [-0.025, by + 0.002, bz + 0.025], [0, 1, 0], scale3(metal, 0.4));
+  if (level >= 1) return m;
   const tz = bz - bd / 2 - 0.03;
   box(m, [-0.02, vh, tz - 0.02], [0.02, vh + 0.2, tz + 0.02], metal, ['ny']);
   box(m, [-0.015, vh + 0.17, tz], [0.015, vh + 0.2, tz + 0.14], metal, ['nz']);
