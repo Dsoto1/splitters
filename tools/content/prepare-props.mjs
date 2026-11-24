@@ -57,6 +57,7 @@ import { buildNatureDocument, cutBelow, normalise, readSoup } from './nature.mjs
 import { MESHY_QUANTIZE, markings, meshyDocument, normalJpeg, paintOut } from './meshy-mesh.mjs';
 import { readLock, writeLock } from './lockfile.mjs';
 import { applySurfaces, isSurfaced, surfaceRules } from './surfaces.mjs';
+import { applyAtlas, isAtlased } from './prop-atlas.mjs';
 import { loadPropManifest } from './props-manifest.mjs';
 import { sceneTriangles, trunkBoxes, voxelBudget, voxelCollision } from './voxel-collision.mjs';
 
@@ -470,6 +471,16 @@ const built = new Map(oldLock.files.map((f) => [f.file, f]));
 const surfaced = new Map();
 
 /**
+ * The pack's material atlas (tools/content/prop-atlas.mjs): flat colours into the vertices, every material its pack's
+ * key. Nature props (the environment's own batches draw them) are left alone, and so is a fire prop's flame (the game
+ * hides it by its material's name).
+ */
+function atlasProp(doc, p) {
+  if (manifest.packs[p.pack]?.nature) return null;
+  return applyAtlas(doc, p.pack, { skip: p.flame?.hide ?? [] });
+}
+
+/**
  * A single-file GLB (the Kenney kits and our own code-built pieces): centred on
  * its footprint, stood on y = 0 and scaled to the prop's `height`.
  */
@@ -495,6 +506,7 @@ async function normaliseGlb(src, p) {
   // Real surfaces for man-made kit props (content/surfaces/<pack>.json), measured in the prop's frame as drawn.
   surfaced.set(p.id, await applySurfaces(doc, p.pack, p.id));
   // A surfaced prop's second coordinates are read by the game, not by a texture in the file: prune keeps them.
+  atlasProp(doc, p);
   await doc.transform(weld(), dedup(), prune({ keepAttributes: !!surfaced.get(p.id) }));
   return { glb: Buffer.from(await io.writeBinary(doc)), size: [round((b.max[0] - b.min[0]) * s), round((b.max[1] - b.min[1]) * s), round((b.max[2] - b.min[2]) * s)], boxes };
 }
@@ -767,6 +779,9 @@ async function convertPiece(dir, pack, p) {
     const img = sharp(Buffer.from(t.getImage())).resize(128, 128, { fit: 'inside', kernel: 'nearest' });
     t.setImage(await img.png({ palette: true }).toBuffer()).setMimeType('image/png').setURI('');
   }
+  // After quantizing: the colours moved into the vertices stay full floats (8 bits lose the near-blacks).
+  atlasProp(doc, p);
+  await doc.transform(prune({ keepAttributes: true }));
   return Buffer.from(await io.writeBinary(doc));
 }
 
@@ -844,6 +859,7 @@ for (const p of manifest.props) {
     root.addChild(turn);
     scene.addChild(root);
     surfaced.set(p.id, await applySurfaces(doc, p.pack, p.id));
+    atlasProp(doc, p);
     await doc.transform(weld(), dedup(), ...(p.simplify ? [simplify({ simplifier: MeshoptSimplifier, ratio: p.simplify, error: 0.002 })] : []), prune({ keepAttributes: !!surfaced.get(p.id) }));
     glb = Buffer.from(await io.writeBinary(doc));
     writeFileSync(path, glb);
@@ -869,6 +885,12 @@ for (const p of manifest.props) {
     else if (surfaceRules(p.pack, p.id)) {
       surfaced.set(p.id, await applySurfaces(kept, p.pack, p.id));
       await kept.transform(weld(), dedup(), prune({ keepAttributes: true }));
+      glb = Buffer.from(await io.writeBinary(kept));
+      writeFileSync(path, glb);
+    }
+    // The pack's material atlas reaches a prop kept as built once (prop-atlas.mjs; again only when its version changes).
+    if (!pack.nature && !isAtlased(kept) && atlasProp(kept, p) !== null) {
+      await kept.transform(prune({ keepAttributes: true }));
       glb = Buffer.from(await io.writeBinary(kept));
       writeFileSync(path, glb);
     }
