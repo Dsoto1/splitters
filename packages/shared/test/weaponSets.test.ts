@@ -107,7 +107,8 @@ describe('the sets (content/weapon-sets.json)', () => {
     expect([...setWeaponIds(set('military'))!].sort()).toEqual(['core.amarillo', 'core.auto_shotgun', 'core.battle_rifle', 'core.burst_rifle', 'core.compact_carbine', 'core.desert_carbine', 'core.hand_cannon', 'core.knife', 'core.launcher', 'core.lever_action', 'core.lmg', 'core.machine_pistol', 'core.marksman', 'core.pistol', 'core.revolver', 'core.rifle', 'core.rockets', 'core.sawed_off', 'core.shotgun', 'core.smg', 'core.sniper', 'core.twin_rifle', 'core.woodland_smg']);
     expect(set('scifi').spawn).toEqual(['core.knife', 'core.pulse_pistol', 'core.plasma']);
     expect(set('scifi').sniper).toBe('core.railgun');
-    expect([...setWeaponIds(set('scifi'))!].sort()).toEqual(['core.arc_caster', 'core.blaster_x42', 'core.disc_launcher', 'core.guided', 'core.knife', 'core.laser_blaster', 'core.laser_rifle', 'core.nova6', 'core.plasma', 'core.pulse_pistol', 'core.railgun', 'core.swarm']);
+    expect([...setWeaponIds(set('scifi'))!].sort()).toEqual(['core.arc_caster', 'core.blaster_x42', 'core.disc_launcher', 'core.guided', 'core.knife', 'core.laser_blaster', 'core.laser_rifle', 'core.nova6', 'core.plasma', 'core.pulse_pistol', 'core.railgun', 'core.singularity', 'core.swarm']);
+    // The Singularity joined Sci-fi in the owner's Weapon Manager set of 2026-11-23.
     expect(set('medieval').spawn).toEqual(['core.knife', 'core.spear']);
     expect([...setWeaponIds(set('medieval'))!].sort()).toEqual(['core.battle_axe', 'core.crossbow', 'core.flintlock_pistol', 'core.katana', 'core.knife', 'core.scimitar', 'core.spear']);
     expect(set('chaos').spawn).toEqual(['core.knife', 'core.pistol']);
@@ -223,7 +224,7 @@ describe('pickups roll within the set', () => {
     expect(weaponsOf(pool('military', { item: 'core.weapon_singularity' })).sort()).toEqual(['core.battle_rifle', 'core.burst_rifle', 'core.desert_carbine', 'core.hand_cannon', 'core.launcher', 'core.revolver', 'core.rifle', 'core.rockets', 'core.twin_rifle']);
     // Sci-fi has no SMGs or shotguns.
     expect(weaponsOf(pool('scifi', { item: 'core.weapon_smg' })).sort()).toEqual(['core.blaster_x42', 'core.laser_blaster', 'core.laser_rifle', 'core.nova6', 'core.plasma', 'core.pulse_pistol']);
-    expect(weaponsOf(pool('scifi', { item: 'core.weapon_shotgun' })).sort()).toEqual(['core.arc_caster', 'core.blaster_x42', 'core.laser_blaster', 'core.laser_rifle', 'core.nova6', 'core.plasma', 'core.pulse_pistol']);
+    expect(weaponsOf(pool('scifi', { item: 'core.weapon_shotgun' })).sort()).toEqual(['core.arc_caster', 'core.blaster_x42', 'core.laser_blaster', 'core.laser_rifle', 'core.nova6', 'core.plasma', 'core.pulse_pistol', 'core.singularity']);
     // Medieval: a melee pickup a spear, a battle axe, a katana or a scimitar; a pistol the flintlock, a rifle or sniper the crossbow (weapons intake 11-18).
     const medieval: Record<WeaponCategory, string[]> = { pistol: ['core.flintlock_pistol'], smg: ['core.flintlock_pistol'], rifle: ['core.crossbow'], shotgun: ['core.battle_axe', 'core.flintlock_pistol', 'core.katana', 'core.scimitar', 'core.spear'], sniper: ['core.crossbow'], explosive: ['core.crossbow'], melee: ['core.battle_axe', 'core.katana', 'core.scimitar', 'core.spear'], special: ['core.flintlock_pistol'] };
     for (const c of WEAPON_CATEGORIES) expect(weaponsOf(setCategoryPool(set('medieval'), c)).sort(), c).toEqual(medieval[c]);

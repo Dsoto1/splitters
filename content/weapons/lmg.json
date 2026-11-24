@@ -31,7 +31,8 @@
       "shoulder": [0, 0.09, -0.423]
     },
     "fallback": "weapons/lmg.glb",
-    "sound": "fire.smg"
+    "sound": "fire.smg.ppsh",
+    "reloadSound": "reload.scifi"
   },
   "notes": {
     "range": "Best within 30 m: full damage, 12 body shots. Down to 70 % (16 shots) by 80 m; reaches 300 m. Standard ballistics: by impact speed, the same distances.",

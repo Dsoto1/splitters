@@ -29,7 +29,7 @@
     "tracer": "#fff07a",
     "hold": { "style": "long", "grip": [0, -0.03, -0.13], "support": [0, 0.04, 0.12], "shoulder": [0, 0.02, -0.31] },
     "muzzleAt": [0, 0.05, 0.32],
-    "sound": "fire.smg"
+    "sound": "fire.rifle.m4"
   },
   "notes": {
     "design": "The bullet hose: 1,800 rpm with almost no climb, empties its 40 rounds in 1.3 s, reloads fast (0.9 s). Thirteen rounds to a body, 0.4 s, but the cone blooms wide and the rounds fade past 10 m: a corner and room gun.",

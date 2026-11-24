@@ -21,7 +21,7 @@
     "tracer": "#bff0ff",
     "hold": { "style": "pistol", "grip": [0, -0.02, -0.153], "support": [-0.02, -0.03, -0.143], "rake": 20 },
     "fallback": "weapons/freeze_ray.glb",
-    "sound": "fire.freeze",
+    "sound": "fire.freeze.b",
     "beam": true
   },
   "notes": {

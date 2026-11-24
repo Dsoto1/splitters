@@ -194,7 +194,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/TS Sound - 12 Gauge Shotgun/Shotgun_Fire_Slug_01.wav",
           "start": 0.051,
-          "length": 0.9,
+          "length": 1.38,
+          "fade": 0.6,
           "punch": "gun"
         }
       ]
@@ -209,7 +210,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production - Barrett M98B .338 Lapua/Barrett_M98B_.338_Lapua_2m_right_MKH60_clean_Single_shots_x_17.wav",
           "start": 0.0,
-          "length": 1.089,
+          "length": 1.35,
+          "fade": 0.4,
           "punch": "gun"
         },
         {
@@ -231,7 +233,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Fascinated Sound - The Gun Locker SFX Pack/Automatic Cannon - MK44 - 03 - Single Shot with Report 03.wav",
           "start": 0.311,
-          "length": 0.804,
+          "length": 0.68,
+          "fade": 0.25,
           "punch": "gun"
         }
       ]
@@ -1102,7 +1105,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Bluezone - Tank - Explosion Sound Effects/Bluezone_BC0271_tank_artillery_cannon_shot_012.wav",
           "start": 0.0,
-          "length": 0.904,
+          "length": 1.5,
+          "fade": 0.6,
           "punch": "gun"
         }
       ]
@@ -1176,7 +1180,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Olivier Girardot - Hand Guns Sound Effects Pack/Hand Gun 6.wav",
           "start": 0.0,
-          "length": 0.644,
+          "length": 0.8,
+          "fade": 0.2,
           "punch": "gun"
         }
       ]
@@ -1232,7 +1237,8 @@
           "pack": "sonniss-gdc-2026",
           "file": "Epic Stock Media - Elemental Mutation Whooshes and Impacts/ELECMisc_Impact Electric Tonal Deep Movement Motion Hiss Glitch 01_ESM_EMWI.wav",
           "start": 0.026,
-          "length": 1.104
+          "length": 1.5,
+          "fade": 0.6
         }
       ]
     },
@@ -1246,7 +1252,8 @@
           "pack": "sonniss-gdc-2026",
           "file": "Cinematic Sound Design - Colossal Impacts/Impact Cut Sweep.wav",
           "start": 0.916,
-          "length": 0.504
+          "length": 1.2,
+          "fade": 0.5
         }
       ]
     },
@@ -1506,7 +1513,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production -  Heckler & Koch VP70 9mm/HK_VP70_9mm_1m_in_front_RE20_clean_Double_shots_x_1.wav",
           "start": 0.956,
-          "length": 0.5,
+          "length": 1.1,
+          "fade": 0.45,
           "punch": "gun"
         }
       ]
@@ -1586,7 +1594,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/TS Sound - 12 Gauge Shotgun/Shotgun_Fire_Round Eject_01.wav",
           "start": 0.0,
-          "length": 0.9,
+          "length": 1.38,
+          "fade": 0.6,
           "punch": "gun"
         }
       ]
@@ -1602,7 +1611,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production - M1918 Browning Automatic Rifle .30cal/M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1.wav",
           "start": 0.511,
-          "length": 0.9,
+          "length": 1.3,
+          "fade": 0.5,
           "punch": "gun"
         }
       ]
@@ -1632,7 +1642,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Pole Position - Mauser Karabiner 98 kurz K98k bolt-action rifle/K98k, Firing, t2, MKH416.wav",
           "start": 0.336,
-          "length": 0.239,
+          "length": 0.75,
+          "fade": 0.45,
           "punch": "gun"
         }
       ]
@@ -1648,7 +1659,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Pole Position - Mosin-Nagant M38 bolt-action rifle/M38, Firing, t2, BP4027.wav",
           "start": 1.646,
-          "length": 0.634,
+          "length": 1.2,
+          "fade": 0.5,
           "punch": "gun"
         }
       ]
@@ -1664,7 +1676,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production - FN FAL 7.62x51mm/FN_FAL_7.62x51mm_1.5m_behind_right_clean_2_shots.wav",
           "start": 0.366,
-          "length": 0.629,
+          "length": 0.68,
+          "fade": 0.25,
           "punch": "gun"
         }
       ]
@@ -1680,7 +1693,8 @@
           "pack": "sonniss-gdc-2016",
           "file": "Gunshots and bullets/Pole Position Production - M1918 Browning Automatic Rifle .30cal/M1918_Browning_Automatic_Rifle_.30cal_0.1m_to_right_Double_shots_x_1.wav",
           "start": 0.511,
-          "length": 1.0,
+          "length": 1.3,
+          "fade": 0.5,
           "punch": "gun"
         }
       ]
@@ -1696,7 +1710,8 @@
           "pack": "sonniss-gdc-2026",
           "file": "Pole Position - Walther P38 semi automatic pistol/P38, Firing, t1, 2m, Behind, LS5.wav",
           "start": 0.301,
-          "length": 0.169,
+          "length": 0.6,
+          "fade": 0.35,
           "punch": "gun"
         },
         {
@@ -1719,7 +1734,8 @@
           "pack": "sonniss-gdc-2026",
           "file": "Pole Position - Tokarev TT-33 semi-automatic pistol/TT33, Firing, t1, Inside Car, Omni, CMC6.wav",
           "start": 1.181,
-          "length": 0.429,
+          "length": 0.9,
+          "fade": 0.45,
           "punch": "gun"
         }
       ]
@@ -2268,7 +2284,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "David Dumais Audio - Futuristic Guns Sound FX Pack 3/HeavyGun_Experimental_3.wav",
           "start": 0.006,
-          "length": 1.004,
+          "length": 1.3,
+          "fade": 0.45,
           "punch": true
         }
       ]
@@ -2284,7 +2301,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "PMSFX - SCI-FI GunnerySCI-FI Gunnery/PM_SFG_VOL2_WEAPON_15_5_GUN_GUNSHOT_FUTURISTIC.wav",
           "start": 0.466,
-          "length": 0.579
+          "length": 0.8,
+          "fade": 0.25
         }
       ]
     },
@@ -2299,7 +2317,8 @@
           "pack": "sonniss-gdc-2019",
           "file": "PMSFX - SynthAssault/PM_SA_CINEMATIC_IMPACT_101.wav",
           "start": 0.031,
-          "length": 1.004
+          "length": 1.5,
+          "fade": 0.6
         }
       ]
     },
@@ -2314,7 +2333,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Async Audio - Sci-Fi Blaster/Blast Laser 4.wav",
           "start": 0.091,
-          "length": 0.904,
+          "length": 1.3,
+          "fade": 0.4,
           "punch": true
         }
       ]
@@ -2375,7 +2395,8 @@
           "pack": "sonniss-gdc-2018",
           "file": "Bluezone Corporation -  Subspace Distortion - Sci Fi Cinematic Samples/Bluezone_BC0233_transition_016.wav",
           "start": 1.2,
-          "length": 1.03,
+          "length": 1.5,
+          "fade": 0.6,
           "punch": true
         }
       ]
@@ -2391,7 +2412,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Bluezone - Lunar - Cinematic Ambient Samples/Bluezone_BC0257_impact_005.wav",
           "start": 0.0,
-          "length": 1.304,
+          "length": 1.5,
+          "fade": 0.6,
           "punch": true
         }
       ]
@@ -2407,7 +2429,8 @@
           "pack": "sonniss-gdc-2019",
           "file": "PMSFX - SynthAssault/PM_SA_DESIGNED_58_Vacum.wav",
           "start": 2.55,
-          "length": 1.3,
+          "length": 1.5,
+          "fade": 0.15,
           "punch": "gun"
         }
       ]
@@ -2423,7 +2446,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Audio Summoners - Future Melee Weapons/FMW_Weapon_Layer_FX_24.wav",
           "start": 0.126,
-          "length": 0.504,
+          "length": 1.2,
+          "fade": 0.35,
           "punch": true
         }
       ]
@@ -2439,7 +2463,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "2496SoundEffects - Super Heroes Sound Design/Hawk's Arrow Flies Bow and Arrow shoot 2.wav",
           "start": 0.456,
-          "length": 0.504,
+          "length": 1.0,
+          "fade": 0.2,
           "punch": true
         }
       ]
@@ -2516,7 +2541,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Async Audio - Sci-Fi Blaster/Big Blast 4.wav",
           "start": 0.256,
-          "length": 0.804,
+          "length": 0.68,
+          "fade": 0.25,
           "punch": "gun"
         }
       ]
@@ -2532,7 +2558,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "David Dumais Audio - Magic Sound FX Pack 1/Magic_Explosion_Short19.wav",
           "start": 0.0,
-          "length": 0.804,
+          "length": 1.13,
+          "fade": 0.3,
           "punch": true
         }
       ]
@@ -2547,8 +2574,9 @@
         {
           "pack": "sonniss-gdc-2017",
           "file": "explosions&impacts/Double Trouble Audio - Tanks and Jet/TAJ - Tank Battle Cannon Fire [XY Stereo]-001.wav",
-          "start": 0.071,
-          "length": 0.904,
+          "start": 3.813,
+          "length": 1.3,
+          "fade": 0.7,
           "punch": "gun"
         }
       ]
@@ -2564,7 +2592,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "Bluezone - Tank - Explosion Sound Effects/Bluezone_BC0271_shell_trajectory_004.wav",
           "start": 0.0,
-          "length": 0.904,
+          "length": 1.3,
+          "fade": 0.6,
           "punch": "gun"
         }
       ]
@@ -2716,7 +2745,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "PMSFX - Abstract Guns/PM_AG_2_2_ABSTRACT_GUNS.wav",
           "start": 0.011,
-          "length": 0.504
+          "length": 0.65,
+          "fade": 0.2
         }
       ]
     },
@@ -2731,7 +2761,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "PMSFX - Abstract Guns/PM_AG_9_5_ABSTRACT_GUNS.wav",
           "start": 0.281,
-          "length": 0.604
+          "length": 0.85,
+          "fade": 0.25
         }
       ]
     },
@@ -2746,7 +2777,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "PMSFX - SCI-FI GunnerySCI-FI Gunnery/PM_SFG_VOL1_WEAPON_4_4_GUN_GUNSHOT_FUTURISTIC.wav",
           "start": 0.001,
-          "length": 0.604
+          "length": 1.25,
+          "fade": 0.45
         }
       ]
     },
@@ -2761,7 +2793,8 @@
           "pack": "sonniss-gdc-2020",
           "file": "PMSFX - SCI-FI GunnerySCI-FI Gunnery/PM_SFG_VOL2_WEAPON_41_6_GUN_GUNSHOT_FUTURISTIC.wav",
           "start": 0.176,
-          "length": 0.529,
+          "length": 1.1,
+          "fade": 0.4,
           "punch": true
         }
       ]
