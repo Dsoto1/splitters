@@ -6,7 +6,6 @@
   "name": "Chompers McFinn",
   "look": "core.wackyshark",
   "group": "animals",
-  "tier": "experimental",
   "blood": "red",
   "nameTheme": "critter",
   "bio": "Smells a camper from a mile away.",

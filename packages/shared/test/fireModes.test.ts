@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BUTTON_FIRE,
   BUTTON_ZOOM,
+  DESIGNER_BASE_LOOK,
   DEFAULT_DEATHMATCH_RULES,
   PLAYER,
   PhysicsWorld,
@@ -55,6 +56,9 @@ function duel(dist: number) {
   const match = new Match(range(), rules);
   const a = match.addHuman('a')!;
   const b = match.addHuman('b')!;
+  // (Both on Linktifa's body, the one these numbers were measured on: the sim's default look moved to Cal on 2026-11-24, and
+  // Linktifa is off the roster, so set here rather than picked; the hit shapes follow the look.)
+  a.look = b.look = DESIGNER_BASE_LOOK.id;
   a.move = { pos: { x: 0, y: 0, z: 0 }, velY: 0, grounded: true };
   b.move = { pos: { x: dist, y: 0, z: 0 }, velY: 0, grounded: true };
   give(a, BR);

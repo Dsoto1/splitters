@@ -27,7 +27,7 @@ describe('character sizes', () => {
     expect(decodeLook(helmeted)?.gear).toEqual(['shades', 'mk2_helmet']);
     expect(encodeLook({ ...bare, gear: ['helmet'] })).toMatch(/-g0004$/);
     expect(bodySizeOf('core.knight')).toBe('large');
-    expect(bodySizeOf('core.sprout')).toBe('small');
+    expect(bodySizeOf('core.bandit')).toBe('small');
     expect(bodySizeOf('core.ranger')).toBe('standard');
   });
 
@@ -48,7 +48,7 @@ describe('character sizes', () => {
   it('large characters have more health and move slower; the match setting can make everyone standard', () => {
     const on = new Match(room(), DEFAULT_DEATHMATCH_RULES);
     const big = on.addHuman('big', 'core.knight')!;
-    const small = on.addHuman('small', 'core.sprout')!;
+    const small = on.addHuman('small', 'core.bandit')!;
     expect(big.maxHealth).toBe(BODY_SIZES.large.health);
     expect(big.speedMul).toBeLessThan(1);
     expect(small.size).toBe(BODY_SIZES.small.scale);

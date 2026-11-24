@@ -6,7 +6,6 @@
   "name": "Coach Hank Shelton",
   "look": "core.coachtortoise",
   "group": "animals",
-  "tier": "experimental",
   "blood": "red",
   "nameTheme": "critter",
   "bio": "Slow and steady takes the objective.",

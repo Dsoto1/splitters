@@ -42,7 +42,7 @@ function boarded(seed: number) {
   const team = (match as unknown as { teams: { id: string }[] }).teams[0]!.id;
   const me = match.addHuman('me', undefined, team)!;
   // Explicit looks: how they walk to the doors and fit the seats doesn't move with the roster.
-  const riders = [0, 1].map((i) => match.addBot(`r${i}`, CORE_BOT_PROFILES[(i * 5 + 1) % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal, false, { team, look: 'core.ranger' })!);
+  const riders = [0, 1].map((i) => match.addBot(`r${i}`, CORE_BOT_PROFILES[(i * 5 + 1) % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal, false, { team, look: 'core.dale' })!);
   let seq = 0;
   const drive = (forward = 0, right = 0, buttons = 0) => match.queueInputs(me.slot, [{ seq: ++seq, forward, right, yaw: me.yaw, pitch: 0, buttons }]);
   for (let i = 0; i < 3; i++) {
