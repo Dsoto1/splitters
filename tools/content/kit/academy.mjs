@@ -556,3 +556,65 @@ export function closetPairMesh(seed, size, g, look, level) {
   }
   return m;
 }
+
+/**
+ * A dorm room's sink with its mirror cabinet (St. John's, owner 2026-11-21: "every dorm room had a small mirror cabinet
+ * above their sinks"; folded into the sink so a room gains no prop): a vanity unit, its back on −z, `vanity` m high
+ * under a counter with a white basin let into it and a tap, two doors with pulls; on the wall over it, `mirror`
+ * ([width, from, to, depth] m) a small cabinet with a mirror door in a thin frame. Settings `g`: `vanity`, `mirror`,
+ * `basin` ([width, depth] m). `look`: `wood` (the carcass), `top` (the counter), `basin`, `metal` (tap and pulls),
+ * `frame` (the cabinet), `glass` (the mirror: a pale grey-blue, plain vertex colour; it reflects nothing, nothing glows),
+ * `jitter`, `grime`. Collides as the vanity's box and the cabinet's (a head under it bumps it).
+ */
+export function sinkMirrorMesh(seed, size, g, look, level) {
+  const [w, , d] = size;
+  const X = w / 2;
+  const Z = d / 2;
+  const vh = g.vanity ?? 0.9;
+  const [mw, my0, my1, md] = g.mirror ?? [0.6, 1.25, 1.95, 0.14];
+  const MX = mw / 2;
+  const wood = hex(look.wood ?? '#d9d4c6');
+  const top = hex(look.top ?? '#8f9294');
+  const basin = hex(look.basin ?? '#e8e8e4');
+  const metal = hex(look.metal ?? '#b8bcc2');
+  const frame = hex(look.frame ?? look.wood ?? '#d9d4c6');
+  const glass = hex(look.glass ?? '#aebfc6');
+  const r = rng(seed);
+  const m = new Mesh();
+  const tone = (c, k) => woodTone(c, r, look, seed + k);
+  if (level === 0) m.boxes = [[-X, 0, -Z, X, vh, Z], [-MX, my0, -Z, MX, my1, -Z + md]];
+  const ct = 0.04;
+  // The vanity: a carcass on a recessed plinth, a counter over it.
+  box(m, [-X + 0.01, 0, -Z], [X - 0.01, 0.08, Z - 0.06], scale3(wood, 0.55), ['ny', 'nz']);
+  box(m, [-X, 0.08, -Z], [X, vh - ct, Z - 0.035], tone(wood, 1), ['ny', 'nz']);
+  box(m, [-X, vh - ct, -Z], [X, vh, Z], (p, n) => scale3(top, n[1] > 0.5 ? 1.05 : 0.9), ['ny', 'nz']);
+  // The mirror cabinet: its box against the wall, a framed mirror door on its front.
+  box(m, [-MX, my0, -Z], [MX, my1, -Z + md], tone(frame, 2), ['nz']);
+  if (level >= 2) {
+    quadN(m, [-MX + 0.04, my0 + 0.04, -Z + md + 0.002], [MX - 0.04, my0 + 0.04, -Z + md + 0.002], [MX - 0.04, my1 - 0.04, -Z + md + 0.002], [-MX + 0.04, my1 - 0.04, -Z + md + 0.002], [0, 0, 1], glass);
+    return m;
+  }
+  const zf = -Z + md + 0.004;
+  // The mirror: a lighter band across its top (a hint of the room in it).
+  quadN(m, [-MX + 0.035, my0 + 0.035, zf], [MX - 0.035, my0 + 0.035, zf], [MX - 0.035, my1 - 0.035, zf], [-MX + 0.035, my1 - 0.035, zf], [0, 0, 1], (p) => scale3(glass, 0.92 + 0.16 * ((p[1] - my0) / (my1 - my0))));
+  // The basin let into the counter: its rim, its bowl (a darker inside), the drain; the tap behind it.
+  const [bw, bd] = g.basin ?? [0.5, 0.36];
+  const bz = -Z + 0.12 + bd / 2;
+  const by = vh + 0.002;
+  quadN(m, [-bw / 2, by, bz - bd / 2], [bw / 2, by, bz - bd / 2], [bw / 2, by, bz + bd / 2], [-bw / 2, by, bz + bd / 2], [0, 1, 0], basin);
+  quadN(m, [-bw / 2 + 0.04, by + 0.001, bz - bd / 2 + 0.04], [bw / 2 - 0.04, by + 0.001, bz - bd / 2 + 0.04], [bw / 2 - 0.04, by + 0.001, bz + bd / 2 - 0.04], [-bw / 2 + 0.04, by + 0.001, bz + bd / 2 - 0.04], [0, 1, 0], scale3(basin, 0.78));
+  quadN(m, [-0.025, by + 0.002, bz - 0.025], [0.025, by + 0.002, bz - 0.025], [0.025, by + 0.002, bz + 0.025], [-0.025, by + 0.002, bz + 0.025], [0, 1, 0], scale3(metal, 0.4));
+  const tz = bz - bd / 2 - 0.03;
+  box(m, [-0.02, vh, tz - 0.02], [0.02, vh + 0.2, tz + 0.02], metal, ['ny']);
+  box(m, [-0.015, vh + 0.17, tz], [0.015, vh + 0.2, tz + 0.14], metal, ['nz']);
+  for (const sx of [-1, 1]) box(m, [sx * 0.12 - 0.025, vh, tz - 0.02], [sx * 0.12 + 0.025, vh + 0.06, tz + 0.03], metal, ['ny']);
+  // Two doors on the front with a pull each; the cabinet's pull at its side.
+  for (const sx of [-1, 1]) {
+    const x0 = sx < 0 ? -X + 0.03 : 0.008;
+    const x1 = sx < 0 ? -0.008 : X - 0.03;
+    box(m, [x0, 0.11, Z - 0.035], [x1, vh - ct - 0.03, Z - 0.018], tone(scale3(wood, 1.05), 10 + sx), ['nz']);
+    box(m, [sx * 0.05 - 0.008, vh - ct - 0.2, Z - 0.018], [sx * 0.05 + 0.008, vh - ct - 0.08, Z - 0.001], metal, ['nz']);
+  }
+  box(m, [MX - 0.05, (my0 + my1) / 2 - 0.05, zf], [MX - 0.035, (my0 + my1) / 2 + 0.05, zf + 0.015], metal, ['nz']);
+  return m;
+}
