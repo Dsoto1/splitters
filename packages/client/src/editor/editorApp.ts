@@ -662,7 +662,9 @@ export class EditorApp {
       this.topBar.syncToolbar();
       this.checks.validate();
       this.budgetBar.update(this.budgets.counts);
-      this.inspector.renderInspector();
+      // (Not again if setSelection just built it for this very map and selection.)
+      if (force) this.inspector.renderInspector();
+      else this.inspector.refreshInspector();
       this.mapSettings.refresh();
       this.statusBar.update();
       this.topBar.updateTopBar();

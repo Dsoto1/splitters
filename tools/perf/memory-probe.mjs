@@ -11,6 +11,11 @@
 //   PROBE_JSON=<file>         every reading as JSON
 //   PROBE_HEAP=<dir>          a heap snapshot after the first and the last round (open in DevTools → Memory)
 //   PROBE_URL=<url>           a client already being served;  CHROMIUM=<path>  another Chromium
+//   PROBE_SAMPLE_S=0          also read every this many seconds while a Test plays (collected first): what a Test
+//                             itself leaves (the owner's trace of 2026-11-24 rose in a Test; docs/PERF_EDITOR_IDLE_2026-11-24.md)
+//   PROBE_QUERY=<query>       more of the page's query (`&perfoff=…`)
+//   PROBE_CHECK=<MB>,<nodes>,<listeners>   fail (exit 1) if, from the second round back in MapMaker to the last, the
+//                             script heap grew more than <MB>, or DOM nodes or listeners more than those counts
 //
 // Software rendering here: frame rate says nothing, memory does.
 import { spawn } from 'node:child_process';
@@ -27,6 +32,9 @@ const MATCHES = Number(process.env.PROBE_MATCHES ?? 10);
 const PLAY_S = Number(process.env.PROBE_TEST_S ?? 20);
 const BOTS = Number(process.env.PROBE_BOTS ?? 15);
 const HEAP = process.env.PROBE_HEAP;
+const SAMPLE_S = Number(process.env.PROBE_SAMPLE_S ?? 0);
+const QUERY = process.env.PROBE_QUERY ?? '';
+const CHECK = process.env.PROBE_CHECK ? process.env.PROBE_CHECK.split(',').map(Number) : null;
 if (HEAP) mkdirSync(HEAP, { recursive: true });
 
 const server = process.env.PROBE_URL ? { pid: 0 } : spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });
@@ -58,6 +66,12 @@ async function heapObjects(cdp) {
     geometries: [`Object.getPrototypeOf(window.__editor.view.scene.geometries[0])`, `function () { return [this.length, this.filter((g) => !g.getScene || !g.getScene() || g.getScene().isDisposed).length]; }`],
     gpuTextures: [`Object.getPrototypeOf(window.__editor.view.scene.getEngine().getLoadedTexturesCache()[0])`, `function () { const live = new Set(window.__editor.view.scene.getEngine().getLoadedTexturesCache()); return [this.length, this.filter((t) => !live.has(t)).length]; }`],
     materials: [`(() => { let p = Object.getPrototypeOf(window.__editor.view.scene.materials[0]); while (Object.getPrototypeOf(p) !== Object.prototype) p = Object.getPrototypeOf(p); return p; })()`, `function () { return [this.length, this.filter((m) => !m.getScene() || m.getScene().isDisposed).length]; }`],
+    // Every element in the heap, and those not in the page (detached: held by something, or garbage the collection missed).
+    elements: ['Element.prototype', `function () { return [this.length, this.filter((e) => !e.isConnected).length]; }`],
+    // Web Audio nodes: all, and those of a closed context.
+    audioNodes: ['AudioNode.prototype', `function () { return [this.length, this.filter((n) => n.context?.state === 'closed').length]; }`],
+    // Babylon's observers: all, and those whose observable's owner is gone (an observer left on a disposed thing is a leak).
+    observers: [`Object.getPrototypeOf(window.__editor.view.scene.onBeforeRenderObservable.observers[0] ?? window.__editor.view.scene.onDisposeObservable.add(() => {}))`, `function () { return [this.length, this.filter((o) => o._willBeUnregistered).length]; }`],
   };
   const out = {};
   for (const [k, [expr, count]] of Object.entries(kinds)) {
@@ -83,12 +97,21 @@ async function read(page, cdp, label) {
   for (let i = 0; i < 2; i++) await cdp.send('HeapProfiler.collectGarbage');
   const metrics = Object.fromEntries((await cdp.send('Performance.getMetrics')).metrics.map((m) => [m.name, m.value]));
   const m = await page.evaluate(() => window.__memory.sample());
+  const dom = await cdp.send('Memory.getDOMCounters').catch(() => null);
+  // Observers on the scenes' own observables (onBeforeRender and the rest), all scenes.
+  const sceneObservers = await page.evaluate(() => {
+    let n = 0;
+    for (const sc of window.__editor.view.scene.getEngine().scenes) for (const v of Object.values(sc)) if (v && typeof v === 'object' && Array.isArray(v._observers)) n += v._observers.length;
+    return n;
+  });
   const r = {
     label,
     heapMB: Math.round((metrics.JSHeapUsedSize / 1048576) * 10) / 10,
     listeners: metrics.JSEventListeners,
     nodes: metrics.Nodes,
     documents: metrics.Documents,
+    domCounterNodes: dom?.nodes,
+    sceneObservers,
     frames: metrics.Frames,
     ...Object.fromEntries(['scenes', 'meshes', 'materials', 'geometries', 'textures', 'gpuTextures', 'gpuTextureMB', 'renderTargets', 'skeletons', 'animationGroups', 'transformNodes', 'domNodes', 'workers'].map((k) => [k, m[k]])),
   };
@@ -99,7 +122,7 @@ async function read(page, cdp, label) {
     const x = r[k] - base[k];
     return `${r[k]}${x ? ` (${x > 0 ? '+' : ''}${Math.round(x * 10) / 10})` : ''}`;
   };
-  console.log(`${label.padEnd(26)} heap ${d('heapMB')} MB · listeners ${d('listeners')} · DOM ${d('nodes')} · docs ${d('documents')} · scenes ${d('scenes')} · meshes ${d('meshes')} · materials ${d('materials')} · geometries ${d('geometries')} · textures ${d('textures')} · GPU textures ${d('gpuTextures')} (${d('gpuTextureMB')} MB, ${d('renderTargets')} targets) · skeletons ${d('skeletons')} · anim groups ${d('animationGroups')} · nodes ${d('transformNodes')} · workers ${d('workers')}\n${''.padEnd(27)}in the heap (all / disposed or off-scene): ${Object.entries(r.heap).map(([k, v]) => `${k} ${Array.isArray(v) ? v.join(' / ') : v}`).join(' · ')}`);
+  console.log(`${label.padEnd(26)} heap ${d('heapMB')} MB · listeners ${d('listeners')} · DOM ${d('nodes')} · docs ${d('documents')} · scenes ${d('scenes')} · meshes ${d('meshes')} · materials ${d('materials')} · geometries ${d('geometries')} · textures ${d('textures')} · GPU textures ${d('gpuTextures')} (${d('gpuTextureMB')} MB, ${d('renderTargets')} targets) · skeletons ${d('skeletons')} · anim groups ${d('animationGroups')} · nodes ${d('transformNodes')} · scene observers ${d('sceneObservers')} · workers ${d('workers')}\n${''.padEnd(27)}in the heap (all / disposed or off-scene): ${Object.entries(r.heap).map(([k, v]) => `${k} ${Array.isArray(v) ? v.join(' / ') : v}`).join(' · ')}`);
   return r;
 }
 
@@ -132,7 +155,7 @@ async function main() {
   await cdp.send('HeapProfiler.enable');
 
   // MapMaker on the map's remix.
-  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.goto(`${CLIENT}/?mode=editor&test=1${QUERY}`);
   await page.waitForFunction(() => !!(window.__editor && window.__memory), null, { timeout: 120000 });
   await read(page, cdp, 'MapMaker, blank');
   await page.click('#ed-open');
@@ -162,9 +185,15 @@ async function main() {
     await sleep(1000);
     await page.evaluate(() => window.__editor.test());
     await inMatch(page);
-    await sleep(PLAY_S * 1000);
-    const inTest = i === 1 || i === ROUNDS ? await read(page, cdp, `test ${i}, playing`) : null;
-    void inTest;
+    if (SAMPLE_S > 0) {
+      for (let t = SAMPLE_S; t <= PLAY_S; t += SAMPLE_S) {
+        await sleep(SAMPLE_S * 1000);
+        await read(page, cdp, `test ${i}, ${t} s in`);
+      }
+    } else {
+      await sleep(PLAY_S * 1000);
+      if (i === 1 || i === ROUNDS) await read(page, cdp, `test ${i}, playing`);
+    }
     await leave(page);
     await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: 60000 });
     await sleep(3000);
@@ -196,6 +225,17 @@ async function main() {
   }
   await browser.close();
   if (process.env.PROBE_JSON) writeFileSync(process.env.PROBE_JSON, JSON.stringify(readings, null, 1));
+  // The rounds back in MapMaker, from the second (the first round fills caches) to the last.
+  const back = readings.filter((r) => /back in MapMaker/.test(r.label));
+  if (back.length >= 3) {
+    const [a, b] = [back[1], back[back.length - 1]];
+    const grew = { heapMB: Math.round((b.heapMB - a.heapMB) * 10) / 10, nodes: b.nodes - a.nodes, listeners: b.listeners - a.listeners };
+    console.log(`round 2 → ${back.length} back in MapMaker: heap ${grew.heapMB >= 0 ? '+' : ''}${grew.heapMB} MB, DOM ${grew.nodes >= 0 ? '+' : ''}${grew.nodes}, listeners ${grew.listeners >= 0 ? '+' : ''}${grew.listeners}`);
+    if (CHECK && (grew.heapMB > CHECK[0] || grew.nodes > CHECK[1] || grew.listeners > CHECK[2])) {
+      console.log(`FAIL: over the margin (${CHECK.join(', ')})`);
+      process.exitCode = 1;
+    }
+  }
 }
 
 try {
