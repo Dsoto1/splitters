@@ -1,4 +1,5 @@
 import { roomLightsOn, saveRoomLights } from '../game/roomLights.ts';
+import { unlistedMapNotice } from './mapNotice.ts';
 import {
   BREAKTHROUGH_POOL_MAX,
   breakthroughSectors,
@@ -211,7 +212,7 @@ function mapCard(m: ArcadeMap, on: boolean, note?: string, fav?: { on: boolean; 
 }
 
 /** Maps the Featured sort puts first and badges (the home screen shows the first). */
-const FEATURED_MAPS: readonly string[] = ['sandgate', 'canyon', 'citadel'];
+const FEATURED_MAPS: readonly string[] = ['sandgate', 'canyon'];
 
 /** How the map list is shown (kept in this browser). */
 interface MapBrowsePrefs {
@@ -336,6 +337,8 @@ export interface FrontEndHooks {
   joinCode(code: string, name: string): void;
   /** The tutorial on the Training Range (game/tutorial.ts). */
   playTutorial(): void;
+  /** Profile → Favourite loadout → Test weapons: the Training Range alone, offline, with your loadout (main.ts playRange). */
+  playRange(): void;
 }
 
 type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options' | 'profile';
@@ -543,6 +546,8 @@ export class FrontEnd {
     const savedMap = maps.find((m) => m.key === (raw as { map?: unknown } | null)?.map);
     const saved = savedMap ? normalizeSetup(raw, savedMap.modes) : null;
     const first = maps.find((m) => m.key === 'sandgate') ?? maps[0]!;
+    // Its map retired or now a training map: the default map, and a line saying so as the menu shows.
+    if (!saved) this.notice = unlistedMapNotice((raw as { map?: unknown } | null)?.map, first.metadata.name);
     // Score and time follow the match's size until the player sets them (scoreAuto, timeAuto).
     this.setup = saved ?? { map: first.key, mode: first.modes[0]!, bots: first.bots, skill: 'normal', scoreLimit: BASE_RULES[first.modes[0]!].scoreLimit, minutes: 10, scoreAuto: true, timeAuto: true };
     // The bottom bar: the news and the privacy page (main menu only; Profile links it too), then the
@@ -586,10 +591,19 @@ export class FrontEnd {
 
   show(status = ''): void {
     this.root.hidden = false;
-    this.setStatus(status);
+    this.setStatus(status || this.notice || '');
+    this.notice = null;
     this.previewed = null;
     this.scene.setLook(this.look);
     this.go(this.screen === 'characters' ? 'characters' : 'home');
+  }
+
+  /** Back from Test weapons: Profile, at its Favourite loadout, Test weapons focused (Enter or controller A goes again). */
+  openLoadout(): void {
+    this.go('profile');
+    const btn = this.body.querySelector<HTMLButtonElement>('#profile-test-weapons');
+    btn?.closest('section')?.scrollIntoView({ block: 'center' });
+    btn?.focus({ preventScroll: true });
   }
 
   /** After the designer saves a look, select it and return to character select. */
@@ -1041,6 +1055,8 @@ export class FrontEnd {
   private hostOnline = false;
   /** Why the last change to the players stopped short (a limit), shown until the next change. */
   private stopped: string | null = null;
+  /** A line for the menu's status as it next shows (the last setup's map was retired: unlistedMapNotice). */
+  private notice: string | null = null;
   /** The fit check's details are showing. */
   private fitOpen = false;
 
@@ -2101,11 +2117,14 @@ export class FrontEnd {
     });
   }
 
-  /** Load a saved setup by name (its map must still exist). */
+  /** Load a saved setup by name (its map must still exist; a retired or training one's plays on the default map, with a line saying so). */
   private loadSaved(name: string): void {
     const found = listSetups().find((x) => x.name === name);
-    const map = found && this.maps.find((m) => m.key === (found.setup as { map?: unknown }).map);
-    const setup = found && map ? normalizeSetup(found.setup, map.modes) : null;
+    const savedKey = (found?.setup as { map?: unknown } | undefined)?.map;
+    const fallback = this.maps.find((m) => m.key === 'sandgate') ?? this.maps[0]!;
+    const gone = found && !this.maps.some((m) => m.key === savedKey) ? unlistedMapNotice(savedKey, fallback.metadata.name) : null;
+    const map = found && (gone ? fallback : this.maps.find((m) => m.key === savedKey));
+    const setup = found && map ? normalizeSetup(gone ? { ...(found.setup as object), map: map.key } : found.setup, map.modes) : null;
     if (!setup) {
       this.setStatus(`"${name}" can't be loaded: its map isn't here any more.`);
       return void this.refreshSetup();
@@ -2117,7 +2136,7 @@ export class FrontEnd {
     this.evenTeams = true;
     setLastSetup(name);
     this.saveSetup();
-    this.setStatus('');
+    this.setStatus(gone ?? '');
     this.setupScroll = 0;
     this.folds.delete('setup-saved');
     this.go('play');
@@ -2891,7 +2910,11 @@ export class FrontEnd {
         (e: Error) => (favNote.textContent = `Saved in this browser; not on your account: ${e.message}`),
       );
     });
-    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote, this.opticsPicker());
+    // Test weapons (owner, 2026-11-24): the Training Range alone with this loadout; Back there comes here again.
+    const test = el('button', { type: 'button', class: 'primary', id: 'profile-test-weapons', title: 'Try your loadout on the Training Range: no score, no clock, every gun on the racks; Esc twice (controller B) comes back here', textContent: 'Test weapons' });
+    test.addEventListener('click', () => this.hooks.playRange());
+    const testRow = el('div', { class: 'prof-test' }, test, el('small', { class: 'hint', textContent: 'Your class and optics on the Training Range. Every other gun waits on the racks.' }));
+    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote, testRow, this.opticsPicker());
     const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.emblemSection(kicker), this.careerSection(kicker, !!who), loadout, region, foot));
 
     if (!who) {

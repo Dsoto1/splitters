@@ -332,6 +332,11 @@ export interface SessionOptions {
   /** First-time tips (tips.ts); off in the tutorial and in browser tests (main.ts). */
   tips?: boolean;
   /**
+   * Test weapons (Profile → Favourite loadout; main.ts playRange): the Training Range alone, no scorebar, and Back
+   * from the pause menu's top (Esc again, controller B) leaves, as the exit button does, back to the loadout.
+   */
+  range?: boolean;
+  /**
    * Your career (careerStats.ts, docs/PLAYER_PROFILES_PLAN.md): each match you play to the end is summed into it, and
    * your profile card shows under the scoreboard. main.ts leaves it out for MapMaker TEST and the tutorial.
    */
@@ -1001,7 +1006,7 @@ export class GameSession {
         overlay: () => document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
         opened: () => this.drawPause(true),
         // MapMaker TEST: back from the top goes back to MapMaker.
-        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : {}),
+        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : opts.range ? { top: { label: 'Loadout', act: () => this.exit() } } : {}),
       },
       signal,
     );
@@ -3626,7 +3631,7 @@ export class GameSession {
   private setUpCoach(): void {
     const tutorial = !!this.opts.tutorial;
     // No "You / Leader" score in the tutorial (owner, 2026-11-08): there are no bots and no score to play for.
-    if (tutorial) this.hud.showScorebar(false);
+    if (tutorial || this.opts.range) this.hud.showScorebar(false);
     if (tutorial) this.tutorial = new Tutorial();
     if (this.opts.tips !== false && !tutorial) this.tips = new TipBook();
     if (!this.tutorial && !this.tips) return;

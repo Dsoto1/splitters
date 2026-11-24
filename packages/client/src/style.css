@@ -800,6 +800,8 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 .profile-panel #profile-save { align-self: flex-start; }
 /* Favourite loadout → Optics: one row a gun (its icon and name, its optic). */
 .prof-optics-box { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.prof-test { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prof-test .hint { flex: 1 1 180px; }
 .prof-sub { margin: 0; font: 700 12px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text, #e8eefc); }
 .prof-optics { display: grid; grid-template-columns: 1fr; gap: 5px; }
 .profile-panel label.prof-optic { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; text-transform: none; letter-spacing: 0; font: 500 13px var(--font-body, inherit); color: inherit; min-width: 0; }

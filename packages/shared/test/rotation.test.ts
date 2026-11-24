@@ -1,6 +1,6 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { MapRotation, ROTATION_MAX, isRetiredMap, loadMap, nextMapLine, parseClientMessage, parseRotationItem, parseRotationPreset, playableModes, rotationItem, validateRotation, type GameMode, type RotationEntry, type RotationLookup } from '../src/index.ts';
+import { MapRotation, ROTATION_MAX, isUnlistedMap, loadMap, nextMapLine, parseClientMessage, parseRotationItem, parseRotationPreset, playableModes, rotationItem, validateRotation, type GameMode, type RotationEntry, type RotationLookup } from '../src/index.ts';
 
 const mapsDir = new URL('../../../maps/', import.meta.url);
 const suite = new Set(readdirSync(mapsDir).filter((f) => f.endsWith('.json')).map((f) => f.replace(/\.json$/, '')));
@@ -128,7 +128,7 @@ describe('map rotation', () => {
       expect(`${p!.id}.json`).toBe(f);
       families.add(p!.family);
       for (const m of p!.maps) {
-        expect(isRetiredMap(m.map), `${f}: ${m.map}`).toBe(false);
+        expect(isUnlistedMap(m.map), `${f}: ${m.map}`).toBe(false);
         const loaded = loadMap(readFileSync(new URL(`${m.map}.json`, mapsDir), 'utf8'));
         expect(loaded.ok, m.map).toBe(true);
         if (loaded.ok) expect(playableModes(loaded.map), `${f}: ${m.map} in ${m.mode}`).toContain(m.mode);
