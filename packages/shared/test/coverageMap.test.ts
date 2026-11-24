@@ -8,7 +8,7 @@
 // (metadata.testOnly): no list offers it.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CORE_ITEMS, EDGE_STYLES, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, builtInSetPieces, coreCatalog, loadMap, playableModes, propAlias, raceTrack, type MapDocument } from '../src/index.ts';
+import { CORE_ITEMS, EDGE_STYLES, EXTRA_POWERUPS, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, builtInSetPieces, coreCatalog, loadMap, playableModes, propAlias, raceTrack, type MapDocument } from '../src/index.ts';
 import { KIT_TILES } from '../src/content/kitTiles.generated.ts';
 import { SCENARIO_PALETTE, newScenarioEntities } from '../src/editor/operations.ts';
 
@@ -69,6 +69,9 @@ describe('the coverage map', () => {
     const items = new Set(map.entities.flatMap((e) => (e.kind === 'pickup' ? [e.item] : [])));
     const kinds = new Set(CORE_ITEMS.filter((i) => items.has(i.id)).map((i) => i.effect.kind));
     expect(missing([...new Set(CORE_ITEMS.map((i) => i.effect.kind))], kinds)).toEqual([]);
+    // Every power-up of 2026-11-24 (the owner: one of each, placed in MapMaker).
+    const powerups = new Set(CORE_ITEMS.filter((i) => items.has(i.id)).flatMap((i) => (i.effect.kind === 'powerup' ? [i.effect.powerup] : [])));
+    expect(missing([...EXTRA_POWERUPS], powerups)).toEqual([]);
     const mounts = new Set(map.entities.flatMap((e) => (e.kind === 'mount' ? [e.model] : [])));
     expect(missing(MOUNT_MODELS, mounts)).toEqual([]);
   });
