@@ -38,9 +38,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/draws-1123` · 52a73d5f · 45277434536 (fewer draws in big matches; origin/main 428c4e67 merged, gripfit's switch kept beside its own)
-- `wip/guntails-1123` · 0237b238 · 45277090942 (longer rings for the slow guns; touches `content/sounds.json`, the Sonniss lock and `audio.ts`; once `wip/weapon-edits-1123b` lands, merge it: its picks are already allowed for in the cuts)
-- `wip/weapon-edits-1123b` · 77acb283 · 45279384960 (the owner's second Weapon Manager set of 2026-11-23: 31 weapons' sounds, the Singularity in Sci-fi; touches `content/weapons/*.json` and the weapon tables, `wip/guntails-1123`'s cuts already allow for its picks)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -251,6 +248,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-24** train check/train-20261124-001451 (8ce539e, run 45295604542; landed by the splitters lead with docs-only main merged in): lane B's `wip/draws-1123` (fewer draw calls in big matches), `wip/guntails-1123` (longer rings for the slow guns) and `wip/weapon-edits-1123b` (the owner's second Weapon Manager change set).
 - **2026-11-23** controls remap (`wip/controls-1123`, green f65d703b, run 45267275465; landed alone by the splitters lead): one bindings table, Options → Controls (every action, clash/swap, reset), Q/E lean, F use, X last weapon, hold Tab wheel, tap Tab scoreboard; owner kept the recs (Left Alt / ` touchpad keys, menu shortcuts fixed). The hub needs `sudo tiletrigger-update` for keys to save on the account.
 - **2026-11-23** train check/train-20261123-191822 (19c6388, run 45247572035 green on the re-run of the known `fireteams` flake; landed by the splitters lead with docs-only main merged in): `wip/gripfit-1123` (lane B's grip fits) and `wip/sonniss-3b` (Laser Blaster recorded; the owner's announcer lines re-checked, "We ain't no botta, boi" and the blew-up-a-dog line shipped but switched off). `wip/draws-1123` conflicted with gripfit in `perfSwitches.ts`: back to its owner to merge main and re-check.
 - **2026-11-23** train check/train-20261123-185910 (8b4a092, green; landed by the splitters lead with docs-only main merged in): the crossbow bolt and other along-flight shots point the right way from their first frame (`wip/fix-bolt-1123`); roof parapets (coping, merlons, pinnacles) are solid to bodies and bullets (`wip/fix-parapet-1123`).
