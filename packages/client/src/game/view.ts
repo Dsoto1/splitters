@@ -2841,7 +2841,8 @@ export class GameView {
       const size = a.root.scaling.y || 1;
       const shielded = p.alive && (p.status & FX_PROTECTED) !== 0;
       if (shielded && !reduceFlashing() && !a.culled) this.lasting.want(`shield:${p.slot}`, 'shield.spawn', { x: p.x, y: p.y + 0.95 * size, z: p.z }, { size, level: SHIELD_SHIMMER });
-      const aura = p.alive && !a.culled ? (p.powerups & POWERUP_DAMAGE_BIT ? 'aura.damage' : p.powerups & POWERUP_SPEED_BIT ? 'aura.speed' : null) : null;
+      // (Not on a Phantom: the flame would give them away.)
+      const aura = p.alive && !a.culled && !(p.status & FX_PHANTOM) ? (p.powerups & POWERUP_DAMAGE_BIT ? 'aura.damage' : p.powerups & POWERUP_SPEED_BIT ? 'aura.speed' : null) : null;
       if (aura) this.lasting.want(`aura:${p.slot}`, aura, { x: p.x, y: p.y + 0.02, z: p.z }, { size, level: 0.85 });
       // The calm shimmer (and the steady glow everyone sees under the pack's): a soft blue on the body, eased in and out.
       const shieldGlow = shielded ? 1 : 0;
@@ -2930,7 +2931,7 @@ export class GameView {
       this.setAvatarPair(a, p, now);
       // A status: the pack's aura for the nearest few (statusFx.ts), the plain shell for the rest.
       // (Not a cloaked one: its shell fades with it, an aura would give it away.)
-      if (p.status && p.alive && !a.culled && eye && !(p.status & FX_CLOAK)) this.statusFx.ask(p.slot, p.status, p, a.root.scaling.y || 1, eye);
+      if (p.status && p.alive && !a.culled && eye && !(p.status & (FX_CLOAK | FX_PHANTOM))) this.statusFx.ask(p.slot, p.status, p, a.root.scaling.y || 1, eye);
       if (p.status || a.aura) {
         a.aura ??= createAura(this.scene, a.root);
         setAura(this.scene, a.aura, p.alive ? plainStatus(p.status, this.statusFx.worn(p.slot)) : 0, now);
