@@ -5,7 +5,7 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Mesh } from '@babylonjs/core/Meshes/mesh';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { freshWorld, setGripFit } from '../src/game/freshWorld.ts';
+import { freshChainHeld, freshWorld, setGripFit } from '../src/game/freshWorld.ts';
 import { slideSupport } from '../src/game/characterAnimator.ts';
 import type { WeaponHold } from '@tiletrigger/shared';
 
@@ -65,6 +65,19 @@ describe('freshWorld', () => {
       computes++;
     }
     expect(computes).toBe(3000);
+  });
+
+  it('keeps no node after a call (the chain held the last body, and its ended match, alive)', () => {
+    const scene = new Scene(new NullEngine());
+    const holder = new TransformNode('holder', scene);
+    const nodes = chain(scene, holder, 8);
+    freshWorld(nodes[7]!);
+    expect(freshChainHeld()).toBe(0);
+    // A chain that falls back to the forced compute part way (a camera above) keeps nothing either.
+    const cam = new FreeCamera('c', Vector3.Zero(), scene);
+    holder.parent = cam;
+    freshWorld(nodes[7]!);
+    expect(freshChainHeld()).toBe(0);
   });
 
   it('works out only what changed: reading an unchanged joint again computes nothing', () => {

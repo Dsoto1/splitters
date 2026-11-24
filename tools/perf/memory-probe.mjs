@@ -128,6 +128,14 @@ async function read(page, cdp, label) {
 
 async function heapSnapshot(cdp, name) {
   if (!HEAP) return;
+  // Every disposed scene still in the heap carries a `LeakedScene`: tools/perf/heap-retainers.mjs --match=LeakedScene
+  // prints what holds it.
+  try {
+    const proto = (await cdp.send('Runtime.evaluate', { expression: 'Object.getPrototypeOf(window.__editor.view.scene)' })).result.objectId;
+    const { objects } = await cdp.send('Runtime.queryObjects', { prototypeObjectId: proto });
+    await cdp.send('Runtime.callFunctionOn', { objectId: objects.objectId, functionDeclaration: 'function () { class LeakedScene {} for (const s of this) if (s.isDisposed) s.__leak = new LeakedScene(); }' });
+    await cdp.send('Runtime.releaseObject', { objectId: objects.objectId });
+  } catch {}
   const out = createWriteStream(`${HEAP}/${name}.heapsnapshot`);
   const onChunk = (e) => out.write(e.chunk);
   cdp.on('HeapProfiler.addHeapSnapshotChunk', onChunk);
