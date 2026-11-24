@@ -123,7 +123,21 @@ export interface PlayOptions {
    * side (game/pairView.ts gunPan). Ignored with `at` (the world places it).
    */
   pan?: number;
+  /** Who made it (a player slot): Sound captions tell friend from foe by it (game/soundCaptions.ts). */
+  by?: number;
+  /**
+   * The caption table's key for this sound when its id doesn't say what it is (game/soundCaptions.ts): a gun's report
+   * is 'fire.shot' whatever sound it borrows (the Nailgun's is a door's), its pump or bolt 'fire.cycle' (none).
+   */
+  caption?: string;
 }
+
+/**
+ * A sound started (SoundCaptions, game/soundCaptions.ts): its id (or its PlayOptions.caption), where (undefined: not positioned, your own or the
+ * interface's), its distance and its range's cull distance, and who made it. Called only for sounds within their
+ * range, whether or not audio is running (a muted phone still gets captions).
+ */
+export type SoundHook = (id: string, at: Vec3 | undefined, dist: number, cull: number, by: number | undefined) => void;
 
 /**
  * Game audio on the Web Audio API. Sound buffers are loaded once and shared by
@@ -142,7 +156,11 @@ export class AudioSystem {
   /** Lazy sounds asked for (`want`), loaded with the rest; and each lazy sound's own load once started. */
   private readonly wanted = new Set<string>();
   private readonly loadingOne = new Map<string, Promise<void>>();
-  private listener: Vec3 = { x: 0, y: 0, z: 0 };
+  /** Where the listener is and which way it faces (setListener's yaw): Sound captions' directions. */
+  earAt: Readonly<Vec3> = { x: 0, y: 0, z: 0 };
+  earYaw = 0;
+  /** Sound captions listen here (null: off; costs nothing). */
+  onSound: SoundHook | null = null;
   private volume = 0.8;
   /** The music's and the announcer's own volumes (Options), under the master volume. */
   private musicVolume = 0.5;
@@ -353,7 +371,8 @@ export class AudioSystem {
 
   /** Move the listener (call once per frame with the camera). */
   setListener(eye: Vec3, yaw: number, pitch: number): void {
-    this.listener = eye;
+    this.earAt = eye;
+    this.earYaw = yaw;
     const ctx = this.ctx;
     if (!ctx) return;
     const l = ctx.listener;
@@ -379,14 +398,17 @@ export class AudioSystem {
   }
 
   play(id: SoundId, opts: PlayOptions = {}): void {
+    const def = SOUNDS[id];
+    if (!def) return;
+    const range = RANGES[def.range ?? 'mid'];
+    const at = opts.at;
+    const dist = at ? Math.hypot(at.x - this.earAt.x, at.y - this.earAt.y, at.z - this.earAt.z) : 0;
+    // Captions hear what you would: within range, before the mixer's checks (a muted or locked context still captions).
+    if (this.onSound && dist <= range.cull) this.onSound(opts.caption ?? id, at, dist, range.cull, opts.by);
     const ctx = this.ctx;
     const master = this.master;
     const list = this.buffers.get(id);
     if (!ctx || !master || ctx.state !== 'running' || !list?.length) return;
-    const def = SOUNDS[id]!;
-    const range = RANGES[def.range ?? 'mid'];
-    const at = opts.at;
-    const dist = at ? Math.hypot(at.x - this.listener.x, at.y - this.listener.y, at.z - this.listener.z) : 0;
     if (dist > range.cull) {
       this.stats.culled++;
       return;

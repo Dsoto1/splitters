@@ -170,6 +170,7 @@ export function syncKeys(): void {
 }
 let stopKeySave: (() => void) | null = null;
 
+
 /** Your career's rank points (shared content/ranks.ts: Options → Ranks & badges), sent as you join so others see your rank. */
 export const myRankPoints = (): number => careerRankPoints(myCareer().career);
 
