@@ -20,7 +20,7 @@ const ROSTER = PICKABLE_LOOKS.map((l) => l.id);
 function filled(seed: number, bots: number, cast?: string[]): Match {
   const half = Math.ceil((bots + 1) / 2);
   const match = new Match(yard(cast), { ...DEFAULT_RULES['core.tdm'], teamSizes: [half, half] }, seed);
-  new BotFiller(match).join('Host', 'core.ranger', bots + 1);
+  new BotFiller(match).join('Host', 'core.dale', bots + 1);
   return match;
 }
 

@@ -1852,6 +1852,20 @@ template automatically.
   map it goes into must have the same grid and theme; MapMaker says why when it doesn't, or when it wouldn't fit there.
 - **Templates (New map → start from a layout).** Arena, Symmetric CTF, Assault (Breakthrough, two sectors and a final
   hold) or Open terrain. The new map is your own; the layouts live in `maps/templates/` and never show in map lists.
+- **New map's setup (owner, 2026-11-24; `editor/newMapSetup.ts`).** One screen, every choice pre-filled, so Create
+  straight away makes the same blank map as ever (Medium ground, Prototype, Deathmatch, 8 players, no boundary), and
+  everything on it is in Map properties later. Besides the size or layout and the Ground theme it asks: **Theme** (the
+  Structure theme; picked here because changing it later repaints everything that follows it; the Ground theme takes
+  the theme's match until you pick one, and the palette's "This map's themes" puts its Style Packs first); **Mode** and
+  the modes **Also offered** (Map properties' lists); **Players**, best with (Max players) and up to (the main mode's
+  own cap; empty keeps it automatic; a co-op or zombies squad is one number), which suggest a size by
+  docs/MAP_BUDGETS.md's "Suggested sizes by player count" (6 or fewer Skirmish, 12 Medium, 24 Large, more Huge) until
+  you pick a size yourself; **Boundary** (None, the terrain edge, or Invisible walls, Solid walls, Tall fence fitted
+  round the new map by Fit to map's logic, 4 m out, 8 m high: the orange outline is there from the start). A
+  **layout** keeps what it sets itself: its modes and players always, its boundary when it has one, its theme unless
+  it is built in the plain Prototype (all four are, so they take the theme picked); those rows show its values,
+  locked and marked "layout's". The arrow keys move along the sizes and layouts; a controller's d-pad moves through
+  the screen (left and right change a list or number), A presses, B cancels.
 - **Mirror… (Shift+M).** For team maps: build one side, mirror it. Pick the selection or half the map, the line
   (east ↔ west, north ↔ south) or a point (a half turn) and where it is (it snaps to a cell's middle or edge). Keep
   the original adds a mirrored copy, whose team things swap to the other team (spawns, flag bases, team zones, doors,

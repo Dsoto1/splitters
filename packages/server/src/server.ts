@@ -91,6 +91,11 @@ export interface ServerOptions {
   /** Play this mode with its default rules (ignored when `rules` is given); default: the map's first mode. */
   mode?: GameMode;
   seed?: number;
+  /**
+   * Tests only (E2E_START_AT): where a player of this name starts before play begins (Match.startHere, as MapMaker's
+   * Play from here), so an e2e flow knows its ground; once play begins, lives start at the spawn points again.
+   */
+  startAt?: Readonly<Record<string, { pos: [number, number, number]; yaw: number; pitch?: number }>>;
   /** Hold the start until the first players have loaded, then count down (default on; tests turn it off). */
   startGate?: boolean;
   /** Called once per second with instrumentation. */
@@ -662,6 +667,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
         player.title = msg.tt;
         // Their optic choice per gun (sim/opticChoice.ts): on the roster, so everyone draws the optic they picked.
         match.setOptics(player.slot, msg.op);
+        const at = !back ? opts.startAt?.[name] : undefined;
+        if (at) match.startHere(player, { pos: { x: at.pos[0], y: at.pos[1], z: at.pos[2] }, yaw: at.yaw, pitch: at.pitch ?? 0 });
         player.account = !!proof?.name;
         event(`${name} ${back ? 'is back' : 'joined'} (${sub ? 'signed in' : 'guest'}${address ? `, ${address}` : ''}) as slot ${player.slot}`);
         if (back) notice(`${name} is back`);

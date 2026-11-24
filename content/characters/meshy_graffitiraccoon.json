@@ -6,7 +6,6 @@
   "name": "Tag Malone",
   "look": "core.graffitiraccoon",
   "group": "animals",
-  "tier": "experimental",
   "blood": "red",
   "nameTheme": "raccoon",
   "bio": "Signs every wall on the map before the match is over.",

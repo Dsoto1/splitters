@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, NPC_KEPT_LOOKS, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
+import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, DESIGNER_BASE_LOOK, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, NPC_KEPT_LOOKS, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { loadArena } from './helpers.ts';
 import { GRIP_FITS } from '../src/content/gripFit.generated.ts';
@@ -50,8 +50,8 @@ describe('character looks', () => {
   });
 
   it('offers every shipped part, hairstyle and colourway (in a preset or the Designer)', () => {
-    const designer = [...CHARACTER_PARTS.map((p) => p.id), ...Object.values(HAIR_STYLES).flatMap((h) => h.map((x) => x.id)), ...COLORWAYS.map((c) => c.id)];
-    const used = new Set([...CORE_LOOKS.flatMap((l) => [l.head, ...l.parts, ...l.hair, ...l.colorways]), ...designer]);
+    const designer = ['head_male', 'head_female', ...CHARACTER_PARTS.map((p) => p.id), ...Object.values(HAIR_STYLES).flatMap((h) => h.map((x) => x.id)), ...COLORWAYS.map((c) => c.id)];
+    const used = new Set([...[...CORE_LOOKS, DESIGNER_BASE_LOOK].flatMap((l) => [l.head, ...l.parts, ...l.hair, ...l.colorways]), ...designer]);
     const unused = lock.files.filter((f) => ['head', 'part', 'hair'].includes(f.role) && !used.has(f.id!)).map((f) => f.id);
     expect(unused).toEqual([]);
     // Every alternative colourway (a texture ID with a variant word) is worn by someone.
@@ -91,11 +91,11 @@ describe('character looks', () => {
 
   it('gives players their chosen look and bots a spread of looks in the roster', () => {
     const match = new Match(loadArena());
-    match.addHuman('Ann', 'core.ranger');
+    match.addHuman('Ann', 'core.dale');
     match.addHuman('Bo', 'not-a-look');
     for (let i = 0; i < 3; i++) match.addBot(`Bot${i}`, CORE_BOT_PROFILES[0]!);
     const roster = match.roster();
-    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.ranger');
+    expect(roster.find((r) => r.name === 'Ann')!.look).toBe('core.dale');
     expect(roster.find((r) => r.name === 'Bo')!.look).toBe(DEFAULT_LOOK);
     const bots = roster.filter((r) => r.bot);
     expect(bots.length).toBeGreaterThan(1);

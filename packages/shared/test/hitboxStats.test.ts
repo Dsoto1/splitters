@@ -78,7 +78,7 @@ function give(c: Combatant, id: string): void {
 function pair(look?: string, at: [number, number, number] = [12, 0, 4], extra: Partial<typeof rules> = {}) {
   const match = new Match(yard([[0, 0, 4], at]), { ...rules, ...extra });
   const d = new Driver(match);
-  const a = match.addHuman('a')!;
+  const a = match.addHuman('a', 'core.dale')!;
   const b = match.addHuman('b', look)!;
   a.move = { pos: { x: 0, y: 0, z: 4 }, velY: 0, grounded: true };
   b.move = { pos: { x: at[0], y: at[1], z: at[2] }, velY: 0, grounded: true };
@@ -95,7 +95,7 @@ function headOf(c: Combatant) {
 const landed = (ev: GameEvent[]) => ev.filter((e) => e.e === 'shot' || e.e === 'impact').map((e) => (e.e === 'shot' ? { hit: e.hit[0], z: e.z?.[0] ?? 0 } : { hit: e.hit, z: e.z ?? 0 })).filter((x) => x.hit !== null);
 
 describe('zones in the match come from the shapes', () => {
-  for (const look of ['core.sprout', 'core.ranger', 'core.abe', 'core.hyena']) {
+  for (const look of ['core.bandit', 'core.dale', 'core.abe', 'core.hyena']) {
     it(`${look} (${getLook(look).size ?? 'standard'}): a round at the drawn head is a head shot, one at the chest a body shot, one at a thigh a leg shot`, () => {
       const zoneAt = (to: (b: Combatant) => { x: number; y: number; z: number }) => {
         const { d, a, b } = pair(look);
@@ -118,7 +118,7 @@ describe('zones in the match come from the shapes', () => {
 });
 
 describe('arms are their own zone (GUNPLAY_SPEC §11)', () => {
-  for (const look of ['core.ranger', 'core.knight', 'core.hyena']) {
+  for (const look of ['core.dale', 'core.knight', 'core.hyena']) {
     it(`${look}: a round that clips a forearm held out in front, side-on, is an arm shot for the family's arm multiple; through the chest it is a body shot`, () => {
       const shoot = (to: (b: Combatant) => { x: number; y: number; z: number }, sideOn: boolean) => {
         const { d, a, b } = pair(look);
@@ -167,7 +167,7 @@ describe('lag compensation uses the same shapes', () => {
   it('a shot at the head seen a moment ago lands on the rewound head (its stance and facing as they were), not the crouched body now', () => {
     const run = (useViewTick: boolean) => {
       // 4 m: the round arrives within the tick it is fired (later ticks of a flight are rewound less: lead for travel).
-      const { match, d, a, b } = pair('core.ranger', [4, 0, 4]);
+      const { match, d, a, b } = pair('core.dale', [4, 0, 4]);
       give(a, 'core.revolver');
       d.run(5, () => (d.input(a, {}), d.input(b, { yaw: b.yaw })));
       const seen = match.tick;
@@ -211,11 +211,11 @@ describe('character stats', () => {
   });
 
   it('a look\'s own stats replace its class values field by field; Character stats off ignores them', () => {
-    const l = getLook('core.ranger');
+    const l = getLook('core.dale');
     l.stats = { health: 140, jump: 1.2 };
     try {
-      expect(lookStats('core.ranger')).toEqual({ ...classStats('standard'), health: 140, jump: 1.2 });
-      expect(matchStats('core.ranger', { characterStats: false })).toEqual(classStats('standard'));
+      expect(lookStats('core.dale')).toEqual({ ...classStats('standard'), health: 140, jump: 1.2 });
+      expect(matchStats('core.dale', { characterStats: false })).toEqual(classStats('standard'));
     } finally {
       delete l.stats;
     }
@@ -230,11 +230,11 @@ describe('character stats', () => {
   });
 
   it('wired into the sim: health, speed, size, damage, armor, melee, jump and stamina', () => {
-    const l = getLook('core.ranger');
+    const l = getLook('core.dale');
     l.stats = { health: 150, speed: 1.1, size: 1.1, damage: 1.2, armor: 0.25, melee: 1.5, jump: 1.2, stamina: 2 };
     try {
-      const { match, d, a, b } = pair('core.ranger', [6, 0, 4]);
-      // a wears the stats too (its look is the default: core.ranger).
+      const { match, d, a, b } = pair('core.dale', [6, 0, 4]);
+      // a wears the stats too (its look is the default: core.dale).
       expect(b.maxHealth).toBe(150);
       expect(b.health).toBe(150);
       expect(b.speedMul).toBe(1.1);
@@ -257,9 +257,9 @@ describe('character stats', () => {
         who.d.run(40, () => who.d.input(who.b, { buttons: BUTTON_SPRINT, forward: 1 }));
         return { jump: peak - y0, drained: 1 - (who.b.move.stamina ?? 1) };
       };
-      const own = moves(pair('core.ranger', [6, 0, 8]));
+      const own = moves(pair('core.dale', [6, 0, 8]));
       l.stats = {};
-      const plain = moves(pair('core.ranger', [6, 0, 8]));
+      const plain = moves(pair('core.dale', [6, 0, 8]));
       expect(own.jump / plain.jump).toBeGreaterThan(1.3);
       expect(own.drained).toBeLessThan(plain.drained * 0.6);
       expect(plain.drained).toBeGreaterThan(0.05);
@@ -269,10 +269,10 @@ describe('character stats', () => {
   });
 
   it('melee strength scales melee hits, not damage dealt', () => {
-    const l = getLook('core.ranger');
+    const l = getLook('core.dale');
     l.stats = { melee: 1.5, damage: 1 };
     try {
-      const { d, a, b } = pair('core.ranger', [1.4, 0, 4]);
+      const { d, a, b } = pair('core.dale', [1.4, 0, 4]);
       give(a, 'core.knife');
       const aim = lookAngles(eye(a.move.pos), { x: b.move.pos.x, y: b.move.pos.y + 1.2, z: b.move.pos.z });
       d.run(25, () => d.input(a, { ...aim, buttons: BUTTON_FIRE }));
@@ -307,7 +307,7 @@ describe('random characters', () => {
     const play = (seed: number) => {
       const match = new Match(yard([[0, 0, 4], [10, 0, 4], [20, 0, 4]]), { ...rules, respawnDelayTicks: 1, randomCharacters: true }, seed);
       const d = new Driver(match);
-      const a = match.addHuman('a', 'core.sprout')!;
+      const a = match.addHuman('a', 'core.bandit')!;
       const seen: string[] = [];
       for (let life = 0; life < 4; life++) {
         const ev = d.run(3, () => d.input(a, {}));
@@ -330,7 +330,7 @@ describe('random characters', () => {
     one.match.setRules({ randomCharacters: false });
     d2: {
       one.d.run(3, () => one.d.input(one.a, {}));
-      expect(one.a.look).toBe('core.sprout');
+      expect(one.a.look).toBe('core.bandit');
       break d2;
     }
   });
