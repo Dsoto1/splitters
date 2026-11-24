@@ -8,6 +8,7 @@
  *
  * Plain data, no zod: the menu imports it (docs/LOADING.md); schema.ts builds its enums from these lists.
  */
+import { isUnlistedMap } from './retired.ts';
 
 /** The categories a map's file can name. */
 export const MAP_CATEGORY_IDS = ['temporal', 'dimensional', 'environmental', 'fictional', 'anomalous'] as const;
@@ -51,7 +52,7 @@ export const MAP_CATEGORIES: readonly MapCategoryDef[] = [
     id: 'fictional',
     label: 'Fictional',
     blurb: 'Films and fiction, and the maps inspired by other games (until their rework).',
-    tags: [['film', 'Film'], ['fiction', 'Fiction'], ['game', 'Game homage']],
+    tags: [['film', 'Film'], ['fiction', 'Fiction'], ['classic', 'Classic remake']],
   },
   {
     id: 'anomalous',
@@ -114,6 +115,14 @@ export interface CategorizedMap {
   own?: boolean;
   /** A community map from the server (Custom → Community maps; labelled "Community map"). */
   community?: boolean;
+}
+
+/**
+ * Whether Match Setup lists the map at all: never a retired or a training map (isUnlistedMap), on any tab, category,
+ * count or search. A player's own and the community maps are theirs, whatever their id.
+ */
+export function isListedMap(m: CategorizedMap & { key: string }): boolean {
+  return !!m.own || !!m.community || !isUnlistedMap(m.key);
 }
 
 /** The category filter: every map (`null`), a category, or one of its tags. */

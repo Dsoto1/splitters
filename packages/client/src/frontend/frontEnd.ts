@@ -118,6 +118,7 @@ import {
   TITLES,
   categoryCounts,
   inMapCategory,
+  isListedMap,
   type CategoryFilter,
 } from '@tiletrigger/shared';
 import { drawCategoryTabs } from './mapCategoriesUi.ts';
@@ -217,7 +218,7 @@ function mapCard(m: ArcadeMap, on: boolean, note?: string, fav?: { on: boolean; 
 }
 
 /** Maps the Featured sort puts first and badges (the home screen shows the first). */
-const FEATURED_MAPS: readonly string[] = ['sandgate', 'canyon'];
+const FEATURED_MAPS: readonly string[] = ['sandgate', 'canyon', 'st_johns'];
 
 /** How the map list is shown (kept in this browser). */
 interface MapBrowsePrefs {
@@ -1237,6 +1238,11 @@ export class FrontEnd {
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
   }
 
+  /** The maps Match Setup lists (grid, categories, counts, search, the map select): never a retired or training map. */
+  private listedMaps(): ArcadeMap[] {
+    return this.maps.filter((m) => isListedMap({ key: m.key, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP }));
+  }
+
   /** Load the map Play opens on (main.ts asks while the menu is idle), so the setup panel and Start don't wait for it. */
   preloadCurrentMap(): Promise<unknown> {
     return this.currentMap().load().catch(() => undefined);
@@ -1400,7 +1406,7 @@ export class FrontEnd {
     requestAnimationFrame(() => (cards.scrollTop = this.mapScroll));
 
     // ---- the list's controls: tabs for which maps, the Filter maps window (which modes), search, sort, grid or list
-    const used = GAME_MODES.filter((g) => this.maps.some((m) => m.group !== PICK_GROUP && m.modes.includes(g)));
+    const used = GAME_MODES.filter((g) => this.listedMaps().some((m) => m.group !== PICK_GROUP && m.modes.includes(g)));
     // The Community Picks tab: when the hub has any (players' maps that earned it by being played).
     const picks = this.maps.some((m) => m.group === PICK_GROUP);
     const mine = this.maps.some((m) => m.group === OWN_GROUP);
@@ -1437,7 +1443,7 @@ export class FrontEnd {
     };
     const playsTicked = (m: { modes: readonly GameMode[] }) => !this.browse.modes.length || this.browse.modes.some((g) => m.modes.includes(g));
     filterBtn.addEventListener('click', () => {
-      const count = (g: GameMode) => this.maps.filter((m) => m.group !== PICK_GROUP && m.modes.includes(g)).length;
+      const count = (g: GameMode) => this.listedMaps().filter((m) => m.group !== PICK_GROUP && m.modes.includes(g)).length;
       const boxes = used.map((g) => {
         const box = el('input', { type: 'checkbox', checked: this.browse.modes.includes(g) });
         box.dataset.mode = g;
@@ -1454,7 +1460,7 @@ export class FrontEnd {
       const done = el('button', { type: 'button', class: 'primary', id: 'mf-done' });
       const clear = el('button', { type: 'button', id: 'mf-clear', textContent: 'Clear all' });
       const drawFoot = () => {
-        const n = this.maps.filter((m) => m.group !== PICK_GROUP && playsTicked(m)).length;
+        const n = this.listedMaps().filter((m) => m.group !== PICK_GROUP && playsTicked(m)).length;
         done.textContent = this.browse.modes.length ? `Show ${n} map${n === 1 ? '' : 's'}` : 'Show every map';
         clear.disabled = !this.browse.modes.length;
       };
@@ -1513,16 +1519,13 @@ export class FrontEnd {
     catBar.setAttribute('aria-label', 'Map categories');
     const tagRow = el('div', { class: 'map-subtags', id: 'map-subtags', role: 'group' });
     tagRow.setAttribute('aria-label', 'Sub-tags');
-    // TODO(training range move): the Training Range leaves the map list for the loadout screen's weapon test range
-    // (owner, 2026-11-24); filter by the map's training flag once the helper moving it adds one.
-    const offGrid = (m: ArcadeMap) => m.key === 'training_range' || (m.metadata as { training?: boolean }).training === true;
     const catOf = (m: ArcadeMap) => ({ categories: m.metadata.categories, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
     const drawCards = () => {
       const current = this.currentMap();
       const lazy = lazyPlans(cards);
       const q = this.mapQuery.trim().toLowerCase();
       const favs = new Set(this.browse.favs);
-      const built = this.maps.map((m, i) => ({ m, i }));
+      const built = this.listedMaps().map((m, i) => ({ m, i }));
       const tab = this.mapTab;
       const recent = this.browse.recent;
       const cat = this.mapCat;
@@ -1530,7 +1533,7 @@ export class FrontEnd {
         tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
       // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under All maps.
       const found = (m: ArcadeMap) => !q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q));
-      const base = built.filter(({ m }) => !offGrid(m) && (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
+      const base = built.filter(({ m }) => (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
       const plain = base.filter(({ m }) => inTab(m));
       drawCategoryTabs(catBar, tagRow, {
         filter: cat,
@@ -1672,7 +1675,7 @@ export class FrontEnd {
     // 2). The plain list stays in the page, hidden (tests and anything that reads it).
     const mapPick = el('button', { type: 'button', id: 'arcade-map-pick', class: 'map-pick-btn', title: 'Pick a map: pictures, modes, search and favourites' }, el('b', { textContent: map.metadata.name }), el('span', { textContent: 'Change map' }));
     mapPick.addEventListener('click', () => this.setSheet(false));
-    const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.maps.map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
+    const mapSelect = el('select', { id: 'arcade-map', title: 'Map' }, ...this.listedMaps().map((m) => el('option', { value: m.key, textContent: `${m.metadata.name}${m.group ? ` (${m.group})` : ''}`, selected: m.key === current.key })));
     mapSelect.addEventListener('change', () => {
       this.pickMap(mapSelect.value);
       this.saveSetup();

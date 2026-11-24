@@ -1452,7 +1452,7 @@ count what it stores (a placement is one entry, at most 1024).
   allowed). Match Setup's category tabs filter by them; Custom (your own and community maps) is worked out. The
   shipped maps' tags are in `docs/map-briefs/categories/steps.json`, ticked in MapMaker by
   `tools/maps/mapmaker-categories.mjs` (Playwright: Import, tick, Export); a unit test holds each map's file to it.
-  The maps inspired by other games sit under Fictional → Game homage until their rework, never naming the game.
+  The maps inspired by other games sit under Fictional → Classic remake until their rework, never naming the game.
   - **Plan:** the flat top-down MapMaker schematic, drawn live from the map (`frontend/mapPlan.ts`): tile
     floors, walls, blocks and props as outlines, terrain as height contours, and dots for spawns (team
     colours), pickups, flags, hills, bomb sites, hostages, NPC squads and vehicles.

@@ -9,6 +9,7 @@ import {
   categoryCounts,
   categoryLine,
   inMapCategory,
+  isListedMap,
   isMapCategoryTag,
   isRetiredMap,
   mapTagLabel,
@@ -21,7 +22,6 @@ const read = (id: string) => JSON.parse(readFileSync(new URL(`${id}.json`, MAPS)
 const ids = readdirSync(MAPS).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5));
 const steps = JSON.parse(readFileSync(new URL('../../../docs/map-briefs/categories/steps.json', import.meta.url), 'utf8')) as {
   maps: Record<string, { category: string; tag: string }[]>;
-  later: Record<string, { category: string; tag: string }[]>;
 };
 const key = (p: { category: string; tag: string }) => `${p.category}:${p.tag}`;
 
@@ -42,7 +42,7 @@ describe('map categories: the definitions', () => {
     expect(isMapCategoryTag('temporal', 'medieval')).toBe(true);
     expect(isMapCategoryTag('temporal', 'urban')).toBe(false);
     expect(isMapCategoryTag('nonsense', 'urban')).toBe(false);
-    expect(mapTagLabel('fictional', 'game')).toBe('Game homage');
+    expect(mapTagLabel('fictional', 'classic')).toBe('Classic remake');
     expect(mapTagLabel('temporal', 'unknown')).toBe('unknown');
   });
   it('normalise a list: known pairs, no repeats, in the definitions order', () => {
@@ -129,11 +129,11 @@ describe('map categories: the format (v50)', () => {
 });
 
 describe("map categories: the maps' own (docs/map-briefs/categories/steps.json)", () => {
-  it('every map is in the step list (or handed to its lane, `later`)', () => {
-    expect(ids.filter((id) => !(id in steps.maps) && !(id in steps.later))).toEqual([]);
+  it('every map is in the step list', () => {
+    expect(ids.filter((id) => !(id in steps.maps))).toEqual([]);
   });
   it('the step list names known tags only, and every map has at least one', () => {
-    for (const [id, list] of Object.entries({ ...steps.maps, ...steps.later })) {
+    for (const [id, list] of Object.entries(steps.maps)) {
       expect(list.length, id).toBeGreaterThan(0);
       for (const p of list) expect(isMapCategoryTag(p.category, p.tag), `${id} ${key(p)}`).toBe(true);
     }
@@ -145,12 +145,33 @@ describe("map categories: the maps' own (docs/map-briefs/categories/steps.json)"
     expect(wrong).toEqual([]);
   });
   it('the film and fiction maps and the maps inspired by other games are Fictional', () => {
-    const fictional = (id: string) => (steps.maps[id] ?? steps.later[id] ?? []).some((p) => p.category === 'fictional');
+    const fictional = (id: string) => (steps.maps[id] ?? []).some((p) => p.category === 'fictional');
     // Real places and events (a look-alike of a real place, the D-Day landings) are not fiction.
     const real = new Set(['capitol_mall', 'norman_shores', 'shingle_point']);
     expect(Object.keys(MAP_INSPIRATIONS).filter((id) => !real.has(id) && ids.includes(id) && !fictional(id))).toEqual([]);
     // 21 game-based maps on the roster (owner, 2026-11-23), retired ones aside.
-    const games = Object.entries(steps.maps).filter(([id, l]) => !isRetiredMap(id) && l.some((p) => key(p) === 'fictional:game'));
+    const games = Object.entries(steps.maps).filter(([id, l]) => !isRetiredMap(id) && l.some((p) => key(p) === 'fictional:classic'));
     expect(games).toHaveLength(21);
+  });
+});
+
+describe('map categories: what Match Setup lists', () => {
+  it('never a retired or a training map, on any tab, category or count', () => {
+    expect(isListedMap({ key: 'training_range' })).toBe(false);
+    expect(isListedMap({ key: 'citadel' })).toBe(false);
+    expect(isListedMap({ key: 'sandgate' })).toBe(true);
+    expect(isListedMap({ key: 'st_johns' })).toBe(true);
+    // A player's own or a community map is theirs, whatever its id.
+    expect(isListedMap({ key: 'training_range', own: true })).toBe(true);
+    expect(isListedMap({ key: 'citadel', community: true })).toBe(true);
+    const shipped = ids.map((id) => ({ key: id, categories: read(id).metadata.categories as { category: string; tag: string }[] | undefined }));
+    const listed = shipped.filter(isListedMap);
+    expect(listed.map((m) => m.key)).not.toContain('training_range');
+    expect(listed.map((m) => m.key)).not.toContain('citadel');
+    // The Training Range is tagged Anomalous, but Anomalous counts and shows only listed maps.
+    const anomalous = (l: typeof shipped) => l.filter((m) => inMapCategory(m, { category: 'anomalous' })).map((m) => m.key);
+    expect(anomalous(shipped)).toContain('training_range');
+    expect(anomalous(listed)).not.toContain('training_range');
+    expect(categoryCounts(listed).get('anomalous')).toBe(anomalous(listed).length);
   });
 });
