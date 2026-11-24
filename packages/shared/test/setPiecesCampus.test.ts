@@ -104,16 +104,28 @@ const WALKS: Record<string, Walk[]> = {
     { options: { door: 'north' }, chains: [[[0, 0, 15], [0, 0, 10], [0, 0, 6.5], [3, 0, 6.5]]] },
   ],
   // The end bay: in from the hall, up the spiral stair from its door to the floor above, along the upper storey; down again.
-  'setpiece.library_end_bay_2': [{ chains: [[[7, 0, 7], [-1, 0, 7], [0, 0, 4.5], [0, 4, 4.5], [3.5, 4, 4.5], [0, 4, 4.5], [0, 0, 4.5]]] }],
+  'setpiece.library_end_bay_2': [
+    { chains: [[[7, 0, 7], [-1, 0, 7], [0, 0, 4.5], [0, 4, 4.5], [3.5, 4, 4.5], [0, 4, 4.5], [0, 0, 4.5]]] },
+    // Rounded corners (the Memorial Hall pass): the same stair (its drum against the corner now), and between the tall
+    // cases in the north cell on both storeys.
+    { options: { plan: 'rounded' }, chains: [[[7, 0, 7], [-1, 0, 7], [0, 0, 4.5], [0, 4, 4.5], [3.5, 4, 4.5], [0, 4, 4.5], [0, 0, 4.5]], [[7, 0, 7], [0, 0, 10.5]], [[3.5, 4, 4.5], [0, 4, 10.5]]] },
+  ],
   // The faceted end: up the hall's bay to the stair's door, round the drum both ways, up the stair and back down the
   // runner; in at the bay's door where it has one.
   'setpiece.library_faceted_end': [
     { chains: [[[4, 0, -7], [4, 0, 2.5], [-1.2, 0, 6.2], [4, 0, 2.5], [9.2, 0, 6.2]], [[4, 0, 3.5], [4, 4, 3.5], [4, 4, -3], [4, 4, 3.5], [4, 0, 3.5]]] },
     { options: { door: 'east' }, chains: [[[15, 0, 0], [10, 0, 0], [6.5, 0, 0], [4, 0, 2.5]]] },
     { options: { door: 'west' }, chains: [[[-7, 0, 0], [-2, 0, 0], [1.5, 0, 0], [4, 0, 2.5]]] },
+    // Rounded corners (the Memorial Hall pass): up the bay into the end among its cases, along the upper storey from
+    // the bay into the end; in at the arch either side; onto the window bench's seat, either side.
+    { options: { plan: 'rounded' }, chains: [[[4, 0, -7], [4, 0, 2.5], [4, 0, 7], [1, 0, 9.5], [4, 0, 7], [7, 0, 9.5]], [[4, 4, -3], [4, 4, 3.5], [4, 4, 8]]] },
+    { options: { plan: 'rounded', door: 'east', bench: 'east' }, chains: [[[15, 0, 0], [10, 0, 0], [6.5, 0, 0], [4, 0, 2.5]], [[4, 4, 0], [10.9, 5, -3], [10.9, 5, 3]]] },
+    { options: { plan: 'rounded', door: 'west', bench: 'west' }, chains: [[[-7, 0, 0], [-2, 0, 0], [1.5, 0, 0], [4, 0, 2.5]], [[4, 4, 0], [-2.9, 5, -3], [-2.9, 5, 3]]] },
   ],
   // Up the wing's steps and in at its door under the gable.
   'setpiece.gable_wing': [{ chains: [[[-0.5, 0, 7], [-0.5, 0.6, -1]]] }],
+  // The annex (the Memorial Hall pass): up its steps, in at its door, down inside and out through its back.
+  'setpiece.gable_annex': [{ chains: [[[4, 0, 7], [4, 0.6, -0.5], [4, 0, -6]]] }],
   // The chapel (step 9): the centre aisle between the pews and both side aisles behind the arcades.
   'setpiece.chapel_bay': ['blue', 'amber'].map((glass): Walk => ({ options: { glass }, chains: [hall(), [[-7, 0, -2.45], [0, 0, -2.45], [7, 0, -2.45]], [[-7, 0, 10.45], [0, 0, 10.45], [7, 0, 10.45]]] })),
   // From the nave up the steps to the altar; along each aisle through its end door: the sacristy and out of the back
@@ -179,6 +191,51 @@ describe('the campus pieces: every way through, every room, every stair, in ever
       }
     });
   }
+});
+
+describe("Memorial Hall's rounded plan: real windows of breakable glass", () => {
+  // Each pane fills a clear opening: a shot (and sight: glass lets both through) passes from 1 m inside to 1 m outside
+  // 5 cm in from each of its edges, and is stopped by the wall 5 cm out past each (no gap round the glass).
+  for (const [id, options] of [['setpiece.library_faceted_end', { plan: 'rounded', door: 'east' }], ['setpiece.library_faceted_end', { plan: 'rounded', door: 'none' }], ['setpiece.library_end_bay_2', { plan: 'rounded' }]] as const) {
+    it(`${id} ${JSON.stringify(options)}: every pane is clear glass filling an open window`, () => {
+      for (const rotation of ROTATIONS) {
+        const map = withPiece(id, rotation, false, options);
+        const panes = map.entities.filter((e): e is Extract<MapDocument['entities'][number], { kind: 'block' }> => e.kind === 'block' && e.glass === 'breakable');
+        expect(panes.length, `${id} turned ${rotation}`).toBeGreaterThanOrEqual(id === 'setpiece.library_end_bay_2' ? 5 : 12);
+        const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+        for (const b of panes) {
+          // The pane's thin side is its normal (untilted, a quarter turn at most); u runs along the wall.
+          const alongX = b.size[0] > b.size[2];
+          const n = alongX ? { x: 0, z: 1 } : { x: 1, z: 0 };
+          const hu = (alongX ? b.size[0] : b.size[2]) / 2;
+          const at = (du: number, y: number, s: number) => ({ x: b.position[0] + (alongX ? du : 0) + s * n.x, y, z: b.position[2] + (alongX ? 0 : du) + s * n.z });
+          const shot = (du: number, y: number) => physics.shotLine(at(du, y, -1), at(du, y, 1)) && physics.lineOfSight(at(du, y, -1), at(du, y, 1));
+          const y0 = b.position[1];
+          const y1 = y0 + b.size[1];
+          const ym = (y0 + y1) / 2;
+          const where = `${id} turned ${rotation}: the pane at ${b.position}`;
+          for (const [du, y] of [[0, ym], [-hu + 0.05, ym], [hu - 0.05, ym], [0, y0 + 0.05], [0, y1 - 0.05]] as const) expect(shot(du, y), `${where}: through it at ${du}, ${y}`).toBe(true);
+          for (const [du, y] of [[-hu - 0.05, ym], [hu + 0.05, ym], [0, y0 - 0.05], [0, y1 + 0.05]] as const) expect(shot(du, y), `${where}: past its edge at ${du}, ${y}`).toBe(false);
+        }
+        physics.free();
+      }
+    });
+  }
+});
+
+describe("Memorial Hall's rounded plan: the upper windows clear of the trusses", () => {
+  // The bay's Ridge Roof Bay is the one_truss variant (a single truss in the bay's middle), so each truss post and its
+  // corbel stand between the two wide upper windows of a wall, not in front of one (the bench's view out).
+  it('setpiece.library_faceted_end rounded: one truss, between the upper panes', () => {
+    const map = withPiece('setpiece.library_faceted_end', 0, false, { plan: 'rounded', door: 'east', bench: 'east' });
+    const roofs = map.entities.filter((e): e is Extract<MapDocument['entities'][number], { kind: 'prop' }> => e.kind === 'prop' && e.model === 'kit.roof.ridge_bay');
+    expect(roofs.map((r) => r.variant)).toEqual([2]);
+    const trussZ = roofs[0]!.position[2];
+    const upper = map.entities.filter((e): e is Extract<MapDocument['entities'][number], { kind: 'block' }> => e.kind === 'block' && e.glass === 'breakable' && e.position[1] > 5 && e.size[2] > 2);
+    expect(upper.length).toBeGreaterThanOrEqual(4);
+    // A post 0.3 m wide each side of the truss line and its corbel: no upper pane reaches within 0.3 m of it.
+    for (const b of upper) expect(Math.abs(b.position[2] - trussZ) - b.size[2] / 2, `the pane at ${b.position}`).toBeGreaterThan(0.3);
+  });
 });
 
 describe('the spiral stair (core.stair_spiral)', () => {

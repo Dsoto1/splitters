@@ -22,7 +22,7 @@ describe('kit-prop generator', () => {
 
   it('the content is valid', () => {
     expect(problems).toEqual([]);
-    expect(families.map((f) => f.id).sort()).toEqual(['kit.appliance.freezer_chest', 'kit.appliance.freezer_upright', 'kit.appliance.fridge', 'kit.appliance.stove', 'kit.appliance.washer', 'kit.barrier.bollard', 'kit.barrier.concrete', 'kit.bed.bunk', 'kit.bed.double', 'kit.bin.waste', 'kit.board.chalk', 'kit.board.flags', 'kit.board.notice', 'kit.board.pennants', 'kit.board.screen', 'kit.bookcase.double', 'kit.bookcase.press', 'kit.bookcase.tall', 'kit.bookcase.wide', 'kit.booth.guard_post', 'kit.box.carton', 'kit.cabinet.closet', 'kit.cabinet.closet_front', 'kit.cabinet.closet_front_pair', 'kit.cabinet.kitchen', 'kit.cabinet.media', 'kit.cabinet.organ', 'kit.cabinet.trophy', 'kit.console.panel', 'kit.container.shipping', 'kit.conveyor.belt', 'kit.crate.bin', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.dome.arch_2way', 'kit.dome.arch_3way', 'kit.dome.arch_4way', 'kit.dome.cap', 'kit.dome.closed_12', 'kit.dome.closed_8', 'kit.dome.drum_arch', 'kit.dome.drum_solid', 'kit.dome.drum_window', 'kit.dome.hall_12', 'kit.dome.hall_8', 'kit.dome.hall_ruin_12', 'kit.dome.panel_12', 'kit.dome.panel_12_broken', 'kit.dome.panel_12_window', 'kit.dome.panel_4', 'kit.dome.panel_4_broken', 'kit.dome.panel_4_window', 'kit.dome.panel_6', 'kit.dome.panel_6_broken', 'kit.dome.panel_6_window', 'kit.dome.panel_8', 'kit.dome.panel_8_broken', 'kit.dome.panel_8_window', 'kit.dome.ruin_12', 'kit.dome.ruin_8', 'kit.dome.trim_bottom', 'kit.dome.trim_middle', 'kit.dome.trim_top', 'kit.dome.whole_12', 'kit.dome.whole_8', 'kit.door.oak', 'kit.door.oak_ajar', 'kit.door.oak_open', 'kit.door.oak_slim', 'kit.door.oak_slim_ajar', 'kit.door.oak_slim_open', 'kit.door.painted', 'kit.door.painted_open', 'kit.door.walk_in', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.fence.board', 'kit.fence.chainlink', 'kit.fence.chainlink_gate', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.palisade', 'kit.fence.rail', 'kit.fence.site_panel', 'kit.fence.stair_rail', 'kit.fence.town', 'kit.hopper.round', 'kit.hopper.tall', 'kit.lamp.chandelier_bowl', 'kit.lamp.lantern_hanging', 'kit.lamp.post_banner', 'kit.library.globe', 'kit.library.rug', 'kit.library.runner', 'kit.machine.cog', 'kit.machine.heavy', 'kit.machine.lever', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.window', 'kit.monument.bell_stand', 'kit.monument.bird', 'kit.monument.cairn', 'kit.monument.island_bed', 'kit.monument.marker', 'kit.pipe.coolant', 'kit.pipe.glass', 'kit.pipe.junction', 'kit.pipe.riser', 'kit.pipe.valve', 'kit.roof.cone', 'kit.roof.gable_swept', 'kit.roof.ridge_bay', 'kit.roof.spire_faceted', 'kit.roof.timber_bay', 'kit.roof.vault_bay', 'kit.seat.bench', 'kit.seat.bench_stone', 'kit.seat.bleacher', 'kit.seat.chair', 'kit.seat.chair_cushion', 'kit.seat.office', 'kit.seat.pew', 'kit.seat.pew_rows', 'kit.shelf.end', 'kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.shelf.wall', 'kit.shop.awning', 'kit.shop.bakery_stand', 'kit.shop.bottle_return', 'kit.shop.cart', 'kit.shop.checkout', 'kit.shop.drink_station', 'kit.shop.produce_stand', 'kit.shop.serving_line', 'kit.sign.clock_face', 'kit.sign.cone', 'kit.sign.cone_slim', 'kit.sign.crest_floor', 'kit.sign.crest_wall', 'kit.sign.honours', 'kit.sign.warning', 'kit.sofa.armchair', 'kit.sofa.corner', 'kit.sofa.two_seat', 'kit.spool.cable', 'kit.sport.court_lines', 'kit.sport.court_sand', 'kit.sport.hoop_wall', 'kit.sport.pool_lanes', 'kit.sport.volleyball_net', 'kit.stall.counter', 'kit.stall.market', 'kit.street.bike_rack', 'kit.street.bus_stop', 'kit.street.mailbox', 'kit.street.newsbox', 'kit.table.altar', 'kit.table.console', 'kit.table.desk', 'kit.table.desk_hutch', 'kit.table.desk_hutch_pair', 'kit.table.dining', 'kit.table.lectern', 'kit.table.mess', 'kit.table.mess_small', 'kit.table.round', 'kit.table.school_desks', 'kit.table.workbench', 'kit.tool.anvil', 'kit.wall.arcade', 'kit.wall.arch_parabola', 'kit.wall.fieldstone', 'kit.wall.fieldstone_short', 'kit.wall.fireplace', 'kit.wall.panel_window', 'kit.wall.pier', 'kit.wall.pier_lamp', 'kit.wall.stone', 'kit.wall.stone_broken', 'kit.window.leaded', 'kit.window.leaded_band', 'kit.window.rose', 'kit.window.stained']);
+    expect(families.map((f) => f.id).sort()).toEqual(['kit.appliance.freezer_chest', 'kit.appliance.freezer_upright', 'kit.appliance.fridge', 'kit.appliance.stove', 'kit.appliance.washer', 'kit.barrier.bollard', 'kit.barrier.concrete', 'kit.bed.bunk', 'kit.bed.double', 'kit.bin.waste', 'kit.board.chalk', 'kit.board.flags', 'kit.board.notice', 'kit.board.pennants', 'kit.board.screen', 'kit.bookcase.double', 'kit.bookcase.double_tall', 'kit.bookcase.press', 'kit.bookcase.press_tall', 'kit.bookcase.tall', 'kit.bookcase.wide', 'kit.booth.guard_post', 'kit.box.carton', 'kit.cabinet.closet', 'kit.cabinet.closet_front', 'kit.cabinet.closet_front_pair', 'kit.cabinet.kitchen', 'kit.cabinet.media', 'kit.cabinet.organ', 'kit.cabinet.trophy', 'kit.console.panel', 'kit.container.shipping', 'kit.conveyor.belt', 'kit.crate.bin', 'kit.crate.factory', 'kit.crate.factory_long', 'kit.crate.framed', 'kit.crate.wood', 'kit.crate.wood_long', 'kit.dome.arch_2way', 'kit.dome.arch_3way', 'kit.dome.arch_4way', 'kit.dome.cap', 'kit.dome.closed_12', 'kit.dome.closed_8', 'kit.dome.drum_arch', 'kit.dome.drum_solid', 'kit.dome.drum_window', 'kit.dome.hall_12', 'kit.dome.hall_8', 'kit.dome.hall_ruin_12', 'kit.dome.panel_12', 'kit.dome.panel_12_broken', 'kit.dome.panel_12_window', 'kit.dome.panel_4', 'kit.dome.panel_4_broken', 'kit.dome.panel_4_window', 'kit.dome.panel_6', 'kit.dome.panel_6_broken', 'kit.dome.panel_6_window', 'kit.dome.panel_8', 'kit.dome.panel_8_broken', 'kit.dome.panel_8_window', 'kit.dome.ruin_12', 'kit.dome.ruin_8', 'kit.dome.trim_bottom', 'kit.dome.trim_middle', 'kit.dome.trim_top', 'kit.dome.whole_12', 'kit.dome.whole_8', 'kit.door.oak', 'kit.door.oak_ajar', 'kit.door.oak_open', 'kit.door.oak_slim', 'kit.door.oak_slim_ajar', 'kit.door.oak_slim_open', 'kit.door.painted', 'kit.door.painted_open', 'kit.door.walk_in', 'kit.drum.steel', 'kit.drum.steel_open', 'kit.fence.board', 'kit.fence.chainlink', 'kit.fence.chainlink_gate', 'kit.fence.iron', 'kit.fence.iron_broken', 'kit.fence.palisade', 'kit.fence.rail', 'kit.fence.site_panel', 'kit.fence.stair_rail', 'kit.fence.town', 'kit.hopper.round', 'kit.hopper.tall', 'kit.lamp.chandelier_bowl', 'kit.lamp.lantern_hanging', 'kit.lamp.post_banner', 'kit.library.globe', 'kit.library.rug', 'kit.library.runner', 'kit.machine.cog', 'kit.machine.heavy', 'kit.machine.lever', 'kit.machine.piston', 'kit.machine.scanner', 'kit.machine.window', 'kit.monument.bell_stand', 'kit.monument.bird', 'kit.monument.cairn', 'kit.monument.island_bed', 'kit.monument.marker', 'kit.pipe.coolant', 'kit.pipe.glass', 'kit.pipe.junction', 'kit.pipe.riser', 'kit.pipe.valve', 'kit.roof.cone', 'kit.roof.gable_swept', 'kit.roof.hip_round', 'kit.roof.ridge_bay', 'kit.roof.spire_faceted', 'kit.roof.spire_round', 'kit.roof.timber_bay', 'kit.roof.vault_bay', 'kit.seat.bench', 'kit.seat.bench_stone', 'kit.seat.bleacher', 'kit.seat.chair', 'kit.seat.chair_cushion', 'kit.seat.office', 'kit.seat.pew', 'kit.seat.pew_rows', 'kit.shelf.end', 'kit.shelf.gondola', 'kit.shelf.gondola_snack', 'kit.shelf.wall', 'kit.shop.awning', 'kit.shop.bakery_stand', 'kit.shop.bottle_return', 'kit.shop.cart', 'kit.shop.checkout', 'kit.shop.drink_station', 'kit.shop.produce_stand', 'kit.shop.serving_line', 'kit.sign.clock_face', 'kit.sign.cone', 'kit.sign.cone_slim', 'kit.sign.crest_floor', 'kit.sign.crest_wall', 'kit.sign.honours', 'kit.sign.warning', 'kit.sofa.armchair', 'kit.sofa.corner', 'kit.sofa.two_seat', 'kit.spool.cable', 'kit.sport.court_lines', 'kit.sport.court_sand', 'kit.sport.hoop_wall', 'kit.sport.pool_lanes', 'kit.sport.volleyball_net', 'kit.stall.counter', 'kit.stall.market', 'kit.street.bike_rack', 'kit.street.bus_stop', 'kit.street.mailbox', 'kit.street.newsbox', 'kit.table.altar', 'kit.table.console', 'kit.table.desk', 'kit.table.desk_hutch', 'kit.table.desk_hutch_pair', 'kit.table.dining', 'kit.table.lectern', 'kit.table.mess', 'kit.table.mess_small', 'kit.table.round', 'kit.table.school_desks', 'kit.table.workbench', 'kit.tool.anvil', 'kit.wall.arcade', 'kit.wall.arch_parabola', 'kit.wall.fieldstone', 'kit.wall.fieldstone_short', 'kit.wall.fireplace', 'kit.wall.panel_window', 'kit.wall.pier', 'kit.wall.pier_lamp', 'kit.wall.stone', 'kit.wall.stone_broken', 'kit.window.leaded', 'kit.window.leaded_band', 'kit.window.rose', 'kit.window.stained']);
   });
 
   // Two whole builds: about 13 s each alone (the far looks remake each baked level from its kept plan), several times
@@ -262,6 +262,61 @@ describe('kit-prop generator', () => {
         expect(coplanarLayers(m, { eps: 0.004, limit: 1 }), `${v.name} level ${level}`).toEqual([]);
       });
     }
+  });
+
+  it("a ridge roof's gable is closed along its verge, from the shingles down past the gable wall's top (St. John's Memorial Hall: \"you can almost see through them\")", () => {
+    // Points in the roof's end plane, from just under the shingles to 0.3 m under them, all along each slope: each must
+    // be covered by a face lying in that plane (the barge board's outer face), so no slit shows there.
+    for (const id of ['kit.roof.ridge_bay', 'kit.roof.gable_swept']) {
+      const f = families.find((x) => x.id === id);
+      for (const v of f.variants) {
+        const g = { ...f.generator, ...(v.set ?? {}) };
+        if (!g.gable) continue;
+        const m = KINDS[g.kind](v.seed, f.size, g, v.look, 0);
+        const [w, h, d] = f.size;
+        const dirs = g.gable === 'both' ? [-1, 1] : g.gable === 'back' ? [-1] : [1];
+        for (const dir of dirs) {
+          const Z = dir * (d / 2);
+          const tris = [];
+          for (let i = 0; i < m.I.length; i += 3) {
+            const t = [0, 1, 2].map((k) => [m.P[m.I[i + k] * 3], m.P[m.I[i + k] * 3 + 1], m.P[m.I[i + k] * 3 + 2]]);
+            if (t.every((p) => Math.abs(p[2] - Z) < 1e-4)) tris.push(t);
+          }
+          const inside = (x, y) => tris.some(([a, b, c]) => {
+            const s = (p, q, r) => (q[0] - p[0]) * (r[1] - p[1]) - (q[1] - p[1]) * (r[0] - p[0]);
+            const q = [x, y];
+            const d1 = s(a, b, q), d2 = s(b, c, q), d3 = s(c, a, q);
+            return !((d1 < 0 || d2 < 0 || d3 < 0) && (d1 > 0 || d2 > 0 || d3 > 0));
+          });
+          // The roof's outline as the generator draws it: eave tip, flare's top, ridge.
+          const X = w / 2;
+          const s0 = g.spring ?? 0;
+          const rise = Math.min(g.rise ?? h - s0 - 0.15, h - s0 - 0.1);
+          const [fin, fup] = g.flare ?? [0.9, 0.5];
+          const line = [[X, s0], [X - fin, s0 + fup], [0, s0 + rise]];
+          for (const sx of [-1, 1]) for (let i = 0; i < 2; i++) for (let t = 0.05; t < 1; t += 0.1) {
+            const x = sx * (line[i][0] + (line[i + 1][0] - line[i][0]) * t);
+            const y = line[i][1] + (line[i + 1][1] - line[i][1]) * t;
+            // (Over the gable wall, 3 cm behind the end, only the slit over its top; out under the eave, down to the soffit.)
+            const overWall = Math.abs(x) < X - (g.overhang ?? 0.6);
+            for (const dy of overWall ? [0.01, 0.04] : [0.01, 0.15, 0.3]) if (y - dy > s0 + 0.005) expect(inside(x, y - dy), `${id}#${v.name}: the verge at (${x.toFixed(2)}, ${(y - dy).toFixed(2)})`).toBe(true);
+          }
+        }
+      }
+    }
+  });
+
+  it("the Rounded Hip End meets a Ridge Roof Bay of the same span in one line: its +z face is the bay's profile", () => {
+    const hip = families.find((x) => x.id === 'kit.roof.hip_round');
+    const bay = families.find((x) => x.id === 'kit.roof.ridge_bay');
+    const m = KINDS[hip.generator.kind](hip.variants[0].seed, hip.size, hip.generator, hip.variants[0].look, 0);
+    // The hip's highest point at its +z face is the bay's ridge (5.6 m over the eave), on the middle line.
+    let top = -1;
+    let topX = 0;
+    for (let i = 0; i < m.P.length; i += 3) if (m.P[i + 2] > hip.size[2] / 2 - 0.02 && m.P[i + 1] > top) [top, topX] = [m.P[i + 1], m.P[i]];
+    expect(top).toBeCloseTo(bay.generator.rise, 1);
+    expect(Math.abs(topX)).toBeLessThan(0.2);
+    expect(hip.size[0]).toBe(bay.size[0]);
   });
 
   it('never uses Math.random (seeded streams only)', () => {

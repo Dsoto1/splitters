@@ -65,6 +65,8 @@ const NO_COLLISION = new Set([
   'kit.sign.clock_face',
   // St. John's step 7d (the mess hall's kit): hung pieces and pieces drawn on a wall's face.
   'kit.roof.timber_bay',
+  // St. John's 11 (Memorial Hall's rounded corners): roofs set on walls.
+  'kit.roof.spire_round', 'kit.roof.hip_round',
   'kit.lamp.chandelier_bowl',
   'kit.board.flags',
   'kit.wall.panel_window',

@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { loadMap, mapPlayerCaps, playableModes, type MapDocument } from '@tiletrigger/shared';
+import { isUnlistedMap, loadMap, mapPlayerCaps, playableModes, type MapDocument } from '@tiletrigger/shared';
 import { Tutorial, TUTORIAL_STEPS, type TutorialSample } from '../src/game/tutorial.ts';
 import { TIP_GAP, TIP_IDS, TIP_SECONDS, TIP_STALE, TIP_TEXT, TipBook, type TipState } from '../src/game/tips.ts';
 import { QUICK_MAPS, QUICK_MODES, pickQuickMap, quickSetup, type QuickCandidate } from '../src/frontend/quickPlay.ts';
@@ -160,17 +160,21 @@ describe('first-time tips', () => {
 describe('Quick Play', () => {
   const all = (): QuickCandidate[] => [...new Set(Object.values(QUICK_MAPS).flat())].map((key) => ({ key, modes: playableModes(map(key)), recommendedMax: map(key).metadata.recommendedPlayers.max, official: true }));
 
-  it('lists only maps of the suite that play the mode', () => {
-    for (const mode of QUICK_MODES) for (const key of QUICK_MAPS[mode]) expect(playableModes(map(key))).toContain(mode);
+  it('lists only maps of the suite that play the mode, none retired or for training', () => {
+    for (const mode of QUICK_MODES)
+      for (const key of QUICK_MAPS[mode]) {
+        expect(playableModes(map(key))).toContain(mode);
+        expect(isUnlistedMap(key), key).toBe(false);
+      }
   });
 
   it('picks from the mode list, never a map that is not ours, and not the last one when there is another', () => {
     const maps = all();
     const own: QuickCandidate = { key: 'own:1', modes: ['core.tdm', 'core.deathmatch'], recommendedMax: 4, official: false };
     for (let r = 0; r < 1; r += 0.05) {
-      const k = pickQuickMap('core.deathmatch', [...maps, own], 48, 'citadel', r)!;
+      const k = pickQuickMap('core.deathmatch', [...maps, own], 48, 'crossroads', r)!;
       expect(QUICK_MAPS['core.deathmatch']).toContain(k);
-      expect(k).not.toBe('citadel');
+      expect(k).not.toBe('crossroads');
     }
     expect(pickQuickMap('core.tdm', [own], 48, null, 0)).toBeNull();
   });
@@ -189,11 +193,11 @@ describe('Quick Play', () => {
     const rec = mapPlayerCaps(sandgate, 'core.tdm').recommended;
     expect(tdm.teams).toEqual([rec / 2, rec / 2]);
     expect(tdm.skill).toBe('normal');
-    const citadel = map('citadel');
-    const dm = quickSetup('core.deathmatch', citadel, 'citadel', 48);
-    expect(dm.bots + 1).toBe(mapPlayerCaps(citadel, 'core.deathmatch').recommended);
+    const crossroads = map('crossroads');
+    const dm = quickSetup('core.deathmatch', crossroads, 'crossroads', 48);
+    expect(dm.bots + 1).toBe(mapPlayerCaps(crossroads, 'core.deathmatch').recommended);
     expect(dm.teams).toBeUndefined();
     // A phone's limit caps it.
-    expect(quickSetup('core.deathmatch', citadel, 'citadel', 8).bots).toBe(7);
+    expect(quickSetup('core.deathmatch', crossroads, 'crossroads', 8).bots).toBe(7);
   });
 });

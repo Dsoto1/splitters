@@ -9,7 +9,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isRetiredMap, isGameMode, MODE_LABELS, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isUnlistedMap, isGameMode, MODE_LABELS, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import type { MusicPlayer, MusicScene } from './audio/music.ts';
 import { createEngine, type RendererKind } from './engine.ts';
@@ -187,11 +187,11 @@ function arcadeMaps(): ArcadeMap[] {
   };
   return [
     ...entry('canyon', 'Outdoor canyon: two bases, boulder fields, hills and a ridge ledge.', ['core.tdm', 'core.deathmatch'], 9),
-    ...entry('citadel', 'Castle keep in an outer bailey: a two-storey atrium, roof terraces, every weapon.', ['core.deathmatch', 'core.tdm'], 9),
     ...entry('sandgate', 'Desert town: long street, mid doors, tunnels.', ['core.tdm', 'core.deathmatch'], 9),
     // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata;
-    // arena, vault and outpost are retired (RETIRED_MAPS) and stay reachable only by ?offline= for tests.
-    ...MAP_INDEX.filter((e) => !isOfflineMap(e.key) && !isRetiredMap(e.key))
+    // arena, vault, outpost and citadel are retired (RETIRED_MAPS) and stay reachable only by ?offline= for tests;
+    // the Training Range (TRAINING_MAPS) is Profile → Test weapons' (playRange) and the tutorial's, never a map to pick.
+    ...MAP_INDEX.filter((e) => !isOfflineMap(e.key) && !isUnlistedMap(e.key))
       .map((e) => builtInEntry(e.key, e, { blurb: blurbOf(e.metadata.description), modes: e.modes, bots: botsFor(e.metadata.recommendedPlayers), ...(e.metadata.tier === 'experimental' ? { group: EXPERIMENTAL_GROUP } : {}) }))
       .sort(byName),
   ];
@@ -211,13 +211,14 @@ function applyPublished(maps: ArcadeMap[], published: ReadonlyMap<string, Publis
       known.metadata = { ...known.metadata, ...meta };
       known.blurb = blurbOf(p.description) || known.blurb;
       if (modes.length) known.modes = modes;
-    } else if (modes.length && !isRetiredMap(p.id)) {
+    } else if (modes.length && !isUnlistedMap(p.id)) {
       addToSuite(p.id);
       maps.push(builtInEntry(p.id, { key: p.id, metadata: meta, modes }, { blurb: blurbOf(p.description), modes, bots: botsFor(p.recommendedPlayers) }));
     }
   }
-  // The three featured maps first, then ours by name (names may have changed), groups last.
-  const rest = maps.splice(3).sort((a, b) => (a.group ? 1 : 0) - (b.group ? 1 : 0) || (a.group || b.group ? 0 : byName(a, b)));
+  // The featured maps first (arcadeMaps' own entries), then ours by name (names may have changed), groups last.
+  const lead = maps.findIndex((m) => !isOfflineMap(m.key));
+  const rest = maps.splice(lead < 0 ? maps.length : lead).sort((a, b) => (a.group ? 1 : 0) - (b.group ? 1 : 0) || (a.group || b.group ? 0 : byName(a, b)));
   maps.push(...rest);
 }
 
@@ -380,6 +381,7 @@ class App {
         },
         joinCode: (code, name) => void this.joinCode(code, name),
         playTutorial: () => void this.playTutorial(),
+        playRange: () => void this.playRange(),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
     })();
@@ -417,7 +419,7 @@ class App {
         bootStep('your character', this.init().then(() => capped(this.portraits!.get(this.front!.look).then(preloadImage), 8000))),
         bootStep('characters', capped(Promise.all(Object.values(SHIPPED_PORTRAITS).map((f) => preloadImage(`${import.meta.env.BASE_URL}portraits/${f}`))), 8000)),
         // The home screen's featured map shows its full picture; Match Setup's first cards their small ones.
-        bootStep('maps', capped(Promise.all([...['sandgate', 'canyon', 'citadel'].map((id) => preloadImage(shippedPicture(id))), ...MAP_INDEX.slice(0, 12).map((e) => preloadImage(shippedCardPicture(e.key)))]), 6000)),
+        bootStep('maps', capped(Promise.all([...['sandgate', 'canyon', 'st_johns'].map((id) => preloadImage(shippedPicture(id))), ...MAP_INDEX.filter((e) => !isUnlistedMap(e.key)).slice(0, 12).map((e) => preloadImage(shippedCardPicture(e.key)))]), 6000)),
       ];
       void Promise.allSettled(steps).then(() => requestAnimationFrame(() => finishBoot()));
       // Once the menu is up and the page idle, fetch what Play needs (the match code and the map it opens on).
@@ -591,6 +593,31 @@ class App {
   }
 
   /**
+   * Profile → Favourite loadout → Test weapons (owner, 2026-11-24: "its just training and testing"): the Training Range
+   * alone, offline, no mode to speak of (Deathmatch underneath, no bots, no time or score limit, no scorebar), your
+   * favourite class's loadout when you have one (Classes on, so the class screen can swap it), every other gun on the
+   * range's racks, your optic picks. The pause menu's Back (Esc again, controller B) and its exit go back to the
+   * loadout. Nothing is recorded in your career.
+   */
+  async playRange(): Promise<void> {
+    void loadMatchCode().catch(() => undefined);
+    await this.init();
+    const map = await loadBuiltInMap('training_range').catch(() => null);
+    if (!map) return void this.showMenu("The Training Range didn't load");
+    const rules: MatchRules = { ...rulesForMode(map, 'core.deathmatch'), timeLimitSeconds: 0, scoreLimit: 0, ...(myFavClass() ? { classes: true } : {}) };
+    const back = (reason?: string) => void this.showMenu(reason ?? '').then(() => this.front!.openLoadout());
+    this.showMatchLoading(map, 'core.deathmatch');
+    void this.withMatch((m) =>
+      this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, ...(TEST ? { test: TEST } : {}) }), {
+        exitLabel: 'Back to loadout',
+        exitOnF5: false,
+        range: true,
+        onExit: (reason) => back(reason),
+      }),
+    );
+  }
+
+  /**
    * The host's map rotation (offline, Host game; pause menu → Match): it outlives each match, so it goes on
    * from map to map, and starts empty again when the player goes back to the menu.
    */
@@ -600,7 +627,7 @@ class App {
     load: (id) => (inSuite(id) ? loadBuiltInMap(id) : Promise.resolve(null)),
     // Our suite's maps (as the menu lists them) and the modes each plays.
     info: (id) => {
-      const e = inSuite(id) && !isRetiredMap(id) ? MAP_INDEX.find((m) => m.key === id) : undefined;
+      const e = inSuite(id) && !isUnlistedMap(id) ? MAP_INDEX.find((m) => m.key === id) : undefined;
       return e ? { name: e.metadata.name, modes: e.modes } : null;
     },
     // The next-map vote's ballot: our suite's maps that play the mode, with the most players each takes in it.
@@ -608,7 +635,7 @@ class App {
       MAP_INDEX.flatMap((e) => {
         const i = e.modes.indexOf(mode);
         // (Experimental maps are never on the ballot: a host can still put one in the rotation by hand.)
-        return i >= 0 && inSuite(e.key) && !isRetiredMap(e.key) && e.metadata.tier !== 'experimental' ? [{ map: e.key, mode, name: e.metadata.name, max: e.caps?.[i] ?? e.metadata.recommendedPlayers.max }] : [];
+        return i >= 0 && inSuite(e.key) && !isUnlistedMap(e.key) && e.metadata.tier !== 'experimental' ? [{ map: e.key, mode, name: e.metadata.name, max: e.caps?.[i] ?? e.metadata.recommendedPlayers.max }] : [];
       }),
     vote: { get: () => mapVoteOn(), set: (on) => saveMapVote(on) },
   });
@@ -931,7 +958,7 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; tutorial?: boolean; joinCode?: string; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; tutorial?: boolean; range?: boolean; joinCode?: string; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
     // A match has its own loading screen (players, map and weapons).
     finishBoot();
     $('menu').hidden = true;
@@ -962,12 +989,14 @@ class App {
         return e ? (e.metadata.thumbnail ?? shippedPicture(e.metadata.id)) : null;
       },
       ...(o.tutorial ? { tutorial: true } : {}),
-      // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial.
+      ...(o.range ? { range: true } : {}),
+      // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial (Test weapons
+      // only reads your favourite class: nothing it plays is recorded).
       ...(o.exitOnF5 || o.tutorial
         ? {}
         : {
             career: {
-              record: recordMatch,
+              record: o.range ? () => undefined : recordMatch,
               favClass: myFavClass,
               points: myRankPoints,
               card: () => {
@@ -978,7 +1007,7 @@ class App {
             },
           }),
       // First-time tips: off in browser tests (?test=1, automated browsers) unless asked for (&tips=1, &newplayer=1).
-      tips: (!TEST && !navigator.webdriver) || params.get('tips') === '1' || params.get('newplayer') === '1',
+      tips: !o.range && ((!TEST && !navigator.webdriver) || params.get('tips') === '1' || params.get('newplayer') === '1'),
       onExit: (reason, travel, how, end) => {
         if (this.session === session) this.session = undefined;
         o.onExit(reason, travel, how, end);
@@ -1036,7 +1065,7 @@ if (/^\/host\/?$/.test(location.pathname) || params.get('mode') === 'assets' || 
 if (/^\/host\/?$/.test(location.pathname))
   void import('./hostPage.ts').then((m) =>
     m.openHostPage(
-      MAP_INDEX.filter((e) => inSuite(e.key) && !isRetiredMap(e.key))
+      MAP_INDEX.filter((e) => inSuite(e.key) && !isUnlistedMap(e.key))
         .map((e) => ({ id: e.key, name: e.metadata.name, modes: e.modes }))
         .sort((a, b) => a.name.localeCompare(b.name)),
     ),
@@ -1107,6 +1136,7 @@ else if (params.get('mode') === 'assets') {
 } else if (params.get('mode') === 'editor') void app.openEditor(editorResumeOnReload());
 else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('tutorial')) void app.playTutorial();
+else if (params.has('range')) void app.playRange();
 else if (params.has('offline')) {
   const which = params.get('offline');
   // &classes=1 (or a number: the per-team class limit) plays with Classes; &weapons=chaos a weapon set (standard,

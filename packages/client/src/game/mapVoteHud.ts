@@ -1,3 +1,5 @@
+import { VotePad } from './votePad.ts';
+import { inputMode } from '../inputMode.ts';
 import { MODE_LABELS, VOTE_RESULT_SECONDS, type VoteState } from '@tiletrigger/shared';
 
 const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt(0)};`);
@@ -5,13 +7,19 @@ const escapeHtml = (s: string) => s.replace(/[&<>"']/g, (c) => `&#${c.charCodeAt
 /**
  * Between matches: the vote on the next map, under the end-of-match scoreboard (sim/mapVote.ts). Two or three map
  * cards (picture, name, mode, votes), the seconds left, your vote lit. Keys 1-3 (or a click, or a tap) vote; you
- * can change your mind until it closes. Then the winner, and "Loading in 3 s". Nothing flashes: the cards light up.
+ * can change your mind until it closes.
+ * A controller: d-pad left and right or the left stick move a highlight across the cards, A votes for it (the game's own
+ * pad input is idle while the mouse is free over the vote). Then the winner, and "Loading in 3 s". Nothing flashes: the cards light up.
  */
 export class MapVoteHud {
   readonly panel: HTMLElement;
   private state: VoteState | null = null;
   /** Your vote, as you cast it (the host's count follows a moment later). */
   private mine: number | null = null;
+  /** The card a controller has lit (A votes it). */
+  private readonly pad = new VotePad();
+  private raf = 0;
+  private drawnMode = inputMode();
   private readonly onKey = (e: KeyboardEvent) => {
     if (!this.open || this.state?.w !== undefined || e.repeat || e.ctrlKey || e.metaKey || e.altKey) return;
     const n = /^(?:Digit|Numpad)([1-4])$/.exec(e.code)?.[1];
@@ -38,6 +46,13 @@ export class MapVoteHud {
     host.append(this.panel);
     // Capture: ahead of the game's own number keys (weapon slots).
     window.addEventListener('keydown', this.onKey, { capture: true });
+    if (typeof requestAnimationFrame === 'function') {
+      const loop = () => {
+        this.pollPad();
+        this.raf = requestAnimationFrame(loop);
+      };
+      this.raf = requestAnimationFrame(loop);
+    }
     this.panel.addEventListener('click', (e) => {
       const b = (e.target as HTMLElement).closest<HTMLButtonElement>('button[data-i]');
       if (b && !b.disabled) this.cast(Number(b.dataset.i));
@@ -63,6 +78,21 @@ export class MapVoteHud {
     const i = s.w ?? s.n.reduce((best, n, k) => (n > (s.n[best] ?? 0) ? k : best), 0);
     const o = s.o[i];
     return o ? { map: o.name, mode: o.mode } : null;
+  }
+
+  /** A controller while the vote is up (once a frame): left / right and the stick move the highlight, A votes. */
+  pollPad(): void {
+    const pad = [...(navigator.getGamepads?.() ?? [])].find((g) => g?.connected && g.mapping === 'standard');
+    const mode = inputMode();
+    if (mode !== this.drawnMode) {
+      this.drawnMode = mode;
+      this.render();
+    }
+    const s = this.state;
+    const live = !!s && this.open && s.w === undefined;
+    const r = this.pad.poll(live ? (pad ?? undefined) : undefined, s?.o.length ?? 0);
+    if (r.moved) this.render();
+    if (r.cast !== null) this.cast(r.cast);
   }
 
   private cast(i: number): void {
@@ -112,6 +142,7 @@ export class MapVoteHud {
     set(this.panel.querySelector('.mv-left'), done ? `${s.by === 'host' ? 'Tie: the host decided · ' : s.by === 'order' ? 'Tie · ' : s.by === 'none' ? 'No votes · ' : ''}Loading in ${VOTE_RESULT_SECONDS} s` : `${s.left} s`);
     this.panel.querySelectorAll<HTMLButtonElement>('.mv-card').forEach((b, i) => {
       b.classList.toggle('mine', this.mine === i);
+      b.classList.toggle('cursor', inputMode() === 'pad' && this.pad.cursor === i && !done);
       b.classList.toggle('won', done && s.w === i);
       b.classList.toggle('lost', done && s.w !== i);
       b.disabled = done;
@@ -123,7 +154,7 @@ export class MapVoteHud {
     });
     const hint = this.panel.querySelector<HTMLElement>('.mv-hint')!;
     hint.hidden = done;
-    set(hint, this.mine === null ? `Press 1-${s.o.length}, click or tap a map` : 'Voted: change it any time until the vote closes');
+    set(hint, inputMode() === 'pad' ? (this.mine === null ? '◀ ▶ choose · A vote' : 'Voted: ◀ ▶ choose · A to change it') : this.mine === null ? `Press 1-${s.o.length}, click or tap a map` : 'Voted: change it any time until the vote closes');
     this.panel.classList.toggle('closed', done);
     this.layout();
   }
@@ -144,6 +175,7 @@ export class MapVoteHud {
   }
 
   dispose(): void {
+    if (this.raf && typeof cancelAnimationFrame === 'function') cancelAnimationFrame(this.raf);
     window.removeEventListener('keydown', this.onKey, { capture: true });
     document.getElementById('hud')?.classList.remove('vote-on');
     this.panel.remove();

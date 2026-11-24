@@ -1,6 +1,6 @@
 import { existsSync, readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
-import { isMapId, isRetiredMap, mapPlayerCaps, parseRotationPreset, playableModes, type GameMode, type MapDocument, type RotationLookup, type RotationPreset, type VoteCandidate } from '@tiletrigger/shared';
+import { isMapId, isUnlistedMap, mapPlayerCaps, parseRotationPreset, playableModes, type GameMode, type MapDocument, type RotationLookup, type RotationPreset, type VoteCandidate } from '@tiletrigger/shared';
 
 /**
  * A dedicated server's (and Host Service's) side of the map rotation
@@ -19,7 +19,7 @@ export function suiteLookup(mapsDir: string): RotationLookup & { forget(): void 
     if (!known.has(id)) {
       const file = join(mapsDir, `${id}.json`);
       let info: { name: string; modes: GameMode[] } | null = null;
-      if (isMapId(id) && !isRetiredMap(id) && existsSync(file)) {
+      if (isMapId(id) && !isUnlistedMap(id) && existsSync(file)) {
         try {
           // The raw document: the modes depend only on its metadata and entities (flags, hills, bomb sites…).
           const doc = JSON.parse(readFileSync(file, 'utf8')) as MapDocument;
@@ -87,7 +87,7 @@ export function suitePool(mapsDir: string): {
   forget(): void;
 } {
   const known = new Map<string, { name: string; caps: Map<GameMode, number> } | null>();
-  const ids = () => (existsSync(mapsDir) ? readdirSync(mapsDir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => isMapId(id) && !isRetiredMap(id)).sort() : []);
+  const ids = () => (existsSync(mapsDir) ? readdirSync(mapsDir).filter((f) => f.endsWith('.json')).map((f) => f.slice(0, -5)).filter((id) => isMapId(id) && !isUnlistedMap(id)).sort() : []);
   const read = (id: string) => {
     if (!known.has(id)) {
       // The raw document (as suiteLookup reads it): parsing is ~15 times cheaper than a full load, so reading one never
@@ -95,7 +95,7 @@ export function suitePool(mapsDir: string): {
       // map's for every shipped map.
       let info: { name: string; caps: Map<GameMode, number> } | null = null;
       const file = join(mapsDir, `${id}.json`);
-      if (isMapId(id) && !isRetiredMap(id) && existsSync(file)) {
+      if (isMapId(id) && !isUnlistedMap(id) && existsSync(file)) {
         try {
           const m = JSON.parse(readFileSync(file, 'utf8')) as MapDocument;
           // (The vote's ballot is the core roster: an experimental map is played when the host puts it in the rotation.)

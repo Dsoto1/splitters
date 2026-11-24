@@ -1146,6 +1146,28 @@ reach 0.75 m past it (`map/setPieceCheck.ts`, `EAVE`). The roofs collide as noth
 thrown high leaves through them). Walked: `setPiecesCampus.test.ts` (every piece, every turn, each Arch porch) and
 `setPiecesAcademy.test.ts`, "Memorial Hall's shape" (on a 2 m and a 2.5 m ground grid). No map format change.
 
+**The library kit, rounded (the Memorial Hall pass, owner 2026-11-23; PLAN 4q).** Tiles (`content/tiles/core.json`,
+made by a script from their dimensions): **Hall Bay (two storeys)** and **Hall Bay (two storeys, east side open
+below)** (a bay 16 m across: side walls with real openings, a square one below at sill 1.23 m and two wide ones above at
+sill 5.97 m), **Rounded Hall End**, **Rounded Hall End (doorway)** (2 m in the end's middle) and **Rounded Hall End
+(spiral stair)** (the end's corners quarter circles of 4 m; the stair turned so its doors face the hall's middle, its
+drum against the corner). The openings are bare: a set piece puts a breakable glass block (6 cm, the opening's size)
+and the window's frame in each. Props: `kit.window.leaded` and `kit.window.leaded_band` variant `open` (the frame and
+mullions alone, lined through the wall's depth), `kit.roof.spire_round` (the Faceted Spire over a square plan with
+corners rounded 4.7 m at the eave: each corner a cone between two flat faces; variant `hall` cut under a ridge roof)
+and `kit.roof.hip_round` (the −z half of such a pyramid with a Ridge Roof Bay's span, rise and flare: a hall's hipped
+end that meets the bay in one line; generator `roundroof`), `kit.bookcase.press_tall` (3.15 m) and
+`kit.bookcase.double_tall` (3.2 m), six rows of books a face. Ridge roofs (`ridgeroof`) close a gable's verge with a
+barge board 0.45 m deep (the slopes were a skin with open ends; a slit showed along every gable). Set pieces: the
+Library Faceted End and Library End Bay take **Plan** (Faceted or Square as built / Rounded corners: the tiles above,
+glass windows, taller and more bookcases; the Faceted End without its stair), the Faceted End **Annex door** (the
+doorway end) and **Window bench** (a seat 1.2 m deep, 1 m up three steps of 0.25 m on 0.5 m treads, along a side's
+upper wall under its windows); **Gable Annex (into the building behind)**: the Small Stucco Wing centred on two cells,
+its back open in a doorway, two steps down inside. Academy: the **Dorm Bay End**'s **Room** option (Dorm room /
+Washroom: two toilet stalls, two showers, two sinks with mirrors / Closed: walled and filled). Walked: `setPiecesCampus.test.ts` (each new option, every turn; every pane fills a clear
+opening) and `setPiecesAcademy.test.ts` ("Memorial Hall with rounded corners and its annex", "the Dorm Bay End's Room
+option"); the verge and the hip's join in `tools/content/test/kitprops.test.mjs`. No map format change.
+
 #### Far looks baked from the real model
 
 (Owner, 2026-11-17, "recs".) The generators' own lighter levels were simplifications made by hand, and the last one
@@ -1514,6 +1536,34 @@ Mini Dungeon, Mini Market, Modular Space, Pirate, Platformer, Retro Urban, Space
 Survival and Train kits. Real-world sizes are the props' `height` in their pack files as before (the
 2026-11-04 pass shrank the chunkiest clutter: barrels, the powder keg, bottle, bucket, anvil, lantern,
 candles, shopping cart, fridge); collision follows the built size.
+
+### Prop material atlases
+
+`tools/content/prop-atlas.mjs`, run by `prepare-props.mjs` on every prop it builds (after its surfaces) and, once, in
+place on props kept as built (docs/PERF_PROPS_2026-11-23.md). Each pack is its own atlas:
+
+- **Flat colours move into the vertices.** A material without a picture (the household items paint a part per colour:
+  the cupboard sink had three) gives its colour to the vertices it paints (`COLOR_0`, three components, multiplied
+  into any vertex colour already there; 8-bit where that shows within half a step on screen, else 16-bit, so the
+  near-blacks keep their shade) and keeps white in its place. Alpha, roughness, metalness, emission, culling and the
+  surface stay on the material. A vertex list two parts of different colours shared is split first (each part keeps
+  only the vertices it uses).
+- **Every material gets its pack's atlas key**, `extras.atlas = "<pack>/<kind>"`, the kind a hash of everything it draws
+  with apart from that colour (alpha mode, both sides, roughness, metalness, emission, extensions, the surface extras
+  and, for a textured material, its pictures' pixels, sampler and coordinates). `extras.atlasColor` keeps the colour it
+  had and `extras.atlasVersion` the step's version (`ATLAS_VERSION`: a prop atlased by an older version is done again).
+- **The game shares one material per key** (`content/models.ts`; `?perfoff=propatlas` draws each material on its own,
+  exactly as before): a prop is a draw per kind, and props of a pack with the same kind can be merged into one draw
+  where they stand together (`game/propBatches.ts`, `?perfoff=propmerge`). The generated kit families already carry
+  their colours in their vertices; the game shares their materials by what they are (name, surface, factors).
+- **Textured materials keep their pictures and coordinates.** Packing several pictures into one would break
+  coordinates that repeat (a tiled plank or brick), so they only get the key: the Kenney kits' shared colour map is one
+  material for every prop of the pack that uses it with the same surface.
+- **Left alone:** nature props (the environment draws them) and a fire prop's own flame materials (the game hides them
+  by name: `flame.hide`).
+
+The lock records each prop's bytes as before; the step adds 5.6 MB (7.5 %) to `public/props` in all (the vertex
+colours). The palette pictures of the props it changed are made again by `pnpm content:rebuild` (they look the same).
 
 ### Prop collision
 

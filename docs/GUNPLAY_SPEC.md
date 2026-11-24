@@ -966,8 +966,8 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
   optics, `fine` for the sniper scopes, with the holdover marks of §5 placed for each view's own half-angle
   (`game/holdover.ts`, unchanged).
 - **The sight picture.** A glass 0.4-0.7 m from the eye is a few dozen pixels across, so an aimed gun with a glass is
-  drawn larger about the view axis as it comes up (`optics.ts` `pictureScale`: its window's half-height brought to 0.2
-  of the screen's, at most 3×), the frame the Battle Rifle's optic uses: only x and y scale, every depth stays, nothing
+  drawn larger about the view axis as it comes up (`optics.ts` `pictureScale`: its window's half-height brought to 0.13
+  of the screen's, at most 2×; 0.2 and 3× until 2026-11-23, below), the frame the Battle Rifle's optic uses: only x and y scale, every depth stays, nothing
   nears the near plane. Long guns' iron sights get it gently (`ironsPicture`: the rear sight as large as at 0.36 m, at
   most 1.6×: the Assault Rifle, SMG and shotguns 1.6×, the Burst Rifle 1.26×; handguns unchanged). Points on the axis
   stay on it, so the sights stay on the aim. The gun's bob and kick are drawn that much smaller, so they move the
@@ -977,6 +977,30 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
   changes when switched off), a HUD reticle's origin as laid out. All measured 0.00° (glass marks at most 0.01°).
   `packages/client/test/optics.test.ts` names every gun's optic and zoom and holds the rest (a weapon without an entry
   fails with what to do); `tools/content/test/optics.test.mjs` covers the tool.
+
+**The eye at a long gun's glass (2026-11-23; owner's screenshot of the Woodland SMG, "that scope tho": a huge crude tube
+on a blocky square mount filling the middle of the screen, the view through it seeming aimed elsewhere, the gun low with
+its rear a big black shape).** Causes: a gun aimed through a red dot or holographic sight stood wholly ahead of the eye
+(its rear end 0.2 m ahead, as an unfitted gun), so the glass was 0.5-0.65 m off and the sight picture drew the whole gun
+up to 3× larger to bring its window to 0.2 of the screen: housing, riser, slab and receiver all grew with it (the
+Woodland SMG, mounted far forward on its rear sight block, at the 3× cap). The lens itself was on the aim (in the owner's
+screenshot the dot sits within a pixel or two of the glass's middle and the glass shows the world straight through; the
+camera was looking at the grass), but with that much gun round it the view read as aimed elsewhere. Now:
+- **The eye comes to the glass** on a long gun (`view.hold.style` long): `tools/content/optics.mjs` `fitEye` measures the
+  eye's place from the model (`mount.eye`, model z): the glass 0.3 m off (`EYE_NEAREST`), or further where the gun near
+  the eye would show in the aimed view (points within 0.16 m of the eye, the near plane's 0.1 m and a margin, must be out
+  of the picture as drawn). 0.3-0.39 m on the 16 long guns (the Woodland SMG 0.39, its receiver under the eye). Handguns
+  are held out as before. `sightPose.ts` `glassPlacement` uses it.
+- **A smaller sight picture**: the window's half-height 0.13 of the screen's, the gun drawn at most 2× (0.2 and 3× before);
+  most long guns now draw at 1-1.5×. The model's own sight windows (Desert Carbine, Twin-Shot Rifle, Blaster X-42) share
+  the cap.
+- **The red dot's mount**: a low clamp and a tapered riser in place of the square block on a square slab.
+- **Checks**: `optics.test.ts` holds every glass as drawn (`optics.ts` `glassAt`, where `opticHousing.ts` puts it), both
+  ends of its housing and every 2x eyepiece on the aim for every optic a gun offers, and each long gun's eye fitted
+  (0.3-0.45 m, picture at most 2×, window at most 0.13); `tools/content/test/optics.test.mjs` checks the fit (nothing near
+  the eye shows; nearer, the Woodland SMG's receiver would); the sight sheet's audit adds `lens` (the drawn glass's middle
+  against the aim, failing over 0.1°).
+The 2x optic was already right on every gun that offers it (its eyepiece on the aim at 0.12 m, the world at 2×); unchanged.
 
 **Adding a gun or changing its optic.** Give it an entry in `content/optics.json` (`weapons`, or `none` with a reason),
 run `node tools/content/optics.mjs` (`--report` prints the table and mounts), look at it on the sight sheet, then name
@@ -1567,6 +1591,9 @@ with Q the last weapon and E use). Options → Controls rebinds both, like every
 docs/CONTROLS.md); a player who had moved the old lean keys keeps them. Ten ticks to lean all the way (0.17 s), back the same. The upper body rolls
 about the hips by up to 0.3 rad (17°) and shifts 12 cm at the hips, so the eye moves about 0.33 m out standing
 (0.24 m crouched) and 3 cm down. No stamina. Not while sprinting or sliding, prone, in the air, swimming or seated.
+Controller (owner, 2026-11-23): D-pad left / right lean while LT aims (held or toggled), and are the previous / next weapon
+otherwise (docs/CONTROLS.md, "Controller"); the pad sets the same lean buttons as the keys.
+
 Never into a wall: a ray from the upright eye stops the lean 0.2 m short of anything to that side, and a wall that
 comes closer pulls it in at once.
 
@@ -2162,6 +2189,8 @@ Include:
 - Projectile velocity/drop visualization toggle.
 
 This serves players **and developers**.
+
+**Where it lives (owner, 2026-11-24):** Profile → Favourite loadout → **Test weapons** (the loadout screen), not the map list: a training map (`TRAINING_MAPS`, shared `map/retired.ts`) with no modes, offline, alone, your class and optic picks, no score or clock; Back returns to the loadout (docs/FEATURES.md, "Training maps"). Its boards, walls, racks and range troopers are as before; the armour targets, damage readout and drop view above are still to come (QUEUE, "Gunplay gaps").
 
 Developers should be able to compare two weapon builds rapidly.
 

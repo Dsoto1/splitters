@@ -842,6 +842,8 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 .profile-panel #profile-save { align-self: flex-start; }
 /* Favourite loadout → Optics: one row a gun (its icon and name, its optic). */
 .prof-optics-box { display: flex; flex-direction: column; gap: 8px; margin-top: 6px; }
+.prof-test { display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+.prof-test .hint { flex: 1 1 180px; }
 .prof-sub { margin: 0; font: 700 12px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; color: var(--text, #e8eefc); }
 .prof-optics { display: grid; grid-template-columns: 1fr; gap: 5px; }
 .profile-panel label.prof-optic { flex-direction: row; align-items: center; justify-content: space-between; gap: 8px; text-transform: none; letter-spacing: 0; font: 500 13px var(--font-body, inherit); color: inherit; min-width: 0; }
@@ -2188,6 +2190,7 @@ html.touch #menu .screen.characters, html.touch #menu .screen.profile { padding-
 #map-vote .mv-cards { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 10px; }
 #map-vote .mv-card { display: grid; grid-template-rows: auto auto auto auto; text-align: left; padding: 0 0 8px; background: var(--surface-2); border: 2px solid transparent; color: var(--text); cursor: pointer; font: inherit; min-width: 0; touch-action: manipulation; transition: border-color 0.12s, background 0.12s; }
 #map-vote .mv-card:hover:not(:disabled), #map-vote .mv-card:focus-visible { border-color: rgba(0, 209, 255, 0.55); outline: none; }
+#map-vote .mv-card.cursor { border-color: rgba(0, 209, 255, 0.55); box-shadow: 0 0 0 2px rgba(0, 209, 255, 0.3); }
 #map-vote .mv-card.mine { border-color: var(--cyan); background: #18324a; }
 #map-vote .mv-card.won { border-color: var(--orange); background: #2f2a1c; }
 #map-vote .mv-card.lost { opacity: 0.45; }

@@ -216,7 +216,7 @@ import { currentAccount } from '../account.ts';
 import { sendPlayReport } from '../communityMaps.ts';
 import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
-import { CATEGORY_ACTIONS, keyFor } from './keyBindings.ts';
+import { CATEGORY_ACTIONS, hintKey } from './keyBindings.ts';
 
 import { TouchControls } from './touchControls.ts';
 import { CategoryWheel, WeaponWheel, wheelEntries } from './weaponWheel.ts';
@@ -257,7 +257,7 @@ import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule
 
 /** The four move keys as a hint reads them ("WASD"). */
 const moveKeys = (): string => {
-  const k = ['forward', 'left', 'back', 'right'].map((a) => keyFor(a));
+  const k = ['forward', 'left', 'back', 'right'].map((a) => hintKey(a));
   return k.every((x) => x.length === 1) ? k.join('') : k.join('/');
 };
 
@@ -331,6 +331,11 @@ export interface SessionOptions {
   tutorial?: boolean;
   /** First-time tips (tips.ts); off in the tutorial and in browser tests (main.ts). */
   tips?: boolean;
+  /**
+   * Test weapons (Profile → Favourite loadout; main.ts playRange): the Training Range alone, no scorebar, and Back
+   * from the pause menu's top (Esc again, controller B) leaves, as the exit button does, back to the loadout.
+   */
+  range?: boolean;
   /**
    * Your career (careerStats.ts, docs/PLAYER_PROFILES_PLAN.md): each match you play to the end is summed into it, and
    * your profile card shows under the scoreboard. main.ts leaves it out for MapMaker TEST and the tutorial.
@@ -875,7 +880,8 @@ export class GameSession {
       opts.transport.botDebug((f) => v.update(f));
     }
     this.input = new InputState(opts.canvas);
-    this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => keyFor(a));
+    this.input.onNotice = (text) => this.hud.showMessage(text, 6);
+    this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => hintKey(a));
     this.sfx = new SessionAudio(opts.audio, () => this.slot);
     this.sfx.shielded = (slot) => this.shieldedSlots.has(slot);
     this.weatherSound = new WeatherAudio(opts.audio);
@@ -886,7 +892,7 @@ export class GameSession {
     this.input.onAction.set('bigMap', () => {
       if (!this.bigMap) return;
       this.bigMap.hidden = !this.bigMap.hidden;
-      if (!this.bigMap.hidden) this.hud.pickup(`Map (${keyFor('bigMap')} to put it away)`);
+      if (!this.bigMap.hidden) this.hud.pickup(`Map (${hintKey('bigMap')} to put it away)`);
     });
     if (opts.exitOnF5) this.input.onToggle.set('F5', () => this.exit());
     // Watching: the camera key (Space) switches between following someone and the free camera (or skips the kill cam).
@@ -908,7 +914,7 @@ export class GameSession {
     this.input.onAction.set('vehicleCamera', () => {
       const r = ride();
       if (!r) return;
-      const k = keyFor('vehicleCamera');
+      const k = hintKey('vehicleCamera');
       if (VehicleCamera.drives(r.def, this.seat![1])) {
         const view = this.vehicleCam.toggle(r.def);
         this.hud.pickup(view === 'chase' ? `Chase camera (${k} for the cockpit)` : `Cockpit view (${k} for the chase camera)`);
@@ -917,7 +923,7 @@ export class GameSession {
     this.input.onAction.set('thirdPerson', () => {
       if (ride()) return;
       this.thirdPerson = !this.thirdPerson;
-      this.hud.pickup(this.thirdPerson ? `Third-person view (${keyFor('thirdPerson')} to go back)` : 'First-person view');
+      this.hud.pickup(this.thirdPerson ? `Third-person view (${hintKey('thirdPerson')} to go back)` : 'First-person view');
     });
     this.input.onAction.set('lastWeapon', () => {
       if (this.lastWeapon && this.local?.inventory.has(this.lastWeapon)) this.requestWeapon(this.lastWeapon);
@@ -1001,7 +1007,7 @@ export class GameSession {
         overlay: () => document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
         opened: () => this.drawPause(true),
         // MapMaker TEST: back from the top goes back to MapMaker.
-        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : {}),
+        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : opts.range ? { top: { label: 'Loadout', act: () => this.exit() } } : {}),
       },
       signal,
     );
@@ -1061,6 +1067,12 @@ export class GameSession {
     const sensVal = $('mouse-sens-val');
     const zoomSens = $('zoom-sens') as HTMLInputElement;
     const zoomSensVal = $('zoom-sens-val');
+    const padLook = $('pad-look') as HTMLInputElement;
+    const padLookVal = $('pad-look-val');
+    const padZoom = $('pad-zoom') as HTMLInputElement;
+    const padZoomVal = $('pad-zoom-val');
+    const padDead = $('pad-dead') as HTMLInputElement;
+    const padDeadVal = $('pad-dead-val');
     const invert = $('mouse-invert') as HTMLInputElement;
     const assist = $('aim-assist') as HTMLInputElement;
     const showMouse = () => {
@@ -1069,16 +1081,23 @@ export class GameSession {
       sensVal.textContent = `${this.input.mouse.sensitivity.toFixed(1)}×`;
       zoomSens.value = String(this.input.mouse.zoomSensitivity);
       zoomSensVal.textContent = `${this.input.mouse.zoomSensitivity.toFixed(2)}×`;
+      padLook.value = String(this.input.mouse.padLook);
+      padLookVal.textContent = `${this.input.mouse.padLook.toFixed(2)}×`;
+      padZoom.value = String(this.input.mouse.padZoom);
+      padZoomVal.textContent = `${this.input.mouse.padZoom.toFixed(2)}×`;
+      padDead.value = String(this.input.mouse.padDeadzone);
+      padDeadVal.textContent = this.input.mouse.padDeadzone.toFixed(2);
       invert.checked = this.input.mouse.invertY;
     };
     showMouse();
     const mouseChanged = () => {
-      this.input.mouse = { sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, invertY: invert.checked, aimAssist: assist.checked };
+      this.input.mouse = { sensitivity: Number(sens.value) || 1, zoomSensitivity: Number(zoomSens.value) || 1, padLook: Number(padLook.value) || 1, padZoom: Number(padZoom.value) || 1, padDeadzone: Number(padDead.value) || 0.15, invertY: invert.checked, aimAssist: assist.checked };
       saveMousePrefs(this.input.mouse);
       showMouse();
     };
     sens.addEventListener('input', mouseChanged, { signal });
     zoomSens.addEventListener('input', mouseChanged, { signal });
+    for (const r of [padLook, padZoom, padDead]) r.addEventListener('input', mouseChanged, { signal });
     invert.addEventListener('change', mouseChanged, { signal });
     assist.addEventListener('change', mouseChanged, { signal });
     // The player's own blood switch; the map sets the colour and amount.
@@ -1473,7 +1492,7 @@ export class GameSession {
     btn.hidden = !this.canSpectate || !this.opts.transport.sendSpectate;
     btn.textContent = this.spectator ? 'Join game' : 'Spectate';
     this.drawTeamButton();
-    btn.title = this.spectator ? `Back into the match (${keyFor('joinGame')})` : 'Leave play and watch: follow players or fly a free camera. A bot plays in your place until you join again';
+    btn.title = this.spectator ? `Back into the match (${hintKey('joinGame')})` : 'Leave play and watch: follow players or fly a free camera. A bot plays in your place until you join again';
     ($('respawn-now') as HTMLButtonElement).hidden = this.spectator;
   }
 
@@ -1503,7 +1522,7 @@ export class GameSession {
     const mine = this.hud.rosterTeam(this.slot);
     const label = waiting >= 0 ? `Stay on ${mine?.name ?? 'your team'}` : 'Switch team';
     if (btn.textContent !== label) btn.textContent = label;
-    btn.title = waiting >= 0 ? `Call off your switch: stay on your team (${keyFor('switchTeam')})` : `Move to the other team at your next respawn; it is refused if it would leave the teams uneven (${keyFor('switchTeam')})`;
+    btn.title = waiting >= 0 ? `Call off your switch: stay on your team (${hintKey('switchTeam')})` : `Move to the other team at your next respawn; it is refused if it would leave the teams uneven (${hintKey('switchTeam')})`;
   }
 
   /** Ask the host to make you a spectator (on) or put you back in the game; the roster answers (`sp`). */
@@ -1517,7 +1536,7 @@ export class GameSession {
     this.spectator = on;
     this.specCam.reset();
     if (on && this.local) this.local.alive = false;
-    this.hud.showMessage(on ? `Spectating · ${keyFor('joinGame')} to join the game` : 'Back in the game', 3);
+    this.hud.showMessage(on ? `Spectating · ${hintKey('joinGame')} to join the game` : 'Back in the game', 3);
     this.drawSpectateButton();
   }
 
@@ -3199,9 +3218,9 @@ export class GameSession {
     const pct = cl[2]!;
     const active = cl[3] === 1;
     let ability = '';
-    if (def.ability === 'sentry') ability = this.mounts?.mounts.get(BUILT_MOUNT_BASE + this.slot)?.alive ? 'SENTRY UP' : pct >= 100 ? `SENTRY READY (${keyFor('throw')})` : `SENTRY ${pct}%`;
-    else if (def.ability === 'overcharge') ability = active ? 'OVERCHARGED' : pct >= 100 ? `OVERCHARGE READY (${keyFor('throw')})` : `OVERCHARGE ${pct}%`;
-    else if (def.ability === 'cloak') ability = active ? `CLOAKED ${pct}%` : `CLOAK ${pct}% (${keyFor('throw')})`;
+    if (def.ability === 'sentry') ability = this.mounts?.mounts.get(BUILT_MOUNT_BASE + this.slot)?.alive ? 'SENTRY UP' : pct >= 100 ? `SENTRY READY (${hintKey('throw')})` : `SENTRY ${pct}%`;
+    else if (def.ability === 'overcharge') ability = active ? 'OVERCHARGED' : pct >= 100 ? `OVERCHARGE READY (${hintKey('throw')})` : `OVERCHARGE ${pct}%`;
+    else if (def.ability === 'cloak') ability = active ? `CLOAKED ${pct}%` : `CLOAK ${pct}% (${hintKey('throw')})`;
     const next = cl[1] !== cl[0] ? ` → ${CLASS_DEFS[CLASS_IDS[cl[1]!] ?? 'rocketeer'].name.toUpperCase()} NEXT` : '';
     out.push({ text: `${def.name.toUpperCase()}${ability ? ` · ${ability}` : ''}${next}`, color: active ? '#ffd24a' : '#cfe8ff' });
     return out;
@@ -3252,11 +3271,11 @@ export class GameSession {
       const m = this.mounts?.mounts.get(this.seat[0]);
       const drives = !!m && m.def.kind === 'vehicle' && !m.def.airplane && VehicleCamera.drives(m.def, this.seat[1]);
       // A rigid vehicle on its side or roof: jump rolls it back onto its wheels (wheelPhysics.ts tippedOver).
-      const hint = drives && this.tipped(m) ? { key: keyFor('vehicleUp'), text: 'Flip back' } : drives ? { key: keyFor('vehicleCamera'), text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
-      this.hud.setPrompt(m?.def.airplane ? `Jump out (${keyFor('use')} or ${keyFor('vehicleUp')}), then ${keyFor('jump')} to open your parachute` : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
+      const hint = drives && this.tipped(m) ? { key: hintKey('vehicleUp'), text: 'Flip back' } : drives ? { key: hintKey('vehicleCamera'), text: this.vehicleCam.viewFor(m.def) === 'cockpit' ? 'Chase camera' : 'Cockpit view' } : undefined;
+      this.hud.setPrompt(m?.def.airplane ? `Jump out (${hintKey('use')} or ${hintKey('vehicleUp')}), then ${hintKey('jump')} to open your parachute` : `Get out of the ${m?.def.displayName ?? 'vehicle'}`, false, hint);
     } else if (local.alive && local.state.zip !== undefined) {
       const two = local.weapon && !oneHanded(local.weapon);
-      const off = `${keyFor('jump')} or ${keyFor('use')}`;
+      const off = `${hintKey('jump')} or ${hintKey('use')}`;
       this.hud.setPrompt(two ? `Zipline: ${off} to let go (sidearm or blade to shoot)` : `Zipline: ${off} to let go`);
     } else if (local.alive && !this.seat && !enter && local.ziplines.length && grabZipline(local.ziplines, local.state.pos, this.input.yaw, local.team())) {
       this.hud.setPrompt('Grab the zipline');
@@ -3274,8 +3293,8 @@ export class GameSession {
       // In reach but every seat is taken: say so (Use does nothing here).
       this.hud.setPrompt(`The ${full.def.displayName} is full`, true);
     } else if (local.alive && !local.state.grounded && !local.state.chute && local.state.velY < -CHUTE.armSpeed && local.jetFuel === null && heightAboveGround(local.physics, local.state.pos, CHUTE.minHeight) === null) {
-      this.hud.setPrompt(local.glider ? `Open your glider (${keyFor('jump')})` : `Open your parachute (${keyFor('jump')})`);
-    } else if (local.state.chute) this.hud.setPrompt(local.state.chute === CHUTE_GLIDER ? `Gliding: ${keyFor('forward')} faster, ${keyFor('back')} slower, crouch to let go` : `Parachute: steer with ${moveKeys()}, crouch to cut away`);
+      this.hud.setPrompt(local.glider ? `Open your glider (${hintKey('jump')})` : `Open your parachute (${hintKey('jump')})`);
+    } else if (local.state.chute) this.hud.setPrompt(local.state.chute === CHUTE_GLIDER ? `Gliding: ${hintKey('forward')} faster, ${hintKey('back')} slower, crouch to let go` : `Parachute: steer with ${moveKeys()}, crouch to cut away`);
     else if (e?.kind === 'button') this.hud.setPrompt(sc.state(target!)?.[0] === 0 ? 'Not working' : e.label || 'Press', sc.state(target!)?.[0] === 0);
     else if (e?.kind === 'door') {
       const [open, locked] = sc.state(target!) ?? [0, 0];
@@ -3337,7 +3356,7 @@ export class GameSession {
     this.hud.setKillCam(null);
     const list = followable(poses, this.slot, rule, (s) => this.hud.team(s)?.id, NPC_ID_BASE);
     const hint = (free: boolean) =>
-      [free ? `${moveKeys()} fly · ${keyFor('freeUp')}/${keyFor('freeDown')} up and down · ${keyFor('freeFast')} faster` : list.length > 1 ? `Click or ${keyFor('specPrev')}/${keyFor('specNext')}: next player` : '', rule.freeCam ? `${keyFor('specCamera')}: ${free ? 'follow players' : 'free camera'}` : '', this.spectator ? `${keyFor('joinGame')}: join the game` : ''].filter(Boolean).join(' · ');
+      [free ? `${moveKeys()} fly · ${hintKey('freeUp')}/${hintKey('freeDown')} up and down · ${hintKey('freeFast')} faster` : list.length > 1 ? `Click or ${hintKey('specPrev')}/${hintKey('specNext')}: next player` : '', rule.freeCam ? `${hintKey('specCamera')}: ${free ? 'follow players' : 'free camera'}` : '', this.spectator ? `${hintKey('joinGame')}: join the game` : ''].filter(Boolean).join(' · ');
     if (picks.toggle && rule.freeCam) {
       const from = this.view.cameraPosition();
       if (!this.specCam.free) {
@@ -3360,7 +3379,7 @@ export class GameSession {
     this.specCam.cycle(picks.step, list);
     const watch = this.specCam.target(list);
     if (!watch) {
-      this.hud.setSpectating(rule.teamOnly ? 'No teammates left to watch' : 'Nobody to watch', this.spectator ? `${keyFor('joinGame')}: join the game` : '');
+      this.hud.setSpectating(rule.teamOnly ? 'No teammates left to watch' : 'Nobody to watch', this.spectator ? `${hintKey('joinGame')}: join the game` : '');
       return null;
     }
     const pose = this.specCam.followPose(watch, cast);
@@ -3485,7 +3504,7 @@ export class GameSession {
         const p = this.categoryPicks.pick(cat, groups.get(cat)!);
         if (p !== null) picks.set(cat, p);
       }
-      this.wheel.keyLabels = this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => keyFor(a));
+      this.wheel.keyLabels = this.hud.categoryKeys = CATEGORY_ACTIONS.map((a) => hintKey(a));
       this.wheel.show(wheelEntries(owned, local.inventory, this.switchingFrom(local)), picks);
       this.wheel.aim(input.wheelAim.x, input.wheelAim.y);
     }
@@ -3530,7 +3549,7 @@ export class GameSession {
         const first = this.squadLed === null;
         this.squadLed = ev.sq ?? null;
         this.squadOrder = 'follow';
-        if (first) this.hud.showMessage(`You lead a fireteam of ${ev.n ?? 0} · hold ${keyFor('quickMessage')} for orders`, 4);
+        if (first) this.hud.showMessage(`You lead a fireteam of ${ev.n ?? 0} · hold ${hintKey('quickMessage')} for orders`, 4);
       } else if (ev.from === this.slot) this.squadLed = this.squadOrder = null;
     } else if (ev.a === 'order' && kind) {
       // (Spread out / Stay tight keeps the squad's order: only its spacing changes.)
@@ -3626,7 +3645,7 @@ export class GameSession {
   private setUpCoach(): void {
     const tutorial = !!this.opts.tutorial;
     // No "You / Leader" score in the tutorial (owner, 2026-11-08): there are no bots and no score to play for.
-    if (tutorial) this.hud.showScorebar(false);
+    if (tutorial || this.opts.range) this.hud.showScorebar(false);
     if (tutorial) this.tutorial = new Tutorial();
     if (this.opts.tips !== false && !tutorial) this.tips = new TipBook();
     if (!this.tutorial && !this.tips) return;
@@ -3966,6 +3985,7 @@ export class GameSession {
       const fov = this.fov;
       // Zoomed look speed: 1:1 with hip fire at the crosshair, times the player's zoom sensitivity.
       this.input.sensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.zoomSensitivity);
+      this.input.padSensitivityScale = zoomLookScale(fov, DEFAULT_FOV, DEFAULT_FOV * ADS_FOV, this.input.mouse.padZoom);
       // Full-body first person stands your character under the camera only while the camera is your own eyes.
       this.view.firstPersonEye = false;
       if (ride && seatDef) {

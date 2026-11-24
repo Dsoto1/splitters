@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 50,
+  "formatVersion": 49,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,19 +18,13 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_dy42jfvd7xukl62e",
-      "revision": 55,
-      "contentHash": "sha256:333fa7c83d604db8c27bfe41bd81387b1fc49941d7083d58cd6c503c5c98e9a1",
-      "schemaVersion": 50,
-      "releasedAt": "2026-11-23T17:06:21.697Z"
+      "versionId": "v_z65ooprli2s6pe4p",
+      "revision": 60,
+      "contentHash": "sha256:49317aa90bc5a58fc4d046fbc87325db31d33c2cf67787335c74f5c01c860f58",
+      "schemaVersion": 49,
+      "releasedAt": "2026-11-23T18:27:50.690Z"
     },
-    "testOnly": true,
-    "categories": [
-      {
-        "category": "anomalous",
-        "tag": "experimental"
-      }
-    ]
+    "testOnly": true
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1396,6 +1390,46 @@
         "tile": "core.hall_end_faceted",
         "x": -16,
         "y": -60,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_h5lwbiefei",
+        "tile": "core.hall_end_round_door",
+        "x": -16,
+        "y": -64,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_lhs21plqvf",
+        "tile": "core.hall_bay_2",
+        "x": -16,
+        "y": -65,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_97yoadyjk1",
+        "tile": "core.hall_bay_2_porch",
+        "x": -13,
+        "y": -65,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_7dsku42vif",
+        "tile": "core.hall_end_round",
+        "x": -13,
+        "y": -64,
+        "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_3nph10ba80",
+        "tile": "core.hall_end_round_stair",
+        "x": -10,
+        "y": -64,
         "z": 0,
         "rotation": 0
       }
@@ -7364,6 +7398,15 @@
       "piece": "setpiece.dorm_bay_end",
       "x": -1,
       "y": -62,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_oa7dy51q1t",
+      "piece": "setpiece.gable_annex",
+      "x": -16,
+      "y": -63,
       "z": 0,
       "rotation": 0,
       "mirror": false

@@ -264,6 +264,13 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
     const shape = [[-xg, Math.max(0, s0 - 0.02)], [xg, Math.max(0, s0 - 0.02)], [xg, yg(xg)], [kx, yg(kx)], [0, yg(0)], [-kx, yg(kx)], [-xg, yg(xg)]];
     poly(m, shape.map(([x, y]) => [x, y, zo]), [0, 0, dir], outer);
     poly(m, shape.map(([x, y]) => [x * ((xg - 0.5) / xg), y, zi]), [0, 0, -dir], inner);
+    // The verge (owner, 2026-11-23, St. John's Memorial Hall: "the roofline edges look strange; you can almost see
+    // through them"). The slopes are a skin: the shingles, the panel 0.12 m under them and the soffit, with nothing
+    // closing their ends, and the gable wall stops 6 cm under the shingles; along a gable that left a slit open from
+    // the eave to the ridge, through which the room's panels and the sky showed against the roof's edge. A barge board
+    // runs up each slope at the gable's face and closes it: 3 cm over the shingles, down past the gable wall's top
+    // (never below the eave's soffit), its face the roof's end.
+    verge(m, dir, Z, X, s0, kx, ky, yTop, scale3(roof, 0.62), level, 0.45, oh);
     if (g.timber && level < 2) {
       const stud = hex(look.stud ?? '#3a2a1e');
       const zs = zo + dir * 0.012;
@@ -286,6 +293,171 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
       for (const s of [-1, 1]) strip([s * kx, yg(kx) + 0.02], [0, yg(0) + 0.02], 0.2);
     }
   }
+  return m;
+}
+
+/**
+ * A barge board along both slopes of a ridge roof's end (`dir`: −1 the −z end, 1 the +z end; the roof's end at z =
+ * dir·Z): the roof's outline (eave tip (±X, s0), the flare's top (±kx, ky), the ridge (0, yTop)) as a board from 3 cm
+ * over it to `depth` under it (not below the soffit at the tip), 8 cm thick inside the end: its outer and inner faces,
+ * its top and its underside (the far look: the outer face). Closes the slopes' skin where they end over a gable.
+ */
+function verge(m, dir, Z, X, s0, kx, ky, yTop, colour, level, depth = 0.45, oh = 0.6) {
+  const zo = dir * Z;
+  const zi = dir * (Z - 0.08);
+  for (const s of [-1, 1]) {
+    const line = [[s * X, s0], [s * kx, ky], [0, yTop]];
+    const top = line.map(([x, y]) => [x, y + 0.03]);
+    const bot = line.map(([x, y]) => [x, Math.max(0, s0 - 0.08, y - depth)]);
+    for (let i = 0; i < 2; i++) {
+      quadN(m, [top[i][0], top[i][1], zo], [top[i + 1][0], top[i + 1][1], zo], [bot[i + 1][0], bot[i + 1][1], zo], [bot[i][0], bot[i][1], zo], [0, 0, dir], colour);
+      // (The far look keeps the outer face alone.)
+      if (level === 2) continue;
+      quadN(m, [top[i][0], top[i][1], zi], [top[i + 1][0], top[i + 1][1], zi], [bot[i + 1][0], bot[i + 1][1], zi], [bot[i][0], bot[i][1], zi], [0, 0, -dir], scale3(colour, 0.8));
+      // Its top (facing up and out of the slope) and its underside (facing down and in).
+      quadN(m, [top[i][0], top[i][1], zi], [top[i + 1][0], top[i + 1][1], zi], [top[i + 1][0], top[i + 1][1], zo], [top[i][0], top[i][1], zo], [s * 0.5, 1, 0], scale3(colour, 1.1));
+      quadN(m, [bot[i][0], bot[i][1], zi], [bot[i + 1][0], bot[i + 1][1], zi], [bot[i + 1][0], bot[i + 1][1], zo], [bot[i][0], bot[i][1], zo], [-s * 0.5, -1, 0], scale3(colour, 0.7));
+    }
+    // Under the flared eave, outside the wall: the end of the hollow between the flare and the soffit.
+    triN(m, [s * X, s0, zo], [s * (X - oh - 0.05), s0, zo], [s * kx, ky, zo], [0, 0, dir], colour);
+    // The end at the eave's tip.
+    if (level < 2) quadN(m, [top[0][0], top[0][1], zi], [top[0][0], top[0][1], zo], [bot[0][0], bot[0][1], zo], [bot[0][0], bot[0][1], zi], [s, 0, 0], scale3(colour, 0.9));
+  }
+}
+
+// ---------------------------------------------------------------- a rounded roof (spire or hip end)
+
+/**
+ * A roof over a plan with rounded corners: a steep pyramid whose faces are a square's with its corners rounded
+ * (`corner` m of radius at the eave's edge; each course's outline is the eave's drawn smaller towards the point, so
+ * a corner is a cone between two flat faces), shingled in courses, a flared eave (`flare`: [in, up]) and (`cap`, m) a
+ * small metal cap on the point. The eave's edge fills the bounds across x; its foot (y = 0) goes on the walls' top.
+ * `half`: 'back' draws only the −z half of a pyramid whose middle is the bounds' +z face and whose eave runs `d` m out
+ * on −z (a hall's hipped end: its point is a ridge's end at the +z face, the slopes there those of a Ridge Roof Bay of
+ * the same span, rise and flare, so the two meet in one line). `under` ({ rise, half }): as the Faceted Spire's, the
+ * faces cut away where they would hang inside a ridge roof running off towards −z. Drawn inside too (pale panels,
+ * dark rafters). `look`: `roof`, `trim`, `panel`, `rafter`, `jitter`, `grime`. Collides as nothing.
+ */
+export function roundRoofMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const half = g.half === 'back';
+  // (The eave's edge stands 2 cm inside the bounds.)
+  const A = w / 2 - 0.02;
+  // Where the pyramid's middle is in the prop's frame: its centre, or (a hip end) the +z face.
+  const zc = half ? d / 2 : 0;
+  const R = Math.min(A, g.corner ?? 4.7);
+  const [fin, fup] = g.flare ?? [1.3, 0.75];
+  const cap = g.cap ?? 0;
+  const top = h - cap;
+  const roof = hex(look.roof ?? '#6b4638');
+  const trim = hex(look.trim ?? '#b0795a');
+  const panel = hex(look.panel ?? '#d8d0bc');
+  const rafter = hex(look.rafter ?? '#3a2a1e');
+  const r = rng(seed);
+  const m = new Mesh();
+  const courses = level === 0 ? 10 : level === 1 ? 5 : 1;
+  const arcN = level === 0 ? 4 : level === 1 ? 3 : 2;
+  const tones = Array.from({ length: courses + 1 }, () => 1 + r.range(-1, 1) * (look.jitter ?? 0.07));
+  const grime = look.grime ?? 0.25;
+  const under = g.under;
+  // The outline at half-size `a` (its corner radius in proportion), as [x, z, outward normal x, z] round the plan.
+  const ring = (a) => {
+    const k = a / A;
+    const rc = R * k;
+    const c = a - rc;
+    const pts = [];
+    for (const [q, sx, sz] of [[0, 1, 1], [1, -1, 1], [2, -1, -1], [3, 1, -1]]) {
+      for (let i = 0; i <= arcN; i++) {
+        const t = ((q + i / arcN) * Math.PI) / 2;
+        pts.push([sx * c + rc * Math.cos(t), sz * c + rc * Math.sin(t)]);
+      }
+    }
+    return pts;
+  };
+  const at = (p, y) => [p[0], y, p[1] + zc];
+  /** One polygon of the roof: kept to the −z half for a hip end, cut where it would hang inside a ridge roof behind. */
+  const emit = (pts, want, colour) => {
+    let ps = pts;
+    if (half) {
+      ps = clip(ps, (p) => zc - p[2]);
+      if (!ps.length) return;
+    }
+    if (!under) return poly(m, ps, want, colour);
+    const front = clip(ps, (p) => p[2]);
+    if (front.length) poly(m, front, want, colour);
+    const back = clip(ps, (p) => -p[2]);
+    if (!back.length) return;
+    for (const s of [-1, 1]) {
+      const side = clip(back, (p) => s * p[0]);
+      if (!side.length) continue;
+      const over = clip(side, (p) => p[1] - under.rise * (1 - (s * p[0]) / under.half) - 0.02);
+      if (over.length) poly(m, over, want, colour);
+    }
+  };
+  const kick = A - fin;
+  const tip = Math.max(0.1, R * 0.02);
+  const apoAt = (y) => tip + (kick - tip) * (1 - (y - fup) / (top - fup));
+  const ringAt = (a, y) => ring(a).map((p) => at(p, y));
+  const n = ring(A).length;
+  const rows = [[A, 0], [kick, fup]];
+  for (let c = 1; c <= courses; c++) {
+    const y = fup + ((top - fup) * c) / courses;
+    rows.push([apoAt(y), y]);
+  }
+  const R0 = ring(1);
+  for (let j = 0; j < n; j++) {
+    const j2 = (j + 1) % n;
+    // The segment's outward direction (between its two points' normals).
+    const nx = R0[j][0] + R0[j2][0];
+    const nz = R0[j][1] + R0[j2][1];
+    const out = [nx, Math.hypot(nx, nz) * 0.6, nz];
+    const inn = out.map((v) => -v);
+    for (let i = 0; i + 1 < rows.length; i++) {
+      const [a0, y0] = rows[i];
+      const [a1, y1] = rows[i + 1];
+      const p0 = ring(a0);
+      const p1 = ring(a1);
+      const tone = i === 0 ? tones[0] * 0.82 : tones[i] * (1 - grime * 0.3 * (1 - y0 / h));
+      // (No step between courses: a gap there would show the room's panels through the roof. The lower edge of each is shaded.)
+      emit([at(p0[j], y0), at(p0[j2], y0), at(p1[j2], y1), at(p1[j], y1)], out, (p) => scale3(roof, tone * (i > 0 && p[1] < y0 + 0.01 ? 0.86 : 1)));
+    }
+    // The eave's soffit, the plate behind the flare and the underside's panel (pale, seen from the room).
+    const pa = ring(A);
+    const pk = ring(kick - 0.2);
+    const di = 0.12;
+    const pp = ring(kick - di);
+    const pt = ring(apoAt(top) * 0.5);
+    emit([at(pa[j], 0.002), at(pa[j2], 0.002), at(pk[j2], 0.002), at(pk[j], 0.002)], [0, -1, 0], scale3(roof, 0.35));
+    emit([at(pk[j], 0.002), at(pk[j2], 0.002), at(pp[j2], fup), at(pp[j], fup)], inn, scale3(rafter, 1.1));
+    emit([at(pp[j], fup), at(pp[j2], fup), at(pt[j2], top - di), at(pt[j], top - di)], inn, panel);
+  }
+  // Rafters on the straight faces (the corners are a cone: a rafter at each of their ends), running up to the point.
+  if (level < 2) {
+    const yr = fup + (top - fup) * 0.86;
+    const a0 = kick - 0.17;
+    const a1 = apoAt(yr) - 0.17;
+    const c0 = a0 - R * (a0 / A);
+    const c1 = a1 - R * (a1 / A);
+    const us = level === 0 ? [-1, -0.5, 0, 0.5, 1] : [-1, 0, 1];
+    for (const [ux, uz] of [[1, 0], [0, 1], [-1, 0], [0, -1]]) {
+      for (const u of us) {
+        // A point on the face at apothem a, `u` of the way along its flat part.
+        const p = (a, c) => [ux * a - uz * u * c, uz * a + ux * u * c];
+        const q0 = p(a0, c0);
+        const q1 = p(a1, c1);
+        const sx = -uz * 0.07;
+        const sz = ux * 0.07;
+        emit([at([q0[0] - sx, q0[1] - sz], fup), at([q0[0] + sx, q0[1] + sz], fup), at([q1[0] + sx, q1[1] + sz], yr - 0.12), at([q1[0] - sx, q1[1] - sz], yr - 0.12)], [-ux, -0.6, -uz], rafter);
+      }
+    }
+  }
+  // Where a ridge roof runs in (the plane z = 0 of the pyramid): the hollow behind each side's flared eave closed both ways.
+  if (under || half) for (const s of [-1, 1]) for (const dir of half ? [1] : [-1, 1]) {
+    // (A hip end's, 4 mm inside its +z face, facing the bay it meets.)
+    const z = half ? zc - 0.004 : zc + dir * 0.004;
+    poly(m, [[s * (kick - 0.45), 0.002, z], [s * A, 0.002, z], [s * kick, fup, z], [s * (kick - 0.45), fup + 0.3, z]], [0, 0, half ? 1 : dir], scale3(rafter, 1.1));
+  }
+  if (cap > 0) lathe(m, [[0.26, top - 0.12], [0.2, top + cap * 0.35], [0.07, top + cap * 0.6], [0.02, h]], level === 0 ? 8 : 4, () => trim);
   return m;
 }
 
@@ -558,6 +730,7 @@ export function leadedMesh(seed, size, g, look, level) {
   const sill = g.sill ? 0.07 : 0;
   // The panes' tones, drawn once (both faces the same).
   const tones = Array.from({ length: lights * pa * pu }, () => 0.82 + r.next() * 0.36);
+  const open = !!g.open;
   for (const dir of [-1, 1]) {
     const zf = (dir * d) / 2;
     const zg = zf - dir * 0.025;
@@ -569,10 +742,12 @@ export function leadedMesh(seed, size, g, look, level) {
     q(X - fw, sill + fw, X, h - fw, zf, frame);
     if (sill) q(-X, 0, X, sill, zf, scale3(frame, 0.85));
     const lw = (w - 2 * fw - (lights - 1) * fw * 0.7) / lights;
-    q(-X + fw, sill + fw, X - fw, h - fw, zg, lead);
+    if (!open) q(-X + fw, sill + fw, X - fw, h - fw, zg, lead);
     for (let i = 0; i < lights; i++) {
       const x0 = -X + fw + i * (lw + fw * 0.7);
       if (i > 0) q(x0 - fw * 0.7, sill + fw, x0, h - fw, zf, frame);
+      // Open: the frame round a real opening (a glass pane in the wall fills it), no panes of its own.
+      if (open) continue;
       if (level === 2) {
         q(x0 + 0.02, sill + fw + 0.02, x0 + lw - 0.02, h - fw - 0.02, zg + dir * 0.004, glass);
         continue;
@@ -587,6 +762,22 @@ export function leadedMesh(seed, size, g, look, level) {
         const py1 = sill + fw + ((h - sill - 2 * fw) * (u + 1)) / nu - gp;
         q(px0, py0, px1, py1, zg + dir * 0.004, scale3(glass, tones[(i * pa + a) * pu + u] ?? 1));
       }
+    }
+  }
+  if (open) {
+    // The frame's inner edges (the reveal's lining, so the wall's cut shows a frame through its depth) and the
+    // mullions through the wall: a light's edges are frame all the way through.
+    const lw = (w - 2 * fw - (lights - 1) * fw * 0.7) / lights;
+    const Z = d / 2;
+    const yb = sill + fw;
+    const yt = h - fw;
+    quadN(m, [-X + fw, yb, -Z], [X - fw, yb, -Z], [X - fw, yb, Z], [-X + fw, yb, Z], [0, 1, 0], scale3(frame, 0.9));
+    quadN(m, [-X + fw, yt, -Z], [X - fw, yt, -Z], [X - fw, yt, Z], [-X + fw, yt, Z], [0, -1, 0], scale3(frame, 0.75));
+    quadN(m, [-X + fw, yb, -Z], [-X + fw, yt, -Z], [-X + fw, yt, Z], [-X + fw, yb, Z], [1, 0, 0], scale3(frame, 0.82));
+    quadN(m, [X - fw, yb, -Z], [X - fw, yt, -Z], [X - fw, yt, Z], [X - fw, yb, Z], [-1, 0, 0], scale3(frame, 0.82));
+    for (let i = 1; i < lights; i++) {
+      const x1 = -X + fw + i * (lw + fw * 0.7);
+      box(m, [x1 - fw * 0.7, yb, -Z + 0.01], [x1, yt, Z - 0.01], scale3(frame, 0.88), ['ny', 'py', 'nz', 'pz']);
     }
   }
   return m;

@@ -1,6 +1,6 @@
 import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, renameSync, rmSync, statSync, utimesSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { builtInRecord, choosePublished, isMapId, isRetiredMap, loadMap, publishedRelease, serializeMap, type BuiltInRecord, type PublishedRelease } from '@tiletrigger/shared';
+import { builtInRecord, choosePublished, isMapId, isUnlistedMap, loadMap, publishedRelease, serializeMap, type BuiltInRecord, type PublishedRelease } from '@tiletrigger/shared';
 import type { Fetch } from './advertiser.ts';
 
 /**
@@ -91,7 +91,7 @@ export async function syncMaps(bundled: string, dir: string, hub: string, fetche
   let listed: Entry[] | null = null;
   try {
     const res = await fetcher(`${hub}/api/v1/maps`, { signal: AbortSignal.timeout(8000) });
-    if (res.ok) listed = ((await res.json()) as { maps: Entry[] }).maps.filter((m) => isMapId(m.id) && !isRetiredMap(m.id));
+    if (res.ok) listed = ((await res.json()) as { maps: Entry[] }).maps.filter((m) => isMapId(m.id) && !isUnlistedMap(m.id));
     else if (res.status === 404) listed = [];
   } catch {
     listed = null;

@@ -76,11 +76,16 @@ export function unfittedPlacement(def: WeaponDefinition, bounds: GunBounds): Gun
 
 /**
  * The placement of a gun aimed through a glass on its top (a red dot, a holographic sight): the glass's middle on the
- * view axis, the gun level along it, as far ahead as an unfitted gun (its rear end STOCK_AHEAD of the eye).
+ * view axis, the gun level along it. On a long gun the eye comes to the glass (the mount's `eye`, measured from the model
+ * by tools/content/optics.mjs: the glass as near as nothing of the gun close to the eye shows; owner, 2026-11-23, "that
+ * scope tho": with the gun wholly ahead of the eye the glass was 0.5-0.65 m off and the gun drawn three times larger to
+ * make its window usable, housing and receiver with it); otherwise as far ahead as an unfitted gun (its rear end
+ * STOCK_AHEAD of the eye).
  */
 export function glassPlacement(def: WeaponDefinition, optic: CarriedOptic, bounds: GunBounds): GunPlacement {
   const c = glassCentre(optic);
-  return { x: -c[0], y: -c[1], z: unfittedPlacement(def, bounds).z, pitch: 0, yaw: 0 };
+  const eye = optic.window ? undefined : optic.mount?.eye;
+  return { x: -c[0], y: -c[1], z: eye !== undefined ? -eye : unfittedPlacement(def, bounds).z, pitch: 0, yaw: 0 };
 }
 
 /**

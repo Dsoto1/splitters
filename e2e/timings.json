@@ -75,6 +75,7 @@
     "maps13": 360,
     "maps14": 360,
     "slidepeek": 380,
-    "weaponmanager": 45
+    "weaponmanager": 45,
+    "testrange": 150
   }
 }
