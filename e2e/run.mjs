@@ -12699,9 +12699,9 @@ const FLASHING_DAY = {
               const [a, b] = m.combatants().filter((c) => c.bot);
               if (a) a.power.overdrive = 60 * 30;
               if (b) b.power.phantom = 60 * 30;
-              // (The Phantom holds its knife, out of reach: its own shots would show it before the moment's one.)
+              // (The Phantom holds its fire: its own shots would show it before the moment's one.)
               clearInterval(self.__phantomKnife);
-              self.__phantomKnife = setInterval(() => b && (b.current = 1), 1000 / 60);
+              self.__phantomKnife = setInterval(() => b && (b.fireCooldown = b.fireCooldown2 = b.throwCooldown = 600), 1000 / 60);
             }),
           // (A shot shows a Phantom for a second: the host clears FX_PHANTOM; the client eases it back in.)
           12: () => sim(page, (m) => { const b = m.combatants().filter((c) => c.bot)[1]; if (b) m.lastShot.set(b.slot, m.tick); }),
