@@ -6357,7 +6357,7 @@ async function musicChecks(browser) {
   await page.mouse.click(4, 4);
   await page.waitForFunction(() => window.__music?.debug().tracks.length === 1, null, { timeout: T(15000) }).catch(() => {});
   const on = await page.evaluate(() => window.__music?.debug() ?? null);
-  check(!before && on?.scene === 'menu' && on.tracks.length === 1 && /^menu_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (${JSON.stringify(on)})`);
+  check(!before && on?.scene === 'menu' && on.tracks.length === 1 && /^(menu|mapmaker)_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (Arena or Map Maker: owner, 2026-11-24) (${JSON.stringify(on)})`);
   await page.evaluate(() => window.__audio.setMusicVolume(0));
   await page.waitForFunction(() => window.__music?.debug().tracks.length === 0, null, { timeout: T(5000) }).catch(() => {});
   check((await page.evaluate(() => window.__music?.debug().tracks.length ?? -1)) === 0, 'Music at 0 stops it');
