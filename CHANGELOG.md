@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Citadel is retired, and the Training Range is for testing only.** Neither is in the map list, votes or rotations any more; Profile → Favourite loadout → **Test weapons** opens the Training Range alone with your class and optics, no score or clock, and Back returns to the loadout (docs/FEATURES.md).
 - **Big matches draw a little cheaper.** Doors and buttons of one kind are drawn together (Flavius Rule's views about 30 % fewer draw calls), and the lights and shadows check less every frame; nothing looks different (docs/PERF_DRAWS_2026-11-23.md).
 - **Slow guns ring out.** Snipers, shotguns, revolvers and the Hand Cannon, the lever and flintlock guns, launchers and rockets, the railgun, vortex and disc now let their report ring for up to 1.5 s instead of stopping short (and the tank cannon sound no longer has extra shots in it); full-auto guns are unchanged.
 - **Remap every control; Q and E lean.** Options → Controls lists every keyboard and mouse action by group (click, press a key or mouse button; clash warning with Swap; Reset to defaults), saved with your account when signed in. New defaults: Q / E lean, F use and doors, X last weapon, hold Tab the weapon wheel, a tap of Tab the scoreboard; keys you had moved stay yours, and every hint shows your keys (docs/CONTROLS.md).

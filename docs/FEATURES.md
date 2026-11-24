@@ -2,7 +2,9 @@
 
 Everything players can use, checked against the code, and what exists but isn't reachable yet.
 
-"Maps" counts placements in `maps/*.json`, retired maps included. Retired maps (`shared/src/map/retired.ts`) still ship but no menu offers them. They are phase0_arena, m3_vault, m4_outpost, sky_islands, creature_lab, dead_reel, pharaohs_reach, skyward and sandsweep.
+"Maps" counts placements in `maps/*.json`, retired maps included. Retired maps (`shared/src/map/retired.ts`) still ship but no menu offers them. They are phase0_arena, m3_vault, m4_outpost, sky_islands, creature_lab, dead_reel, pharaohs_reach, skyward and sandsweep. Citadel joined them on 2026-11-24 (owner): a saved Match Setup that names a retired map plays Sandgate instead, with a line saying so.
+
+**Training maps** (`TRAINING_MAPS` in the same file; owner, 2026-11-24: "its just training and testing"): the Training Range. No map list, category, featured list, Quick Play, vote, rotation, playlist, host page or launcher, or online listing offers it, and it has no modes to pick. **Profile → Favourite loadout → Test weapons** opens it alone, offline: your favourite class's loadout (the class screen can swap it), every other gun on the range's racks, your optic picks, no bots, no score or clock, nothing counted in your career. Esc opens the pause menu and Esc again (its "◀ Loadout", controller B) or "Back to loadout" comes back to the loadout, Test weapons focused (Enter or controller A goes again); a phone uses the II button. The tutorial plays on it too. `isUnlistedMap` (retired or training) is the filter every list uses.
 
 **Ways a player gets a weapon:**
 - the mode's starting weapons (`sim/rules.ts`);
@@ -233,6 +235,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 | URL flag | What it does |
 |---|---|
 | `?offline=<map>` | the only way into retired maps |
+| `?range` | Test weapons straight from the URL (the Training Range with your loadout) |
 | `?mode=editor`, `?mode=designer` | open MapMaker or the Character Designer directly |
 | `?mode=assets`, `?mode=characters` | asset and character viewers |
 | `?mode=weapons` | weapon tuning: up to three weapons side by side (stat bars, recoil path, spread cones, damage and time to kill over distance, drop and holdover); `&w=core.smg,core.revolver&ballistics=advanced&hp=100`. Its Manage tab (`&view=manage`) is the owner's Weapon Manager (above) |
