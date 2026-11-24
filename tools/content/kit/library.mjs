@@ -269,6 +269,10 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
     const shape = [[-xg, Math.max(0, s0 - 0.02)], [xg, Math.max(0, s0 - 0.02)], [xg, yg(xg)], [kx, yg(kx)], [0, yg(0)], [-kx, yg(kx)], [-xg, yg(xg)]];
     poly(m, shape.map(([x, y]) => [x, y, zo]), [0, 0, dir], outer);
     poly(m, shape.map(([x, y]) => [x * ((xg - 0.5) / xg), y, zi]), [0, 0, -dir], inner);
+    // (Its foot, between the two faces: over a wall thinner than the gable (the Gable Annex's 0.3 m front wall), the
+    // gap between the gable's inner face and the wall's showed the outer face's back, so sky, along the wall's top.)
+    const yf = Math.max(0, s0 - 0.02);
+    quadN(m, [-xg, yf, zi], [xg, yf, zi], [xg, yf, zo], [-xg, yf, zo], [0, -1, 0], scale3(inner, 0.7));
     // The verge (owner, 2026-11-23, St. John's Memorial Hall: "the roofline edges look strange; you can almost see
     // through them"). The slopes are a skin: the shingles, the panel 0.12 m under them and the soffit, with nothing
     // closing their ends, and the gable wall stops 6 cm under the shingles; along a gable that left a slit open from
@@ -784,10 +788,12 @@ export function leadedMesh(seed, size, g, look, level) {
     // sky ran up both jambs and along the head: owner, 2026-11-24, St. John's Memorial Hall.) A bar's faces against
     // the wall (its outer side) are left out.
     const tone = (k) => (p, n) => (Math.abs(n[2]) > 0.5 ? frame : scale3(frame, k));
-    box(m, [-X, sill, -Z], [X, yb, Z], tone(0.9), ['ny']);
-    box(m, [-X, yt, -Z], [X, h, Z], tone(0.75), ['py']);
-    box(m, [-X, yb, -Z], [-X + fw, yt, Z], tone(0.82), ['nx', 'ny', 'py']);
-    box(m, [X - fw, yb, -Z], [X, yt, Z], tone(0.82), ['px', 'ny', 'py']);
+    // (The far look keeps the bars' two faces: no lining.)
+    const far = level === 2;
+    box(m, [-X, sill, -Z], [X, yb, Z], tone(0.9), ['ny', 'nx', 'px', ...(far ? ['py'] : [])]);
+    box(m, [-X, yt, -Z], [X, h, Z], tone(0.75), ['py', 'nx', 'px', ...(far ? ['ny'] : [])]);
+    box(m, [-X, yb, -Z], [-X + fw, yt, Z], tone(0.82), ['nx', 'ny', 'py', ...(far ? ['px'] : [])]);
+    box(m, [X - fw, yb, -Z], [X, yt, Z], tone(0.82), ['px', 'ny', 'py', ...(far ? ['nx'] : [])]);
     for (let i = 1; i < lights; i++) {
       const x1 = -X + fw + i * (lw + fw * 0.7);
       box(m, [x1 - fw * 0.7, yb, -Z + 0.01], [x1, yt, Z - 0.01], scale3(frame, 0.88), ['ny', 'py', 'nz', 'pz']);
