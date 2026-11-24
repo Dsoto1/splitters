@@ -27,7 +27,7 @@ export interface MapCategoryDef {
 
 /**
  * The owner's six categories and their sub-tags, in the order the tabs show them. Environmental's `arctic` and
- * `mountain` are the lead's additions (snow maps and mountain valleys fit none of the owner's seven): owner to confirm.
+ * `mountain` are the lead's additions (snow maps and mountain valleys fit none of the owner's seven), kept (owner, 2026-11-24).
  */
 export const MAP_CATEGORIES: readonly MapCategoryDef[] = [
   {
@@ -51,7 +51,7 @@ export const MAP_CATEGORIES: readonly MapCategoryDef[] = [
   {
     id: 'fictional',
     label: 'Fictional',
-    blurb: 'Films and fiction, and the maps inspired by other games (until their rework).',
+    blurb: 'Films and fiction, and the classic remakes: maps inspired by other games (until their rework).',
     tags: [['film', 'Film'], ['fiction', 'Fiction'], ['classic', 'Classic remake']],
   },
   {

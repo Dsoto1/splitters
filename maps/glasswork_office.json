@@ -21,11 +21,11 @@
     ],
     "release": {
       "mapId": "m_eu7kdm7dnuvylmjv",
-      "versionId": "v_satj746wwg7tft3i",
-      "revision": 11,
-      "contentHash": "sha256:6093a5c6cee085240246209ea863e79fa8bb9014f436db53b4386418011df654",
+      "versionId": "v_hm35t7ve3m3lalq3",
+      "revision": 12,
+      "contentHash": "sha256:ededc7d2b82356c6ba440367111c8bab340e576d4469031e430cd3b5879908e1",
       "schemaVersion": 50,
-      "releasedAt": "2026-11-23T16:27:58.788Z"
+      "releasedAt": "2026-11-24T13:09:36.176Z"
     },
     "categories": [
       {
@@ -38,7 +38,7 @@
       },
       {
         "category": "fictional",
-        "tag": "game"
+        "tag": "classic"
       }
     ]
   },

@@ -33,11 +33,11 @@
     },
     "release": {
       "mapId": "m_i2jy7vkt55pclgvj",
-      "versionId": "v_4tqlt3wrk6hxtzhd",
-      "revision": 4,
-      "contentHash": "sha256:d76dddce5f80774de0c77a19565e47bfb99d90fd7329d3d5f22069493c9920ff",
+      "versionId": "v_svgfhm5ahr7s4lov",
+      "revision": 5,
+      "contentHash": "sha256:458dc10eadc128c192c9f4d1b8b4efee74df0cb12043c0a4b97f464ed462ec3c",
       "schemaVersion": 50,
-      "releasedAt": "2026-11-23T17:09:03.419Z"
+      "releasedAt": "2026-11-24T13:17:52.953Z"
     },
     "categories": [
       {
@@ -46,7 +46,7 @@
       },
       {
         "category": "fictional",
-        "tag": "game"
+        "tag": "classic"
       },
       {
         "category": "anomalous",

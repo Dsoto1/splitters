@@ -29,6 +29,14 @@
         -10.89
       ]
     },
+    "release": {
+      "mapId": "m_k3dppybu2iknb45p",
+      "versionId": "v_lcyony7droz7xv7x",
+      "revision": 2,
+      "contentHash": "sha256:5e0767fd630a2912a503b3f7044170ea46b555e547e5be7651869066c6557eb6",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:12:49.360Z"
+    },
     "categories": [
       {
         "category": "temporal",
@@ -40,17 +48,9 @@
       },
       {
         "category": "fictional",
-        "tag": "game"
+        "tag": "classic"
       }
-    ],
-    "release": {
-      "mapId": "m_k3dppybu2iknb45p",
-      "versionId": "v_j5rdcaf64z5jvvqu",
-      "revision": 1,
-      "contentHash": "sha256:554381a9c7bf55c2d0f14c2cd64c3507b34eb93b90a4e6c3c1177fd838296575",
-      "schemaVersion": 50,
-      "releasedAt": "2026-11-23T16:51:58.802Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

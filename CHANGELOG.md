@@ -7,8 +7,9 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
-- **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Film…) narrow it further. Custom holds your own MapMaker maps and community maps, labelled "Community map".
+- **Match Setup: map categories.** Over the map grid, All dimensions and the six categories (Temporal, Dimensional, Environmental, Fictional, Anomalous, Custom), each with its count; a category's sub-tags (Medieval, Desert, Classic remake…) narrow it further. Retired maps and the Training Range are on no tab. Custom holds your own MapMaker maps and community maps, labelled "Community map".
 - **MapMaker: Map properties → Categories**, a tick per sub-tag, so a map lists where it belongs in Match Setup (map format v50).
+- **St. John's is Featured and in Quick Play Deathmatch**, in Citadel's place: Featured is Sandgate, Canyon and St. John's.
 - **Match Setup: lighter map cards.** Each card's picture is a small copy of the map's in-game shot, fetched as the card comes into view: opening Match Setup fetches 0.6 MB of pictures instead of 1.8 MB.
 - **Match Setup: one team size control.** The size chips and Teams / Per team set the teams; the team boxes show who plays (players and bots), and get their own sizes only with Even teams off.
 - **Match Setup: glow only on the map you picked and Start match**, steady, and dimmer with Reduce flashing on.

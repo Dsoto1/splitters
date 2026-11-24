@@ -17,6 +17,14 @@
       "core.deathmatch",
       "core.tdm"
     ],
+    "release": {
+      "mapId": "m_2bvrbtkizz3w4bvo",
+      "versionId": "v_c7qcj5icgckmvdz4",
+      "revision": 2,
+      "contentHash": "sha256:ba704f2b9302ea322df94fa84ddb3f7b4386dbf74b374a4be8bb72cacc1ca8b7",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:13:55.409Z"
+    },
     "categories": [
       {
         "category": "temporal",
@@ -32,17 +40,9 @@
       },
       {
         "category": "fictional",
-        "tag": "game"
+        "tag": "classic"
       }
-    ],
-    "release": {
-      "mapId": "m_2bvrbtkizz3w4bvo",
-      "versionId": "v_qkezxw53uf7no62d",
-      "revision": 1,
-      "contentHash": "sha256:d8ff80d129178b5908458182283637d4a7fa92715caef8072dd3ba017ba3d9f3",
-      "schemaVersion": 50,
-      "releasedAt": "2026-11-23T16:59:22.507Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

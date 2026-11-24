@@ -18,6 +18,14 @@
       "core.tdm",
       "core.koth"
     ],
+    "release": {
+      "mapId": "m_x2x3h6bbgdmapeoa",
+      "versionId": "v_asdn3imbxmhor4e3",
+      "revision": 2,
+      "contentHash": "sha256:47d07f13ec61ea079bfec41fb31e55c52b789ec44ce28d7330c35df8db198519",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:06:57.344Z"
+    },
     "categories": [
       {
         "category": "temporal",
@@ -33,17 +41,9 @@
       },
       {
         "category": "fictional",
-        "tag": "game"
+        "tag": "classic"
       }
-    ],
-    "release": {
-      "mapId": "m_x2x3h6bbgdmapeoa",
-      "versionId": "v_odfagufq7brqjz4l",
-      "revision": 1,
-      "contentHash": "sha256:180d3505416438eba75db5915e26ea97ddf91b5e7f253d30e3471d5a53fdb4b0",
-      "schemaVersion": 50,
-      "releasedAt": "2026-11-23T16:10:22.531Z"
-    }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,

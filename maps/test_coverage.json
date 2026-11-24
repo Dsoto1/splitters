@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 49,
+  "formatVersion": 50,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,13 +18,19 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_z65ooprli2s6pe4p",
-      "revision": 60,
-      "contentHash": "sha256:49317aa90bc5a58fc4d046fbc87325db31d33c2cf67787335c74f5c01c860f58",
-      "schemaVersion": 49,
-      "releasedAt": "2026-11-23T18:27:50.690Z"
+      "versionId": "v_czan7whbxfsv7763",
+      "revision": 61,
+      "contentHash": "sha256:428b7466bb0b9283397026400d958bf344bb1170dba079a6f688c4a076d064bb",
+      "schemaVersion": 50,
+      "releasedAt": "2026-11-24T13:17:31.267Z"
     },
-    "testOnly": true
+    "testOnly": true,
+    "categories": [
+      {
+        "category": "anomalous",
+        "tag": "experimental"
+      }
+    ]
   },
   "classicStructure": {
     "cellSize": 8,
