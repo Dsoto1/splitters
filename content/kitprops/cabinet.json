@@ -639,6 +639,58 @@
           }
         }
       ]
+    },
+    {
+      "id": "kit.cabinet.mirror_wall",
+      "displayName": "Wall Mirror (plain glass)",
+      "category": "Household",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version (St. Jasper's washrooms; owner, 2026-11-24: the mirrors plain glass): a framed wall mirror 0.53 m wide and 1.14 m high (the household pack's Wall Mirror at 0.8, which it replaces in the Dorm Bay End's washroom), the glass a pale silver with two soft slanting highlights at full detail, as the Sink with Mirror Cabinet's. Detail `glazed` (smooth, no grain). Hangs on a wall: collides as nothing."
+      },
+      "size": [
+        0.53,
+        1.14,
+        0.062
+      ],
+      "collide": "none",
+      "surface": "glass",
+      "detail": "glazed",
+      "generator": {
+        "kind": "wallmirror",
+        "frame": 0.03
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 12
+        },
+        {
+          "distance": 35
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "steel",
+          "seed": 10311,
+          "look": {
+            "frame": "#a9adb2",
+            "glass": "#c4ced3"
+          }
+        },
+        {
+          "index": 1,
+          "name": "white",
+          "seed": 10312,
+          "look": {
+            "frame": "#e4e0d6",
+            "glass": "#c4ced3"
+          }
+        }
+      ]
     }
   ]
 }

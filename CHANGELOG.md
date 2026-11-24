@@ -8,7 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **St. Jasper's halls, streets and gate have fictional names**: Ravelstone and Harlan Pryce barracks on Tamarack Street, the Brennock block, the Coldbrook Gate, Wexcombe Hall, DeVarne Hall, Lantern Hall, the Sentinel Chapel, Aldergrove Hall, the Marchbank gym and the Tolland pool (the map's description; the old names are in docs/map-briefs/st_johns/NAMES.md).
-- **The dorm sink's mirror is plain glass and its body plain white**: no wood grain on the Sink with Mirror Cabinet; the mirror is pale silver with soft slanting highlights, the vanity smooth enamel.
+- **Plain glass mirrors in the dorms and washrooms**: no wood grain on the Sink with Mirror Cabinet (pale silver glass with soft slanting highlights, a smooth white vanity), and the washrooms' dark mirrors are a new Wall Mirror (plain glass) in MapMaker's palette.
 - **St. John's is now St. Jasper's Military Academy**, a fictional school: its name in every map list, Featured, Quick Play and MapMaker, and its description (the map's id stays `st_johns`).
 - **Roofs and windows: no light through the seams.** A sloped timber roof over thin walls no longer shows sky along the wall tops (St. John's library annex and every roof of that kind), and the library's glass windows no longer show a slit of light up their sides and along their heads.
 - **St. John's dorm rooms: a mirror cabinet over every sink, a black footlocker at the foot of every bunk, and the two desks side by side in the corner by the window** (in every dorm piece in MapMaker; no extra props a room).
