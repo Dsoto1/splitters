@@ -7,6 +7,7 @@
     ".": "./src/index.ts",
     "./match": "./src/match.ts",
     "./peerZip": "./src/net/peerZip.ts",
+    "./crashReport": "./src/net/crashReport.ts",
     "./propContacts": "./src/content/propContacts.generated.ts",
     "./gripFit": "./src/content/gripFit.generated.ts",
     "./sightFit": "./src/content/sightFit.generated.ts",

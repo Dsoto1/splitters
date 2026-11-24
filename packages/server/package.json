@@ -25,6 +25,7 @@
     "net-report": "tsx src/tools/net-report.ts",
     "nav-audit": "tsx src/tools/nav-audit.ts",
     "community-summary": "tsx src/tools/community-summary.ts",
+    "crash-reports": "tsx src/tools/crash-reports.ts",
     "typecheck": "tsc -p .",
     "hub": "tsx src/hub.ts"
   },

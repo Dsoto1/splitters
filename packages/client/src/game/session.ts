@@ -1,4 +1,5 @@
 import { endedReaders } from './endedHooks.ts';
+import { setCrashContext } from '../crashReport.ts';
 import { targetLabel } from './targetLabel.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
@@ -2343,6 +2344,8 @@ export class GameSession {
         this.hud.self = msg.slot;
         if (this.markers.ally !== 'team') this.hud.partyColor = this.markers.ally;
         this.rules = msg.rules;
+        // Crash reports name a suite map by its ID, any other map only as "custom" (crashReport.ts).
+        setCrashContext({ map: inSuite(loaded.map.metadata.id) ? loaded.map.metadata.id : 'custom', mode: msg.rules.mode });
         // Grenades wear the weapon set's looks (the Military frag, the Sci-fi smoke canister) before the map's pickups are drawn.
         this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, loaded.map)?.id);
         // The match's weather (the host's choice, else the map's), fixed while it plays.

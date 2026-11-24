@@ -12,6 +12,7 @@ import { discoverLan, lanInterfaces } from './lan.ts';
 import { LobbyStore, lobbyHandler } from './lobby.ts';
 import { PublishedMaps, noPublishingHandler, publishHandler } from './publish.ts';
 import { ProfileStore, profileHandler } from './profiles.ts';
+import { ReportStore, reportsHandler } from './reports.ts';
 import { siteHandler } from './site.ts';
 import { TicketSigner } from './tickets.ts';
 
@@ -24,7 +25,8 @@ import { TicketSigner } from './tickets.ts';
  * - hands out relay credentials for live games (ice.ts) so strict networks still connect,
  * - checks sign-in tokens (/api/v1/me, auth.ts; sign-in is optional),
  * - keeps the maps the owner publishes from MapMaker (/api/v1/maps, publish.ts),
- * - counts plays of community maps and keeps the Community Picks (/api/v1/community, community.ts).
+ * - counts plays of community maps and keeps the Community Picks (/api/v1/community, community.ts),
+ * - takes the crash and error reports players choose to send, for the owner to read (/api/v1/reports, reports.ts).
  * No match runs here: players' browsers run them.
  *   PORT (9000), HOST (0.0.0.0), TRUST_PROXY=1 behind a reverse proxy on the same box (Caddy; see clientIp.ts),
  *   MAPS_DIR (../../../maps: the suite, for listing rules),
@@ -32,7 +34,8 @@ import { TicketSigner } from './tickets.ts';
  *   PROFILES_DIR (players' usernames, regions, favourite classes and career stats, profiles.ts; unset: profiles are off),
  *   COMMUNITY_DIR (community maps' play statistics and Community Picks, community.ts; unset: next to PROFILES_DIR,
  *     as <its parent>/community, or off without either), COMMUNITY_THRESHOLDS (JSON, any of the promotion thresholds:
- *     shared/net/community.ts DEFAULT_THRESHOLDS), COMMUNITY_BLOCKED_WORDS (more words for the word filter, by commas).
+ *     shared/net/community.ts DEFAULT_THRESHOLDS), COMMUNITY_BLOCKED_WORDS (more words for the word filter, by commas),
+ *   REPORTS_DIR (crash and error reports, reports.ts; unset: next to PROFILES_DIR, as <its parent>/reports, or off without either).
  * A site built with VITE_HUB=self uses the hub it was served from; otherwise
  * point the game at it with ?hub=<host:port> or VITE_HUB=<host:port>.
  */
@@ -89,6 +92,9 @@ const profile = profiles ? profileHandler(profiles, { trustProxy: proxied, verif
 const communityApi = community
   ? communityHandler(community, { verify: verifyToken, owners, trustProxy: proxied, published, check: (text, hash) => checkInWorker(text, hash, blockedWords) })
   : (_req: unknown, _res: unknown, next: () => void) => next();
+// Crash and error reports (reports.ts, docs/CRASH_REPORTS.md): kept beside the profiles unless REPORTS_DIR says where.
+const reportsDir = process.env.REPORTS_DIR || (process.env.PROFILES_DIR ? join(dirname(process.env.PROFILES_DIR), 'reports') : '');
+const reports = reportsDir ? reportsHandler(new ReportStore(reportsDir), { owners, trustProxy: proxied, verify: verifyToken }) : (_req: unknown, _res: unknown, next: () => void) => next();
 // The page's sign-in settings (auth.ts authConfigScript): served, never compiled into the site.
 const authConfig = authConfigScript(cognito);
 const siteDir = process.env.SITE_DIR ?? fileURLToPath(new URL('../../client/dist', import.meta.url));
@@ -109,11 +115,11 @@ server.on('request', (req, res) => {
     res.setHeader('Cache-Control', 'no-cache');
     return void res.end(authConfig);
   }
-  void lobby(req, res, () => void publish(req, res, () => void profile(req, res, () => void communityApi(req, res, () => void account(req, res, () => (site ? void site(req, res, notFound) : notFound())))))).catch(() => notFound());
+  void lobby(req, res, () => void publish(req, res, () => void profile(req, res, () => void communityApi(req, res, () => void reports(req, res, () => void account(req, res, () => (site ? void site(req, res, notFound) : notFound()))))))).catch(() => notFound());
 });
 server.listen(port, host, () => {
   console.log(
-    `Tile Trigger hub on :${port} — site ${site ? siteDir : 'not built (pnpm build to serve it)'}, broker at /broker, game browser at /lobby, relay ${ice.provider ?? 'none (see src/ice.ts)'} (${ice.ttl} s credentials), sign-in ${cognito ? 'on' : 'off'}, publishing ${published ? `${published.list().length} maps, ${owners.size} owner${owners.size === 1 ? '' : 's'}` : 'off'}, suite ${suite?.size ?? 'unchecked'} maps, community maps ${community ? communityDir : 'off'}`,
+    `Tile Trigger hub on :${port} — site ${site ? siteDir : 'not built (pnpm build to serve it)'}, broker at /broker, game browser at /lobby, relay ${ice.provider ?? 'none (see src/ice.ts)'} (${ice.ttl} s credentials), sign-in ${cognito ? 'on' : 'off'}, publishing ${published ? `${published.list().length} maps, ${owners.size} owner${owners.size === 1 ? '' : 's'}` : 'off'}, suite ${suite?.size ?? 'unchecked'} maps, community maps ${community ? communityDir : 'off'}, crash reports ${reportsDir || 'off'}`,
   );
   if (site && lanHttp().length) console.log(`On your network, open the game at: ${lanHttp().join('  ')}`);
 });
