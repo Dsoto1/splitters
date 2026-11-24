@@ -1,5 +1,6 @@
 import { MAP_TEMPLATES, startFromTemplate, type MapDocument } from '@tiletrigger/shared';
 import { loadMapContent } from '../mapContentLoader.ts';
+import { radioArrows } from './newMapSetup.ts';
 
 /**
  * New map → Start from (MapMaker overhaul Phase 3 item 5): open ground in a size (the dialog's sizes), or a starter
@@ -17,8 +18,8 @@ export async function loadTemplate(id: string): Promise<MapDocument | null> {
   return r.ok ? startFromTemplate(r.map, 'Untitled Map') : null;
 }
 
-/** The Start from row, put in the New map dialog above its sizes: picking a template sets the sizes aside. */
-export function templatePicker(dialog: HTMLElement, sizes: HTMLElement): { chosen(): string | null; load(id: string): Promise<MapDocument | null>; label(id: string): string } {
+/** The Start from row, put in the New map dialog under its sizes: picking a template sets the sizes aside (`onPick`: the setup rows show what it sets). */
+export function templatePicker(dialog: HTMLElement, sizes: HTMLElement, onPick: (id: string | null) => void = () => {}): { chosen(): string | null; load(id: string): Promise<MapDocument | null>; label(id: string): string } {
   let chosen: string | null = null;
   dialog.querySelector('#ed-new-templates')?.remove();
   dialog.querySelector('#ed-new-templates-head')?.remove();
@@ -27,12 +28,14 @@ export function templatePicker(dialog: HTMLElement, sizes: HTMLElement): { chose
   row.className = 'ed-new-sizes ed-new-templates';
   row.setAttribute('role', 'radiogroup');
   row.setAttribute('aria-label', 'Start from');
+  radioArrows(row);
   const ground = dialog.querySelector<HTMLSelectElement>('#ed-new-ground')?.closest('label');
   const pick = (id: string | null) => {
     chosen = id;
     for (const b of row.querySelectorAll<HTMLButtonElement>('button')) b.classList.toggle('on', (b.dataset.template ?? null) === id && id !== null);
     sizes.classList.toggle('off', id !== null);
     ground?.classList.toggle('off', id !== null);
+    onPick(id);
   };
   const head = document.createElement('p');
   head.className = 'ed-note';

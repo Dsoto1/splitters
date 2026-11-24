@@ -470,9 +470,19 @@
       </dialog>
       <dialog id="ed-new-dialog">
         <h2>New map</h2>
-        <p class="ed-note">Start on open ground in the size you want, or in the sky (no terrain: build floating platforms). Terrain can be added or removed later in Environment → Terrain.</p>
+        <p class="ed-note">Start on open ground in the size you want, or in the sky (no terrain: build floating platforms). Every choice here is ready as it is: Create, or change what you like. All of it can be changed later in Map properties.</p>
         <div id="ed-new-sizes" class="ed-new-sizes" role="radiogroup" aria-label="Map size"></div>
-        <label class="ed-dialog-field"><span>Ground theme</span><select id="ed-new-ground"></select></label>
+        <div id="ed-new-setup" class="ed-new-setup">
+          <label class="ed-dialog-field"><span>Theme</span><select id="ed-new-theme"></select></label>
+          <label class="ed-dialog-field"><span>Ground theme</span><select id="ed-new-ground"></select></label>
+          <p class="ed-note ed-new-wide" id="ed-new-theme-note"></p>
+          <label class="ed-dialog-field"><span>Mode</span><select id="ed-new-mode"></select></label>
+          <div class="ed-dialog-field"><span>Also offered</span><div id="ed-new-also" class="ed-layers"></div></div>
+          <div class="ed-dialog-field ed-new-players"><span>Players</span><span class="ed-new-pl"><span>Best with</span><input id="ed-new-best" type="number" min="1" max="96" step="1" aria-label="Players it plays best with"><span class="ed-new-upto"><span>up to</span><input id="ed-new-upto" type="number" min="1" max="128" step="1" placeholder="Auto" aria-label="Most players (empty: automatic)"></span></span></div>
+          <label class="ed-dialog-field"><span>Boundary</span><select id="ed-new-boundary"></select></label>
+          <p class="ed-note" id="ed-new-players-note"></p>
+          <p class="ed-note" id="ed-new-boundary-note"></p>
+        </div>
         <div class="ed-dialog-actions">
           <button id="ed-new-create" class="primary">Create</button>
           <button id="ed-new-cancel">Cancel</button>

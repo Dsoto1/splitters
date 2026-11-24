@@ -22,6 +22,9 @@ import {
 import { itemColor } from '../game/pickupVisuals.ts';
 import { isBuiltInMap } from '../mapIndex.ts';
 
+// New map's sizes and blank map live with its setup screen (newMapSetup.ts).
+export { NEW_MAP_SIZES, STARTER_TERRAIN, groundThemeLabel, starterMap } from './newMapSetup.ts';
+
 /** MapMaker's shared pieces: the tool type, palette icons, constants and small helpers (split out of editorApp.ts, MapMaker overhaul Phase 2 item 5). */
 
 /** IDs of the built-in maps (they have automatic pictures): the files in maps/, which load on demand (mapIndex.ts). */
@@ -36,16 +39,6 @@ export function itemIcon(itemId: string): string {
 /** What the card shot leaves out: editor markers a match doesn't draw (zones, hills, sites, objectives, squads, routes). */
 export const CARD_HIDDEN_KINDS = ['zone', 'hill', 'rescue', 'sector', 'objective', 'encounter', 'spawn', 'airplane'] as const;
 
-/** A new map starts on open ground this size (m); New offers the others, and the sky (0: no terrain). */
-export const STARTER_TERRAIN = 160;
-
-export const NEW_MAP_SIZES: readonly [number, string, string][] = [
-  [96, 'Skirmish', '96 m · a few players'],
-  [160, 'Medium', '160 m · most modes'],
-  [240, 'Large', '240 m · vehicles'],
-  [320, 'Huge', '320 m · big battles'],
-  [0, 'Sky map', 'No terrain · floating'],
-];
 
 /** The top bar's compact layouts (editor.css, fit-1..7): the fewest that make its contents fit its width. */
 export function fitTopBar(top: HTMLElement): void {
@@ -58,14 +51,7 @@ export function fitTopBar(top: HTMLElement): void {
   }
 }
 
-/** A Ground theme as a menu shows it: its name and its base ground ("Quarry · Gravel"). */
-export const groundThemeLabel = (g: GroundThemeDefinition): string => `${g.displayName} · ${coreMaterials.get(g.base)?.displayName ?? g.base}`;
 
-/** A blank map: the starter room and spawn, on open ground of `size` metres (just under the floors, all the base of `groundTheme`) or none. */
-export function starterMap(size: number | null, groundTheme: string = DEFAULT_GROUND_THEME): MapDocument {
-  const doc = newMapDocument('Untitled Map');
-  return size ? { ...doc, terrain: { ...newTerrain(size, 2, [0, 0], groundTheme), baseY: -0.15 } } : doc;
-}
 
 export type Tool = { kind: 'select' } | { kind: 'erase' } | { kind: 'npc'; key: string } | { kind: 'tile'; tile: string } | { kind: 'setpiece'; piece: string } | { kind: 'spawn' } | { kind: 'pickup'; item: string } | { kind: 'scenario'; key: ScenarioPaletteKey } | { kind: 'paint' } | { kind: 'edge'; style: EdgeStyle } | { kind: 'prop'; model: string } | { kind: 'terrain' } | { kind: 'mount'; model: MountModel } | { kind: 'path' } | { kind: 'route' } | { kind: 'measure' } | { kind: 'note' } | { kind: 'bothint'; hint: BotHintKind } | { kind: 'envbrush' };
 

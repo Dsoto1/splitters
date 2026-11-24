@@ -729,6 +729,27 @@ dialog.ed-keys { pointer-events: auto; width: min(1040px, 94vw); max-height: 86v
 .ed-mirror #ed-mirror-why.err { color: var(--error); }
 /* New map → Start from (templatePicker.ts). */
 .ed-new-sizes.off, label.off { opacity: 0.45; }
+/* New map's setup (owner, 2026-11-24; newMapSetup.ts): two columns of choices, each pre-filled; a layout's own are marked. */
+#ed-new-dialog { width: min(640px, 94vw); max-height: 94vh; overflow-y: auto; }
+#ed-new-dialog .ed-new-sizes { margin: 10px 0 8px; }
+.ed-new-sizes button { position: relative; }
+.ed-new-sizes .ed-new-sug { display: none; position: absolute; top: 6px; right: 8px; font-style: normal; font-size: 10px; color: var(--cyan); }
+.ed-new-sizes:not(.off) button.suggested .ed-new-sug { display: inline; }
+.ed-new-setup { display: grid; grid-template-columns: 1fr 1fr; column-gap: 16px; margin: 12px 0 4px; padding-top: 10px; border-top: 1px solid rgba(142, 162, 192, 0.2); }
+.ed-new-setup .ed-dialog-field { margin: 0 0 8px; min-width: 0; }
+.ed-new-setup .ed-dialog-field > span:first-child { width: 6.2em; flex: none; }
+.ed-new-setup .ed-dialog-field select { flex: 1; min-width: 0; }
+.ed-new-setup .ed-new-wide { grid-column: 1 / -1; margin: -2px 0 10px; }
+.ed-new-setup > .ed-note { margin: 0 0 8px; }
+.ed-new-setup .ed-layers { flex: 1; margin: 0; grid-template-columns: 1fr; gap: 2px; }
+.ed-new-pl { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; color: var(--muted); font-size: 12px; }
+.ed-new-pl input { width: 4.2em; flex: none; }
+.ed-new-upto { display: inline-flex; align-items: center; gap: 6px; }
+.ed-new-upto[hidden] { display: none; }
+.ed-new-setup .ed-dialog-field.layout > span:first-child::after { content: " · layout's"; color: var(--cyan); font-size: 10px; }
+@media (max-width: 560px) {
+  .ed-new-setup { grid-template-columns: 1fr; }
+}
 /* Bot hints (botHintTool.ts): icon pins over a canvas of radii, facings and jump arcs; MapMaker only. */
 #editor > .ed-bothints { position: absolute; inset: 0; pointer-events: none; z-index: 3; overflow: hidden; }
 .ed-bothints canvas { position: absolute; left: 0; top: 0; width: 100%; height: 100%; }
