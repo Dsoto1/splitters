@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { AKIMBO_READY, DEFAULT_RULES, SERVER_RULES, applyServerRules, parseRuleValue, ruleSpec, rulesForMode, rulesFromSetup, serverRuleFor, serverRulesText, setServerRule, validateServerRules, type GameMode, type MatchRules, type MatchSetup, type ServerRules } from '../src/index.ts';
+import { AKIMBO_READY, DEFAULT_RULES, POWERUP_RULES, SERVER_RULES, applyServerRules, parseRuleValue, ruleSpec, rulesForMode, rulesFromSetup, serverRuleFor, serverRulesText, setServerRule, validateServerRules, type GameMode, type MatchRules, type MatchSetup, type ServerRules } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 
 const map = (() => {
@@ -48,6 +48,8 @@ const PARITY: [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules
   ['fortcombat', 8, 'core.forts', { fortCombat: 8 }, ['fortCombatSeconds']],
   ['fortcycles', 3, 'core.forts', { fortCycles: 3 }, ['fortCycles']],
   ['fortbudget', 600, 'core.forts', { fortBudget: 600 }, ['fortBudget']],
+  // One switch per power-up (owner, 2026-11-24).
+  ...POWERUP_RULES.map((p): [string, unknown, GameMode, Partial<MatchSetup>, (keyof MatchRules)[]] => [p.key, false, 'core.deathmatch', { powerupsOff: [p.kind] }, ['powerupsOff']]),
 ];
 
 describe('server match rules (RULES): parity with the browser host', () => {

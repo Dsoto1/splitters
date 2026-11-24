@@ -1343,6 +1343,111 @@
    },
    "category": "special",
    "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_overdrive",
+    "displayName": "Overdrive",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "overdrive",
+     "seconds": 8
+    },
+    "respawnSeconds": 120,
+    "botValue": 0.95
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_regen",
+    "displayName": "Regen",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "regen",
+     "seconds": 20
+    },
+    "respawnSeconds": 45,
+    "botValue": 0.55
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_rapid",
+    "displayName": "Rapid Fire",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "rapid",
+     "seconds": 15
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.75
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_phantom",
+    "displayName": "Phantom",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "phantom",
+     "seconds": 12
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.6
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_moon",
+    "displayName": "Moon Boots",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "moon",
+     "seconds": 15
+    },
+    "respawnSeconds": 45,
+    "botValue": 0.4
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_vampire",
+    "displayName": "Vampire",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "vampire",
+     "seconds": 15
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.65
+   },
+   "category": null,
+   "found": true
+  },
+  {
+   "item": {
+    "id": "core.powerup_bottomless",
+    "displayName": "Bottomless Mag",
+    "effect": {
+     "kind": "powerup",
+     "powerup": "bottomless",
+     "seconds": 12
+    },
+    "respawnSeconds": 60,
+    "botValue": 0.7
+   },
+   "category": null,
+   "found": true
   }
  ],
  "rules": {
