@@ -19,6 +19,7 @@ import { fileURLToPath } from 'node:url';
 import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import sharp from 'sharp';
+import { encodeKtx2, readPicture } from './ktx2.mjs';
 import { writeLock } from './lockfile.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
@@ -95,9 +96,11 @@ for (const id of only) {
       const t = m.getNormalTexture();
       if (!t || seen.has(t)) continue;
       seen.add(t);
-      const { data, info } = await sharp(Buffer.from(t.getImage())).removeAlpha().raw().toBuffer({ resolveWithObject: true });
+      const { data, info } = await sharp(readPicture(t)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
       for (let i = 1; i < data.length; i += 3) data[i] = 255 - data[i];
-      t.setImage(new Uint8Array(await sharp(data, { raw: info }).jpeg({ quality: 85, chromaSubsampling: '4:4:4', mozjpeg: true }).toBuffer()));
+      // (A KTX2 map, as a character's are since 2026-11-25, is encoded again: ktx2.mjs.)
+      if (t.getMimeType() === 'image/ktx2') t.setImage(await encodeKtx2(await sharp(data, { raw: info }).png().toBuffer(), { kind: 'normal' }));
+      else t.setImage(new Uint8Array(await sharp(data, { raw: info }).jpeg({ quality: 85, chromaSubsampling: '4:4:4', mozjpeg: true }).toBuffer()));
       flipped++;
     }
   }

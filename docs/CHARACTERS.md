@@ -875,7 +875,8 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
   0.8% of the model's size), laid out afresh in charts grown across shared edges
   while each triangle faces within 60 degrees of the chart's first and never
   overlaps it (meshy-mesh.mjs rebake `grow`; the props' six-axis charts broke a body
-  into thousands of slivers), and its 1024 px colour and normal maps are painted
+  into thousands of slivers), and its colour map (2048 px since 2026-11-25, KTX2: CONTENT_PIPELINE.md,
+  "GPU-compressed textures") and normal map are painted
   from the full download (rays along the cut surface's normal, 1.2% of the
   model's size each way). Both maps are in the new layout, so they hold through
   the posing (the normal map is in tangent space). The cut only removes
