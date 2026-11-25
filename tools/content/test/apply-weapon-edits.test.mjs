@@ -157,6 +157,41 @@ describe('apply-weapon-edits', () => {
     expect(weapon('shotgun').view.sound).toBeUndefined();
   });
 
+  it('explosion and impact sounds: none until picked, "none" takes them away again (owner, 2026-11-24)', () => {
+    expect(problemsOf({ 'core.launcher': { sounds: { explosion: 'explosion.vehicle', impact: 'impact.metal' } } })).toEqual([]);
+    // Nothing the SMG fires blows up; an unknown sound is refused; "none" is fine for both.
+    expect(problemsOf({ 'core.smg': { sounds: { explosion: 'explosion.vehicle' } } }).join()).toMatch(/nothing this weapon fires blows up/);
+    expect(problemsOf({ 'core.rifle': { sounds: { impact: 'nope' } } }).join()).toMatch(/not a sound in the game/);
+    expect(problemsOf({ 'core.rifle': { sounds: { impact: 'none' } } })).toEqual([]);
+    const before = readFileSync(join(root, 'content/weapons/launcher.json'), 'utf8');
+    const r = applyChangeSet(cs({ 'core.launcher': { sounds: { explosion: 'explosion.vehicle', impact: 'impact.metal' } } }), { root });
+    expect(r.problems).toEqual([]);
+    expect(weapon('launcher').view).toMatchObject({ explosionSound: 'explosion.vehicle', impactSound: 'impact.metal' });
+    expect(generatorProblems()).toEqual([]);
+    applyChangeSet(cs({ 'core.launcher': { sounds: { explosion: 'none', impact: 'none' } } }), { root });
+    expect(readFileSync(join(root, 'content/weapons/launcher.json'), 'utf8')).toBe(before);
+  });
+
+  it("a throwable's explosion sound goes into content/throwables.json; one that doesn't blow up has none", () => {
+    const set = (throwables) => ({ ...cs({}), throwables });
+    const ctx = () => context(loadRepo(root));
+    expect(validateChangeSet(set({ frag: { sounds: { explosion: 'explosion.vehicle' } } }), ctx()).problems).toEqual([]);
+    expect(validateChangeSet(set({ smoke: { sounds: { explosion: 'explosion.vehicle' } } }), ctx()).problems.join()).toMatch(/doesn't blow up/);
+    expect(validateChangeSet(set({ nonsense: { sounds: { explosion: 'explosion' } } }), ctx()).problems.join()).toMatch(/no throwable/);
+    expect(validateChangeSet(set({ frag: { sounds: { impact: 'impact.metal' } } }), ctx()).problems.join()).toMatch(/slots are explosion/);
+    const before = readFileSync(join(root, 'content/throwables.json'), 'utf8');
+    const r = applyChangeSet(set({ frag: { sounds: { explosion: 'explosion.vehicle' } } }), { root });
+    expect(r.written).toEqual(['content/throwables.json']);
+    const frag = JSON.parse(readFileSync(join(root, 'content/throwables.json'), 'utf8')).throwables.find((t) => t.kind === 'frag');
+    expect(frag.explosionSound).toBe('explosion.vehicle');
+    expect(generatorProblems()).toEqual([]);
+    applyChangeSet(set({ frag: { sounds: { explosion: 'none' } } }), { root });
+    expect(JSON.parse(readFileSync(join(root, 'content/throwables.json'), 'utf8'))).toEqual(JSON.parse(before));
+    // The page's change set carries the block only when a throwable is edited.
+    expect(buildChangeSet({}, { throwables: { frag: {} } }).throwables).toBeUndefined();
+    expect(buildChangeSet({}, { throwables: { frag: { sounds: { explosion: 'explosion' } } } }).throwables).toEqual({ frag: { sounds: { explosion: 'explosion' } } });
+  });
+
   it('edits the weapon sets\' lists, keeping the file\'s layout', () => {
     const before = readFileSync(join(root, 'content/weapon-sets.json'), 'utf8');
     const r = applyChangeSet(cs({ 'core.smg': { sets: { military: false, scifi: true } } }), { root });

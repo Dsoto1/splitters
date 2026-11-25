@@ -9,6 +9,7 @@
 // Checks the whole set first (known weapon and sound ids, stats in range, the version; tools/content/weapons.mjs's
 // rules for hiding) and writes nothing if anything is wrong. Then it writes:
 //   content/weapons/<name>.json   name, hidden, category, description (notes.description), sounds, stats
+//   content/throwables.json       a throwable's explosion sound
 //   content/weapon-sets.json      the sets' lists
 //   docs/QUEUE.md                 each note as a line under "Weapon notes from the owner"
 // keeping every untouched line of those files as it was, runs the weapon, pickup, weapon-set and Roulette generators
@@ -20,7 +21,7 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { keepFormat } from './json-keep-format.mjs';
-import { CHANGE_SET_FORMAT, getPath, statField, validateChangeSet, weaponInfo } from './weapon-edits-format.mjs';
+import { CHANGE_SET_FORMAT, NO_SOUND, SOUND_KEYS, blowsUp, getPath, statField, validateChangeSet, weaponInfo } from './weapon-edits-format.mjs';
 import { ROOT, hideBlockers } from './weapons.mjs';
 
 const readJson = (root, rel) => JSON.parse(readFileSync(join(root, rel), 'utf8'));
@@ -47,6 +48,7 @@ export function loadRepo(root = ROOT) {
     weapons.set(file.id, { rel, text, file });
   }
   const setsText = readFileSync(join(root, 'content/weapon-sets.json'), 'utf8');
+  const throwablesText = readFileSync(join(root, 'content/throwables.json'), 'utf8');
   const pickups = readJson(root, 'content/pickups.json').pickups;
   const weaponsTs = readFileSync(join(root, 'packages/shared/src/sim/weapons.ts'), 'utf8');
   const categories = [...(weaponsTs.match(/export const WEAPON_CATEGORIES\s*=\s*\[([^\]]*)\]/)?.[1] ?? '').matchAll(/'([^']+)'/g)].map((m) => m[1]);
@@ -56,6 +58,8 @@ export function loadRepo(root = ROOT) {
     weapons,
     setsText,
     sets: JSON.parse(setsText),
+    throwablesText,
+    throwables: JSON.parse(throwablesText),
     sounds: new Set(Object.keys(readJson(root, 'content/sounds.json').sounds)),
     pickupWeapons: new Set(pickups.filter((p) => p.effect?.kind === 'weapon').map((p) => p.effect.weapon)),
     categories,
@@ -90,6 +94,7 @@ export function context(repo) {
     sets: repo.sets.sets,
     categories: repo.categories,
     blockers: (id) => hideBlockers(id, repo.root),
+    throwables: new Map(repo.throwables.throwables.map((t) => [t.kind, { name: t.displayName, blowsUp: blowsUp(t.projectile) }])),
     canJoinSet: (id) => {
       const f = repo.weapons.get(id)?.file;
       if (!f?.category) return 'it has no category (tools, mode-only weapons and mounted guns are never in a set)';
@@ -160,6 +165,15 @@ export function applyToWeapon(repo, file, e) {
         lines.push(`alt-fire sound ${f.view.altShot.sound} → ${sid}`);
         f.view.altShot = { ...f.view.altShot, sound: sid };
       }
+    } else if (slot in SOUND_KEYS) {
+      // Explosion and impact: none until picked ("none" takes the weapon's own away again).
+      const key = SOUND_KEYS[slot];
+      const was = f.view[key];
+      const to = sid === NO_SOUND ? undefined : sid;
+      if (to !== was) {
+        f.view = to === undefined ? (({ [key]: _s, ...v }) => v)(f.view) : withKey(f.view, key, to, ['beam', 'muzzle', 'muzzleAt', 'altShot', 'optic']);
+        lines.push(`${slot} sound ${was ?? 'none'} → ${to ?? 'none'}`);
+      }
     } else if (slot === 'reload') {
       const was = f.view.reloadSound ?? 'reload.start';
       if (sid !== was) {
@@ -192,6 +206,25 @@ export function applyToWeapon(repo, file, e) {
   return { file: f, lines };
 }
 
+/** throwables.json with the change set's throwable edits (a new object), and what changed. */
+export function applyToThrowables(doc, cs) {
+  const out = structuredClone(doc);
+  const lines = [];
+  for (const [kind, e] of Object.entries(cs.throwables ?? {})) {
+    const i = out.throwables.findIndex((t) => t.kind === kind);
+    for (const [slot, sid] of Object.entries(e.sounds ?? {})) {
+      const key = SOUND_KEYS[slot];
+      const t = out.throwables[i];
+      const was = t[key];
+      const to = sid === NO_SOUND ? undefined : sid;
+      if (to === was) continue;
+      out.throwables[i] = to === undefined ? (({ [key]: _s, ...rest }) => rest)(t) : withKey(t, key, to, ['view', 'notes']);
+      lines.push(`${kind}: ${slot} sound ${was ?? 'none'} → ${to ?? 'none'}`);
+    }
+  }
+  return { doc: out, lines };
+}
+
 /** weapon-sets.json with the change set's set edits (a new object), and what changed. */
 export function applyToSets(sets, cs) {
   const out = structuredClone(sets);
@@ -214,7 +247,7 @@ export function applyToSets(sets, cs) {
 
 /** docs/QUEUE.md with the notes added under "Weapon notes from the owner" (before "Waiting on the owner"); a note already there isn't added again. */
 export function addNotesToQueue(queue, cs, names, day) {
-  const notes = Object.entries(cs.weapons).filter(([, e]) => typeof e.note === 'string' && e.note.trim());
+  const notes = [...Object.entries(cs.weapons), ...Object.entries(cs.throwables ?? {}).map(([k, e]) => [`throw:${k}`, e])].filter(([, e]) => typeof e.note === 'string' && e.note.trim());
   if (!notes.length) return { queue, added: [] };
   const added = [];
   const lines = notes
@@ -268,6 +301,12 @@ export function applyChangeSet(cs, { root = ROOT, write = true, day = new Date()
     files.push(['content/weapon-sets.json', keepFormat(sets, repo.setsText)]);
     summary.push(`weapon sets: ${setLines.join('; ')}`);
   }
+  const { doc: thrown, lines: throwLines } = applyToThrowables(repo.throwables, cs);
+  if (throwLines.length) {
+    files.push(['content/throwables.json', keepFormat(thrown, repo.throwablesText)]);
+    summary.push(`throwables: ${throwLines.join('; ')}`);
+  }
+  for (const [kind, t] of repo.throwables.throwables.map((x) => [x.kind, x])) names.set(`throw:${kind}`, t.displayName);
   const queuePath = 'docs/QUEUE.md';
   if (existsSync(join(root, queuePath))) {
     const { queue, added } = addNotesToQueue(readFileSync(join(root, queuePath), 'utf8'), cs, names, day);

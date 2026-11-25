@@ -101,7 +101,8 @@ describe('map format v39: race mode\'s dead track settings dropped', () => {
         // (A stamp from v39 on needed no carrying: it keeps its own format; one from before is carried to today's. So is
         // one from before v45 on a map with terrain: v45 stores the same ground as base and painted cells.)
         const v = file.metadata.release.schemaVersion;
-        const schemaVersion = v < 39 || (v < 45 && (file as { terrain?: unknown }).terrain) ? MAP_FORMAT_VERSION : v;
+        // (And one from v50 on a map with categories: v51 keeps one category in place of the pairs.)
+        const schemaVersion = v < 39 || (v < 45 && (file as { terrain?: unknown }).terrain) || (v === 50 && (file.metadata as { categories?: unknown }).categories) ? MAP_FORMAT_VERSION : v;
         expect(r.map.metadata.release).toMatchObject({ versionId: file.metadata.release.versionId, revision: file.metadata.release.revision, schemaVersion });
         // Exporting again keeps the version.
         if (forEditing) expect(stampMapRelease(r.map).metadata.release!.versionId).toBe(file.metadata.release.versionId);

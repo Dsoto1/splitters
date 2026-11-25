@@ -6040,21 +6040,20 @@ async function offlineFlow(browser) {
   const feat = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
   check(feat > 0 && feat < all.length, `the Featured tab lists the featured maps (${feat})`);
   await page.click('#map-tabs [data-tab="all"]');
-  // The category tabs (the owner's six; shared map/categories.ts, the tags in each map's file): a category lists its
-  // maps and shows its sub-tags; a sub-tag narrows to its own; Custom (your own and community maps) holds no built-in map.
+  // The category tabs (one tab per map; shared map/categories.ts, each map's one category): a tab lists its maps, its
+  // count on it; the five counts add up to All maps'; no sub-tag row; Custom (your own and community maps) holds no built-in map.
   const catTabs = await page.$$eval('#map-cats .map-cat', (b) => b.map((x) => x.dataset.cat));
-  await page.click('#map-cats [data-cat="temporal"]');
-  const temporal = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, count: Number(document.querySelector('#map-cats [data-cat="temporal"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, tags: [...document.querySelectorAll('#map-subtags .map-subtag')].map((b) => b.dataset.tag), shown: !document.getElementById('map-subtags').hidden }));
-  await page.click('#map-subtags [data-tag="medieval"]');
-  const medieval = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
+  const counts = await page.$$eval('#map-cats .map-cat:not(.all) .cat-n', (b) => b.map((x) => Number(x.textContent)));
+  await page.click('#map-cats [data-cat="historic"]');
+  const historic = await page.evaluate(() => ({ cards: [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.dataset.map), count: Number(document.querySelector('#map-cats [data-cat="historic"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, subtags: !!document.getElementById('map-subtags') }));
   await page.click('#map-cats [data-cat="custom"]');
   const custom = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, empty: document.querySelector('#map-cards .map-empty')?.textContent ?? '' }));
   await page.click('#map-cats [data-cat="all"]');
   const back = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
-  check(catTabs.join() === 'all,temporal,dimensional,environmental,fictional,anomalous,custom' && temporal.on === 'temporal' && temporal.shown && temporal.cards === temporal.count && temporal.cards > 20 && temporal.cards < all.length && temporal.tags[0] === '' && temporal.tags.includes('medieval'), `the category tabs: Temporal lists its maps, its count on the tab, and its sub-tags (${JSON.stringify({ catTabs, temporal })})`);
-  check(medieval.includes('gallows_yard') && medieval.includes('market_town') && !medieval.includes('sandgate') && !medieval.includes('training_range') && medieval.length < 10, `Temporal → Medieval lists the medieval maps only (${medieval.join(', ')})`);
+  check(catTabs.join() === 'all,modern,historic,future,weird,custom' && counts.reduce((x, y) => x + y, 0) === all.length && !historic.subtags, `the category tabs: one a map, their counts add up to All maps' (${JSON.stringify({ catTabs, counts, all: all.length })}), no sub-tag row`);
+  check(historic.on === 'historic' && historic.cards.length === historic.count && historic.cards.includes('gallows_yard') && historic.cards.includes('market_town') && !historic.cards.includes('sandgate') && !historic.cards.includes('training_range'), `Historic lists its maps only, its count on the tab (${historic.cards.join(', ')})`);
   check(!all.some((c) => c.map === 'training_range'), 'the Training Range is not in the map grid (it moves to the loadout screen)');
-  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All dimensions lists every map again (${back})`);
+  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All maps lists every map again (${back})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -8326,6 +8325,93 @@ async function scoreboardColumns(page) {
     const r = g.getBoundingClientRect();
     return { left: Math.round(r.left), right: Math.round(r.right), top: Math.round(r.top) };
   }));
+}
+
+/**
+ * Colour vision (Options → Accessibility; game/colourVision.ts, teamColours.ts, teamSymbols.ts; docs/LOOK.md, "Colour vision"): the
+ * setting saves, a match on Grand Marquee (its own red and yellow teams) takes the setting's team colours, and every
+ * team's symbol is beside its colour in the kill feed, on the scoreboard, the score bar, the name of whoever you hit
+ * and the minimap. A picture of each setting goes to the artifacts as colourvision-<setting>.png (E2E_DSF=2: sharper).
+ */
+async function colourvisionFlow(browser) {
+  const { readFileSync } = await import('node:fs');
+  const src = readFileSync(new URL('../packages/client/src/game/teamColours.ts', import.meta.url), 'utf8');
+  const palette = (name) => [...(src.match(new RegExp(`${name}: \\[([^\\]]+)\\]`))?.[1] ?? '').matchAll(/'(#[0-9a-f]{6})'/g)].map((m) => m[1]);
+  const safe = { redgreen: palette('redgreen'), tritan: palette('tritan') };
+  check(safe.redgreen.length === 8 && safe.tritan.length === 8, `the safe palettes are read from teamColours.ts (${safe.redgreen.length}, ${safe.tritan.length})`);
+  // E2E_DSF=2 for the pictures (docs/LOOK.md, "Colour vision"); CI draws at 1.
+  const ctx = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: Number(process.env.E2E_DSF ?? 1) });
+  const errors = [];
+  const open = async () => {
+    const p = await ctx.newPage();
+    p.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    return p;
+  };
+  const menu = await open();
+  let page = menu;
+  await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  await page.click('#nav-options');
+  await page.click('.opt-nav [data-tab="accessibility"]');
+  const first = await page.$eval('#opt-colour-vision', (s) => ({ value: s.value, options: [...s.options].map((o) => o.value) }));
+  await page.selectOption('#opt-colour-vision', 'redgreen');
+  const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.colourVision'));
+  check(first.value === 'default' && first.options.join() === 'default,redgreen,tritan' && saved === 'redgreen', `Accessibility: Colour vision is Default at first and its choice saves (${JSON.stringify({ first, saved })})`);
+  for (const vision of ['default', 'redgreen', 'tritan']) {
+    await page.evaluate((v) => localStorage.setItem('tiletrigger.colourVision', v), vision);
+    // A page per match (leaving a match asks before unloading).
+    await page.close();
+    page = await open();
+    await page.goto(`${CLIENT}/?offline=grand_marquee&gamemode=core.tdm&bots=7&test=1&god=1&name=Tester`, { waitUntil: 'domcontentloaded', timeout: T(90000) });
+    // Polled on a timer: a loading page may draw no frames for a while.
+    await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(150000), polling: 250 });
+    await playWithoutMouse(page);
+    // Every teammate on the roster before reading the HUD.
+    await page.waitForFunction(() => { const h = window.__cs.hud; return h.teamIndex(window.__cs.slot) >= 0 && [...h.roster.values()].filter((p) => p.team).length >= 8; }, null, { timeout: T(20000), polling: 250 }).catch(() => {});
+    // The board (a tap of Tab), and the minimap's next frame with its teammates.
+    await page.keyboard.press('Tab');
+    await page.waitForFunction(() => !document.getElementById('scoreboard').hidden && document.querySelectorAll('#scoreboard .sb-row[data-slot]').length >= 6, null, { timeout: T(10500) }).catch(() => {});
+    await page.waitForFunction(() => (window.__cs.hud.minimap.last ?? '').split('|').slice(1).some((b) => /,\d+$/.test(b)), null, { timeout: T(10000), polling: 250 }).catch(() => {});
+    // Two kill lines (one each way) and a hit on an enemy, through the HUD as the match shows them (the feed's lines
+    // go after 5 s: read and pictured straight away).
+    const seen = await page.evaluate(() => {
+      const cs = window.__cs;
+      const h = cs.hud;
+      const me = cs.slot;
+      const mine = h.teamIndex(me);
+      const slots = [...h.roster.values()].map((p) => p.slot);
+      const mate = slots.find((s) => s !== me && h.teamIndex(s) === mine) ?? me;
+      const foe = slots.find((s) => h.teamIndex(s) >= 0 && h.teamIndex(s) !== mine);
+      h.kill(mate, foe, 'core.rifle', me);
+      h.kill(foe, me, 'core.smg', me, true);
+      h.showTarget(h.name(foe), 0.6, h.team(foe)?.color ?? '#fff', h.teamIndex(foe));
+      return {
+        mine,
+        teams: (h.teams ?? []).map((t) => t.color),
+        foeTeam: h.teamIndex(foe),
+        feed: [...document.querySelectorAll('#feed span[data-rs]')].slice(0, 4).map((s) => s.querySelector('svg.tsym')?.dataset.sym ?? ''),
+      };
+    });
+    const hud = await page.evaluate(() => ({
+      groups: [...document.querySelectorAll('#scoreboard .sb-gname')].map((g) => g.querySelector('svg.tsym')?.dataset.sym ?? ''),
+      marks: [...document.querySelectorAll('#scoreboard .sb-row[data-slot] .sb-mark')].map((m) => m.querySelector('svg.tsym')?.dataset.sym ?? m.textContent),
+      bar: [...document.querySelectorAll('#scorebar small svg.tsym')].map((s) => s.dataset.sym),
+      target: document.querySelector('#target-name svg.tsym')?.dataset.sym ?? '',
+      minimap: window.__cs.hud.minimap.last ?? '',
+    }));
+    hud.feed = seen.feed;
+    await page.screenshot({ path: `${ARTIFACTS}/colourvision-${vision}.png`, timeout: T(90000) }).catch(() => {});
+    const want = vision === 'default' ? ['#d8263a', '#e8b830'] : safe[vision].slice(0, 2);
+    const sym = ['▲', '●'];
+    check(seen.teams.join() === want.join(), `${vision}: the teams wear ${want.join(' and ')} (${seen.teams.join(', ')})`);
+    check(hud.feed.length >= 4 && hud.feed.every((x) => sym.includes(x)), `${vision}: every kill feed name has its team's symbol (${hud.feed.join(' ')})`);
+    check(hud.groups.join() === '▲,●' && hud.marks.length >= 6 && hud.marks.every((x) => sym.includes(x) || x === '★' || x === '◆'), `${vision}: the scoreboard's teams and rows have their symbols (${hud.groups.join(' ')}; ${hud.marks.join('')})`);
+    check(hud.bar.length === 2 && hud.target === sym[seen.foeTeam], `${vision}: the score bar and the name of whoever you hit have the symbols (${hud.bar.join(' ')}; ${hud.target})`);
+    const blips = hud.minimap.split('|').slice(1).filter((b) => b.includes(want[seen.mine]));
+    check(blips.length >= 1 && blips.every((b) => b.endsWith(`,${seen.mine}`)), `${vision}: teammates on the minimap in the team's colour, as its symbol (${blips.length} blips: ${blips.slice(0, 2).join(' ')})`);
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await ctx.close();
 }
 
 async function teamsFlow(browser) {
@@ -12519,7 +12605,7 @@ const FLASHING_PARTS = {
   flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
-  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
+  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
   flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
 };
 
@@ -12650,6 +12736,22 @@ const FLASHING_DAY = {
         seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
         sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
         after: () => sim(page, () => void (self.__flashHp = undefined)),
+      },
+      // Frozen in a freeze blast's ice (the Freeze Ray's second trigger; hud.ts setFrost): as the recording starts you are
+      // held in a block of ice, by day over the white tiles: the frost creeps in from the edges, eased (slower and paler
+      // with the setting on), the middle clear: never a flash or a white-out. Before each run the ice is let go.
+      {
+        name: 'frozen',
+        label: 'frozen in a block of ice by day over white tiles: the frost creeping in over the view, then the block round you',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => sim(page, (m) => { for (const b of [...m.ices]) m.removeIce(b, false); }).then(() => step(45)),
+        at: { 2: () => sim(page, (m, me) => m.freezeSolid(me, 60 * 6)) },
+        seen: () => page.evaluate(() => ({ frost: Number(getComputedStyle(document.getElementById('frost-view') ?? document.body).opacity), on: !!document.getElementById('frost-view')?.classList.contains('on'), iced: !!window.__cs.local.iced })),
+        sees: (_on, s) => s.on && s.iced && s.frost > 0.3,
+        after: () => sim(page, (m) => { for (const b of [...m.ices]) m.removeIce(b, false); }),
       },
       // A scope coming up and going away (game/scopeFeel.ts; hud.ts setScope): by day over the white tiles (the
       // brightest ground: where the black round the glass changes the picture most), the Sniper Rifle's scope comes up
@@ -14542,7 +14644,7 @@ async function padsetupFlow(browser) {
   await press(B.rt);
   const tab = await page.evaluate(() => document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab);
   await press(B.lt);
-  check(cat1 === 'temporal' && cat2 === 'dimensional' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
+  check(cat1 === 'modern' && cat2 === 'historic' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
   // Right off the grid's edge into the settings; a stepper takes left and right; left off the settings back to the grid.
   await press(B.down);
   for (let i = 0; i < 6 && !(await focus()).id.startsWith('setup') && !(await page.evaluate(() => !!document.activeElement.closest('#match-setup'))); i++) await press(B.right);
@@ -15757,9 +15859,9 @@ async function weaponmanagerFlow(browser) {
   await page.waitForFunction(() => document.querySelectorAll('#weapon-tuning main canvas').length > 0, null, { timeout: T(60000) });
   check(true, 'the weapon tuning page opens on Compare');
   await page.click('#wt-tab-manage');
-  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
+  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card[data-id]').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
   const cards = await page.evaluate(() => {
-    const all = [...document.querySelectorAll('#wm-list .wm-card')];
+    const all = [...document.querySelectorAll('#wm-list .wm-card[data-id]')];
     const without = all.filter((c) => !c.querySelector('.wm-pic img')).map((c) => c.dataset.id);
     return { n: all.length, pics: all.length - without.length, without, url: location.search };
   });
@@ -16950,7 +17052,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

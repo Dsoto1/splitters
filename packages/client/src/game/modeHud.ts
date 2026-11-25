@@ -27,6 +27,7 @@ import {
 } from '@tiletrigger/shared';
 import { BT_COLORS, ModeVisuals } from './flagVisuals.ts';
 import type { Hud } from './hud.ts';
+import { teamSymbolSvg } from './teamSymbols.ts';
 import { hintKey } from './keyBindings.ts';
 import type { RemotePose } from './interpolation.ts';
 import type { MinimapBlip } from './minimap.ts';
@@ -268,7 +269,7 @@ export class ModeHud {
       const ours = t.id === mine;
       const word = state === FLAG_CARRIED ? (carrier === this.slot() ? 'You have it' : `Taken · ${escapeHtml(this.hud.name(carrier))}`) : state === FLAG_DROPPED ? `Dropped · ${secs}s` : 'Home';
       const cls = `ms${state === FLAG_CARRIED ? ' taken' : ''}${carrier === this.slot() && state === FLAG_CARRIED ? ' me' : ''}`;
-      parts.push(`<span class="${cls}" data-flag="${t.id}" data-state="${['home', 'taken', 'dropped'][state]}" style="color:${t.color}"><b>⚑</b><em>${escapeHtml(ours ? 'Your flag' : `${t.name} flag`)}: ${word}</em></span>`);
+      parts.push(`<span class="${cls}" data-flag="${t.id}" data-state="${['home', 'taken', 'dropped'][state]}" style="color:${t.color}"><b>⚑</b><em>${teamSymbolSvg(ti)}${escapeHtml(ours ? 'Your flag' : `${t.name} flag`)}: ${word}</em></span>`);
       // Markers: the enemy flag (go get it), your flag when it's away; your base while you carry theirs.
       const pose = state === FLAG_CARRIED ? poses.find((p) => p.slot === carrier) : undefined;
       const at = pose ? { x: pose.x, y: pose.y, z: pose.z } : { x, y, z };
@@ -284,13 +285,13 @@ export class ModeHud {
       const e = this.map.entities[index];
       const who = holder >= 0 ? this.teams[holder] : undefined;
       const color = who?.color ?? (holder === -2 ? '#ffb03b' : '#f2f2f2');
-      const word = holder === -2 ? 'Contested' : who ? `${escapeHtml(who.name)} holding` : 'Nobody holding';
+      const word = holder === -2 ? 'Contested' : who ? `${teamSymbolSvg(holder)}${escapeHtml(who.name)} holding` : 'Nobody holding';
       parts.push(`<span class="ms" data-hill="${holder}" style="color:${color}"><b>▲</b><em>Hill: ${word}${secs ? ` · moves in ${secs}s` : ''}</em></span>`);
       if (e) mark('hill', { x: e.position[0], y: e.position[1], z: e.position[2] }, color, '▲', 'Hill');
     }
     if (md.el) {
       const [round, next, ...alive] = md.el;
-      const counts = this.teams.map((t, i) => `<span style="color:${t.color}">${alive[i] ?? 0}</span>`).join(' v ');
+      const counts = this.teams.map((t, i) => `<span style="color:${t.color}">${teamSymbolSvg(i)}${alive[i] ?? 0}</span>`).join(' v ');
       parts.push(`<span class="ms" data-round="${round}" style="color:#f2f2f2"><em>Round ${round} · ${next ? `next round in ${next}s` : `${counts} standing`}</em></span>`);
     }
     if (md.hg) {

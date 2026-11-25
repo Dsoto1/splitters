@@ -19,6 +19,7 @@ import { hintKey } from './keyBindings.ts';
 import { EYE_BOX, eyeBoxShade, stepScopeFade } from './scopeFeel.ts';
 import { feedLines } from './feedLimit.ts';
 import { insigniaSvg } from './insigniaSvg.ts';
+import { teamSymbolSvg } from './teamSymbols.ts';
 import { emblemSvg } from './emblemSvg.ts';
 import { RankBook } from './rankBook.ts';
 import { ranksOn } from './ranksSetting.ts';
@@ -356,7 +357,8 @@ export class Hud {
   private feedName(slot: number | null): string {
     const ins = slot === null ? null : this.insignia(slot);
     const p = slot === null ? undefined : this.roster.get(slot);
-    return `${ins ? insigniaSvg(ins) : ''}${escapeHtml(this.name(slot))}${p && !p.bot ? emblemSvg(p.em) : ''}`;
+    // The team's symbol beside its colour (Colour vision: teamSymbols.ts), always.
+    return `${slot === null ? '' : teamSymbolSvg(this.teamIndex(slot))}${ins ? insigniaSvg(ins) : ''}${escapeHtml(this.name(slot))}${p && !p.bot ? emblemSvg(p.em) : ''}`;
   }
 
   setRoster(players: RosterEntry[]): void {
@@ -386,6 +388,12 @@ export class Hud {
 
   teamById(id: string | null): Faction | undefined {
     return id ? this.teams?.find((t) => t.id === id) : undefined;
+  }
+
+  /** A player's team's place in the match's order (its symbol: teamSymbols.ts); -1 without a team. */
+  teamIndex(slot: number): number {
+    const id = this.roster.get(slot)?.team;
+    return id && this.teams ? this.teams.findIndex((t) => t.id === id) : -1;
   }
 
   /** Team of a player slot in Team Deathmatch. */
@@ -509,15 +517,15 @@ export class Hud {
   setTeamScore(scores: readonly ScoreEntry[], localSlot: number, limit: number, coop = false): void {
     let left = '';
     let right = '';
-    const box = (value: number, label: string, color: string) => `<b style="background:${color}">${value}</b><small>${escapeHtml(label)}</small>`;
+    const box = (value: number, label: string, color: string, team = -1) => `<b style="background:${color}">${value}</b><small>${teamSymbolSvg(team, color)}${escapeHtml(label)}</small>`;
     if (this.teams) {
       // Your team on the left; on the right the strongest other team (with 3+ teams, the leader among them).
       const totals = this.teamTotals(scores);
       const mine = this.roster.get(localSlot)?.team;
       const own = this.teams.find((t) => t.id === mine) ?? this.teams[0]!;
       const rival = this.teams.filter((t) => t.id !== own.id).sort((x, y) => (totals.get(y.id) ?? 0) - (totals.get(x.id) ?? 0))[0]!;
-      left = box(totals.get(own.id) ?? 0, own.name, own.color);
-      right = box(totals.get(rival.id) ?? 0, this.teams.length > 2 ? `${rival.name} · lead` : rival.name, rival.color);
+      left = box(totals.get(own.id) ?? 0, own.name, own.color, this.teams.indexOf(own));
+      right = box(totals.get(rival.id) ?? 0, this.teams.length > 2 ? `${rival.name} · lead` : rival.name, rival.color, this.teams.indexOf(rival));
     } else if (!coop) {
       const me = scores.find((s) => s.s === localSlot)?.k ?? 0;
       const best = scores.filter((s) => s.s !== localSlot).reduce((m, s) => Math.max(m, s.k), 0);
@@ -533,9 +541,10 @@ export class Hud {
   }
 
   /** Name and health of whatever you just hit (fades after a few seconds). */
-  showTarget(name: string, frac: number, color: string): void {
+  showTarget(name: string, frac: number, color: string, team = -1): void {
     this.target.hidden = false;
-    $('target-name').textContent = name;
+    // Their team's symbol before the name (Colour vision: teamSymbols.ts).
+    $('target-name').innerHTML = `${teamSymbolSvg(team, color)}${escapeHtml(name)}`;
     const bar = $('target-bar');
     bar.style.width = `${Math.max(0, Math.min(1, frac)) * 100}%`;
     bar.style.background = color;
@@ -760,6 +769,25 @@ export class Hud {
     el.style.boxShadow = color ? `inset 0 0 120px 30px ${color}88` : 'none';
   }
 
+  /**
+   * The frost over your view while a freeze blast holds you in ice (owner, 2026-11-24: "the frozen player's view
+   * frosts gently"): pale frost creeping in from the edges, the middle clear, eased in and out (more slowly with
+   * Reduce flashing on, and paler). Never a flash or a white-out: at most a soft rim, its brightest corner well under
+   * the picture's own. Returns whether it is on.
+   */
+  setFrost(on: boolean, calm: boolean): boolean {
+    let el = document.getElementById('frost-view');
+    if (!el && !on) return false;
+    if (!el) {
+      el = document.createElement('div');
+      el.id = 'frost-view';
+      this.root.append(el);
+    }
+    el.classList.toggle('calm', calm);
+    el.classList.toggle('on', on);
+    return on;
+  }
+
   setPowerups(speedSeconds: number, damageSeconds: number, jetFuel: number | null = null, uavSeconds = 0, jamSeconds = 0, streak = '', power: PowerTicks | null = null): void {
     const parts: string[] = [];
     if (streak) parts.push(`<span style="color:#ffd24a">${escapeHtml(streak)}</span>`);
@@ -912,7 +940,7 @@ export class Hud {
   }
 
   /** The kill cam's banner: who killed you, with what, and the health they have left (null hides it). */
-  setKillCam(k: { name: string; color: string; weapon: string; hp: number | null } | null): void {
+  setKillCam(k: { name: string; color: string; weapon: string; hp: number | null; team?: number } | null): void {
     let el = document.getElementById('killcam');
     if (!el) {
       if (!k) return;
@@ -922,10 +950,10 @@ export class Hud {
     }
     el.hidden = !k;
     if (!k) return;
-    const key = `${k.name}|${k.color}|${k.weapon}|${k.hp}`;
+    const key = `${k.name}|${k.color}|${k.weapon}|${k.hp}|${k.team ?? -1}`;
     if (el.dataset.key === key) return;
     el.dataset.key = key;
-    el.innerHTML = `<small>Killed by</small> <b style="color:${escapeHtml(k.color)}">${escapeHtml(k.name)}</b> <span class="kc-w"></span>${k.hp === null ? '' : ` <span class="kc-hp">${k.hp > 0 ? `${k.hp} HP left` : 'down'}</span>`}<em>Click or Space: skip</em>`;
+    el.innerHTML = `<small>Killed by</small> <b style="color:${escapeHtml(k.color)}">${teamSymbolSvg(k.team ?? -1)}${escapeHtml(k.name)}</b> <span class="kc-w"></span>${k.hp === null ? '' : ` <span class="kc-hp">${k.hp > 0 ? `${k.hp} HP left` : 'down'}</span>`}<em>Click or Space: skip</em>`;
     const icon = weaponIcon(k.weapon);
     const slot = el.querySelector('.kc-w')!;
     slot.textContent = weaponLabel(k.weapon);
@@ -1398,6 +1426,7 @@ export class Hud {
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
         color: this.nameColor(s.s, localSlot),
+        sym: this.teamIndex(s.s),
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),
         k: s.k,
         d: s.d,
@@ -1430,6 +1459,7 @@ export class Hud {
         id: t.id,
         name: t.name,
         color: t.color,
+        sym: i,
         score: totals.get(t.id) ?? 0,
         lead: top > 0 && (totals.get(t.id) ?? 0) === top,
         rows: sq ? sq.flatMap((q) => q.rows) : rows,

@@ -56,6 +56,7 @@ import {
   type ZoneSnapshot,
   type MountSnapshot,
   type CoverSnapshot,
+  type IceSnapshot,
 } from '../protocol.ts';
 import { MAX_PLAYER_SLOTS, PLAYER, TICK_DT, TICK_RATE, type Stance } from './constants.ts';
 import { CORE_WEAPONS } from '../content/weapons.generated.ts';
@@ -200,6 +201,8 @@ export interface WeaponState {
   /** Heat weapons: 0..1, and whether it overheated (locked until it cools right down). */
   heat?: number;
   overheated?: boolean;
+  /** A second trigger with its own cooldown (AltFire.cooldownTicks): the tick it is ready again. */
+  altReadyAt?: number;
   /** Mounted guns: the tick it last fired (they cool when idle, manned or not). */
   firedTick?: number;
   /** The fire mode it is set to (index into its `fireModes`, sim/fireModes.ts; absent: its first). */
@@ -535,6 +538,8 @@ export interface Combatant {
   impact: ImpactState;
   chill: number;
   frozenTicks: number;
+  /** Held in a block of ice by a freeze blast (its IceBlock's id): can't move or act, takes FREEZE_DPS (Match.freezeSolid). */
+  ice?: number;
   statusBy: number | null;
   statusWeapon: string;
   queue: PlayerInput[];
@@ -700,6 +705,25 @@ const BURN_DPS = 12;
 const POISON_DPS = 9;
 const FIRE_ZONE_DPS = 14;
 const FROZEN_TICKS = Math.round(TICK_RATE * 1.4);
+/** Damage a second while held in a freeze blast's ice (owner, 2026-11-24: "about 5 HP/s"). */
+export const FREEZE_DPS = 5;
+/** A freeze blast's block of ice round the body it holds (half sizes, m, at size 1): a little more than the body. */
+export const ICE_HALF = { x: 0.55, y: 1.05, z: 0.55 } as const;
+
+/**
+ * A freeze blast's block of ice (owner, 2026-11-24): it holds `slot` where they stood until `until`, and is solid to
+ * everyone else while it lasts (a force-field collider: it stops movement, never shots, so the one inside still takes
+ * every hit). It melts when the time is up, and shatters when they die.
+ */
+interface IceBlock {
+  id: number;
+  slot: number;
+  /** Ground point under its centre. */
+  pos: Vec3;
+  half: Vec3;
+  until: number;
+  body: RAPIER.Collider;
+}
 
 interface PickupState {
   id: string;
@@ -820,6 +844,8 @@ export class Match {
   private readonly dropHints = new Map<number, number>();
   private nextProjectileId = 1;
   private covers: Cover[] = [];
+  private ices: IceBlock[] = [];
+  private nextIceId = 1;
   /** Ammo boxes: placed crates and deployed ones (sim/resupply.ts). */
   private boxes: AmmoBox[] = [];
   private nextBoxId = 1;
@@ -2263,6 +2289,7 @@ export class Match {
       this.stepZones();
       this.stepBoxes();
       this.stepStatuses();
+      if (this.ices.length) this.stepIce();
       if (prof) lap('projectiles');
       if (this.phase === 'playing') this.scenario.step();
       if (this.phase === 'playing') this.encounters.step();
@@ -2510,6 +2537,7 @@ export class Match {
         held: c.current,
         reloading: c.reloadTicks > 0,
         blockers: blockersFor(c.faction),
+        ...(this.ices.length ? { ice: this.ices } : {}),
         shut: shutFor(c.faction),
         doorButtons: doorButtonsFor(c.faction),
         ...(lifts.length ? { lifts } : {}),
@@ -2823,7 +2851,8 @@ export class Match {
         v.mag = w.mag;
         v.reserve = w.reserve;
         v.alt = w.alt;
-      } else list[i] = { def: w.def, mag: w.mag, reserve: w.reserve, alt: w.alt };
+        v.altReady = this.tick >= (w.altReadyAt ?? 0) && !w.overheated;
+      } else list[i] = { def: w.def, mag: w.mag, reserve: w.reserve, alt: w.alt, altReady: this.tick >= (w.altReadyAt ?? 0) && !w.overheated };
       i++;
     }
     list.length = i;
@@ -3447,7 +3476,9 @@ export class Match {
         const before = c.move;
         // Big matches: bots on foot move coarsely over terrain, and far from every player every other tick (relaxedMove).
         const detail = ridden ? 'full' : this.relaxedMove(c, input);
-        if (detail === 'far' && !c.moveOwed && (this.tick + c.slot) % 2 === 0) c.moveOwed = true;
+        // Held in ice: where the block holds them, still (no fall, no slide; client prediction does the same).
+        if (c.ice !== undefined) c.moveSpeed = 0;
+        else if (detail === 'far' && !c.moveOwed && (this.tick + c.slot) % 2 === 0) c.moveOwed = true;
         else {
           const dt = c.moveOwed ? TICK_DT * 2 : TICK_DT;
           c.moveOwed = false;
@@ -3608,9 +3639,20 @@ export class Match {
         }
       } else if (input.buttons & BUTTON_ALT && ready && held.def.alt) {
         const alt = held.def.alt;
-        if (alt.ammo === 'own' ? held.alt >= alt.cost : held.mag >= alt.cost) {
+        if (alt.ammo === 'heat') {
+          // A heat weapon's second trigger (the Freeze Ray's freeze blast): a share of the heat bar, its own cooldown.
+          if (!held.overheated && this.tick >= (held.altReadyAt ?? 0)) {
+            altHeat(held, alt);
+            held.altReadyAt = this.tick + (alt.cooldownTicks ?? 0);
+            c.fireCooldown = alt.fireIntervalTicks;
+            this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
+          }
+        } else if (this.tick < (held.altReadyAt ?? 0)) {
+          // Its own cooldown is still running.
+        } else if (alt.ammo === 'own' ? held.alt >= alt.cost : held.mag >= alt.cost) {
           if (alt.ammo === 'own') held.alt -= alt.cost;
           else held.mag -= alt.cost;
+          if (alt.cooldownTicks) held.altReadyAt = this.tick + alt.cooldownTicks;
           c.fireCooldown = alt.fireIntervalTicks;
           this.fire(c, altTrigger(held.def, alt), input.viewTick ?? 0);
         } else if (alt.ammo === 'shared' || alt.reload) this.startReload(c);
@@ -4126,6 +4168,7 @@ export class Match {
     if (st.kind === 'burn') c.burnTicks = Math.max(c.burnTicks, ticks);
     else if (st.kind === 'poison') c.poisonTicks = Math.max(c.poisonTicks, ticks);
     else if (st.kind === 'slow') c.slowTicks = Math.max(c.slowTicks, ticks);
+    else if (st.kind === 'freeze') this.freezeSolid(c, ticks);
     else if (c.frozenTicks === 0) {
       c.chill = Math.min(1, c.chill + (st.amount ?? 0.1));
       if (c.chill >= 1) {
@@ -4135,6 +4178,61 @@ export class Match {
     }
     c.statusBy = by?.slot ?? null;
     c.statusWeapon = weapon;
+  }
+
+  /**
+   * A freeze blast struck `c`: held in a block of ice where they stand for `ticks` (a fresh blast on one already held
+   * only keeps them in longer). Out of a vehicle seat nobody is frozen (the seat holds them already).
+   */
+  private freezeSolid(c: Combatant, ticks: number): void {
+    if (c.mount) return;
+    c.frozenTicks = Math.max(c.frozenTicks, ticks);
+    c.chill = 0;
+    const held = c.ice !== undefined ? this.ices.find((b) => b.id === c.ice) : undefined;
+    if (held) {
+      held.until = Math.max(held.until, this.tick + ticks);
+      return;
+    }
+    // On the floor under them (a blast in mid-jump drops them onto it, up to 3 m down), the block round them.
+    const feet = c.move.pos;
+    const down = c.move.grounded ? null : this.physics.moveRay({ x: feet.x, y: feet.y + 0.1, z: feet.z }, { x: 0, y: -1, z: 0 }, 3.1);
+    const pos = { x: feet.x, y: down === null ? feet.y : feet.y + 0.1 - down, z: feet.z };
+    c.move = { ...c.move, pos: { ...pos }, velY: 0, vx: 0, vz: 0, grounded: true };
+    const k = Math.max(0.5, c.size);
+    const half = { x: ICE_HALF.x * k, y: ICE_HALF.y * k, z: ICE_HALF.z * k };
+    const body = this.physics.createBox({ x: pos.x, y: pos.y + half.y, z: pos.z }, half, 0, undefined, true);
+    this.physics.commit();
+    const b: IceBlock = { id: this.nextIceId++, slot: c.slot, pos, half, until: this.tick + ticks, body };
+    this.ices.push(b);
+    c.ice = b.id;
+    this.pendingEvents.push({ e: 'ice', s: c.slot, p: tuple(pos), on: 1 });
+  }
+
+  /** A block of ice goes: melted (time up), or shattered (its prisoner died or left). */
+  private removeIce(b: IceBlock, shatter: boolean): void {
+    this.ices = this.ices.filter((x) => x !== b);
+    this.physics.removeCollider(b.body);
+    this.physics.commit();
+    const c = this.actor(b.slot);
+    if (c && c.ice === b.id) {
+      c.ice = undefined;
+      c.frozenTicks = 0;
+    }
+    this.pendingEvents.push({ e: 'ice', s: b.slot, p: tuple(b.pos), on: 0, ...(shatter ? { x: 1 as const } : {}) });
+  }
+
+  /** Blocks of ice melt when their time is up and shatter when the one inside dies (or leaves the match). */
+  private stepIce(): void {
+    for (const b of [...this.ices]) {
+      const c = this.actor(b.slot);
+      if (!c || !c.alive || c.ice !== b.id) this.removeIce(b, true);
+      else if (this.tick >= b.until) this.removeIce(b, false);
+    }
+  }
+
+  /** The blocks of ice standing (bots step round them): their ground point and half size. */
+  iceBlocks(): readonly { slot: number; pos: Vec3; half: Vec3 }[] {
+    return this.ices;
   }
 
   /**
@@ -6609,6 +6707,7 @@ export class Match {
         c.poisonTicks--;
         this.damage(c, POISON_DPS / TICK_RATE, by, c.statusWeapon);
       }
+      if (c.alive && c.ice !== undefined) this.damage(c, FREEZE_DPS / TICK_RATE, by, c.statusWeapon);
       if (c.alive) this.stepLiquid(c);
       if (c.slowTicks > 0) c.slowTicks--;
       stepImpact(c.impact);
@@ -7117,6 +7216,7 @@ export class Match {
     c.armor = 0;
     c.alive = true;
     c.burnTicks = c.poisonTicks = c.slowTicks = c.frozenTicks = 0;
+    c.ice = undefined;
     c.impact = newImpact();
     c.jetFuel = null;
     c.glider = undefined;
@@ -7626,6 +7726,7 @@ export class Match {
     this.encounters.reset();
     this.scenario.reset();
     for (const cv of [...this.covers]) this.removeCover(cv);
+    for (const b of [...this.ices]) this.removeIce(b, false);
     this.uavUntil.clear();
     this.jamUntil.clear();
     this.leaderBounty.clear();
@@ -8096,6 +8197,7 @@ export class Match {
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
       ...(this.boxes.some((b) => b.body) ? { ab: this.boxSnapshots() } : {}),
       ...(this.mounts.some((m) => m.susp && m.alive) ? { ms: this.suspensionSnapshots() } : {}),
+      ...(this.ices.length ? { ic: this.ices.map((b): IceSnapshot => [b.id, b.slot, r3(b.pos.x), r3(b.pos.y), r3(b.pos.z), r3(b.half.x), r3(b.half.y)]) } : {}),
       ...(this.covers.length ? { cv: this.covers.map((c): CoverSnapshot => [c.id, r3(c.pos.x), r3(c.pos.y), r3(c.pos.z), r3(c.yaw), Math.ceil((Math.max(0, c.health) / c.max) * 100)]) } : {}),
       ...(this.zones.length ? { zn: this.zones.map((z): ZoneSnapshot => [ZONE_KINDS.indexOf(z.kind), r3(z.pos.x), r3(z.pos.y), r3(z.pos.z), r3(z.kind === 'smoke' ? this.smokeNow(z) : z.radius), Math.round((z.endTick - this.tick) / 6) / 10]) } : {}),
       sc: this.scenario.delta(),
@@ -8126,7 +8228,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, overdrive: c.alive && c.power.overdrive > 0, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, overdrive: c.alive && c.power.overdrive > 0, frozen: c.ice !== undefined, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -8156,6 +8258,7 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean, sheltered:
   v.lean = c.alive && !c.mount ? (c.move.lean ?? 0) : 0;
   v.stamina = c.move.stamina ?? 1;
   v.sprinting = !!c.move.sprint;
+  v.frozen = c.ice !== undefined;
 }
 
 /** A combatant's hit shapes, taken again when its look changed (players and bots; an NPC's are set at its spawn). */
@@ -8773,6 +8876,12 @@ function pairTrigger(def: WeaponDefinition, firing: Firing, akimbo: AkimboSpec, 
   t.pair = akimbo;
   if (off) t.off = true;
   return t;
+}
+
+/** A heat trigger's shot (AltFire ammo `heat`): `cost` hundredths of the bar; full overheats it (as spendRound). */
+export function altHeat(w: { heat?: number; overheated?: boolean }, alt: { cost: number }): void {
+  w.heat = Math.min(1, (w.heat ?? 0) + alt.cost / 100);
+  if (w.heat >= 1) w.overheated = true;
 }
 
 /** Use one round (or add heat) for a shot; false when the weapon can't fire. */

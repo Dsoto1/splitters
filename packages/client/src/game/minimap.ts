@@ -1,4 +1,5 @@
 import { buildMapGeometry, type MapDocument, type WorldBox } from '@tiletrigger/shared';
+import { drawTeamSymbol } from './teamSymbols.ts';
 import { buriedTiles, drawBuriedPassages, drawTerrainPlan, fillBox } from '../frontend/mapPlan.ts';
 
 /** Pixels per metre on the minimap's backing image. */
@@ -14,6 +15,8 @@ export interface MinimapBlip {
   label?: string;
   /** Your squadmates (Fireteams): a bigger dot, ringed in the HUD's dark, apart from the rest of the team. */
   ring?: boolean;
+  /** A player on a team: drawn as their team's symbol (teamSymbols.ts) instead of a dot, upright whichever way you face. */
+  sym?: number;
 }
 
 /**
@@ -112,7 +115,7 @@ export class Minimap {
     const src = this.planImage ?? this.plan;
     if (!g || !src) return;
     let key = `${canvas.width}x${canvas.height},${Math.round(x)},${Math.round(z)},${Math.round(yaw * 20)}`;
-    for (const b of blips) key += `|${Math.round(b.x)},${Math.round(b.z)},${b.color},${b.label ?? ''}`;
+    for (const b of blips) key += `|${Math.round(b.x)},${Math.round(b.z)},${b.color},${b.label ?? ''},${b.sym ?? ''}`;
     if (key === this.lastWhole) return;
     this.lastWhole = key;
     const pad = 14;
@@ -148,6 +151,10 @@ export class Minimap {
         g.fillText(b.label.slice(0, 2), bx, by + 0.5);
         continue;
       }
+      if (b.sym !== undefined && b.sym >= 0 && !b.ring) {
+        drawTeamSymbol(g, b.sym, bx, by, 5.5);
+        continue;
+      }
       g.beginPath();
       g.arc(bx, by, b.ring ? 6 : 4.5, 0, Math.PI * 2);
       g.fill();
@@ -181,7 +188,7 @@ export class Minimap {
     if (!g || !this.plan) return;
     // Nothing moved by a pixel (you stood still, so did the dots): the canvas already shows it.
     let key = `${Math.round(x * PX_PER_M)},${Math.round(z * PX_PER_M)},${Math.round(yaw * 200)}`;
-    for (const b of blips) key += `|${Math.round(b.x * 2)},${Math.round(b.z * 2)},${b.color},${b.label ?? ''},${b.ring ? 1 : 0}`;
+    for (const b of blips) key += `|${Math.round(b.x * 2)},${Math.round(b.z * 2)},${b.color},${b.label ?? ''},${b.ring ? 1 : 0},${b.sym ?? ''}`;
     if (key === this.last) return;
     this.last = key;
     const size = this.canvas.width;
@@ -212,6 +219,15 @@ export class Minimap {
       if (b.label !== undefined) continue;
       const [bx, by] = toPlan(b.x, b.z);
       g.fillStyle = b.color;
+      if (b.sym !== undefined && b.sym >= 0 && !b.ring) {
+        // Upright on screen: turned back by the view's turn.
+        g.save();
+        g.translate(bx, by);
+        g.rotate(yaw);
+        drawTeamSymbol(g, b.sym, 0, 0, 5.5 / scale);
+        g.restore();
+        continue;
+      }
       g.beginPath();
       g.arc(bx, by, (b.ring ? 5.5 : 4.5) / scale, 0, Math.PI * 2);
       g.fill();

@@ -120,7 +120,7 @@ import {
   categoryCounts,
   inMapCategory,
   isListedMap,
-  type CategoryFilter,
+  type MapCategoryTab,
 } from '@tiletrigger/shared';
 import { drawCategoryTabs } from './mapCategoriesUi.ts';
 import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
@@ -131,7 +131,7 @@ import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { isMenuKey, keyFor, keysFor } from '../game/keyBindings.ts';
 import { controlsPage } from './controlsPage.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
-import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/vehicleCamera.ts';
+import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/steerMode.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
 import { cachedProfile, checkUsername, loadProfile, myRegion, saveProfile, setRegion } from '../profile.ts';
 import { installTooltips } from './tooltip.ts';
@@ -840,7 +840,7 @@ export class FrontEnd {
 
   /** What a controller can reach in one of Match Setup's zones (shown, enabled, not in a closed part). */
   private padZone(zone: 'cards' | 'bars' | 'panel'): HTMLElement[] {
-    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '.map-bar :is(button, input, select), #map-cats .map-cat, #map-subtags .map-subtag' : '#match-setup :is(button, input, select, summary)';
+    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '.map-bar :is(button, input, select), #map-cats .map-cat' : '#match-setup :is(button, input, select, summary)';
     return [...this.body.querySelectorAll<HTMLElement>(sel)].filter((e) => {
       if ((e as HTMLButtonElement).disabled || e.closest('[hidden]') || !e.getClientRects().length) return false;
       // (A phone's sheet, down: its settings are there but hidden; the strip along the bottom stays in reach.)
@@ -854,7 +854,7 @@ export class FrontEnd {
   private padMove(dir: Dir): void {
     const f = document.activeElement as HTMLElement | null;
     const zoneOf = (e: HTMLElement | null): 'cards' | 'bars' | 'panel' | null =>
-      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('.map-bar, #map-cats, #map-subtags') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
+      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('.map-bar, #map-cats') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
     const zone = zoneOf(f);
     if (!zone || !f) return this.padFocus(this.padHome());
     const from = zone === 'cards' ? f.closest<HTMLElement>('.map-card')! : f;
@@ -1221,8 +1221,8 @@ export class FrontEnd {
   /** The map list's mode tab and search (this visit) and its sort, view and favourites (kept). */
   /** The map list's tab: all maps, your own, the featured, the ones played last, your favourites, or the Community Picks (docs/COMMUNITY_MAPS.md). */
   private mapTab: MapTab = 'all';
-  /** The category tab and sub-tag picked (null: All dimensions; shared map/categories.ts), kept while the page is. */
-  private mapCat: CategoryFilter | null = null;
+  /** The category tab picked (null: All maps; shared map/categories.ts), kept while the page is. */
+  private mapCat: MapCategoryTab | null = null;
   private mapQuery = '';
   private readonly browse = loadBrowsePrefs();
   /** Even teams: a bot added or taken away changes every team alike (shown on while the teams are the same size). */
@@ -1516,12 +1516,10 @@ export class FrontEnd {
     };
     const tools = el('div', { class: 'map-tools' }, filterBtn, search, sort, el('div', { class: 'view-pick' }, viewBtn('grid', '▦', 'Grid'), viewBtn('list', '☰', 'List')));
 
-    // The category tabs (the owner's six, shared map/categories.ts) and the picked one's sub-tags, over the cards.
+    // The category tabs (one tab per map: shared map/categories.ts), over the cards.
     const catBar = el('div', { class: 'map-cats', id: 'map-cats', role: 'tablist' });
     catBar.setAttribute('aria-label', 'Map categories');
-    const tagRow = el('div', { class: 'map-subtags', id: 'map-subtags', role: 'group' });
-    tagRow.setAttribute('aria-label', 'Sub-tags');
-    const catOf = (m: ArcadeMap) => ({ categories: m.metadata.categories, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
+    const catOf = (m: ArcadeMap) => ({ category: m.metadata.category, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
     const drawCards = () => {
       const current = this.currentMap();
       const lazy = lazyPlans(cards);
@@ -1533,11 +1531,12 @@ export class FrontEnd {
       const cat = this.mapCat;
       const inTab = (m: (typeof this.maps)[number]) =>
         tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
-      // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under All maps.
+      // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under
+      // All maps, which leaves them to their own tab (so with picks on the hub, Custom counts them beyond All maps' total).
       const found = (m: ArcadeMap) => !q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q));
       const base = built.filter(({ m }) => (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
       const plain = base.filter(({ m }) => inTab(m));
-      drawCategoryTabs(catBar, tagRow, {
+      drawCategoryTabs(catBar, {
         filter: cat,
         counts: categoryCounts(base.map(({ m }) => catOf(m))),
         total: plain.length,
@@ -1600,7 +1599,7 @@ export class FrontEnd {
       }
       const none = q
         ? `No maps match "${this.mapQuery.trim()}".`
-        : cat?.category === 'custom'
+        : cat === 'custom'
           ? 'No maps here yet: your own MapMaker maps and the community maps on the server show here.'
           : cat
             ? 'No maps here under this category.'
@@ -1628,7 +1627,7 @@ export class FrontEnd {
       'div',
       { class: `screen play${this.sheetOpen ? ' sheet-open' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-bar' }, tabs, tools), catBar, tagRow, cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-bar' }, tabs, tools), catBar, cards), panel),
     );
   }
 
@@ -3447,6 +3446,14 @@ export class FrontEnd {
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
+    // Colour vision (game/colourVision.ts, its key written out here to keep that file out of the menu): read as a match
+    // starts; signed in, the account's (the profile's `prefs`) and saved there too, like Sound captions (game/prefSync.ts).
+    const cvNow = (currentAccount() && cachedProfile()?.prefs.colourVision) || storage('tiletrigger.colourVision');
+    const colourVisionSel = el('select', { id: 'opt-colour-vision' }, ...['default', 'redgreen', 'tritan'].map((v, i) => el('option', { value: v, textContent: ['Default', 'Red-green (deuteranopia, protanopia)', 'Tritanopia (blue-yellow)'][i], selected: v === cvNow })));
+    colourVisionSel.addEventListener('change', () => {
+      storage('tiletrigger.colourVision', colourVisionSel.value);
+      if (currentAccount()) void saveProfile({ prefs: { ...cachedProfile()?.prefs, colourVision: colourVisionSel.value } }).catch(() => undefined);
+    });
     // Sound captions (game/captionPrefs.ts, its key and event written out here to keep that file out of the menu's
     // first load): off by default; signed in, the account's (the profile's `prefs`) and saved there too; a match
     // brings this browser in step with the account as it starts (game/prefSync.ts).
@@ -3688,6 +3695,7 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
+        row('Colour vision', colourVisionSel, 'Team colours that stay apart for colour-blind players, from the next match. Teams always wear a symbol too (▲ ●).'),
         row('Sound captions', captions, 'Gunfire, grenades, footsteps… shown on screen, for play with the sound off.'),
         row('Aim', aimMode, `Hold: aim down the sights or through a scope while the aim button is held (${keysFor('aim')}, or LT). Toggle: press it once to aim and again to stop; sprinting, changing weapons, getting in a vehicle or dying lets go, and a reload keeps it (the sights come back up). With a scope or optic in hand Shift holds your breath instead of letting go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.`),
         row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you, and the view\'s gentle roll as you lean or ride a zipline. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),

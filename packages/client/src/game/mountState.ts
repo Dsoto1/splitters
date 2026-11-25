@@ -1,5 +1,6 @@
 import { BUILT_MOUNT_BASE, airCraftDef, enterReach, MAX_TEAMS, MOUNT_DEFS, MOUNT_FLAG_ALIVE, MOUNT_FLAG_ARC, MOUNT_FLAG_BURNING, MOUNT_FLAG_CHARGING, MOUNT_FLAG_WRECK, SEAT_LEG_DROP, TICK_RATE, resupplyReach, airRoute, getMountDef, mapTeams, mountTint, routePose, type MapDocument, type MountDef, type MountSnapshot, type PhysicsWorld, type Vec3 } from '@tiletrigger/shared';
 import type { RiderSeat } from './riderPlacement.ts';
+import { visionTeams } from './teamColours.ts';
 
 /** One mount as the client knows it: the latest server state and a smoothed pose to draw. */
 export interface ClientMount {
@@ -75,7 +76,7 @@ export class MountState {
     map: MapDocument,
     private readonly physics: PhysicsWorld,
   ) {
-    const teams = map.entities.some((e) => e.kind === 'mount' && e.faction) ? mapTeams(map, MAX_TEAMS) : [];
+    const teams = map.entities.some((e) => e.kind === 'mount' && e.faction) ? visionTeams(mapTeams(map, MAX_TEAMS)) : [];
     map.entities.forEach((e, index) => {
       // Transport planes are mounts too (they fly their route); their box never blocks anything.
       const plane = e.kind === 'airplane';

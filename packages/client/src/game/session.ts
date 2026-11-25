@@ -170,6 +170,7 @@ import { GameplayFxWatch } from './gameplayFxWatch.ts';
 import type { AudioSystem } from '../audio/audio.ts';
 import { BLOOD_PREF_KEY } from './bloodVisuals.ts';
 import { REDUCE_FLASHING_EVENT, reduceFlashing, saveReduceFlashing } from './reduceFlashing.ts';
+import { visionTeams } from './teamColours.ts';
 import { SoundCaptions } from './soundCaptions.ts';
 import { syncPrefs } from './prefSync.ts';
 import { RANKS_EVENT, ranksOn, saveRanksOn } from './ranksSetting.ts';
@@ -202,6 +203,7 @@ import { PauseMenu } from './pauseMenu.ts';
 import type { ScreenMarker } from './hud.ts';
 import type { BoardData } from './scoreBoard.ts';
 import { CoverState } from './coverState.ts';
+import { IceBlocks } from './iceBlocks.ts';
 import { AmmoBoxState } from './ammoBoxState.ts';
 import { FortsClient } from './fortsClient.ts';
 import { HOSTAGE_SLOT_BASE, ModeHud } from './modeHud.ts';
@@ -486,7 +488,7 @@ export class GameSession {
     // Under spawn protection (its shield takes the round, no damage): a ring, by shape and sound (GUNPLAY_SPEC §21).
     const shield = hits.every((h) => h === null || h === undefined || this.shieldedSlots.has(h));
     this.hud.hit(shield ? 'shield' : head ? 'head' : armor ? 'armor' : 'body');
-    this.hud.showTarget(this.targetLabel(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'));
+    this.hud.showTarget(this.targetLabel(target), this.hp.get(target) ?? 1, target >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(target)?.color ?? '#ff8a3d'), target >= NPC_ID_BASE ? -1 : this.hud.teamIndex(target));
   }
   /** Players under spawn protection in the last snapshot (FX_PROTECTED): your hits on them show the shield marker. */
   private shieldedSlots = new Set<number>();
@@ -560,6 +562,8 @@ export class GameSession {
   private readonly riderPlacement = new RiderPlacement();
   private covers?: CoverState;
   private ammoBoxes?: AmmoBoxState;
+  /** Freeze blasts' blocks of ice (snapshot `ic`): drawn, and solid in the prediction physics. */
+  private ice?: IceBlocks;
   /** Seconds of UAV sweep left for your side: enemies show on the minimap. */
   private uav = 0;
   /** H: a camera over your shoulder, to see your own character. */
@@ -2375,7 +2379,8 @@ export class GameSession {
           this.hostPanel = this.makeHostPanel(true);
           if (this.lastRoster) this.hostPanel.setPeople(this.peopleIn(this.lastRoster), this.teamPeople(this.lastRoster));
         }
-        const teams = isTeamMode(msg.rules.mode) ? matchTeams(loaded.map, msg.rules) : null;
+        // Options → Accessibility → Colour vision: the teams' colours as this player sees them (colourVision.ts).
+        const teams = isTeamMode(msg.rules.mode) ? visionTeams(matchTeams(loaded.map, msg.rules)) : null;
         this.teamIds = teams?.map((t) => t.id) ?? null;
         this.hud.setTeams(teams);
         this.canSwitchTeam = msg.ts === 1 && (teams?.length ?? 0) > 1;
@@ -2479,6 +2484,7 @@ export class GameSession {
         this.mounts = new MountState(loaded.map, physics);
         this.covers = new CoverState(this.view.scene, physics, (at) => this.view.debris(at, '#b39b6b', 0.7), this.view.models);
         this.ammoBoxes = new AmmoBoxState(this.view.scene, physics, this.view.models);
+        this.ice = new IceBlocks(this.view.scene, physics, (at, size) => this.view.debris(at, '#d6f1ff', size, 12, 0.8));
         if (teams && msg.rules.mode === 'core.forts') this.forts = new FortsClient(this.view, physics, loaded.map, teams, () => this.hud.team(this.slot)?.id ?? null, this.opts.audio);
         this.scenario.apply(msg.sc);
         this.hud.show();
@@ -2557,6 +2563,10 @@ export class GameSession {
         for (const at of this.mounts?.takeCharges() ?? []) this.sfx.sentryCharge(at);
         this.mounts?.applySuspension(msg.ms);
         this.covers?.apply(msg.cv);
+        // Blocks of ice: one whose prisoner died breaks into shards (the event in this message says so); the rest melt.
+        for (const ev of msg.ev ?? []) if (ev.e === 'ice' && !ev.on && ev.x) this.ice?.shatter(ev.s);
+        this.ice?.apply(msg.ic);
+        if (this.local) this.local.iced = !!this.ice?.heldSlots().has(this.slot);
         this.ammoBoxes?.apply(msg.ab);
         this.seat = msg.me?.mo ?? null;
         this.uav = msg.me?.uv ?? 0;
@@ -3365,7 +3375,7 @@ export class GameSession {
         const pose = this.specCam.killCamPose(now, k ? { x: k.x, y: k.y + 1.3, z: k.z } : null, cast)!;
         this.view.setCamera(pose.pos, pose.yaw, pose.pitch, fov);
         const hp = this.hp.get(kc.killer);
-        this.hud.setKillCam({ name: this.hud.name(kc.killer), color: kc.killer >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(kc.killer)?.color ?? slotColor(kc.killer)), weapon: kc.weapon, hp: k?.alive === false ? 0 : hp === undefined ? null : Math.round(hp * PLAYER.maxHealth) });
+        this.hud.setKillCam({ name: this.hud.name(kc.killer), color: kc.killer >= NPC_ID_BASE ? '#e74c3c' : (this.hud.team(kc.killer)?.color ?? slotColor(kc.killer)), weapon: kc.weapon, hp: k?.alive === false ? 0 : hp === undefined ? null : Math.round(hp * PLAYER.maxHealth), team: kc.killer >= NPC_ID_BASE ? -1 : this.hud.teamIndex(kc.killer) });
         this.hud.setSpectating(null);
         return pose;
       }
@@ -4206,6 +4216,7 @@ export class GameSession {
       if (!local) this.view.updateMounts(this.mounts.mounts.values(), this.mannedTurret());
     }
     this.hud.setStatusTint(statusColor(this.local?.alive ? this.localStatus : 0));
+    this.hud.setFrost(!!this.local?.alive && !!this.local.iced, reduceFlashing());
     this.hud.tickHurt();
     this.hud.tickHeavy();
     const poses = this.interp.sample(now);
@@ -4290,7 +4301,8 @@ export class GameSession {
       const coop = this.allied;
       const shown = poses.filter((p) => p.slot !== this.slot && p.slot < NPC_ID_BASE && p.alive && (coop || (mine && this.hud.team(p.slot)?.id === mine.id)));
       const visible = shown.map((p) => p.slot);
-      const blips: MinimapBlip[] = shown.map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color }));
+      // Teammates wear their team's symbol (Colour vision: teamSymbols.ts).
+      const blips: MinimapBlip[] = shown.map((p) => ({ x: p.x, z: p.z, color: coop ? '#2ecc71' : mine!.color, ...(coop ? {} : { sym: this.hud.teamIndex(p.slot) }) }));
       // Fireteams: your squadmates in the squad's colour (ringed), and its order's place (Part 2).
       if (this.squadHud.current) {
         const mates = new Map(poses.map((p) => [p.slot, p] as const));
@@ -4306,7 +4318,7 @@ export class GameSession {
         for (const p of poses) {
           if (p.slot === this.slot || !p.alive || blips.length > 64) continue;
           const ally = p.slot < NPC_ID_BASE && (coop || (mine && this.hud.team(p.slot)?.id === mine.id));
-          if (!ally) blips.push({ x: p.x, z: p.z, color: '#ff3b3b' });
+          if (!ally) blips.push({ x: p.x, z: p.z, color: '#ff3b3b', ...(p.slot < NPC_ID_BASE && this.hud.teamIndex(p.slot) >= 0 ? { sym: this.hud.teamIndex(p.slot) } : {}) });
         }
       }
       // Jammed by an enemy Counter-UAV: no blips at all.

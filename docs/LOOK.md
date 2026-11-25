@@ -215,3 +215,48 @@ match (GUNPLAY_SPEC §42).
 
 None of them adds light or flicker, so the flicker check is unchanged.
 
+
+## Colour vision (team colours that stay apart, and team symbols)
+
+Teams used to be told apart by colour alone (owner, 2026-11-19). Two things fix that:
+
+**Options → Accessibility → Colour vision** (`game/colourVision.ts`, the setting; `game/teamColours.ts`, the colours):
+Default, **Red-green** (deuteranopia, protanopia) or **Tritanopia** (blue-yellow). Default keeps each team's own colour
+(the map's factions, the host's Team colours, else the palette's: Embers orange, Tide blue). The safe settings give the
+teams, in team order, colours chosen for that colour vision, in place of the map's or host's (Grand Marquee's red and
+yellow, an outpost's red and green). The match reads it as it starts (`visionTeams` where session.ts makes the
+match's teams, and the vehicles' team paint in mountState.ts), so the HUD, minimap, kill feed, scoreboard, flags,
+hills, forts and vehicles all take the same colours. Saved in this browser (`tiletrigger.colourVision`; Options writes
+the key itself, so the menu's first load carries none of this code); signed in, also on the account (the profile's
+`prefs`, as Sound captions: Options saves it there, and `game/prefSync.ts` brings this browser in step as a match
+starts). Changes apply from the next match.
+
+| Setting | Team 1 | Team 2 | Teams 3-8 |
+|---|---|---|---|
+| Red-green | orange `#f0901e` | blue `#2f7fe8` | pale cyan, brown, grey, slate, peach, sky |
+| Tritanopia | raspberry `#e8306a` | teal `#20b0c8` | yellow, slate, pale cyan, grey, orchid, purple |
+
+The gaps are checked by simulation (`game/colourSim.ts`: Viénot 1999 for protanopia and deuteranopia, Brettel 1997
+for tritanopia, the DaltonLens sRGB matrices; CIEDE2000), in `packages/client/test/colourVision.test.ts`:
+
+| Pair | Normal | Protanopia | Deuteranopia | Tritanopia |
+|---|---|---|---|---|
+| Red-green: orange / blue | 54.9 | 66.0 | 72.4 | 56.9 |
+| Tritanopia: raspberry / teal | 70.7 | 27.9 | 38.1 | 67.4 |
+| Default palette: Embers / Tide | 47.5 | 54.8 | 62.7 | 59.9 |
+| For comparison, a red / green pair (`#d04a3a` / `#5cc77a`) | 66.3 | 30.5 | 16.0 | 56.0 |
+
+About 2 is just noticeable; past 20 two colours read apart at a glance. With four teams the closest pair is still past
+20 under the setting's own simulation; with eight, past 12, and the symbols carry the rest.
+
+**Team symbols, always on, whatever the setting** (`game/teamSymbols.ts`): ▲ ● ■ ✚ ⬢ ✖ ○ ▼ in team order (no ★ or
+◆, which the scoreboard's leaders wear). Drawn as a small inline SVG in the text's colour beside the team colour: on
+kill feed names, the scoreboard's team headers and rows (the row's dot becomes the team's symbol), the score bar's
+team boxes, the name of whoever you hit, the kill cam's "Killed by", and the objective lines (a flag's team, the hill's
+holder, Elimination's counts); on the minimap and the whole-map view teammates (and a UAV's enemies) are their team's
+symbol, kept upright as the map turns. Over heads the markers already differ by shape (an ally's diamond, an enemy's
+downward triangle). Free-for-all names have none.
+
+Neither part adds light or movement, so the flicker check is unchanged. The e2e flow `colourvision` sets the option,
+plays Grand Marquee's Team Deathmatch in each setting and checks the colours and symbols; `E2E_DSF=2` makes its
+pictures (`colourvision-<setting>.png`) sharp.

@@ -300,11 +300,6 @@ html.calm .setup .go.primary { box-shadow: 0 0 8px rgba(0, 209, 255, 0.18); }
 .map-cat.all .cat-icon { color: var(--warning); }
 .map-cat.all.on { border-color: var(--warning); background: rgba(241, 196, 15, 0.12); box-shadow: inset 0 0 0 1px var(--warning); }
 .map-cat.all.on .cat-n { color: var(--text); }
-.map-subtags { flex: none; display: flex; flex-wrap: wrap; gap: 6px; }
-.map-subtags[hidden] { display: none; }
-.map-subtag { display: inline-flex; align-items: baseline; gap: 6px; padding: 5px 10px; font: 700 11px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; background: var(--surface-1); border-radius: 14px; }
-.map-subtag .cat-n { color: var(--muted); font-size: 10px; }
-.map-subtag.on { border-color: var(--cyan); color: var(--cyan); background: rgba(0, 209, 255, 0.12); }
 .card-note.community { background: var(--orange); }
 .map-group { grid-column: 1 / -1; margin: 10px 0 0; font: 700 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-bottom: 6px; }
 .map-credit { margin: 0; color: var(--muted); font: 500 13px var(--font-body); }
@@ -1140,6 +1135,10 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #feed .hs { color: #ff4b4b; margin-left: 4px; }
 /* A soldier's rank badge before their name (game/insigniaSvg.ts), in the name's colour. */
 #feed svg.ins { width: 1.15em; height: 1.15em; margin-right: 4px; vertical-align: -0.22em; }
+/* Team symbols beside team colours (Colour vision; game/teamSymbols.ts): small, in the name's colour. */
+svg.tsym { display: inline-block; width: 0.72em; height: 0.72em; margin-right: 0.32em; vertical-align: -0.04em; flex: none; overflow: visible; }
+.sb-mark svg.tsym { width: 0.95em; height: 0.95em; margin: 0; vertical-align: -0.1em; }
+.sb-gname svg.tsym { width: 0.8em; height: 0.8em; }
 /* A rank-up (Ranks & badges; game/rankGlow.ts has the same curve): the badge swells and glows in the name's colour, then settles over a second. Calm (Reduce flashing): smaller, dimmer, eased in and out; never a flash. */
 #feed svg.ins.rank-up { animation: rank-up 1s ease-out; transform-origin: 50% 60%; }
 #feed svg.ins.rank-up.calm { animation: rank-up-calm 1s ease-in-out; }
@@ -1379,6 +1378,11 @@ img.wicon { height: 18px; width: auto; vertical-align: middle; margin: 0 4px; fi
 img.wicon.large { height: 26px; margin: 0 6px 0 0; }
 .loadout span { display: flex; align-items: center; }
 #status-tint { position: absolute; inset: 0; pointer-events: none; transition: box-shadow 0.25s; }
+/* The frost over a frozen player's view (hud.ts setFrost): from the edges, the middle clear, eased in and out; paler and slower with Reduce flashing. */
+#frost-view { position: absolute; inset: 0; pointer-events: none; opacity: 0; transition: opacity 0.7s ease-in-out; background: radial-gradient(ellipse at center, transparent 48%, rgba(214, 238, 252, 0.22) 72%, rgba(226, 244, 255, 0.5) 100%); }
+#frost-view.on { opacity: 1; }
+#frost-view.calm { transition-duration: 1.4s; }
+#frost-view.calm.on { opacity: 0.7; }
 #weapon-bar span i { display: block; font-style: normal; font-size: 8px; line-height: 6px; color: var(--cyan); letter-spacing: 1px; }
 
 /* Vehicle damage: your vehicle's panel, and bars over damaged vehicles nearby. */

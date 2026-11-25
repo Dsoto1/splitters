@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { CORE_WEAPONS, getWeapon, gunplayOf } from '@tiletrigger/shared';
+import { CORE_WEAPONS, THROWABLE_DEFS, getWeapon, gunplayOf } from '@tiletrigger/shared';
 import { STAT_FIELDS, statProblems } from '../../../tools/content/weapon-edits-format.mjs';
 import { hideBlockers as repoBlockers } from '../../../tools/content/weapons.mjs';
-import { applicableStats, changeSet, currentSound, currentStat, editedDef, hideBlockers, infoOf, loadEdits, saveEdits, setsOf, soundGroups, soundLabel, STORAGE_KEY, tidy } from '../src/tools/weaponManagerData.ts';
+import { applicableStats, changeSet, currentSound, currentStat, editedDef, hideBlockers, infoOf, loadEdits, saveEdits, setsOf, slotSoundLabel, soundGroups, soundLabel, soundSlots, STORAGE_KEY, throwableList, tidy, tidyThrowable } from '../src/tools/weaponManagerData.ts';
 import { damageAt, recoilPath } from '../src/tools/weaponTuningData.ts';
 
 /** The Weapon Manager's state (tools/weaponManagerData.ts; docs/FEATURES.md, "Weapon Manager"). */
@@ -64,6 +64,27 @@ describe('weapon manager data', () => {
     expect(set.weapons['core.smg']).toMatchObject({ name: 'Buzzsaw', hidden: true, stats: { damage: 19 }, note: 'louder', was: { name: 'Submachine Gun', hidden: false, stats: { damage: 15 } } });
     expect(changeSet({ 'core.pistol': { hidden: true } }).problems.join()).toMatch(/can't be hidden/);
     expect(changeSet({ 'core.smg': { stats: { damage: 5000 } } }).problems.join()).toMatch(/outside/);
+  });
+
+  it('explosion and impact slots: explosion only on what blows up, both none until picked (owner, 2026-11-24)', () => {
+    const launcher = CORE_WEAPONS['core.launcher']!;
+    const rifle = CORE_WEAPONS['core.smg']!;
+    expect(soundSlots(launcher)).toEqual(expect.arrayContaining(['fire', 'reload', 'explosion', 'impact']));
+    expect(soundSlots(rifle)).not.toContain('explosion');
+    expect(soundSlots(rifle)).toContain('impact');
+    expect(currentSound(launcher, 'explosion')).toBe('none');
+    expect(slotSoundLabel('explosion', 'none')).toMatch(/shared explosion/);
+    const edited = editedDef(launcher, { sounds: { explosion: 'explosion.vehicle', impact: 'impact.metal' } });
+    expect(edited.view).toMatchObject({ explosionSound: 'explosion.vehicle', impactSound: 'impact.metal' });
+    // Back to none is no edit.
+    expect(tidy(launcher, { sounds: { explosion: 'none' } })).toBeUndefined();
+    const { set, problems } = changeSet({ 'core.launcher': { sounds: { explosion: 'explosion.vehicle' } } }, 'now', { frag: { sounds: { explosion: 'explosion.vehicle' } } });
+    expect(problems).toEqual([]);
+    expect(set.weapons['core.launcher']!.was).toEqual({ sounds: { explosion: 'none' } });
+    expect(set.throwables).toEqual({ frag: { sounds: { explosion: 'explosion.vehicle' }, was: { sounds: { explosion: 'none' } } } });
+    // A throwable that doesn't blow up keeps no sound edit.
+    expect(tidyThrowable(THROWABLE_DEFS.smoke, { sounds: { explosion: 'explosion.vehicle' } })).toBeUndefined();
+    expect(throwableList().map((t) => t.kind)).toContain('frag');
   });
 
   it('the sound picker offers the whole library, guns first, by readable names', () => {
