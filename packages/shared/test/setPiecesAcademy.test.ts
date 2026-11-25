@@ -1533,8 +1533,9 @@ describe("the Dorm Bay End's Room option (the lead's notes of 2026-11-23: Welles
     const def = builtInSetPieces().pieces.get('setpiece.dorm_bay_end')!;
     const made = (room: string) => setPieceParts({ id: 'p', piece: 'setpiece.dorm_bay_end', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate', overrides: { options: { room, roomDoors: 'slim', end: 'door' } } }, def, 'core.castle', builtInSetPieces());
     const models = (room: string) => made(room).entities.flatMap((e) => (e.kind === 'prop' ? [e.model] : [])).sort();
-    expect(models('washroom').filter((m) => /toilet|shower|sink|mirror/.test(m))).toEqual(['prop.hh_cupboard_sink', 'prop.hh_cupboard_sink', 'prop.hh_mirror', 'prop.hh_mirror', 'prop.hh_toilet', 'prop.hh_toilet', 'prop.hm_shower', 'prop.hm_shower']);
-    expect(models('dorm')).not.toContain('prop.hh_mirror'); // a dorm room's sink: no mirror prop (the budget; QUEUE, mirror folded into the sink)
+    expect(models('washroom').filter((m) => /toilet|shower|sink|mirror/.test(m))).toEqual(['kit.cabinet.mirror_wall', 'kit.cabinet.mirror_wall', 'prop.hh_cupboard_sink', 'prop.hh_cupboard_sink', 'prop.hh_toilet', 'prop.hh_toilet', 'prop.hm_shower', 'prop.hm_shower']);
+    // The washroom's mirrors plain glass (owner, 2026-11-24): our Wall Mirror, not the household pack's dark one.
+    expect(models('dorm').filter((m) => /mirror/.test(m))).toEqual(['kit.cabinet.sink_mirror']); // a dorm room's sink: no mirror prop (the budget; QUEUE, mirror folded into the sink)
     // Closed: no door out, no room: the walled tile and its fill alone.
     expect(made('closed').entities.map((e) => e.kind)).toEqual(['block']);
     expect(Object.values(made('closed').tiles[0]!.edges ?? {})).toEqual(['wall', 'wall', 'wall', 'wall']);

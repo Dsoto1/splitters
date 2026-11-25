@@ -558,12 +558,60 @@ export function closetPairMesh(seed, size, g, look, level) {
 }
 
 /**
+ * A mirror's glass facing +z at `zf`, over [x0, x1] × [y0, y1]: pale silver (`glass`), lighter towards the top (a hint
+ * of the room in it). At full detail (`level` 0) two soft highlights slant across it, lower left to upper right: the
+ * glass is cut into strips along them (no layer over another), each highlight's middle line brighter and its edges the
+ * glass's own shade, so they fade out on both sides. A plain vertex colour: it reflects nothing, nothing glows (the
+ * family's detail is `glazed`: smooth, no grain).
+ */
+function mirrorGlass(m, x0, x1, y0, y1, zf, glass, level) {
+  const gh = y1 - y0;
+  const shade = (y) => scale3(glass, 0.9 + 0.16 * ((y - y0) / gh));
+  // Lines across the glass, bottom to top: [height at the left edge, at the right edge (shares of its height), gain].
+  // Their slant is kept to the glass's shape, so a tall mirror's highlights are as steep as a square one's.
+  const k = Math.min(1, (x1 - x0) / gh);
+  const lines = level === 0
+    ? [[0, 0, 1], [0.08, 0.08 + 0.35 * k, 1], [0.13, 0.13 + 0.35 * k, 1.16], [0.18, 0.18 + 0.35 * k, 1], [0.3, 0.3 + 0.35 * k, 1], [0.32, 0.32 + 0.35 * k, 1.1], [0.34, 0.34 + 0.35 * k, 1], [1, 1, 1]]
+    : [[0, 0, 1], [1, 1, 1]];
+  const xm = (x0 + x1) / 2;
+  for (let i = 0; i + 1 < lines.length; i++) {
+    const [al, ar, ag] = lines[i];
+    const [bl, br, bg] = lines[i + 1];
+    const yal = y0 + al * gh;
+    const yar = y0 + ar * gh;
+    const ybl = y0 + bl * gh;
+    const ybr = y0 + br * gh;
+    // Each corner's colour: the glass's shade there, times its line's gain.
+    const at = (p) => scale3(shade(p[1]), Math.abs(p[1] - (p[0] < xm ? yal : yar)) < 1e-6 ? ag : bg);
+    quadN(m, [x0, yal, zf], [x1, yar, zf], [x1, ybr, zf], [x0, ybl, zf], [0, 0, 1], at);
+  }
+}
+
+/**
+ * A plain wall mirror (St. Jasper's washrooms, owner 2026-11-24: plain glass, not the household pack's dark one): a
+ * thin frame round the glass, its back on −z, filling `size`. Settings `g`: `frame` (the frame's width, m). `look`:
+ * `frame`, `glass`. Collides as nothing (it hangs on the wall).
+ */
+export function wallMirrorMesh(seed, size, g, look, level) {
+  const [w, h, d] = size;
+  const X = w / 2;
+  const Z = d / 2;
+  const f = g.frame ?? 0.03;
+  const frame = hex(look.frame ?? '#b8bcc2');
+  const glass = hex(look.glass ?? '#c4ced3');
+  const m = new Mesh();
+  box(m, [-X, 0, -Z], [X, h, Z - 0.004], (p, n) => scale3(frame, n[2] > 0.5 ? 1 : 0.85), ['nz']);
+  mirrorGlass(m, -X + f, X - f, f, h - f, Z, glass, level);
+  return m;
+}
+
+/**
  * A dorm room's sink with its mirror cabinet (St. John's, owner 2026-11-21: "every dorm room had a small mirror cabinet
  * above their sinks"; folded into the sink so a room gains no prop): a vanity unit, its back on −z, `vanity` m high
  * under a counter with a white basin let into it and a tap, two doors with pulls; on the wall over it, `mirror`
  * ([width, from, to, depth] m) a small cabinet with a mirror door in a thin frame. Settings `g`: `vanity`, `mirror`,
  * `basin` ([width, depth] m). `look`: `wood` (the carcass), `top` (the counter), `basin`, `metal` (tap and pulls),
- * `frame` (the cabinet), `glass` (the mirror: a pale grey-blue, plain vertex colour; it reflects nothing, nothing glows),
+ * `frame` (the cabinet), `glass` (the mirror: a pale silver, plain vertex colour with two soft highlights at full detail; it reflects nothing, nothing glows; the family's detail is `glazed`, smooth: no grain on it or the body),
  * `jitter`, `grime`. Collides as the vanity's box (the cabinet, over the counter and out of reach, as nothing).
  */
 export function sinkMirrorMesh(seed, size, g, look, level) {
@@ -595,8 +643,7 @@ export function sinkMirrorMesh(seed, size, g, look, level) {
     return m;
   }
   const zf = -Z + md + 0.004;
-  // The mirror: a lighter band across its top (a hint of the room in it).
-  quadN(m, [-MX + 0.035, my0 + 0.035, zf], [MX - 0.035, my0 + 0.035, zf], [MX - 0.035, my1 - 0.035, zf], [-MX + 0.035, my1 - 0.035, zf], [0, 0, 1], (p) => scale3(glass, 0.92 + 0.16 * ((p[1] - my0) / (my1 - my0))));
+  mirrorGlass(m, -MX + 0.035, MX - 0.035, my0 + 0.035, my1 - 0.035, zf, glass, level);
   // The basin let into the counter: its rim, its bowl (a darker inside), the drain; the tap behind it.
   const [bw, bd] = g.basin ?? [0.5, 0.36];
   const bz = -Z + 0.12 + bd / 2;
