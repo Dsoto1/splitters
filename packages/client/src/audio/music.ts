@@ -3,8 +3,9 @@ import { versioned } from '../assetUrl.ts';
 import type { AudioSystem } from './audio.ts';
 
 /**
- * The owner's music (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md, "Music"): the Arena tracks on the main menu, Match Setup
- * and lobbies, the Map Maker tracks in MapMaker, none in a match (MapMaker's test play included).
+ * The owner's music (docs/AUDIO_MUSIC_ANNOUNCER_PLAN.md, "Music"): the Arena and Map Maker tracks shuffled together
+ * on the main menu, Match Setup and lobbies (owner, 2026-11-24: for variety), the Map Maker tracks alone in MapMaker,
+ * none in a match (MapMaker's test play included).
  *
  * - Each scene plays its tracks shuffled, none again until all have played (ShuffleDeck), crossfading about 3 s
  *   from one into the next; changing scene crossfades too, and a match fades it out.
@@ -17,7 +18,7 @@ export type MusicScene = 'menu' | 'mapmaker';
 
 export const MUSIC_BASE = `${import.meta.env.BASE_URL}music/`;
 export const MUSIC_TRACKS: Record<MusicScene, string[]> = {
-  menu: ownerAudio.music.menu.map((t) => t.id),
+  menu: [...ownerAudio.music.menu, ...ownerAudio.music.mapmaker].map((t) => t.id),
   mapmaker: ownerAudio.music.mapmaker.map((t) => t.id),
 };
 /** Seconds of crossfade between tracks and between scenes. */

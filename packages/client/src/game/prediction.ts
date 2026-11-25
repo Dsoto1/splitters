@@ -63,6 +63,7 @@ import {
   PLAYER,
   eyeHeightOf,
   eyePoint,
+  eyeScaleOf,
   PhysicsWorld,
   SPEED_BOOST,
   WEAPONS_BY_SLOT,
@@ -315,7 +316,8 @@ export class LocalPlayer {
 
   /** Where your eyes are (they drop when you crouch or go prone, and lean out with a peek, as the host has them: eyePoint). */
   get eye(): Vec3 {
-    if (!this.state.lean) return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state, this.scale), z: this.state.pos.z };
+    // On a mount at full size, as the host has it (eyeScaleOf).
+    if (!this.state.lean) return { x: this.state.pos.x, y: this.state.pos.y + eyeHeightOf(this.state, eyeScaleOf(this.scale, this.mounted)), z: this.state.pos.z };
     return eyePoint(this.state.pos, this.lastYaw, this.state.stance ?? 0, this.state.lean, this.scale);
   }
 

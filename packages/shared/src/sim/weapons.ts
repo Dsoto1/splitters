@@ -40,9 +40,11 @@ export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
  * Projectile looks fired as a stream (the flamethrower's flame, goo, bubbles, plasma, oil): the snapshot names a
  * stream projectile's shooter, so clients draw it leaving the shooter's muzzle as drawn now and blend it into where
  * the host has it (client game/streamBlend.ts). Drawn from the snapshot alone it left the eye about 100 ms in the
- * past and trailed behind you while you moved.
+ * past and trailed behind you while you moved. The Blaster X-42's bolts too (owner, 2026-11-24: "bullets don't look
+ * like they properly leave the gun muzzle"): ten a second, fired from the eye, they came out of the middle of the
+ * screen instead of the gun.
  */
-export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set(['flame', 'goo', 'bubble', 'plasma', 'oil']);
+export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set(['flame', 'goo', 'bubble', 'plasma', 'oil', 'blasterBolt']);
 
 /**
  * Lingering effects a hit leaves on a player: `burn` and `poison` hurt over

@@ -66,7 +66,7 @@ import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPP
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
-import { eyePoint } from './moves.ts';
+import { eyePoint, eyeScaleOf } from './moves.ts';
 import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
@@ -4290,7 +4290,7 @@ export class Match {
 
   /** A combatant's eye: where rounds, throws and sight lines start (a lean moves it out to the side). */
   private eyeOf(c: Combatant): Vec3 {
-    return eyePoint(c.move.pos, c.yaw, stanceOf(c.move), this.leanOf(c), c.size);
+    return eyePoint(c.move.pos, c.yaw, stanceOf(c.move), this.leanOf(c), eyeScaleOf(c.size, !!c.mount));
   }
 
   private recordHistory(): void {
