@@ -115,3 +115,28 @@ Provenance: Meshy, owned.
   - "salamander 15k" (2026-11-22)  -> character meshy_salamander (look Salamander Warlord), its new model (the community "Salamander Warlord" it replaced is no longer shipped)
   - "baboon 15k" (2026-11-22)  -> character meshy_baboon (look Rufus Boomwell)
   - "chimpanzee 15k" (2026-11-22)  -> character meshy_chimpanzee (look Chester Knuckleby)
+
+- The owner's Drive characters uploaded 2026-11-24/25 (the same kind of download, pack meshy-owned; Meshy, owned per the
+  standing rule for the owner's Drive characters). Built by tools/content/prepare-meshy-characters.mjs.
+
+  - "hare courier clean game ready" (2026-11-25)  -> character meshy_harecourier (look Pip Quickfoot), its new model (the 2026-11-22 "hare courier game ready" it replaced is no longer shipped)
+  - "AnubisSentinelRigged" (2026-11-25)  -> character meshy_anubis (look Anoobys), its new model (the community "An ancient Egyptian Anubis" it replaced is no longer shipped)
+  - "PlainsHuntressRemesh15k" (2026-11-25)  -> character meshy_thornweaver (look Thornweaver), its new model, the plains huntress (the community "Tribal Warrior Charac" it replaced is no longer shipped)
+  - "crew alien recruit rigged" (2026-11-25)  -> character meshy_crewalien (look Blix Orrin), Chrono Crew
+  - "crew pilot v2 rigged" (2026-11-25)  -> character meshy_crewpilot (look Juno Hartwell), Chrono Crew
+  - "boss chrono tyrant rigged" (2026-11-25)  -> character meshy_bosstyrant (look Emperor Kronax, provisional), a story boss, NPC-only, out of play
+  - "boss void rift entity rigged" (2026-11-25)  -> character meshy_bossvoid (look The Unhour, provisional), a story boss, NPC-only, out of play
+  - "boss temporal inquisitor 15k" (2026-11-25)  -> character meshy_bossinquisitor (look Inquisitor Sable Tock, provisional), a story boss, NPC-only, out of play
+  - "ToySoldierRigged" (2026-11-25)  -> character meshy_toysoldier (look Cpl. Tinwhistle)
+  - "GreenArmySoldierRigged" (2026-11-25)  -> character meshy_greenarmy (look Pvt. Pete Plastic)
+  - "SnakeEyeShamanRigged" (2026-11-25)  -> character meshy_snakeshaman (look Silas Coilwhisper)
+  - "EagleClanRigged" (2026-11-25)  -> character meshy_eagleclan (look Talon Skycrest)
+  - "AztecJaguarRemesh15k" (2026-11-25)  -> character meshy_aztecjaguar (look Balam Nightclaw)
+  - "OutlawRangerRigged" (2026-11-25)  -> character meshy_outlawranger (look Cutter McCrae)
+  - "desert rally fennec 15k" (2026-11-25)  -> character meshy_fennec (look Fenn Dustwhirl)
+  - "monkey spirit rigged" (2026-11-25)  -> character meshy_monkeyspirit (look Mojo Banyan)
+  - "vegas dealer blobfish 15k" (2026-11-25)  -> character meshy_blobfish (look Deuce Droopwell)
+  - "espresso barista otter 15k" (2026-11-25)  -> character meshy_baristaotter (look Ottis Brewster)
+  - "biker warthog funky 15k" (2026-11-25)  -> character meshy_warthog (look Boogie Tuskworth)
+  - "miami vice detective duck 15k" (2026-11-25)  -> character meshy_detectiveduck (look Det. Drake Montego)
+  - "sleepy koala 3d" (2026-11-25)  -> character meshy_koala (look Napsworth)
