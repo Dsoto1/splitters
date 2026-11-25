@@ -370,3 +370,18 @@ Later the same day, after seeing the map in play (relayed by the lead):
    mirrors, showers; a mirror over the dorm rooms' sinks too (the corner's answer 6) if it fits.
 
 Built in step 11 (PLAN 4q, `steps-11.json`).
+
+## The buildings by the entrance cairn, closer to the photos (owner, 2026-11-25)
+
+With a free-camera screenshot from the live game (team deathmatch on St. Jasper's): the entrance cairn with its flower
+bed in front, the two-storey crenellated stone range behind it with a square corner tower on the left (round-arched
+door at its foot), plain single windows, a plank door on the ground floor; rubble walls in the block stone, flat
+string courses, block merlons and finials along the parapet. Pointing at the references folder (folder id
+`1uVRNvRRIccYEOz3REQw1lU1QGfUlFjHg`):
+
+> when the other st. johns work goes for dekovans side we should adjust these to look more similar, make sense?
+
+So: when the St. John's steps reach DeKoven's side (the entrance between DeKoven's north end and Smythe's south end,
+Q2; DeKoven's office look is already a later step), these buildings are brought closer to the photos in the same step:
+their stone, windows, doors, parapets and towers compared photo by photo, through MapMaker's kits (a piece a photo
+needs goes into MapMaker). Not a step of its own.
