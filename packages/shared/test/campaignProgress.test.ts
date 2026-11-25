@@ -114,6 +114,19 @@ describe('character locks', () => {
   });
 });
 
+describe('a longer sector', () => {
+  it('opens its maps one at a time and repairs on the last', () => {
+    const wars = { ...sector('w'), maps: ['civil', 'ww2', 'vietnam', 'storm', 'future'].map((m) => ({ map: m, unlock: `core.${m}` })) };
+    const data: CampaignData = { sectors: [wars], convergences: [] };
+    let p = emptyProgress();
+    for (const [i, m] of wars.maps.entries()) {
+      expect(stageStates(wars, p)[i]!.state).toBe('next');
+      p = recordWin(p, data, 'w', m.map).progress;
+      expect(p.sectors).toEqual(i === wars.maps.length - 1 ? ['w'] : []);
+    }
+  });
+});
+
 describe('map locks and convergence tiles', () => {
   it("locks a sector's 2nd and 3rd maps for hosting until each is won in Story", () => {
     const p = emptyProgress();

@@ -2356,6 +2356,16 @@ html.touch .bumper-btn .bumper-arrow { display: inline-flex; align-items: center
 /* The main menu's lower group (MapMaker, Characters, Options): below the ways to play, a gap and a quieter look. */
 .nav button.minor { font-size: 16px; padding: 8px 16px; background: rgba(11, 15, 26, 0.55); }
 .nav button.minor-first { margin-top: 10px; }
+/* Short screens (a phone held sideways): the lower group in one row of three, so all seven fit above the bottom bar. */
+@media (max-height: 520px) {
+  .nav { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .nav button:not(.minor) { grid-column: 1 / -1; }
+  .nav button.minor, html.touch .nav button.minor { justify-content: center; font-size: 12px; letter-spacing: 0.02em; padding: 4px 4px; min-height: 30px; clip-path: none; }
+  .nav button.minor::before { display: none; }
+  .nav button.minor-first { margin-top: 0; }
+  .nav button.minor + .minor { margin-top: 0; }
+  .nav { row-gap: 4px; }
+}
 
 /* Story: the Operations Database (frontend/storyScreen.ts; docs/CAMPAIGN.md). A bare framework: rows of sector cards, each with its convergence tile. */
 #menu .screen.story { display: flex; flex-direction: column; gap: 12px; }
@@ -2370,7 +2380,7 @@ html.touch .bumper-btn .bumper-arrow { display: inline-flex; align-items: center
 .story-card h3, .story-detail-head h3 { margin: 0; font: italic 700 24px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
 .story-kicker { display: flex; gap: 8px; align-items: baseline; color: var(--cyan); font: 700 12px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; }
 .story-prov { color: var(--muted); font: italic 500 11px var(--font-body); letter-spacing: 0.04em; text-transform: none; border: 1px dashed var(--line); padding: 0 5px; }
-.story-desc { margin: 0; color: var(--muted); font-size: 14px; }
+.story-desc { margin: 0; color: var(--muted); font-size: 14px; text-transform: none; letter-spacing: 0; font-family: var(--font-body); font-weight: 400; }
 .story-meta { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 13px; color: var(--text); }
 .story-status { display: inline-flex; gap: 6px; align-items: center; padding: 2px 8px; font: 700 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 3px; color: var(--cyan); }
 .story-status.in-progress { color: var(--orange); }

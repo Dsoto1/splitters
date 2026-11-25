@@ -1,5 +1,7 @@
 import {
-  CAMPAIGN_SIDE_MAX,
+  CAMPAIGN_PICKED_MAX,
+  MODE_LABELS,
+  isGameMode,
   SECTOR_CLASS_LABELS,
   SECTOR_STATUS_LABELS,
   convergenceTiles,
@@ -10,6 +12,7 @@ import {
   type CampaignSector,
   type Convergence,
   type SectorStatus,
+  type StageMatch,
   type StageState,
 } from '@tiletrigger/shared';
 import { el } from './setupControls.ts';
@@ -33,7 +36,7 @@ export interface StoryScreenOptions {
   launch(owner: string, map: string): void;
 }
 
-const STATUS_MARK: Record<SectorStatus, string> = { available: '○', 'in-progress': '◐', repaired: '✓' };
+const STATUS_MARK: Record<SectorStatus, string> = { available: '○', 'in-progress': '»', repaired: '✓' };
 const STAGE_LABEL: Record<StageState, string> = { done: 'Won', next: 'Next', locked: 'Locked' };
 const STAGE_MARK: Record<StageState, string> = { done: '✓', next: '▶', locked: '🔒' };
 
@@ -91,7 +94,17 @@ function database(o: StoryScreenOptions): HTMLElement {
   );
 }
 
-/** A sector's 3 maps (or a convergence's), each won, next or locked, with Launch / Replay. */
+/** A map's match in a few words: its mode, and its size where the data sets one ("10 + 4 allies v 14 · 2 waves"). */
+export function stageMatchLine(m: StageMatch, crew: number): string {
+  const mode = m.mode && isGameMode(m.mode) ? MODE_LABELS[m.mode] : MODE_LABELS['core.tdm'];
+  const sized = m.picked !== undefined || m.allies !== undefined || m.enemies !== undefined;
+  if (!sized) return mode;
+  const friends = `${m.picked ?? crew}${m.allies ? ` + ${m.allies} allies` : ''}`;
+  const waves = m.waves ? ` · ${m.waves} wave${m.waves === 1 ? '' : 's'}` : '';
+  return `${mode} · ${friends} v ${m.enemies ?? (m.picked ?? crew) + (m.allies ?? 0)}${waves}`;
+}
+
+/** A sector's maps (or a convergence's), each won, next or locked, with Launch / Replay. */
 function stageList(o: StoryScreenOptions, owner: string, maps: { map: string; state: StageState }[], extra: (i: number) => string | null): HTMLElement {
   return el(
     'ol',
@@ -129,14 +142,14 @@ function sectorDetail(o: StoryScreenOptions, s: CampaignSector): HTMLElement {
     'div',
     { class: 'story-detail', id: `story-detail-${s.id}` },
     detailHead(o, `${SECTOR_CLASS_LABELS[s.classification]} · ${s.period}`, s, sectorStatus(s, o.progress)),
-    stageList(o, s.id, maps, (i) => `Unlocks ${o.lookName(s.maps[i]!.unlock)}${i === s.maps.length - 1 ? ' · boss map' : ''}`),
+    stageList(o, s.id, maps, (i) => `${stageMatchLine(s.maps[i]!, ex.crew)} · unlocks ${o.lookName(s.maps[i]!.unlock)}${i === s.maps.length - 1 ? ' · boss map' : ''}`),
     el(
       'dl',
       { class: 'story-facts panel' },
       el('dt', { textContent: 'Boss encounter' }),
       el('dd', { textContent: names([boss.character, ...boss.companions]) }),
       el('dt', { textContent: 'Expedition' }),
-      el('dd', { textContent: `${ex.crew} Chrono Crew of your choice, with ${ex.allies.length} local allies: ${names(ex.allies)} (at most ${CAMPAIGN_SIDE_MAX} a side)` }),
+      el('dd', { textContent: `${ex.crew} Chrono Crew of your choice (you pick up to ${CAMPAIGN_PICKED_MAX}); local allies: ${names(ex.allies)}. Each map sets its own mode and size.` }),
       el('dt', { textContent: 'Sector repaired' }),
       el('dd', { textContent: s.rewards.length ? `Unlocks ${names(s.rewards)}` : 'No extra unlock' }),
     ),

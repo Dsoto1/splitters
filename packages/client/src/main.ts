@@ -656,6 +656,8 @@ class App {
   private botSet: BotSet | null = null;
   /** The Story stage being played (sector or convergence id and map), or null: any other match. */
   private storyRun: { owner: string; map: string } | null = null;
+  /** Browser tests (?test=1): the match's result as its end would report it (the `story` flow wins a Story map with it). */
+  private readonly storyHook = TEST ? ((window as unknown as { __storyResult: (r: MatchSummary['result']) => void }).__storyResult = (r) => this.storyResult({ result: r } as MatchSummary)) : null;
 
   /** A match's result: a win in a Story match completes its map (once; campaign/storyProgress.ts). */
   private storyResult(summary: MatchSummary): void {

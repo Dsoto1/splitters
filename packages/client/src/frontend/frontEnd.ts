@@ -166,6 +166,8 @@ import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 import { QUICK_MODES, loadQuickPrefs, pickQuickMap, quickSetup, saveQuickPrefs, type QuickMode } from './quickPlay.ts';
 import { storyScreen } from './storyScreen.ts';
+import { characterUnlocked, startingCharacters, unlockState } from '@tiletrigger/shared';
+import { storyStageSetup } from '../campaign/storyMatch.ts';
 import { CAMPAIGN, hostLockReason, myStoryProgress, syncStoryProgress } from '../campaign/storyProgress.ts';
 import { setTutorialState, tutorialState } from '../game/tutorial.ts';
 import { loadTipState, resetTips, setTipsOn } from '../game/tips.ts';
@@ -1077,11 +1079,12 @@ export class FrontEnd {
     });
   }
 
-  /** A Story stage: a normal bot match on its map (Quick Play's setup: Team Deathmatch where the map plays it), started like Match Setup's Start. */
+  /** A Story stage: a normal bot match on its map (its mode and size from the campaign data, else Quick Play's), started like Match Setup's Start. */
   private async launchStory(owner: string, key: string): Promise<void> {
     const entry = this.maps.find((m) => m.key === key);
     if (!entry) return this.setStatus('That map is not here.');
-    const mode: QuickMode = entry.modes.includes('core.tdm') ? 'core.tdm' : 'core.deathmatch';
+    const sector = CAMPAIGN.sectors.find((x) => x.id === owner);
+    const stage = sector?.maps.find((x) => x.map === key) ?? {};
     this.setStatus(`Story: ${entry.metadata.name}…`);
     let map: MapDocument;
     try {
@@ -1090,9 +1093,10 @@ export class FrontEnd {
       return this.setStatus(`${entry.metadata.name} failed to load`);
     }
     if (this.root.hidden) return;
-    const setup = quickSetup(mode, map, entry.key, deviceMaxPlayers());
-    const { rules, fill } = rulesFromSetup(setup, map, playerCap(mode, map, deviceMaxPlayers()).max);
-    (window as unknown as { __story: unknown }).__story = { owner, map: entry.key, mode, fill };
+    // The map's own mode and size (campaign/storyMatch.ts), scaled to this device.
+    const setup = storyStageSetup(stage, sector?.expedition.crew ?? 10, map, entry.key, entry.modes, deviceMaxPlayers());
+    const { rules, fill } = rulesFromSetup(setup, map, playerCap(setup.mode, map, deviceMaxPlayers()).max);
+    (window as unknown as { __story: unknown }).__story = { owner, map: entry.key, mode: setup.mode, fill, teams: rules.teamSizes ?? null };
     this.hooks.playLocal(map, rules, fill, 'normal', false, null, false, { owner, map: entry.key });
   }
 
@@ -2963,6 +2967,8 @@ export class FrontEnd {
 
   /** Choose: they're yours, and you're back where Character Select was opened from (Profile shows them). */
   private select(id: string): void {
+    // Character locks (shared campaign/unlocks.ts): off for now behind CHARACTER_LOCKS_ON, so this never refuses yet.
+    if (!characterUnlocked(id, unlockState(startingCharacters(CORE_LOOKS), myStoryProgress()))) return this.setStatus(`${this.lookName(id)} is locked: unlock them in Story or by playing.`);
     this.useLook(id);
     this.go(this.charFrom === 'characters' ? 'home' : this.charFrom);
   }

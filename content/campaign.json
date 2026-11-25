@@ -1,5 +1,5 @@
 {
-  "$comment": "The story campaign's content (docs/CAMPAIGN.md; the design: docs/CAMPAIGN_GDD.md, the decisions: docs/STORY_CAMPAIGN.md). Sectors and convergence zones as data, by stable id (never rename an id: progress is saved by it). A sector: id, name, classification (historical, modern, future or unclassified), period, description, exactly 3 maps in play order (map: a maps/<id>.json of the suite; unlock: the one character a win on it unlocks), boss (character: the boss's look; companions: the looks fighting beside it), rewards (looks unlocked when the sector is repaired: the boss or companions), expedition (crew: Chrono Crew members the player picks, 8-10; allies: the sector's local allies on the player's side; crew + allies at most 14 a side). A convergence: id, name, description, sectors (its two prerequisite sectors: it stays completely hidden until both are repaired), maps (in play order), rewards. provisional: true marks a placeholder the owner hasn't named or placed yet. Checked by packages/shared/test/campaign.test.ts (references resolve, sizes, ids unique).",
+  "$comment": "The story campaign's content (docs/CAMPAIGN.md; the design: docs/CAMPAIGN_GDD.md, the decisions: docs/STORY_CAMPAIGN.md). Sectors and convergence zones as data, by stable id (never rename an id: progress is saved by it). A sector: id, name, classification (historical, modern, future or unclassified), period, description, maps in play order (usually 3; a Wars sector one per war; each opens once the one before is won; map: a maps/<id>.json of the suite; unlock: the one character a win on it unlocks; optional, the map's own match: mode (a game mode id the map plays; absent: Team Deathmatch), picked (the crew the player picks, at most 14), allies (local allies added), enemies (enemy bots), waves (reinforcement waves, kept for later); the battle may be bigger than 14 a side, scaled to the device), boss (character: the boss's look; companions: the looks fighting beside it), rewards (looks unlocked when the sector is repaired: the boss or companions), expedition (crew: Chrono Crew members the player picks, usually 8-10, at most 14; allies: the sector's local allies, the looks a map's allies are drawn from). A convergence: id, name, description, sectors (its two prerequisite sectors: until both are repaired each shows only as an Unknown tile, no name), maps (in play order), rewards. provisional: true marks a placeholder the owner hasn't named or placed yet. Checked by packages/shared/test/campaign.test.ts (references resolve, sizes, ids unique).",
   "sectors": [
     {
       "id": "jade_empire",
@@ -9,9 +9,9 @@
       "period": "Mesoamerica",
       "description": "Temple cities swallowed by the jungle, and a jaguar king who means to keep the sun for himself.",
       "maps": [
-        { "map": "jungle_steps", "unlock": "core.monkeyspirit" },
-        { "map": "vinefall_sanctum", "unlock": "core.snakeshaman" },
-        { "map": "step_temple", "unlock": "core.eagleclan" }
+        { "map": "jungle_steps", "unlock": "core.monkeyspirit", "mode": "core.tdm", "picked": 6, "enemies": 6 },
+        { "map": "vinefall_sanctum", "unlock": "core.snakeshaman", "mode": "core.tdm", "picked": 8, "allies": 2, "enemies": 12 },
+        { "map": "step_temple", "unlock": "core.eagleclan", "mode": "core.tdm", "picked": 10, "allies": 4, "enemies": 14, "waves": 1 }
       ],
       "boss": { "character": "core.aztecjaguar", "companions": ["core.eagleclan", "core.goldenwarrior", "core.sunpriest"] },
       "rewards": ["core.aztecjaguar", "core.goldenwarrior", "core.sunpriest"],
@@ -26,7 +26,7 @@
       "description": "An airport, a ship and an island prison, all closed at once, and a customs agent who lets nobody through.",
       "maps": [
         { "map": "runway_nine", "unlock": "core.tacticalsoldier" },
-        { "map": "iron_tide", "unlock": "core.stealthop" },
+        { "map": "iron_tide", "unlock": "core.stealthop", "mode": "core.deathmatch", "enemies": 9 },
         { "map": "ironhold_prison", "unlock": "core.stancesoldier" }
       ],
       "boss": { "character": "core.zhao", "companions": ["core.imperialguard", "core.resolvesoldier"] },
@@ -43,7 +43,7 @@
       "maps": [
         { "map": "express_lobby", "unlock": "core.alienexplorer" },
         { "map": "neon_spire", "unlock": "core.ricochet" },
-        { "map": "halcyon_station", "unlock": "core.cyberlion" }
+        { "map": "halcyon_station", "unlock": "core.cyberlion", "mode": "core.tdm", "picked": 8, "enemies": 10 }
       ],
       "boss": { "character": "core.bossinquisitor", "companions": ["core.shadowenforcer", "core.steelguardian"] },
       "rewards": ["core.shadowenforcer"],

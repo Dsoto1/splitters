@@ -1,7 +1,8 @@
 import { existsSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import {
-  CAMPAIGN_SIDE_MAX,
+  CAMPAIGN_PICKED_MAX,
+  isGameMode,
   CORE_LOOKS,
   campaignProblems,
   characterTier,
@@ -18,11 +19,12 @@ const looks = new Map(CORE_LOOKS.map((l) => [l.id, l]));
 const npcs = new Set(WHOLE_BODY_NPC_LOOKS.map((l) => l.id));
 
 const refs: CampaignRefs = {
-  map(id) {
+  map(id, mode) {
     const file = new URL(`../../../maps/${id}.json`, import.meta.url);
     if (!existsSync(file)) return 'no such map in maps/';
     if (isRetiredMap(id) || TRAINING_MAPS.has(id)) return 'a retired or training map';
     const modes = (JSON.parse(readFileSync(file, 'utf8')) as { metadata: { supportedModes?: string[] } }).metadata.supportedModes ?? [];
+    if (mode !== undefined) return !isGameMode(mode) ? `${mode} isn't a game mode` : modes.includes(mode) ? null : `the map doesn't play ${mode}`;
     return modes.includes('core.tdm') || modes.includes('core.deathmatch') ? null : 'Story plays Team Deathmatch or Deathmatch: the map has neither';
   },
   character(id, use) {
@@ -51,8 +53,11 @@ describe('campaign data (content/campaign.json)', () => {
     expect([...d.sectors, ...d.convergences].every((x) => x.provisional)).toBe(true);
   });
 
-  it('keeps every side at 14 or fewer', () => {
-    for (const s of readCampaign(raw).sectors) expect(s.expedition.crew + s.expedition.allies.length).toBeLessThanOrEqual(CAMPAIGN_SIDE_MAX);
+  it('keeps every picked roster at 14 or fewer (the battle itself may be bigger)', () => {
+    for (const s of readCampaign(raw).sectors) {
+      expect(s.expedition.crew).toBeLessThanOrEqual(CAMPAIGN_PICKED_MAX);
+      for (const m of s.maps) expect(m.picked ?? 0).toBeLessThanOrEqual(CAMPAIGN_PICKED_MAX);
+    }
   });
 });
 
@@ -82,14 +87,22 @@ describe('campaignProblems', () => {
     expect(campaignProblems({ ...ok, convergences: [{ ...ok.convergences[0], id: 'one' }] }).join()).toMatch(/one is used twice/);
   });
 
-  it('refuses more than 14 a side and a crew outside 8-10', () => {
-    const allies = ['core.a', 'core.b', 'core.c', 'core.d', 'core.e'];
-    expect(campaignProblems({ ...ok, sectors: [sector('one', { expedition: { crew: 10, allies } }), sector('two')] }).join()).toMatch(/over 14 a side/);
-    expect(campaignProblems({ ...ok, sectors: [sector('one', { expedition: { crew: 7, allies: [] } }), sector('two')] }).join()).toMatch(/crew: 8-10/);
+  it('caps the picked roster at 14, not the battle', () => {
+    expect(campaignProblems({ ...ok, sectors: [sector('one', { expedition: { crew: 15, allies: [] } }), sector('two')] }).join()).toMatch(/crew: 1-14/);
+    const maps = sector('one').maps;
+    // 14 picked with allies and 50 enemies in waves (owner: "14 v 50") is fine.
+    const big = [{ ...maps[0]!, mode: 'core.tdm', picked: 14, allies: 18, enemies: 50, waves: 3 }, ...maps.slice(1)];
+    expect(campaignProblems({ ...ok, sectors: [sector('one', { maps: big }), sector('two')] })).toEqual([]);
+    const over = [{ ...maps[0]!, picked: 15 }, ...maps.slice(1)];
+    expect(campaignProblems({ ...ok, sectors: [sector('one', { maps: over }), sector('two')] }).join()).toMatch(/picked: a whole number 1-14/);
+    const bad = [{ ...maps[0]!, enemies: 0, waves: -1, mode: 'tdm' }, ...maps.slice(1)];
+    expect(campaignProblems({ ...ok, sectors: [sector('one', { maps: bad }), sector('two')] }).join()).toMatch(/enemies.*waves.*|mode/);
   });
 
-  it('wants 3 maps a sector and one character unlocked by one place only', () => {
-    expect(campaignProblems({ ...ok, sectors: [sector('one', { maps: sector('one').maps.slice(0, 2) }), sector('two')] }).join()).toMatch(/exactly 3/);
+  it('allows any sector length from one map (a Wars sector: one per war), and one character unlocked by one place only', () => {
+    const wars = ['civil', 'ww2', 'vietnam', 'storm', 'future'].map((w) => ({ map: w, unlock: `core.${w}` }));
+    expect(campaignProblems({ ...ok, sectors: [sector('one', { maps: wars }), sector('two')] })).toEqual([]);
+    expect(campaignProblems({ ...ok, sectors: [sector('one', { maps: [] }), sector('two')] }).join()).toMatch(/one or more/);
     expect(campaignProblems({ ...ok, sectors: [sector('one', { rewards: ['core.two1'] }), sector('two')] }).join()).toMatch(/already unlocked/);
   });
 
