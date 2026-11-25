@@ -5942,7 +5942,7 @@ async function offlineFlow(browser) {
   // opens Character Select too). Sign-in lives there, not in the bottom bar.
   const navIds = await page.$$eval('#menu .nav button', (bs) => bs.map((b) => b.id));
   const badge = await page.evaluate(() => ({ text: document.querySelector('#profile-badge')?.textContent ?? '', footer: !!document.querySelector('.menu-footer #sign-in, .menu-footer #profile-link, .menu-footer .menu-links') }));
-  check(navIds.join() === 'nav-quick,nav-play,nav-mapmaker,nav-characters,nav-online,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu has Characters beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  check(navIds.join() === 'nav-story,nav-quick,nav-play,nav-online,nav-mapmaker,nav-characters,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu is Story, Quick Play, Local, Online, then MapMaker, Characters, Options, beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
   await page.click('#nav-characters');
   await page.waitForSelector('.char-grid', { timeout: T(10000) }).catch(() => {});
   const charsOpen = await page.isVisible('.char-grid');
@@ -12400,6 +12400,66 @@ async function fireteamsFlow(browser) {
 
 
 /**
+ * Story (docs/CAMPAIGN.md): the main menu's Story opens the Operations Database (a card per sector, its status in
+ * words, an Unknown tile beside each and no convergence named); a sector's maps open one at a time; Launch starts a
+ * normal bot match on its first map with the map's own mode and size; its win completes the map once (the test hook
+ * stands in for the match's end) and opens the next; with the map locks on (&maplocks=1; tests have them off), Match
+ * Setup won't host a map not yet won and Quick Play never picks one.
+ */
+async function storyFlow(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const menu = async (q = '') => {
+    await page.goto(`${CLIENT}/?test=1&name=Tester&maplocks=1${q}`);
+    await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+  };
+  await menu();
+  await page.evaluate(() => localStorage.removeItem('tiletrigger.campaign'));
+  await menu();
+  await page.click('#nav-story');
+  await page.waitForSelector('.story-rows');
+  const db = await page.evaluate(() => ({
+    cards: [...document.querySelectorAll('.story-card')].map((c) => c.id),
+    status: [...document.querySelectorAll('.story-card .story-status')].map((s) => s.textContent),
+    unknown: document.querySelectorAll('.story-tile.unknown').length,
+    known: document.querySelectorAll('.story-tile.known').length,
+    leaks: /Cold Cells/i.test(document.querySelector('.story-db').textContent),
+  }));
+  check(db.cards.length === 3 && db.status.every((s) => /Available/.test(s)) && db.unknown === 3 && db.known === 0 && !db.leaks, `Story opens the Operations Database: 3 sectors, Available in words, an Unknown tile each, no convergence named (${JSON.stringify(db)})`);
+  await page.click('#story-sector-jade_empire');
+  await page.waitForSelector('#story-detail-jade_empire');
+  const states = await page.$$eval('#story-detail-jade_empire .story-maps button', (bs) => bs.map((b) => `${b.id}:${b.disabled ? 'off' : 'on'}`));
+  check(states.join() === 'story-launch-jungle_steps:on,story-launch-vinefall_sanctum:off,story-launch-step_temple:off', `a sector's maps open one at a time (${states.join(', ')})`);
+  await page.click('#story-launch-jungle_steps');
+  const playing = await page.waitForFunction(() => window.__cs?.phase?.() === 'playing' && window.__story, null, { timeout: T(120000) }).then(() => true, () => false);
+  const run = playing ? await page.evaluate(() => ({ ...window.__story, map: window.__cs.map, mode: window.__cs.rules().mode })) : null;
+  check(playing && run?.owner === 'jade_empire' && run.map === 'jungle_steps' && run.mode === 'core.tdm' && JSON.stringify(run.teams) === '[6,6]', `Launch plays a bot match on the sector's first map, its own mode and size (${JSON.stringify(run)})`);
+  // The match's end reports a win: the map is won, once (a second win changes nothing).
+  await page.evaluate(() => (window.__storyResult('win'), window.__storyResult('win')));
+  const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.campaign')));
+  check(JSON.stringify(saved?.maps) === '["jade_empire/jungle_steps"]' && JSON.stringify(saved?.characters) === '["core.monkeyspirit"]', `a Story win completes the map once and unlocks its character (${JSON.stringify(saved)})`);
+  await menu();
+  await page.click('#nav-story');
+  await page.click('#story-sector-jade_empire');
+  await page.waitForSelector('#story-detail-jade_empire');
+  const after = await page.evaluate(() => ({ status: document.querySelector('#story-detail-jade_empire .story-status')?.textContent, next: !document.querySelector('#story-launch-vinefall_sanctum').disabled, won: document.querySelector('#story-launch-jungle_steps').textContent }));
+  check(/In Progress/.test(after.status) && after.next && after.won === 'Replay', `the next map opens and the sector reads In Progress (${JSON.stringify(after)})`);
+  // Match Setup: Vinefall Sanctum is open in Story, but not won, so it can't be hosted yet; Cradle of Idols can.
+  await page.keyboard.press('Escape');
+  await page.keyboard.press('Escape');
+  await page.click('#nav-play');
+  await page.waitForSelector('#map-cards');
+  const locked = await page.$$eval('.map-card.locked', (cs) => cs.map((c) => c.querySelector('.meta-text b')?.textContent));
+  await page.evaluate(() => (window.__front.pickMap('vinefall_sanctum'), window.__front.start()));
+  const refused = await page.waitForFunction(() => /Win Vinefall Sanctum in Story/.test(document.getElementById('menu-status').textContent), null, { timeout: T(10000) }).then(() => true, () => false);
+  const stillMenu = await page.evaluate(() => !document.getElementById('menu').hidden && !window.__cs);
+  check(refused && stillMenu && locked.length >= 5 && !locked.includes('Cradle of Idols'), `Match Setup dims the Story maps not won and won't host one (${JSON.stringify({ refused, stillMenu, locked })})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await page.context().close();
+}
+
+/**
  * New players: the first visit's tutorial offer, the tutorial on the Training Range (a step done by doing it, Skip
  * from the pause menu back to the menu, touch words on a phone), Quick Play into a Deathmatch against bots on a map
  * of its list, and a first-time tip (once only, clear of the crosshair). Automated browsers get neither the offer nor
@@ -12416,8 +12476,8 @@ async function newplayerFlow(browser) {
   check(!(await page.$('#first-run')), 'browser tests see no first-visit tutorial offer unless they ask');
   await page.goto(`${CLIENT}/?test=1&name=Tester&newplayer=1`);
   await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
-  const first = await page.evaluate(() => ({ offer: !!document.querySelector('#first-run'), nav: [...document.querySelectorAll('#menu .nav button')].map((b) => b.id), stored: localStorage.getItem('tiletrigger.tutorial') }));
-  check(first.offer && first.nav[0] === 'nav-quick' && first.stored === 'offered', `a first visit: Quick Play heads the menu and the tutorial is offered, once (${JSON.stringify(first)})`);
+  const first = await page.evaluate(() => ({ offer: !!document.querySelector('#first-run'), on: document.querySelector('#menu .nav button.on')?.id, stored: localStorage.getItem('tiletrigger.tutorial') }));
+  check(first.offer && first.on === 'nav-quick' && first.stored === 'offered', `a first visit: Quick Play is the menu's highlighted way in and the tutorial is offered, once (${JSON.stringify(first)})`);
 
   // The tutorial: the card, a step done by doing it, Skip.
   await page.click('#first-run-start');
@@ -17152,7 +17212,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

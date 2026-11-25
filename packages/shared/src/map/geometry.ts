@@ -42,6 +42,8 @@ export interface WorldBox {
    */
   pitch?: number;
   roll?: number;
+  /** A tilted strip's place along the curve it is one of, for its texture (LocalBox.tex). */
+  tex?: number;
   /** Material for every face (free blocks), instead of the theme's. */
   surface?: { material: string; tint: string | null };
   /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
@@ -925,7 +927,7 @@ function vaultFrame(cells: Map<string, CellOccupant>, gx: number, gy: number, gz
 
 /** A vault's local boxes (map/catalog.ts vault) as one placement's world boxes. */
 const vaultWorld = (boxes: readonly LocalBox[], kind: BoxKind, sourceId: string): WorldBox[] =>
-  boxes.map((b) => ({ min: [...b.min], max: [...b.max], kind, sourceId, ...(b.pitch ? { pitch: b.pitch } : {}), ...(b.roll ? { roll: b.roll } : {}) }));
+  boxes.map((b) => ({ min: [...b.min], max: [...b.max], kind, sourceId, ...(b.pitch ? { pitch: b.pitch } : {}), ...(b.roll ? { roll: b.roll } : {}), ...(b.tex !== undefined ? { tex: b.tex } : {}) }));
 
 /**
  * The vaulted ceiling (room option `vault`) of one cell of a room: a shallow segmental barrel vault along the room's
@@ -1195,7 +1197,7 @@ function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: numb
     const hz = (box.max[2] - box.min[2]) / 2;
     const [mx, mz] = rotateXZ((box.min[0] + box.max[0]) / 2, (box.min[2] + box.max[2]) / 2, rotation);
     const yaw = (box.yaw ?? 0) + (rotation % 4) * (Math.PI / 2);
-    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, ...(yaw ? { yaw } : {}), ...(box.pitch ? { pitch: box.pitch } : {}), ...(box.roll ? { roll: box.roll } : {}), ...surface };
+    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, ...(yaw ? { yaw } : {}), ...(box.pitch ? { pitch: box.pitch } : {}), ...(box.roll ? { roll: box.roll } : {}), ...(box.tex !== undefined ? { tex: box.tex } : {}), ...surface };
   }
   const [ax, az] = rotateXZ(box.min[0], box.min[2], rotation);
   const [bx, bz] = rotateXZ(box.max[0], box.max[2], rotation);

@@ -707,7 +707,9 @@ export async function rebake(low, hi, map, size, maxError, { grow = 0, crease = 
   }
   await fillMasked({ data: img, info: { width: size, height: size } }, empty);
   const jpeg = await sharp(img, { raw: { width: size, height: size, channels: 3 } }).jpeg({ quality }).toBuffer();
-  return { pos: P2, nrm: N2, uv, idx: outIdx, jpeg, alsoJpeg, from: Uint32Array.from(outFrom) };
+  // `png`: the same map lossless, for a caller that compresses it itself (characters' KTX2 maps: ktx2.mjs).
+  const png = await sharp(img, { raw: { width: size, height: size, channels: 3 } }).png({ compressionLevel: 1 }).toBuffer();
+  return { pos: P2, nrm: N2, uv, idx: outIdx, jpeg, png, alsoJpeg, from: Uint32Array.from(outFrom) };
 }
 
 /** Vertex v of `pos` projected onto a chart's plane (`basis`: two unit vectors across its normal). */

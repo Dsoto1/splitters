@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_bzdfxtdsk3ha2kl2",
-      "revision": 63,
-      "contentHash": "sha256:b51643aac6087153da439f7756727ec7ea3e6015ae26d9a47f4c4a74b74e7c49",
+      "versionId": "v_vxhkrg6j3qgfuo32",
+      "revision": 64,
+      "contentHash": "sha256:cf8480c2f29859a2ae5354918b35d3031beb32fd0645b77fbae5bd0727ca2b8c",
       "schemaVersion": 52,
-      "releasedAt": "2026-11-25T18:38:50.515Z"
+      "releasedAt": "2026-11-25T22:07:26.924Z"
     },
     "testOnly": true,
     "category": "weird"
@@ -1432,6 +1432,54 @@
         "x": -10,
         "y": -64,
         "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_stairtunnel_0",
+        "tile": "core.tunnel_concrete_stair_tunnel",
+        "x": 12,
+        "y": -12,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_stairtunnel_1",
+        "tile": "core.tunnel_road_wide_stair_tunnel",
+        "x": 13,
+        "y": -12,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_swkg3agph2",
+        "tile": "core.tunnel_concrete_end",
+        "x": 12,
+        "y": -13,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_24o1vve1ao",
+        "tile": "core.tunnel_concrete_end",
+        "x": 12,
+        "y": -10,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ngmwm1eklv",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 13,
+        "y": -13,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ebrtkv0xvy",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 13,
+        "y": -10,
+        "z": -1,
         "rotation": 0
       },
       {
@@ -5744,7 +5792,7 @@
       ]
     },
     {
-      "id": "door_2j9fnr4kd4",
+      "id": "door_24o1vve1ao",
       "kind": "door",
       "position": [
         -108,
@@ -5758,7 +5806,7 @@
       "style": "arched"
     },
     {
-      "id": "door_y8mpk7g4np",
+      "id": "door_vtihakx4ow",
       "kind": "door",
       "position": [
         -108,

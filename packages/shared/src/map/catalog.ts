@@ -37,6 +37,12 @@ export interface LocalBox {
   /** Tilt (like a pitched free block): pitch lifts the box's +Z end, roll its +X side, before the yaw. Pitched roofs, ramps. */
   pitch?: number;
   roll?: number;
+  /**
+   * Where a tilted strip's middle lies along the curve it is one of (a vault's or an arch's strips, in metres along the
+   * curve, along the axis the tilt turns: x for a roll, z for a pitch), so the texture runs on from strip to strip
+   * (map/faces.ts flatOf; seamless tunnels).
+   */
+  tex?: number;
   /** What the box is built as (default `solid`; curved walls use `wall` so they take the walls' paint, `trim` is visual only). */
   kind?: 'solid' | 'wall' | 'floor' | 'trim' | 'prop';
   /**
@@ -499,10 +505,12 @@ export function vault(axis: 'x' | 'z', span: readonly [number, number], along: r
     const y = centre + (r + t / 2) * Math.cos(a);
     // The +u end of the strip rises where the curve does (right of the crown it falls: a > 0, tilt < 0).
     const tilt = -a;
+    // Where the strip lies along the vault (its inner edges meet the next strip's): the texture runs on across them.
+    const tex = Math.round((i - (pieces - 1) / 2) * 2 * halfLen * 1e4) / 1e4;
     out.push(
       axis === 'z'
-        ? { min: [u - halfLen, y - t / 2, along[0]], max: [u + halfLen, y + t / 2, along[1]], ...(tilt ? { roll: tilt } : {}), kind }
-        : { min: [along[0], y - t / 2, u - halfLen], max: [along[1], y + t / 2, u + halfLen], ...(tilt ? { pitch: tilt } : {}), kind },
+        ? { min: [u - halfLen, y - t / 2, along[0]], max: [u + halfLen, y + t / 2, along[1]], ...(tilt ? { roll: tilt, tex } : {}), kind }
+        : { min: [along[0], y - t / 2, u - halfLen], max: [along[1], y + t / 2, u + halfLen], ...(tilt ? { pitch: tilt, tex } : {}), kind },
     );
   }
   return out;
@@ -539,7 +547,7 @@ type Pair = readonly [number, number];
  * One part of a kit tile, as content/tiles/core.json lists it: the builder it names and that builder's numbers.
  * `kind` (which theme slot paints it), `yaw` and `surface` (a library material of its own) apply to what it builds.
  */
-export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; pitch?: number; roll?: number; surface?: LocalBox['surface'] } & (
+export type KitPart = { kind?: NonNullable<LocalBox['kind']>; yaw?: number; pitch?: number; roll?: number; tex?: number; surface?: LocalBox['surface'] } & (
   | { box: readonly [number, number, number, number, number, number] }
   | { flight: { axis: 'x' | 'z'; dir: 1 | -1; from: number; across: Pair; steps: number; base?: number; run?: number; floor?: number } }
   | { descending: { edge: number; across: Pair; steps: number; top: number; floor?: number; run?: number } }
@@ -716,7 +724,7 @@ function kitPartBoxes(p: KitPart, spec: TileSpec): LocalBox[] {
   if ('box' in p) {
     const [x0, y0, z0, x1, y1, z1] = p.box;
     const b: LocalBox = { min: [x0, y0, z0], max: [x1, y1, z1] };
-    return [{ ...b, ...(p.yaw !== undefined ? { yaw: p.yaw } : {}), ...(p.pitch !== undefined ? { pitch: p.pitch } : {}), ...(p.roll !== undefined ? { roll: p.roll } : {}), ...(p.kind ? { kind: p.kind } : {}), ...(p.surface ? { surface: p.surface } : {}) }];
+    return [{ ...b, ...(p.yaw !== undefined ? { yaw: p.yaw } : {}), ...(p.pitch !== undefined ? { pitch: p.pitch } : {}), ...(p.roll !== undefined ? { roll: p.roll } : {}), ...(p.tex !== undefined ? { tex: p.tex } : {}), ...(p.kind ? { kind: p.kind } : {}), ...(p.surface ? { surface: p.surface } : {}) }];
   } else if ('flight' in p) {
     const f = p.flight;
     out = flight(f.axis, f.dir, f.from, f.across[0], f.across[1], f.steps, f.base ?? 0, f.run ?? 0.5, f.floor ?? 0);

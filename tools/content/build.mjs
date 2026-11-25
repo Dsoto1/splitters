@@ -369,16 +369,16 @@ const CHAR_MODS = {
   part: ['rebound to the regular body pose', 'simplified', 'materials simplified', 'textures made shared'],
   npc: ['rebound to the rig pose', 'simplified'],
   fparms: ['arms cut from the base body', 'rebound to the regular body pose', 'simplified'],
-  meshy: ['re-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
+  meshy: ['re-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'simplified', 'base colour and normal maps, GPU-compressed (KTX2, Basis Universal)', 'vertices quantized'],
   'meshy-clips': ['clips retargeted onto the rig\'s skeleton (tools/content/clip-set.mjs: rest pose compensated, root motion stripped, hips scaled to the rig\'s legs)', 'no mesh'],
   'meshy-fparms': ['arms cut from the body', 're-posed to the rig\'s T-pose', 'rebound to the rig\'s skeleton', 'vertices quantized'],
-  'meshy-autorig': ['rigged in-house (joints placed by hand, skin weights computed from the mesh)', 're-posed to the rig\'s T-pose', 'bound to the rig\'s skeleton', 'simplified', 'base colour only, downscaled to a JPEG', 'vertices quantized'],
+  'meshy-autorig': ['rigged in-house (joints placed by hand, skin weights computed from the mesh)', 're-posed to the rig\'s T-pose', 'bound to the rig\'s skeleton', 'simplified', 'base colour and normal maps, GPU-compressed (KTX2, Basis Universal)', 'vertices quantized'],
   texture: ['downscaled to a JPEG'],
 };
 /** A character built with `surface: rebake` (prepare-meshy-characters.mjs rebakeDownload): what those steps were instead. */
 const REBAKED_MODS = {
   simplified: 'simplified with the texture seams closed, laid out afresh and its colour and normal maps painted from the full download',
-  'base colour only, downscaled to a JPEG': 'base colour and normal maps as JPEGs',
+  'base colour and normal maps, GPU-compressed (KTX2, Basis Universal)': 'base colour and normal maps painted afresh, GPU-compressed (KTX2, Basis Universal)',
 };
 const charLock = JSON.parse(readFileSync(CHAR_LOCK, 'utf8'));
 // Whole-body characters made on the owner's Meshy subscription (tools/content/prepare-meshy-characters.mjs).
