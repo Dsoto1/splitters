@@ -79,6 +79,8 @@ export interface CombatantView {
   sheltered?: boolean;
   /** Under spawn protection (Match.shielded; it drops when they fire): a target only when there's no one else near. */
   shielded?: boolean;
+  /** In Overdrive (sim/powerups.ts): nothing hurts them and touching them knocks you flying; bots keep away. */
+  overdrive?: boolean;
   /** The tick the spawn protection runs out (with `shielded`). */
   shieldUntil?: number;
   /** On the ground (not jumping or falling). */
@@ -364,6 +366,8 @@ const AMMO_LOW_DETOUR = 70;
 const SHELTERED_TARGET_SCALE = 3;
 /** Someone under spawn protection is this much less of a target (as if this many times further): shots at them do nothing until they fire. */
 const SHIELDED_TARGET_SCALE = 6;
+/** Bots back away from an enemy in Overdrive within this many metres (sim/powerups.ts). */
+export const OVERDRIVE_KEEP_AWAY = 16;
 /** A bot under spawn protection holds its fire until this long before the shield runs out (s; content/match-play.json botFireBefore), unless an unshielded enemy is within SHIELD_HOLD_INSIDE m. */
 const SHIELD_FIRE_BEFORE: number = MATCH_PLAY.botFireBefore;
 const SHIELD_HOLD_INSIDE = 2;
@@ -1611,6 +1615,8 @@ export class BotBrain {
     // A lift from a teammate is worth taking even when hurt or with someone about.
     if (this.mountPlan && (this.mountPlan.ride || (!hurt && (!target || horizontalDistance(me.pos, target.pos) > 10)))) this.state = 'mount';
     else if (target && hurt && !this.berserker && !goal?.run) this.state = 'retreat';
+    // An enemy in Overdrive close by: nothing hurts them and a touch knocks you flying, so get away (even berserkers).
+    else if (target?.overdrive && horizontalDistance(me.pos, target.pos) < OVERDRIVE_KEEP_AWAY) this.state = 'retreat';
     else if (!underFire && !armedForVehicles && this.fetchLauncher(view, target)) {
       // An enemy vehicle about and nothing that hurts it: a launcher close by first.
       this.state = 'advance';
@@ -5126,7 +5132,8 @@ export function weaponScore(w: InventoryView, c: WeaponChoiceContext): number {
 export function pickupNeed(e: ItemEffect, me: CombatantView, inventory: readonly InventoryView[], owned: ReadonlyMap<string, InventoryView>, throwables: number, throwable: ThrowableKind | null): number {
   if (e.kind === 'health') return (100 - me.health) / 60;
   if (e.kind === 'armor') return (100 - me.armor) / 100;
-  if (e.kind === 'powerup') return 1;
+  // Power-ups: always worth a detour; Regen most when hurt.
+  if (e.kind === 'powerup') return e.powerup === 'regen' ? 0.35 + Math.max(0, 100 - me.health) / 80 : 1;
   if (e.kind === 'weapon') {
     const w = owned.get(e.weapon);
     // Arena discs lie where they land: worth fetching whenever the hand isn't full.

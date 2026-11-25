@@ -36,6 +36,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/powerups-1124` · 94590498 · 45518031733 (seven power-ups; one CHANGELOG line; clumpPerf fix)
 - `wip/captions-1124` · 4f5e5ad5 · 45480779970 (sound captions; frees 37.1 kB of the menu's first JS, 2799.9 → 2762.8 kB: map release records out of the map index, the Bots window loaded on first open; ahead of `wip/crash-reports-1124`, which needs the room)
 - `wip/crash-reports-1124` · 273c40a5 · 45464588015 (crash and error reports; adds 0.6 kB to the menu, 2799.6 of 2800 kB alone: land it after `wip/captions-1124` frees room, merging main and re-checking; the hub restarts on the owner's `sudo tiletrigger-update`, docs/CRASH_REPORTS.md)
 - `wip/colourblind-1124` · 52af939a · 45476320445 (colour vision: attempt 1, full suite; menu JS 2795.9 kB, 3.1-3.4 kB under main, as steer mode leaves vehicleCamera.ts; the account copy of the setting waits for captions' `prefs`)

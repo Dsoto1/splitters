@@ -73,6 +73,7 @@ import {
   STREAM_VISUALS,
   type ZoneSnapshot,
   FX_CLOAK,
+  FX_PHANTOM,
   FX_PROTECTED,
   FX_JET,
   CHUTE_GLIDER,
@@ -134,6 +135,7 @@ import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastSize, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
+import { bodyGlowColor, bodyGlowScale, easePhantom, phantomShown } from './powerupGlow.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
 import { shakeScale } from './combatPrefs.ts';
 import { addShake, shakeLeft } from './cameraShake.ts';
@@ -301,8 +303,12 @@ interface Avatar {
   /** Status-effect shell (burning, poisoned, frozen…), made on first need. */
   aura?: Mesh;
   jet?: Mesh;
-  /** How see-through it is drawn now (Classes: a cloaked Shade); 1 = solid. */
+  /** How see-through it is drawn now (Classes: a cloaked Shade; the Phantom power-up); 1 = solid. */
   shown?: number;
+  /** Whether a power-up's glow or the spawn shimmer is on the character's meshes now (setGlow on them). */
+  charGlow?: boolean;
+  /** Phantom's fade, 0 (solid) to 1 (its shimmer). */
+  phantom?: number;
   /** Parachute or glider over them, and which. */
   canopy?: { node: TransformNode; kind: number; harness?: CanopyHarness };
   /** The zipline trolley over a rider's head (made on first ride). */
@@ -2837,18 +2843,22 @@ export class GameView {
         if (a.anim instanceof CharacterAnimator) a.anim.setDormant(out);
       }
       a.placeholder.setEnabled(p.alive && !a.anim);
-      const glowColor = p.powerups & POWERUP_DAMAGE_BIT ? '#c03cff' : p.powerups & POWERUP_SPEED_BIT ? '#36d6ff' : null;
+      // A power-up's glow (powerupGlow.ts): Overdrive's gold swells and settles slower than once a second (held still
+      // with Reduce flashing), never a flicker.
+      const glowColor = p.alive ? bodyGlowColor(p.powerups) : null;
+      const glowScale = bodyGlowScale(p.powerups, now / 1000, reduceFlashing());
       // Only when it changes: setting a PBR colour marks every mesh using the material for a shader check.
-      const glowKey = `${glowColor}|${a.anim ? 1 : 0}`;
+      const glowKey = `${glowColor}|${glowScale}|${a.anim ? 1 : 0}`;
       const reglow = a.glowKey !== glowKey;
       a.glowKey = glowKey;
-      if (reglow) setGlow(a.mat, glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black());
+      if (reglow) setGlow(a.mat, glowColor ? Color3.FromHexString(glowColor).scale(glowScale) : Color3.Black());
       // Spawn protection: a faint shimmer round them until it drops (content/vfx.json map.lasting shield.spawn; Reduce
       // flashing: the steady glow below instead of the pack's crackling ball). A powerup: a low flame at the feet.
       const size = a.root.scaling.y || 1;
       const shielded = p.alive && (p.status & FX_PROTECTED) !== 0;
       if (shielded && !reduceFlashing() && !a.culled) this.lasting.want(`shield:${p.slot}`, 'shield.spawn', { x: p.x, y: p.y + 0.95 * size, z: p.z }, { size, level: SHIELD_SHIMMER });
-      const aura = p.alive && !a.culled ? (p.powerups & POWERUP_DAMAGE_BIT ? 'aura.damage' : p.powerups & POWERUP_SPEED_BIT ? 'aura.speed' : null) : null;
+      // (Not on a Phantom: the flame would give them away.)
+      const aura = p.alive && !a.culled && !(p.status & FX_PHANTOM) ? (p.powerups & POWERUP_DAMAGE_BIT ? 'aura.damage' : p.powerups & POWERUP_SPEED_BIT ? 'aura.speed' : null) : null;
       if (aura) this.lasting.want(`aura:${p.slot}`, aura, { x: p.x, y: p.y + 0.02, z: p.z }, { size, level: 0.85 });
       // The calm shimmer (and the steady glow everyone sees under the pack's): a soft blue on the body, eased in and out.
       const shieldGlow = shielded ? 1 : 0;
@@ -2856,12 +2866,18 @@ export class GameView {
       a.shieldGlow = a.culled ? shieldGlow : ease(a.shieldGlow ?? 0, shieldGlow, dt, 4, 3);
       // In tenths, set only when it changes (setting a material's colour costs a shader check).
       const step = Math.round(a.shieldGlow * 10);
-      if (step !== (a.shieldStep ?? 0) || (reglow && step)) {
+      // (A power-up's glow reaches the character's own meshes too, not only the stand-in capsule: Overdrive's gold on
+      // the body is how others see it.)
+      if (step !== (a.shieldStep ?? 0) || reglow) {
         a.shieldStep = step;
         const k = (step / 10) * SHIELD_GLOW_PEAK;
-        const base = glowColor ? Color3.FromHexString(glowColor).scale(0.55) : Color3.Black();
+        const base = glowColor ? Color3.FromHexString(glowColor).scale(glowScale) : Color3.Black();
         setGlow(a.mat, base.add(SHIELD_GLOW.scale(k)));
-        if (a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, (glowColor ? Color3.FromHexString(glowColor).scale(0.35) : Color3.Black()).add(SHIELD_GLOW.scale(k)));
+        // (Never touched while nothing glows on it: a character's own glow, eyes or a visor, stays as it was made.)
+        const lit = !!glowColor || step > 0;
+        const touch = lit || !!a.charGlow;
+        a.charGlow = lit;
+        if (touch && a.anim instanceof CharacterAnimator) for (const m of a.anim.ch.meshes) if (m.material && 'emissiveColor' in m.material) setGlow(m.material as unknown as { emissiveColor: Color3 }, (glowColor ? Color3.FromHexString(glowColor).scale(glowScale * 0.64) : Color3.Black()).add(SHIELD_GLOW.scale(k)));
       }
       if (a.anim) {
         // Riders stand (or sit) still in their seats, however fast the vehicle goes.
@@ -2937,7 +2953,7 @@ export class GameView {
       this.setAvatarPair(a, p, now);
       // A status: the pack's aura for the nearest few (statusFx.ts), the plain shell for the rest.
       // (Not a cloaked one: its shell fades with it, an aura would give it away.)
-      if (p.status && p.alive && !a.culled && eye && !(p.status & FX_CLOAK)) this.statusFx.ask(p.slot, p.status, p, a.root.scaling.y || 1, eye);
+      if (p.status && p.alive && !a.culled && eye && !(p.status & (FX_CLOAK | FX_PHANTOM))) this.statusFx.ask(p.slot, p.status, p, a.root.scaling.y || 1, eye);
       if (p.status || a.aura) {
         a.aura ??= createAura(this.scene, a.root);
         setAura(this.scene, a.aura, p.alive ? plainStatus(p.status, this.statusFx.worn(p.slot)) : 0, now);
@@ -2975,10 +2991,15 @@ export class GameView {
       const tag = p.alive ? allyColor(p.slot) : null;
       const cloaked = p.alive && (p.status & FX_CLOAK) !== 0;
       const enemy = !tag || tag.toLowerCase() === '#ff3b3b';
-      const shown = cloaked ? (enemy ? 0.06 : 0.35) : 1;
+      // Phantom (a power-up): a faint shimmer to enemies, a ghost to teammates; a shot shows them for a moment (the
+      // host clears FX_PHANTOM), eased in and out (powerupGlow.ts).
+      a.phantom = easePhantom(a.phantom ?? 0, p.alive && (p.status & FX_PHANTOM) !== 0 ? 1 : 0, dt);
+      const ghost = a.phantom > 0 ? 1 + (phantomShown(now / 1000, enemy, reduceFlashing()) - 1) * a.phantom : 1;
+      const phantom = a.phantom > 0.5;
+      const shown = Math.min(cloaked ? (enemy ? 0.06 : 0.35) : 1, Math.round(ghost * 100) / 100);
       // Behind smoke an enemy's marker isn't drawn either (the cloud hides the body; the marker would give it away).
       const smoked = enemy && !!tag && this.smoke.length > 0 && this.smokeHides({ x: a.root.position.x, y: a.root.position.y + 1.4, z: a.root.position.z });
-      this.setTag(a, (cloaked || smoked) && enemy ? null : tag, tag ? (this.insigniaOf?.(p.slot) ?? null) : null);
+      this.setTag(a, (cloaked || phantom || smoked) && enemy ? null : tag, tag ? (this.insigniaOf?.(p.slot) ?? null) : null);
       // A rank badge keeps a readable size far off: it grows past INSIGNIA_FULL_SIZE_M, up to INSIGNIA_MAX_GROW times.
       if (a.tag?.ins) {
         const c = this.camera.position, r = a.root.position;
@@ -3006,7 +3027,12 @@ export class GameView {
         // A crowd's held guns are GPU instances, which can't fade on their own: hidden while see-through.
         for (const m of a.root.getChildMeshes()) {
           if (m.isAnInstance) m.isVisible = shown === 1;
-          else m.visibility = shown;
+          else {
+            m.visibility = shown;
+            // An opaque material (the characters' PBR: transparencyMode OPAQUE) ignores `visibility`: while see-through
+            // the mesh wears a blended copy of it (one per material, kept), its own again once solid.
+            seeThrough(m, shown < 1);
+          }
         }
       }
     }
@@ -5299,4 +5325,29 @@ function glassShardMaterial(scene: Scene, tint: string): StandardMaterial {
   m.alpha = 0.55;
   m.backFaceCulling = false;
   return m;
+}
+
+/** Blended copies of opaque materials, for bodies drawn see-through (a cloaked Shade, the Phantom power-up). */
+const ghostMaterials = new WeakMap<Material, Material>();
+const ghostOf = new WeakMap<Material, Material>();
+
+/** Put a mesh in or out of its material's blended copy (only for an opaque one: `transparencyMode` 0). */
+function seeThrough(m: { material: Material | null }, on: boolean): void {
+  const mat = m.material;
+  if (!mat) return;
+  if (on) {
+    if (ghostOf.has(mat) || (mat as Material & { transparencyMode?: number | null }).transparencyMode !== 0) return;
+    let g = ghostMaterials.get(mat);
+    if (!g) {
+      g = mat.clone(`${mat.name}_ghost`) ?? undefined;
+      if (!g) return;
+      (g as Material & { transparencyMode?: number | null }).transparencyMode = 2;
+      ghostMaterials.set(mat, g);
+      ghostOf.set(g, mat);
+    }
+    m.material = g;
+  } else {
+    const own = ghostOf.get(mat);
+    if (own) m.material = own;
+  }
 }

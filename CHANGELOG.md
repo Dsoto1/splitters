@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Seven new power-ups:** Overdrive (rare: a few seconds nothing hurts you and you knock enemies flying, a steady gold glow), Regen, Rapid Fire, Phantom (nearly invisible until you fire), Moon Boots, Vampire and Bottomless Mag, each with its own pickup, sound and HUD timer, in MapMaker's palette and switchable one by one in Match setup and a server's rules.
 - **St. John's is now St. Jasper's Military Academy**, a fictional school: its name in every map list, Featured, Quick Play and MapMaker, and its description (the map's id stays `st_johns`).
 - **Roofs and windows: no light through the seams.** A sloped timber roof over thin walls no longer shows sky along the wall tops (St. John's library annex and every roof of that kind), and the library's glass windows no longer show a slit of light up their sides and along their heads.
 - **St. John's dorm rooms: a mirror cabinet over every sink, a black footlocker at the foot of every bunk, and the two desks side by side in the corner by the window** (in every dorm piece in MapMaker; no extra props a room).

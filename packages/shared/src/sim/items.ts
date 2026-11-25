@@ -12,7 +12,7 @@ import type { DiscPower } from './discs.ts';
 export { CORE_ITEMS };
 
 /** The powerups a pickup can give (content/pickups.json reads this list). */
-export const POWERUP_KINDS = ['speed', 'damage'] as const;
+export const POWERUP_KINDS = ['speed', 'damage', 'overdrive', 'regen', 'rapid', 'phantom', 'moon', 'vampire', 'bottomless'] as const;
 export type PowerupKind = (typeof POWERUP_KINDS)[number];
 
 export type ItemEffect =
