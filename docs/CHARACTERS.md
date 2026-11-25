@@ -254,7 +254,7 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
     Chompers McFinn (Wacky Shark), Master Bodhi (Zen Capybara); and from the afternoon Brutus Hornbeck (armoured
     rhino juggernaut), Zero Ringtail (raccoon hacker; Rascal McGraw's (Bandit's) model since the evening, below), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
     samurai; blue blood, as a crustacean's), Maximus Cluckworth (gladiator rooster), DJ Volta Coilwave (synthwave
-    eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier), Buster Haymaker (boxer bunny) and
+    eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier, a her), Buster Haymaker (boxer bunny) and
     Duke Dashwood (the cheetah kingpin; the download says "cheetah pimp"). From the owner's third batch of 2026-11-22 (the Drive uploads after 15:00):
     Sterling Purrcival (tuxedo cat), Rufus Boomtown (baboon; first named Boomwell) and Chester Knuckleby (chimpanzee).
   - Horrors & Creatures, from the third batch: Ignatius Slagg (the magma juggernaut; bleeds stone).
@@ -1576,7 +1576,7 @@ notes); the owner can rename any.
 
 - **Chrono Crew:** Blix Orrin (`core.crewalien`, "crew alien recruit") and Juno Hartwell (`core.crewpilot`, "crew pilot
   v2"); Clio Everwhen joins; Fuse Hollister to Machines; Clio and Sarge first (see Collections).
-- **Model swaps, id, name and place kept** (as Shiba's and the Salamander Warlord's): Pip Quickfoot ("hare courier clean
+- **Model swaps, id, name and place kept** (as Shiba's and the Salamander Warlord's): Pip Quickfoot (a her: `body: female`, owner 2026-11-25; "hare courier clean
   game ready"; still small, still first in Animalia), Anoobys ("AnubisSentinelRigged"; the community Anubis no longer
   ships) and Thornweaver ("PlainsHuntressRemesh15k", the plains huntress; the community Tribal Warrior no longer ships;
   the name fits, so the character keeps it rather than a retirement through `RETIRED_LOOKS`).
