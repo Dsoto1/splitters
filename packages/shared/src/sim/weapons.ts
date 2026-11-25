@@ -37,14 +37,20 @@ export const PROJECTILE_VISUALS = [
 export type ProjectileVisual = (typeof PROJECTILE_VISUALS)[number];
 
 /**
- * Projectile looks fired as a stream (the flamethrower's flame, goo, bubbles, plasma, oil): the snapshot names a
- * stream projectile's shooter, so clients draw it leaving the shooter's muzzle as drawn now and blend it into where
- * the host has it (client game/streamBlend.ts). Drawn from the snapshot alone it left the eye about 100 ms in the
- * past and trailed behind you while you moved. The Blaster X-42's bolts too (owner, 2026-11-24: "bullets don't look
- * like they properly leave the gun muzzle"): ten a second, fired from the eye, they came out of the middle of the
- * screen instead of the gun.
+ * Projectile looks a gun fires, drawn leaving its muzzle: the snapshot names the shooter of a projectile a gun has
+ * just fired (Match `launch`, not a throw, a cluster's bomblets or an airstrike's bombs), so clients draw it leaving
+ * the shooter's muzzle as drawn now and blend it into where the host has it (client game/streamBlend.ts). Drawn from
+ * the snapshot alone it left the eye about 100 ms in the past: out of the middle of the screen instead of the gun,
+ * and trailing behind you while you moved. First the streams (the flamethrower's flame, goo, bubbles, plasma, oil),
+ * then the Blaster X-42's bolts (owner, 2026-11-24: "bullets don't look like they properly leave the gun muzzle"),
+ * then every projectile gun (owner, 2026-11-24, fix batch 11-25): the Crossbow's arrow, the Nailgun's nails, the
+ * Hornet's stinger, the Flak's shards, the Singularity's vortex, the Heart Taser's slime, rockets, launcher grenades,
+ * discs, the flares, the Swarm's rockets, the Plasma's orb, the Freeze Ray's freeze blast and the thrown spear.
  */
-export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set(['flame', 'goo', 'bubble', 'plasma', 'oil', 'blasterBolt']);
+export const STREAM_VISUALS: ReadonlySet<ProjectileVisual> = new Set([
+  'flame', 'goo', 'bubble', 'plasma', 'oil', 'blasterBolt',
+  'arrow', 'nail', 'stinger', 'shard', 'vortex', 'slime', 'rocket', 'grenade', 'disc', 'flare', 'swarm', 'orb', 'frost', 'spear',
+]);
 
 /**
  * Lingering effects a hit leaves on a player: `burn` and `poison` hurt over
