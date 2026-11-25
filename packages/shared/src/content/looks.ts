@@ -6,7 +6,7 @@
  * same catalogue; they travel as short IDs (encodeLook / decodeLook).
  */
 import type { CharacterStats } from '../sim/characterStats.ts';
-import { WHOLE_BODY_BIOS, WHOLE_BODY_LOOKS } from './characters.generated.ts';
+import { WHOLE_BODY_BIOS, WHOLE_BODY_FIGURE_LOOKS, WHOLE_BODY_LOOKS } from './characters.generated.ts';
 
 export type BodyType = 'male' | 'female';
 
@@ -661,6 +661,21 @@ export const getLook = (id: string | undefined): CharacterLook => {
   if (npc) return npc;
   return lookIn(CORE_LOOKS, id, CORE_LOOKS.find((l) => l.id === DEFAULT_LOOK_ID));
 };
+
+/**
+ * Characters retired to MapMaker (owner, 2026-11-25: "All replacements can be retired to the mapmaker for use in other
+ * creations such as scenarios"): the old models of replaced characters, kept under their own ids (`use: figure` in their
+ * manifests). They are on no roster: not Character Select's, never a bot's, a random or a Roulette pick, and getLook does
+ * not give them (a saved or typed id falls back as an unknown one does). MapMaker's Figure (map/schema.ts FigureEntity)
+ * can wear them, and figureLook draws them.
+ */
+export const RETIRED_FIGURE_LOOKS: readonly CharacterLook[] = WHOLE_BODY_FIGURE_LOOKS;
+
+/** The looks a Figure can wear, for MapMaker's picker: the roster's, then the ones retired to MapMaker. */
+export const FIGURE_LOOK_CHOICES = (): { roster: readonly CharacterLook[]; retired: readonly CharacterLook[] } => ({ roster: CORE_LOOKS, retired: RETIRED_FIGURE_LOOKS });
+
+/** The look a Figure (or anything drawn rather than played) wears: one retired to MapMaker by its id, else getLook's. */
+export const figureLook = (id: string | undefined): CharacterLook => (id && RETIRED_FIGURE_LOOKS.find((l) => l.id === id)) || getLook(id);
 
 /**
  * getLook over a roster. By id a look resolves whatever its tier (a saved choice of an experimental character keeps

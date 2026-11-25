@@ -16,7 +16,7 @@ import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
-import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
+import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, figureLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
 import type { GRIP_FITS } from '@tiletrigger/shared/gripFit';
 import { dyeTexture } from './dye.ts';
@@ -238,7 +238,7 @@ export class CharacterLibrary {
     const files = ['rig.glb'];
     if (spec.npc?.female) files.push('mannequin_f.glb');
     if (spec.look && !npcLookRole(spec.look)) {
-      const l = getLook(spec.look);
+      const l = figureLook(spec.look);
       files.push(...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair.filter((h) => h !== BEARD)]).map((p) => `${p}.glb`));
       files.push(`${firstPersonArms(l)}.glb`);
       const set = clipSetOf(l);
@@ -323,7 +323,7 @@ export class CharacterLibrary {
       holder.scaling.setAll(spec.npc.scale);
       body = 'mannequin';
     } else {
-      const look = getLook(spec.look);
+      const look = figureLook(spec.look);
       // A whole-body look's fitted grip and arms' colours (grips auto-fit; loaded with the first character, not the menu).
       const fit = look.whole ? (await gripFits())[look.id] : undefined;
       if (this.scene.isDisposed) {
