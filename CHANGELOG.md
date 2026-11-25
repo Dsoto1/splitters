@@ -7,7 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
-- **Colour vision.** Options → Accessibility → Colour vision gives the teams colours that stay apart with red-green or blue-yellow colour blindness, and every team now has a symbol (▲ ● ■ ✚ …) beside its colour in the kill feed, scoreboard, minimap and objectives.
+- **Colour vision.** Options → Accessibility → Colour vision gives the teams colours that stay apart with red-green or blue-yellow colour blindness, and every team now has a symbol (▲ ● ■ ✚ …) beside its colour in the kill feed, scoreboard, minimap and objectives. Signed in, the setting follows your account.
 - **St. John's is now St. Jasper's Military Academy**, a fictional school: its name in every map list, Featured, Quick Play and MapMaker, and its description (the map's id stays `st_johns`).
 - **Roofs and windows: no light through the seams.** A sloped timber roof over thin walls no longer shows sky along the wall tops (St. John's library annex and every roof of that kind), and the library's glass windows no longer show a slit of light up their sides and along their heads.
 - **St. John's dorm rooms: a mirror cabinet over every sink, a black footlocker at the foot of every bunk, and the two desks side by side in the corner by the window** (in every dorm piece in MapMaker; no extra props a room).

@@ -18,11 +18,13 @@ vi.mock('../src/profile.ts', () => ({
 }));
 const { syncPrefs } = await import('../src/game/prefSync.ts');
 const { captionMode } = await import('../src/game/captionPrefs.ts');
+const { colourVision, resetColourVisionCache } = await import('../src/game/colourVision.ts');
 
 describe('Sound captions on the account (the profile\'s prefs)', () => {
   beforeEach(() => {
     store.clear();
     saved.length = 0;
+    resetColourVisionCache();
   });
 
   it("signed in, the account's setting is yours here as a match starts", () => {
@@ -48,6 +50,20 @@ describe('Sound captions on the account (the profile\'s prefs)', () => {
     store.set('tiletrigger.captions', 'on');
     syncPrefs();
     expect(saved).toEqual([{ prefs: { captions: 'on' } }]);
+  });
+
+  it('Colour vision comes along the same way', () => {
+    store.set('tiletrigger.colourVision', 'tritan');
+    profile.p = { ...profile.p, prefs: { colourVision: 'redgreen' } };
+    syncPrefs();
+    expect(colourVision()).toBe('redgreen');
+    expect(store.get('tiletrigger.colourVision')).toBe('redgreen');
+    expect(saved).toEqual([]);
+    // An account with neither takes both of this browser's in one save.
+    store.set('tiletrigger.captions', 'on');
+    profile.p = { ...profile.p, prefs: {} };
+    syncPrefs();
+    expect(saved).toEqual([{ prefs: { captions: 'on', colourVision: 'redgreen' } }]);
   });
 
   it('the hub keeps only short settings', () => {

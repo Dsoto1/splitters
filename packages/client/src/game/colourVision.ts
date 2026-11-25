@@ -8,7 +8,8 @@
  *   simulation in colourVision.test.ts, colourSim.ts). A map's or host's own team colours give way to them.
  * Whatever the setting, every team also has its symbol beside its colour (teamSymbols.ts).
  * Saved in this browser (`tiletrigger.colourVision`; Options → Accessibility writes the key itself, so none of this is
- * in the menu's first load). The game reads it as a match starts (the HUD, minimap, kill feed, scoreboard, flags,
+ * in the menu's first load); signed in, also on the account (the profile's `prefs`, game/prefSync.ts). The game
+ * reads it as a match starts (the HUD, minimap, kill feed, scoreboard, flags,
  * vehicles and forts take teamColours.ts's colours).
  */
 export const COLOUR_VISIONS = ['default', 'redgreen', 'tritan'] as const;

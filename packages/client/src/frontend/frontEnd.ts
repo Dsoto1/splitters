@@ -3445,10 +3445,14 @@ export class FrontEnd {
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
-    // Colour vision (game/colourVision.ts, its key written out here to keep that file out of the menu): read as a match starts.
-    const cvNow = storage('tiletrigger.colourVision');
+    // Colour vision (game/colourVision.ts, its key written out here to keep that file out of the menu): read as a match
+    // starts; signed in, the account's (the profile's `prefs`) and saved there too, like Sound captions (game/prefSync.ts).
+    const cvNow = (currentAccount() && cachedProfile()?.prefs.colourVision) || storage('tiletrigger.colourVision');
     const colourVisionSel = el('select', { id: 'opt-colour-vision' }, ...['default', 'redgreen', 'tritan'].map((v, i) => el('option', { value: v, textContent: ['Default', 'Red-green (deuteranopia, protanopia)', 'Tritanopia (blue-yellow)'][i], selected: v === cvNow })));
-    colourVisionSel.addEventListener('change', () => storage('tiletrigger.colourVision', colourVisionSel.value));
+    colourVisionSel.addEventListener('change', () => {
+      storage('tiletrigger.colourVision', colourVisionSel.value);
+      if (currentAccount()) void saveProfile({ prefs: { ...cachedProfile()?.prefs, colourVision: colourVisionSel.value } }).catch(() => undefined);
+    });
     // Sound captions (game/captionPrefs.ts, its key and event written out here to keep that file out of the menu's
     // first load): off by default; signed in, the account's (the profile's `prefs`) and saved there too; a match
     // brings this browser in step with the account as it starts (game/prefSync.ts).
