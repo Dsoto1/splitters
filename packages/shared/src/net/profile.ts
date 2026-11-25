@@ -87,6 +87,8 @@ export interface Profile {
   optics: Record<string, string>;
   /** Your key bindings (client game/keyBindings.ts: action → "key,alt", only actions changed from the defaults): kept with the account so every browser you sign in on uses them. An older hub sends none. */
   keys: Record<string, string>;
+  /** Small settings kept with the account (option → value, e.g. `captions: 'dir'`: client game/captionPrefs.ts): every browser you sign in on uses them. An older hub sends none. */
+  prefs: Record<string, string>;
 }
 
 /** A profile's key bindings, checked: at most 128 actions, each "key,alt" of short letter-and-digit codes; null when it isn't a map. */
@@ -94,6 +96,14 @@ export function keysShape(raw: unknown): Record<string, string> | null {
   if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
   const out: Record<string, string> = {};
   for (const [k, v] of Object.entries(raw as Record<string, unknown>).slice(0, 128)) if (/^[A-Za-z][A-Za-z0-9]{0,31}$/.test(k) && typeof v === 'string' && /^[A-Za-z0-9]{0,24},[A-Za-z0-9]{0,24}$/.test(v)) out[k] = v;
+  return out;
+}
+
+/** A profile's settings, checked: at most 32, each a short lower-case name and a short word; null when it isn't a map. */
+export function prefsShape(raw: unknown): Record<string, string> | null {
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) return null;
+  const out: Record<string, string> = {};
+  for (const [k, v] of Object.entries(raw as Record<string, unknown>).slice(0, 32)) if (/^[a-z][A-Za-z0-9]{0,31}$/.test(k) && typeof v === 'string' && /^[a-z0-9-]{0,16}$/.test(v)) out[k] = v;
   return out;
 }
 

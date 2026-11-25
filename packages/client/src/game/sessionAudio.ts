@@ -401,7 +401,7 @@ export class SessionAudio {
       if (prev.acc > STRIDE) {
         prev.acc = 0;
         const at = { x: p.x, y: p.y, z: p.z };
-        this.audio.play(this.stepSound(at), { at });
+        this.audio.play(this.stepSound(at), { at, by: p.slot });
       }
     }
   }
@@ -435,10 +435,10 @@ export class SessionAudio {
         const altLaunch = ev.alt && getWeapon(ev.w).alt?.kind === 'projectile' && getWeapon(ev.w).alt?.ammo === 'own';
         // A melee weapon's own barrel (the Battle Axe's blunderbuss) has its own report.
         const own = ev.alt ? getWeapon(ev.w).view.altShot : undefined;
-        if (!mine && own) this.audio.play(own.sound as SoundId, { at: tuple(ev.from), rate: own.rate ?? 1, gain: 1.15 });
-        else if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from) });
+        if (!mine && own) this.audio.play(own.sound as SoundId, { at: tuple(ev.from), rate: own.rate ?? 1, gain: 1.15, by: ev.s, caption: 'fire.shot' });
+        else if (!mine) this.audio.play(altLaunch ? 'fire.launcher' : fireSound(ev.w), { at: tuple(ev.from), by: ev.s, caption: 'fire.shot' });
         const cycle = getWeapon(ev.w).view.cycle;
-        if (!mine && cycle) this.audio.play(cycle.sound as SoundId, { at: tuple(ev.from), delay: cycle.at });
+        if (!mine && cycle) this.audio.play(cycle.sound as SoundId, { at: tuple(ev.from), delay: cycle.at, by: ev.s, caption: 'fire.cycle' });
         // A round that passes close by your head (not yours, not one that hit you) whizzes past: one per shot.
         const ear = mine ? undefined : poseOf(me);
         if (ear) {
@@ -698,7 +698,7 @@ export class SessionAudio {
       case 'throw': {
         const at = ev.s === me ? undefined : poseOf(ev.s);
         if (ev.s === me) this.audio.play('throw');
-        else if (at) this.audio.play('throw', { at });
+        else if (at) this.audio.play('throw', { at, by: ev.s });
         break;
       }
       case 'cue':

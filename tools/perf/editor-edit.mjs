@@ -18,7 +18,7 @@ import { chromium } from 'playwright';
 
 const PORT = process.env.EDIT_PORT ?? '4191';
 const CLIENT = process.env.EDIT_URL ?? `http://localhost:${PORT}`;
-const MAPS = process.argv.slice(2).length ? process.argv.slice(2) : ["St. John's", 'Iron Maw'];
+const MAPS = process.argv.slice(2).length ? process.argv.slice(2) : ["St. Jasper's Military Academy", 'Iron Maw'];
 const PROFILE = process.env.EDIT_PROFILE;
 /** More of the page's query, e.g. `&perfoff=editlight` to measure against the code without a saving (game/perfSwitches.ts). */
 const QUERY = process.env.EDIT_QUERY ?? '';
