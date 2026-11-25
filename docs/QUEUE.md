@@ -47,10 +47,10 @@ Everything else keeps its place below these.
 
 ## In flight
 - **Lead: the "splitters" session (owner, 2026-11-22).**
-- M · lead's helper · **Campaign framework** (The plan, step 3): `wip/campaign-1125`, checking on `check/campaign-1125` (docs/CAMPAIGN.md).
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/campaign-1125` · 4082d555 · 45672208356 (attempt 2: attempt 1 red only on the known `teams` flake) — Campaign framework, The plan step 3 (docs/CAMPAIGN.md)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
