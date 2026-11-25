@@ -7,6 +7,8 @@ import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
 import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
+import { CreateTube } from '@babylonjs/core/Meshes/Builders/tubeBuilder';
+import { Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { AMMO_BOX_KIT_SCALE, THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower, type PowerupKind } from '@tiletrigger/shared';
 import { POWERUP_LOOKS } from './powerupLook.ts';
@@ -332,18 +334,48 @@ function powerupModel(scene: Scene, name: string, kind: Exclude<PowerupKind, 'sp
       break;
     }
     case 'bottomless': {
-      // A magazine under an infinity of two hoops.
-      part(CreateBox(`${name}_bmmag`, { width: 0.12, height: 0.3, depth: 0.2 }, scene), dark).position.y = -0.14;
-      part(CreateBox(`${name}_bmlip`, { width: 0.125, height: 0.04, depth: 0.205 }, scene), glow).position.y = 0.02;
-      for (const x of [-0.11, 0.11]) {
-        const h = part(CreateTorus(`${name}_bmloop${x}`, { diameter: 0.2, thickness: 0.045, tessellation: 20 }, scene), glow);
-        h.rotation.x = Math.PI / 2;
-        h.position.set(x, 0.17, 0);
+      // A small stack of rounds lying on their sides, tips to the front (three, two, one), under a glowing ∞ standing on edge to the
+      // player (owner, 2026-11-24: the magazine under two hoops read like scissors).
+      const brass = mat(scene, '#d9a441', 0.15);
+      for (const [row, n] of [[0, 3], [1, 2], [2, 1]] as const) {
+        for (let i = 0; i < n; i++) {
+          const x = (i - (n - 1) / 2) * BOTTOMLESS_ROUND.across;
+          const y = BOTTOMLESS_ROUND.floor + row * BOTTOMLESS_ROUND.up;
+          const id = `${row}_${i}`;
+          const c = part(CreateCylinder(`${name}_bmcase${id}`, { diameter: BOTTOMLESS_ROUND.diameter, height: 0.2, tessellation: 12 }, scene), brass);
+          c.rotation.x = Math.PI / 2;
+          c.position.set(x, y, 0);
+          const t = cone(`bmtip${id}`, BOTTOMLESS_ROUND.diameter, 0.09, glow);
+          t.rotation.x = Math.PI / 2;
+          t.position.set(x, y, 0.145);
+        }
       }
+      const mark = part(CreateTube(`${name}_bminf`, { path: lemniscate(BOTTOMLESS_INFINITY.width, 48), radius: BOTTOMLESS_INFINITY.thickness / 2, tessellation: 10, cap: 0 }, scene), glow);
+      mark.position.y = BOTTOMLESS_INFINITY.y;
       ring(-0.4);
       break;
     }
   }
+}
+
+/** Bottomless Mag's rounds (metres): each one's thickness, the step across a row and up a row, the bottom row's height. */
+export const BOTTOMLESS_ROUND = { diameter: 0.075, across: 0.085, up: 0.07, floor: -0.24 } as const;
+/** Bottomless Mag's ∞: how wide, how thick its stroke, how high over the pickup's middle. */
+export const BOTTOMLESS_INFINITY = { width: 0.42, thickness: 0.05, y: 0.16 } as const;
+
+/**
+ * An ∞ (the lemniscate of Bernoulli) `width` metres across, standing in the x-y plane round the origin, as a closed
+ * path of `n` points (the first repeated at the end) for a tube.
+ */
+export function lemniscate(width: number, n: number): Vector3[] {
+  const a = width / 2;
+  const out: Vector3[] = [];
+  for (let i = 0; i <= n; i++) {
+    const t = (i / n) * Math.PI * 2;
+    const d = 1 + Math.sin(t) ** 2;
+    out.push(new Vector3((a * Math.cos(t)) / d, (a * Math.sin(t) * Math.cos(t)) / d, 0));
+  }
+  return out;
 }
 
 /** The ammo box in code: an olive box with a stripe that tells the ammo type apart (general boxes are yellow). */

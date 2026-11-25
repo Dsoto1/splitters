@@ -186,7 +186,7 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 | Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver (the plains huntress model since 2026-11-25), Cutter McCrae (2026-11-25), Umpire, Velvet Vance |
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
 | Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Blix Orrin, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Vesper Quill, Wren Halloway (their group is Outer Space) |
-| Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Santa, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw |
+| Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo (new model 2026-11-25), Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Santa, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw |
 | Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
@@ -254,7 +254,7 @@ tiers; anything else fails `pnpm content:check`) is copied into its look (`tier`
     Chompers McFinn (Wacky Shark), Master Bodhi (Zen Capybara); and from the afternoon Brutus Hornbeck (armoured
     rhino juggernaut), Zero Ringtail (raccoon hacker; Rascal McGraw's (Bandit's) model since the evening, below), Tag Malone (graffiti raccoon), Ryo Snapclaw (mantis shrimp
     samurai; blue blood, as a crustacean's), Maximus Cluckworth (gladiator rooster), DJ Volta Coilwave (synthwave
-    eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier), Buster Haymaker (boxer bunny) and
+    eel DJ), Rowdy Gnashwell (Tasmanian devil), Pip Quickfoot (hare courier, a her), Buster Haymaker (boxer bunny) and
     Duke Dashwood (the cheetah kingpin; the download says "cheetah pimp"). From the owner's third batch of 2026-11-22 (the Drive uploads after 15:00):
     Sterling Purrcival (tuxedo cat), Rufus Boomtown (baboon; first named Boomwell) and Chester Knuckleby (chimpanzee).
   - Horrors & Creatures, from the third batch: Ignatius Slagg (the magma juggernaut; bleeds stone).
@@ -822,7 +822,7 @@ MegaKit's aliens, and checked against `content/creatures.lock.json`.
 - **The community originals** (Meshy community T-pose downloads, CC0 per the
   owner; see ASSET_SOURCES.md) go through the same in-house rig. Modelled in a
   T-pose, their arm joints sit on one level line, read off slab profiles of
-  each limb. Looks: Elder Tomo (robed monk, the robe skinned as cloth), The
+  each limb. Looks: Elder Tomo (robed monk, the robe skinned as cloth; until 2026-11-25, now the owner's rigged model), The
   Visitor (grey alien), Biscuit (a tabby cat on its hind legs: tail on the
   hips, digitigrade legs on their centre line; `size: 'small'`), Flt. Lt.
   Ember (flight suit), Cap'n Barnacle (pirate with a peg leg; no foot turn,
@@ -1576,7 +1576,7 @@ notes); the owner can rename any.
 
 - **Chrono Crew:** Blix Orrin (`core.crewalien`, "crew alien recruit") and Juno Hartwell (`core.crewpilot`, "crew pilot
   v2"); Clio Everwhen joins; Fuse Hollister to Machines; Clio and Sarge first (see Collections).
-- **Model swaps, id, name and place kept** (as Shiba's and the Salamander Warlord's): Pip Quickfoot ("hare courier clean
+- **Model swaps, id, name and place kept** (as Shiba's and the Salamander Warlord's): Pip Quickfoot (a her: `body: female`, owner 2026-11-25; "hare courier clean
   game ready"; still small, still first in Animalia), Anoobys ("AnubisSentinelRigged"; the community Anubis no longer
   ships) and Thornweaver ("PlainsHuntressRemesh15k", the plains huntress; the community Tribal Warrior no longer ships;
   the name fits, so the character keeps it rather than a retirement through `RETIRED_LOOKS`).
@@ -1590,8 +1590,9 @@ notes); the owner can rename any.
   spirit; bleeds spirit), Deuce Droopwell (`core.blobfish`, Vegas dealer blobfish), Ottis Crema (`core.baristaotter`,
   espresso barista otter, small), Boogie Tuskworth (`core.warthog`, funky biker warthog, large), Det. Drake Montego
   (`core.detectiveduck`, Miami detective duck), Napsworth (`core.koala`, sleepy koala, small).
-- **Not taken:** "elder tomo rigged" (2026-11-25) is a re-upload of Elder Tomo, already on the roster; as with the
-  2026-11-22 re-uploads it was not reprocessed (owner question).
+- **Elder Tomo's new model** (owner, 2026-11-25: "use it"; built in the fix batch `wip/fixes-20261125`): "elder tomo
+  rigged" (2026-11-25, Meshy, owned) replaces the community "Elder T-pose" (no longer shipped); id, name, size and place
+  kept; rebaked at 12k (10.4k after the seams close), grips auto-fitted (no outliers), a new portrait.
 
 ### Bosses, parked
 

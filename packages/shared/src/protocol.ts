@@ -691,8 +691,8 @@ export type ServerMessage =
       score: ScoreEntry[];
       ev: GameEvent[];
       /**
-       * Live projectiles as [id, x, y, z, look (index into PROJECTILE_VISUALS)], and for a stream's own shots
-       * (STREAM_VISUALS, not the pieces a projectile splits into) the shooter's slot after them.
+       * Live projectiles as [id, x, y, z, look (index into PROJECTILE_VISUALS)], and for a shot a gun has fired
+       * (STREAM_VISUALS; not throws, bomblets or a mounted gun's) the shooter's slot after them.
        */
       pr: ([number, number, number, number, number] | [number, number, number, number, number, number])[];
       /** IDs of pickups currently taken (waiting to respawn). */

@@ -140,3 +140,4 @@ Provenance: Meshy, owned.
   - "biker warthog funky 15k" (2026-11-25)  -> character meshy_warthog (look Boogie Tuskworth)
   - "miami vice detective duck 15k" (2026-11-25)  -> character meshy_detectiveduck (look Det. Drake Montego)
   - "sleepy koala 3d" (2026-11-25)  -> character meshy_koala (look Napsworth)
+  - "elder tomo rigged" (2026-11-25)  -> character meshy_elder (look Elder Tomo), his new model (the community "Elder T-pose" it replaced is no longer shipped)

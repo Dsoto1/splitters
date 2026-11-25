@@ -586,6 +586,12 @@ interface Projectile {
   stuckOffset?: Vec3;
   /** Arena discs: an extra disc (triple throws, splits) that doesn't come back to its thrower. */
   extra?: boolean;
+  /**
+   * Fired from a gun in the shooter's hands (Match `launch` without a lift, a disc throw): the snapshot names its
+   * shooter so clients draw it leaving their muzzle (STREAM_VISUALS). Not a throw, a mounted gun's shot, nor what a
+   * projectile spawns (bomblets, an airstrike's bombs) or leaves lying (a disc on the ground).
+   */
+  muzzle?: boolean;
   /** Walkers (the sheep): on the ground, which way they're heading, and ticks until they may hop again. */
   walking?: boolean;
   heading?: Vec3;
@@ -705,6 +711,12 @@ const BURN_DPS = 12;
 const POISON_DPS = 9;
 const FIRE_ZONE_DPS = 14;
 const FROZEN_TICKS = Math.round(TICK_RATE * 1.4);
+/**
+ * A gun's shot names its shooter in the snapshot only this young (Projectile.muzzle): clients use it when they first
+ * see the shot, so one first seen later (joining mid-flight, out of interest range) stays on the host's path instead
+ * of jumping back to the gun.
+ */
+const MUZZLE_NAMED_TICKS = Math.round(TICK_RATE * 0.5);
 /** Damage a second while held in a freeze blast's ice (owner, 2026-11-24: "about 5 HP/s"). */
 export const FREEZE_DPS = 5;
 /** A freeze blast's block of ice round the body it holds (half sizes, m, at size 1): a little more than the body. */
@@ -3902,6 +3914,7 @@ export class Match {
       ticksLeft: Math.round(spec.fuseSeconds * TICK_RATE),
       age: 0,
       ...(shooter.mount ? { fromMount: shooter.mount.index } : {}),
+      ...(lift === 0 && this.gunSeatOf(shooter) === null ? { muzzle: true } : {}),
     });
   }
 
@@ -4070,7 +4083,7 @@ export class Match {
     const eye = this.eyeOf(shooter);
     discThrows(spec, power?.kind ?? null).forEach((t, i) => {
       const aim = viewDirection(shooter.yaw + t.yaw, shooter.pitch);
-      this.projectiles.push({ id: this.nextProjectileId++, owner: shooter.slot, spec: t.spec, weapon, pos: add(eye, scale(aim, 0.5)), vel: scale(aim, t.spec.speed), ticksLeft: Math.round(t.spec.fuseSeconds * TICK_RATE), age: 0, ...(i > 0 ? { extra: true } : {}) });
+      this.projectiles.push({ id: this.nextProjectileId++, owner: shooter.slot, spec: t.spec, weapon, pos: add(eye, scale(aim, 0.5)), vel: scale(aim, t.spec.speed), ticksLeft: Math.round(t.spec.fuseSeconds * TICK_RATE), age: 0, muzzle: true, ...(i > 0 ? { extra: true } : {}) });
     });
     if (power && --power.shots <= 0) shooter.discPower = undefined;
   }
@@ -4941,7 +4954,7 @@ export class Match {
         if (w) w.mag = Math.min(w.def.magazine, w.mag + 1);
         return;
       }
-      this.projectiles.push({ ...p, id: this.nextProjectileId++, spec: { ...spec, retrievable: true }, pos: { x: at.x, y: at.y + 0.2 - down.dist + 0.1, z: at.z }, vel: { x: 0, y: 0, z: 0 }, stuck: true, ticksLeft: Math.round(DISC_LIE_SECONDS * TICK_RATE), armAt: this.tick + Math.round(DISC_PICKUP_DELAY * TICK_RATE) });
+      this.projectiles.push({ ...p, id: this.nextProjectileId++, muzzle: false, spec: { ...spec, retrievable: true }, pos: { x: at.x, y: at.y + 0.2 - down.dist + 0.1, z: at.z }, vel: { x: 0, y: 0, z: 0 }, stuck: true, ticksLeft: Math.round(DISC_LIE_SECONDS * TICK_RATE), armAt: this.tick + Math.round(DISC_PICKUP_DELAY * TICK_RATE) });
       return;
     }
     if (spec.splashRadius > 0) this.pendingEvents.push({ e: 'explode', s: p.owner, p: tuple(at), r: spec.splashRadius, w: p.weapon });
@@ -8190,7 +8203,7 @@ export class Match {
       players: this.playerSnapshots(),
       score: this.scores(),
       ev: events,
-      pr: this.projectiles.map((p) => (STREAM_VISUALS.has(p.spec.visual) && !p.extra ? [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual), p.owner] : [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)])),
+      pr: this.projectiles.map((p) => (p.muzzle && p.age < MUZZLE_NAMED_TICKS && STREAM_VISUALS.has(p.spec.visual) ? [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual), p.owner] : [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)])),
       pk: this.pickups.filter((p) => !p.enabled || p.ruledOut || this.tick < p.availableAt).map((p) => p.id),
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),

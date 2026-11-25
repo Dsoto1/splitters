@@ -36,6 +36,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/fixes-20261125` · d9a49e0f · run 45624249036: fix batch 11-25 (lane A): every projectile gun's shot leaves its barrel like the X-42; Bottomless Mag's pickup a stack of rounds under an ∞; Elder Tomo's new model ("elder tomo rigged", Meshy, owned); Pip Quickfoot is a her (HANDOFF "Fix batch 2026-11-25").
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -66,7 +67,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - S · B · Iron Coast B/C defence balance ("leave for now") and an eye-level menu card for Step Temple (owner, 2026-11-05) (found in the notes, 2026-11-18; owner "1": added without changing the order above).
 
 ## Bugs
-- S · A · **Next fix batch (`wip/fixes-20261125`), owner 11-24:** (1) every projectile gun's shot drawn leaving its barrel like the X-42 (Crossbow, Nailgun, Hornet, Flak, Singularity, Heart Taser, rockets: the shared stream list, game/blockHoles-era fix); (2) Bottomless Mag's pickup becomes a stack of rounds with an ∞ mark (it read like scissors). Owner kept: Overdrive's bump 10 damage plus fall credit; Double Damage and Speed tint the body.
 - M · A · **Bullet holes on breakable props** (owner 11-24, later, its own item): crates, barrels and every solid prop on 'Everything breaks' maps; holes ride the prop and go when it breaks (like blockHoles.ts for blocks).
 - ~~**Light gaps where roofs meet walls, and at the top of the new windows**~~ fixed on `wip/stjohns-12` (Ready to land; PLAN 4r): the ridge roof generator's eave and gable foot closed from below, the open leaded windows' bars through the wall; no map re-save needed (the pieces are generated).
 - **Fixes go to lane A from now on** (owner, 2026-11-17); the two already running in lane B (Dropship deck, character pass) finish there.
@@ -75,7 +75,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 
 ## Easy wins
-- S · A · Elder Tomo's new model from the owner's "elder tomo rigged" upload (owner, 2026-11-25: use it); keep his id, name and place; in the fix batch `wip/fixes-20261125`.
 
 
 - XS · B · (check: may be done: `beams`, `tracers` and `vehicles` on frozen clocks, 2026-11-20) e2e `vehicles` "a badly damaged buggy catches fire": the buggy burns out in about 200 ticks while the check waits on wall clock for the page to draw it burning (failed once locally under load; HANDOFF "Landed: the e2e `vehicles` flakes").
