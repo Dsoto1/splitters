@@ -282,7 +282,7 @@ mesh level.
 
 | Asset | LOD0 triangles | Textures | Other |
 |---|---|---|---|
-| Character | ≤ 15k | 1 × 2048² atlas (base, ORM, normal) | Shared humanoid skeleton, ≤ 60 bones, 3 LODs + impostor |
+| Character | ≤ 15k | 1 × 2048² atlas (base, ORM, normal; KTX2: "GPU-compressed textures") | Shared humanoid skeleton, ≤ 60 bones, 3 LODs + impostor |
 | Weapon viewmodel | ≤ 8k | 1024² | Sockets: muzzle, hand_r, hand_l |
 | Weapon world model | ≤ 2k | shares the viewmodel atlas | |
 | Tile kit piece | ≤ 3k per piece | Theme trim sheet / atlas | Must sit inside the tile's cell bounds; doorways keep 3 × 3 m clearance |
@@ -301,6 +301,51 @@ mesh level.
 6. **Data:** `characters/<id>.json` (default bot profile, voice set, animation attitude, tags).
 7. **Readability:** the roster-wall tool (silhouette and lit views, equal size) and in-arena distance checks.
 8. **Originality gate 2 and approval:** recorded in the entry's `review` field.
+
+### GPU-compressed textures (characters, owner 2026-11-25)
+
+Characters looked soft up close: their colour maps were 1024 px JPEGs, and a rebaked one (`surface: rebake`) was
+painted at 1024 and shrunk again. The owner chose to go straight to GPU-compressed maps at 2048 px rather than an
+interim fix. Every character body built from its download now ships:
+
+- **Colour map at 2048 px** (`COLOUR_SIZE` in `prepare-meshy-characters.mjs`; the download's own size if smaller).
+  A download kept in its own texture layout gives its own map, resized once (padded, scrubbed and recoloured as
+  before). A rebaked one is painted at 2048 (`REBAKE_SIZE`), the size it ships at, so it is resampled once; its
+  charts are packed with the same 2-texel gutter, so they also cover more of the map. The 1024 px JPEG still guides
+  the seam-aware cut, so the meshes are the ones built before; a rebaked body's texture coordinates move with its
+  new charts, and its far copy (cut with texture seams weighed) is cut again.
+- **KTX2 with Basis Universal** (`KHR_texture_basisu`, required; `tools/content/ktx2.mjs`), mipmaps made ahead of time.
+  Encoded with KTX-Software's `ktx` 4.4.2 (Khronos, Apache-2.0): `KTX_BIN=<path>`, else `ktx` on the PATH, else the
+  pinned Linux release fetched once into `~/.cache/tiletrigger` and checked against its SHA-256. Only content builds
+  encode; CI and the game only read. Choices, measured on Talon Skycrest's maps (`KTX2_KINDS`):
+
+  | Map | Codec | Talon | Quality (against the lossless 2048 map) |
+  |---|---|---|---|
+  | colour 2048 | ETC1S (BasisLZ, `--clevel 4 --qlevel 255`) | 0.84 MB | 33.1 dB (the old 1024 JPEG, scaled up: 29.4 dB) |
+  | colour 2048, rejected | UASTC + RDO (λ 1.5-12) + Zstandard | 3.3-4.0 MB | 38-52 dB: Meshy's noisy paint barely compresses, 2-3x the budget for every character |
+  | normal (512, or 1024 with `fixes.normalSize`) | UASTC + RDO λ 4 + Zstandard 22 | 0.92 MB at 1024 | 0.5° mean error (ETC1S 6.1°, the old JPEG 4.7°) |
+  | metal-roughness 512 | ETC1S | | |
+
+  `--testrun` keeps the bytes the same for the same picture (no tool version or date), so a rebuild is reproducible.
+- **The first-person arms** (`<id>_fparms.glb`, unused by the game since the universal arms) keep their JPEGs.
+- **Characters without a download here** (the Meshy rig tasks, downloads no longer on the owner's Drive):
+  `node tools/content/ktx2-built.mjs` turns the built maps to KTX2 at their size (1024), for the memory.
+- Tools that read a built character's pictures go through `readPicture` (ktx2.mjs decodes KTX2 with `ktx extract`):
+  `arm-colours.mjs` (grip fit), `reface-built.mjs` (which encodes the normal map again).
+
+**In the game** (`packages/client/src/content/gltf.ts`) Babylon's glTF loader registers `KHR_texture_basisu` and its
+KTX2 decoder (`KhronosTextureContainer2`) transcodes each map in workers to what the GPU takes: BC7 on desktops, ASTC
+or ETC on phones, plain RGBA where none is supported (the texture still shows; only its memory is the old size). The
+decoder (`babylon.ktx2Decoder.js`, npm `babylonjs-ktx2decoder` of the same release as `@babylonjs/core`, 9.32.0) and
+its transcoders (`msc_basis_transcoder`, `uastc_*`, `zstddec`, from Babylon.js 9.32.0's
+`packages/tools/babylonServer/public`) are served from `packages/client/public/ktx2/` (Apache-2.0, licence beside them):
+Babylon's default is its CDN, and the game loads nothing from other hosts. When `@babylonjs/core` moves to a new
+release, copy that release's files in.
+
+**Memory and download** (`node tools/content/texture-memory.mjs`: maps as uploaded, mip chains included, KTX2 at
+1 byte a texel (BC7/ASTC), JPEG/PNG at 4):
+
+RESULTS_TABLE
 
 ### Environment kits and tiles
 

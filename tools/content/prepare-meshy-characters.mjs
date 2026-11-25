@@ -23,8 +23,8 @@
 // - moves the rig's joints onto the character's (keeping the rig's joint
 //   orientations, so the clips' rotations mean the same thing) and rebinds the
 //   mesh to them, its weights carried over joint by joint;
-// - keeps the base colour only (1024 px JPEG), simplifies the mesh and adds the
-//   low-detail copy the game draws for distant characters.
+// - keeps the base colour (2048 px) and a normal map, both GPU-compressed (KTX2, Basis Universal: ktx2.mjs),
+//   simplifies the mesh and adds the low-detail copy the game draws for distant characters.
 //
 // An unrigged FBX download is rigged here first: the mesh is welded and
 // pre-simplified, the joints go where the manifest's `landmarks` place them
