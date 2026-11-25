@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Doors that fit themselves.** In MapMaker a door cuts the wall it goes in to its own shape, in a room's wall or a wall of blocks, framed on both faces, and hangs in the middle of the wall; a new **Arched door** cuts an arched doorway; changing a door's look re-cuts it, and removing the door leaves the doorway.
 - **Sharper characters up close.** Character colour maps are twice as detailed (2048 px) for 177 of the 209 characters, and every character's maps now stay compressed on the graphics card, so all of them together take about 40% less video memory than before; the game downloads a little more per character.
 - **Story** heads the main menu (Story · Quick Play · Local · Online): the Operations Database, three placeholder sectors on today's maps, played one map at a time against bots and saved on your device and your account; a sector's later maps can't be hosted until you've won them in Story (joining is fine).
 - **Seamless tunnels and a Stair Tunnel.** Brick, stone and concrete now run on across tunnel pieces (vaults and arches, pieces turned east-west or back to front, curves and junctions) with no jump or stone band at the joints, and every tunnel family has a Stair Tunnel in MapMaker: down a level over two cells, with landings and room to stand on every step.

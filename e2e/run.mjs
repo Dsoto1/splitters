@@ -3200,6 +3200,88 @@ async function editortoolsFlow(browser) {
   await editorTileOptionChecks(browser);
   await editorBuriedPickChecks(browser);
   await editorBelowGroundChecks(browser);
+  await editorDoorFitChecks(browser);
+}
+
+/**
+ * Doors that fit themselves (owner, 2026-11-18, "1a"; map format v52): the door tool cuts the wall a door goes in to
+ * the door's doorway, in a tile's side or a wall of free blocks, and hangs it in the wall's middle; a new look in the
+ * inspector re-cuts it as one undo step; erasing the door leaves the doorway.
+ */
+async function editorDoorFitChecks(browser) {
+  const page = await (await browser.newContext({ viewport: { width: 1400, height: 820 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(60000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 0);
+  const settle = () => frames(page, 3);
+  // A room at cell (4, 0) (its south side the wall at z = -4) and a stone block wall at z = -16.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.history.execute('Place', {
+      kind: 'batch',
+      commands: [
+        { kind: 'addTiles', tiles: [{ id: 'fit_room', tile: 'core.room', x: 4, y: 0, z: 0, rotation: 0 }] },
+        { kind: 'addEntities', entities: [{ id: 'fit_wall', kind: 'block', position: [32, 0, -16], size: [10, 4, 0.6], yaw: 0, material: 'core.pbr_castle_stone', tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120 }] },
+      ],
+    });
+    ed.setSelection({ tiles: [], entities: [] });
+  });
+  await settle();
+  const placeAt = async (x, z) => {
+    await page.evaluate(([x, z]) => window.__editor.view.focus({ x, y: 0, z }), [x, z]);
+    await settle();
+    const q = await page.evaluate(([x, z]) => window.__editor.view.project({ x, y: 0, z }), [x, z]);
+    const n0 = await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'door').length);
+    // (A first click after a new map can go to focusing the canvas: click until the door is down.)
+    for (let i = 0; i < 4; i++) {
+      await page.mouse.move(q.x, q.y);
+      await settle();
+      await page.mouse.click(q.x, q.y);
+      await settle();
+      if ((await page.evaluate(() => window.__editor.doc.entities.filter((e) => e.kind === 'door').length)) > n0) break;
+    }
+  };
+  await page.evaluate(() => window.__editor.setTool({ kind: 'scenario', key: 'door:arched' }));
+  await placeAt(32, -4);
+  await placeAt(32, -16);
+  const state = () =>
+    page.evaluate(() => {
+      const d = window.__editor.doc;
+      return {
+        side: d.classicStructure.tiles.find((t) => t.id === 'fit_room')?.edges?.['0,0,0:S'] ?? null,
+        wall: d.entities.find((e) => e.id === 'fit_wall')?.doorways ?? null,
+        doors: d.entities.filter((e) => e.kind === 'door').map((e) => ({ id: e.id, style: e.style ?? 'sliding', at: e.position })),
+        undo: window.__editor.history.undoLabel,
+      };
+    });
+  const s1 = await state();
+  check(
+    s1.side === 'door_arched' && s1.wall?.length === 1 && s1.wall[0].style === 'door_arched' && Math.abs(s1.wall[0].at) < 1e-6 && s1.doors.length === 2 && s1.doors.some((d) => Math.abs(d.at[2] + 3.75) < 1e-6) && s1.doors.some((d) => Math.abs(d.at[2] + 16) < 1e-6),
+    `an Arched Door cuts an Arched doorway in a room's outside wall and in a wall of blocks, and hangs in each wall's middle (${JSON.stringify(s1)})`,
+  );
+  // The inspector's Look: Oak re-cuts both to square doorways (one undo step each).
+  for (const d of s1.doors) {
+    await page.evaluate((id) => window.__editor.setSelection({ tiles: [], entities: [id] }), d.id);
+    await settle();
+    await page.selectOption('#ed-door-look', 'oak');
+    await settle();
+  }
+  const s2 = await state();
+  check(s2.side === 'door' && s2.wall?.[0]?.style === 'door' && s2.doors.every((d) => d.style === 'oak') && s2.undo === 'Set look', `a new look re-cuts the doorway to match, one undo step (${JSON.stringify(s2)})`);
+  // Erase the doors: the doorways stay.
+  await page.evaluate(() => {
+    const ed = window.__editor;
+    ed.setSelection({ tiles: [], entities: [] });
+    ed.history.execute('Erase doors', { kind: 'removeEntities', entities: ed.doc.entities.filter((e) => e.kind === 'door') });
+  });
+  await settle();
+  const s3 = await state();
+  check(s3.doors.length === 0 && s3.side === 'door' && s3.wall?.[0]?.style === 'door', `removing the doors leaves their doorways (${JSON.stringify(s3)})`);
+  check(errors.length === 0, `no page errors fitting doors (${errors.join(' | ')})`);
+  await page.context().close();
 }
 
 /**
