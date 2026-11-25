@@ -80,6 +80,7 @@ Everything else keeps its place below these.
 - S · B · Iron Coast B/C defence balance ("leave for now") and an eye-level menu card for Step Temple (owner, 2026-11-05) (found in the notes, 2026-11-18; owner "1": added without changing the order above).
 
 ## Bugs
+- S · A · **Next fix batch (`wip/fixes-20261126`):** St. Jasper's dorm bunks: the Bunk Bed with Footlocker has the chest on the wrong end: the bunk sits snug in the room's corner, the footlocker at its other (open) end (owner, 2026-11-25, "no rush"). Through MapMaker's piece/variant, not a one-off.
 - M · A · **Bullet holes on breakable props** (owner 11-24, later, its own item): crates, barrels and every solid prop on 'Everything breaks' maps; holes ride the prop and go when it breaks (like blockHoles.ts for blocks).
 - ~~**Light gaps where roofs meet walls, and at the top of the new windows**~~ fixed on `wip/stjohns-12` (Ready to land; PLAN 4r): the ridge roof generator's eave and gable foot closed from below, the open leaded windows' bars through the wall; no map re-save needed (the pieces are generated).
 - **Fixes go to lane A from now on** (owner, 2026-11-17); the two already running in lane B (Dropship deck, character pass) finish there.
