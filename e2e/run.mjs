@@ -12519,7 +12519,7 @@ const FLASHING_PARTS = {
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
-  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick'] },
+  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
 };
 
 /**
@@ -12698,6 +12698,38 @@ const FLASHING_DAY = {
         // The surround was seen part-way out on several frames (a fade, not a cut), and the shadow moved.
         sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 4 : 2) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
         after: () => page.evaluate(() => (window.__autoInput = { buttons: 0 })),
+      },
+      // Power-ups on bodies by day over the white tiles (game/powerupGlow.ts; owner, 2026-11-24): a bot 2.6 m in front
+      // in Overdrive (its gold glow swelling and settling under once a second, held still with the setting on), and one
+      // beside it in Phantom (a faint shimmer), coming on as the recording starts and the Phantom shown by a shot.
+      {
+        name: 'powerups',
+        label: "power-ups on bodies 2.6 m in front by day: Overdrive's gold glow and Phantom's shimmer coming on, the Phantom shown by its shot",
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.4],
+        look: { yaw: Math.PI, pitch: -0.12 },
+        bots: [[-24.4, 0, -21], [-23.1, 0, -21.3]],
+        before: () => sim(page, (m) => m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0))),
+        at: {
+          2: () =>
+            sim(page, (m) => {
+              const [a, b] = m.combatants().filter((c) => c.bot);
+              if (a) a.power.overdrive = 60 * 30;
+              if (b) b.power.phantom = 60 * 30;
+              // (The Phantom holds its fire: its own shots would show it before the moment's one.)
+              clearInterval(self.__phantomKnife);
+              self.__phantomKnife = setInterval(() => b && (b.fireCooldown = b.fireCooldown2 = b.throwCooldown = 600), 1000 / 60);
+            }),
+          // (A shot shows a Phantom for a second: the host clears FX_PHANTOM; the client eases it back in.)
+          12: () => sim(page, (m) => { const b = m.combatants().filter((c) => c.bot)[1]; if (b) m.lastShot.set(b.slot, m.tick); }),
+        },
+        seen: () =>
+          page.evaluate(() => {
+            const av = [...window.__cs.view.avatars.values()];
+            return { gold: av.some((a) => (a.glowKey ?? '').startsWith('#ffc83a')), phantom: av.some((a) => (a.phantom ?? 0) > 0) };
+          }),
+        sees: (_on, s) => s.gold && s.phantom,
+        after: () => sim(page, (m) => (clearInterval(self.__phantomKnife), m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0)))),
       },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
       // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,

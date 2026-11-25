@@ -66,6 +66,15 @@ import {
   eyeScaleOf,
   PhysicsWorld,
   SPEED_BOOST,
+  RAPID_RELOAD,
+  fillMagazine,
+  noPowers,
+  powerMove,
+  powersFromWire,
+  rapidFireRate,
+  rapidSteps,
+  tickPowers,
+  type PowerTicks,
   WEAPONS_BY_SLOT,
   weaponByCode,
   weaponCode,
@@ -276,6 +285,8 @@ export class LocalPlayer {
   raiseTicks = 0;
   speedTicks = 0;
   damageTicks = 0;
+  /** The other power-ups' timers (sim/powerups.ts), counted down as the server does (in each move). */
+  power: PowerTicks = noPowers();
   /** Whether each input's predicted move ended sprinting (by seq): where a replay starts, for the sprint exit. */
   private readonly sprintAfter = new Map<number, boolean>();
   private readonly collider;
@@ -393,16 +404,24 @@ export class LocalPlayer {
       // the pair in hand nothing aims and the second trigger ends a sprint. The input goes out as it was sampled.
       const applied = this.pairInput(input, this.held, this.offs.get(this.held), true);
       const sprinted = !!this.state.sprint;
+      // (Rapid Fire as the server reads it: its timer before this input's count down, which the move does here.)
+      const rapidLeft = this.power.rapid;
       if (!this.mounted) this.state = this.move(this.state, applied, this.predTick + 1, true);
       else this.vehicle?.step(input);
       if (this.fireCooldown > 0) this.fireCooldown--;
       if (this.fireCooldown2 > 0) this.fireCooldown2--;
+      const rapid = rapidSteps(rapidLeft, rapidFireRate(this.damageTicks > 0));
+      if (rapid) {
+        this.fireCooldown = Math.max(0, this.fireCooldown - rapid);
+        this.fireCooldown2 = Math.max(0, this.fireCooldown2 - rapid);
+      }
       if (this.raiseTicks > 0) this.raiseTicks--;
       // As the server: out of a sprint the weapon comes up before it fires (its sprint-exit time, on the raise timer).
       if (!this.mounted && sprinted && !this.state.sprint) this.raiseTicks = Math.max(this.raiseTicks, this.handling(this.held).sprintExit);
       this.sprintAfter.set(input.seq, !!this.state.sprint);
       this.sprintAfter.delete(input.seq - 600);
       this.advanceReload();
+      if (rapidSteps(rapidLeft, RAPID_RELOAD) && this.reloadTicks > 0) this.advanceReload();
       [shot, shot2] = this.predictFire(applied);
       if ((shot || shot2) && this.paired) this.pairShots.push([input.seq, this.held, shot && !shot.alt ? 1 : 0, shot2 ? 1 : 0]);
     }
@@ -558,7 +577,9 @@ export class LocalPlayer {
     }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
     const before = state;
-    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * this.bodySpeed * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, jump: this.jump, stamina: this.stamina, gravity: this.gravity, weaponMove: this.handling(held, pair).move, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
+    // Overdrive's speed, Moon Boots' gravity and jump (as the server's movement environment).
+    const pm = powerMove(this.power);
+    let next = applyPads(this.pads, stepMovement(this.physics, this.collider, state, input, (this.speedTicks > 0 ? SPEED_BOOST : 1) * pm.speed * this.bodySpeed * this.statusSpeed, TICK_DT, this.traction(state.pos), { liquids: this.liquids, jet, ladders: this.ladders, scale: this.scale, jump: this.jump * pm.jump, stamina: this.stamina, gravity: this.gravity * pm.gravity, weaponMove: this.handling(held, pair).move, ...(this.gravityZones.length ? { gravityZones: this.gravityZones } : {}), ...(this.airJumps ? { airJumps: this.airJumps } : {}), ...(this.jetFuel !== null ? { jetpack: true } : {}), ...(this.glider ? { glider: true } : {}), ...(this.ziplines.length ? { ziplines: this.ziplines, team: this.team() } : {}) }));
     // Portals, exactly as the server takes them (Match.step).
     const through = this.portals.length && next.zip === undefined ? applyPortals(this.portals, before, next, this.portalOn, this.scale, bodyHeightOf(next, this.scale)) : null;
     if (through) {
@@ -567,6 +588,7 @@ export class LocalPlayer {
     }
     if (this.jetFuel !== null) this.jetFuel = stepJetFuel(this.jetFuel, !!next.jet);
     if (this.speedTicks > 0) this.speedTicks--;
+    tickPowers(this.power);
     return next;
   }
 
@@ -602,6 +624,12 @@ export class LocalPlayer {
     // As the host: the input's fire mode for the gun in hand (absent: the one it has).
     if (!this.seatGun && input.fireMode !== undefined && def.fireModes) this.appliedModes.set(this.held, clampFireMode(def, input.fireMode));
     const firing = firingOf(def, this.seatGun ? 0 : this.appliedModes.get(this.held));
+    // Bottomless Mag (as the server): the gun in hand stays full, so nothing reloads.
+    const bottomless = this.power.bottomless > 0 && !this.seatGun;
+    if (bottomless) {
+      this.fillHeld(def, ammo, off);
+      if (this.reload || this.reload2) this.cancelReload();
+    }
     stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun && !paired);
     const ready = (a: [number, number, number, number]) => (this.seatGun ? a[0] : roundsReady(this.box(this.held, a)));
     // As the server: a swing always interrupts a melee weapon's barrel reload; its barrel fires once a load is in.
@@ -641,7 +669,20 @@ export class LocalPlayer {
       if (armed && paired && off && input.buttons & BUTTON_AUTO_RELOAD && autoReloadDue(def, this.offBox(off, ammo), { reloadTicks: this.reloadTicks2, fireCooldown: this.fireCooldown2, raiseTicks: this.raiseTicks, burstLeft: 0 }, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReloadOff();
     }
     if (!fired) recoilIdle(this.gun, firing.kick, gp.accuracy, firing.interval);
+    if (bottomless) this.fillHeld(def, ammo, off);
     return [shot, shot2];
+  }
+
+  /** Bottomless Mag: the held gun's magazine (and a second gun's) full, a round chambered (sim/powerups.ts fillMagazine). */
+  private fillHeld(def: WeaponDefinition, ammo: [number, number, number, number], off: { mag: number; unchambered: boolean } | undefined): void {
+    const w = { def, mag: ammo[0], unchambered: this.unchambered.has(this.held) || undefined, off: off ? { mag: off.mag, unchambered: off.unchambered || undefined } : undefined };
+    if (!fillMagazine(w)) return;
+    ammo[0] = w.mag;
+    this.unchambered.delete(this.held);
+    if (off && w.off) {
+      off.mag = w.off.mag;
+      off.unchambered = false;
+    }
   }
 
   /** The trigger itself. `fired`: a primary round (or swing) went off, as the server counts it. */
@@ -787,6 +828,7 @@ export class LocalPlayer {
       this.throwable = me.gr ? { kind: THROWABLES[me.gr[0]] ?? 'frag', count: me.gr[1] } : null;
       this.speedTicks = me.sp;
       this.damageTicks = me.dm;
+      this.power = powersFromWire(me.px);
       this.jetFuel = me.jp ?? null;
       this.airJumps = me.cl ? (CLASS_DEFS[CLASS_IDS[me.cl[0]] ?? 'rocketeer'].airJumps ?? 0) : 0;
       this.glider = me.gl === 1;

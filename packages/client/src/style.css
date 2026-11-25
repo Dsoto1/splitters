@@ -68,6 +68,7 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 .panel-title { font: 700 13px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; color: var(--text); margin: 0 0 10px; }
 .display { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; }
 .tabs { display: flex; align-items: center; gap: 4px; }
+.tabs.wrap { flex-wrap: wrap; }
 .tabs .tab { background: transparent; border: 1px solid transparent; color: var(--muted); padding: 6px 12px; }
 .tabs .tab.on { color: var(--text); background: rgba(0, 209, 255, 0.14); border-color: rgba(0, 209, 255, 0.6); }
 .tabs .bumper, kbd { display: inline-flex; align-items: center; justify-content: center; min-width: 26px; height: 20px; padding: 0 6px; border-radius: 4px; background: #e6f0ff; color: #0b0f1a; font: 700 11px var(--font-display); }
@@ -1146,7 +1147,11 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #weapon-bar span { min-width: 30px; padding: 3px 10px; background: rgba(18, 24, 39, 0.8); color: #56647c; font: 600 12px var(--font-display); text-align: center; clip-path: polygon(5px 0, 100% 0, calc(100% - 5px) 100%, 0 100%); }
 #weapon-bar span.owned { color: var(--fg); }
 #weapon-bar span.held { background: var(--cyan); color: #06121b; font-weight: 700; }
-#powerups { position: absolute; left: 24px; bottom: 74px; display: flex; flex-direction: column; gap: 4px; font-weight: 700; text-shadow: 0 1px 3px #000; }
+#powerups { position: absolute; left: 24px; bottom: 112px; display: flex; flex-direction: column; gap: 2px; font-weight: 700; text-shadow: 0 1px 3px #000; }
+/* A power-up's line (game/powerupLook.ts): its icon, name and seconds, and a thin bar of the time left under it. */
+#powerups .pu-line { position: relative; display: inline-flex; align-items: center; gap: 5px; padding-bottom: 3px; align-self: flex-start; }
+#powerups .pu-icon { flex: none; filter: drop-shadow(0 1px 2px #000); }
+#powerups .pu-bar { position: absolute; left: 19px; bottom: 0; height: 2px; max-width: calc(100% - 19px); border-radius: 1px; opacity: 0.8; }
 #pickup-msg { position: absolute; left: 50%; top: 64%; transform: translateX(-50%); padding: 6px 14px 6px 12px; background: linear-gradient(90deg, rgba(18, 24, 39, 0.92), rgba(18, 24, 39, 0.7)); border-left: 3px solid var(--success); font: 600 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0; transition: opacity 0.3s; }
 #pickup-msg::before { content: '+ '; color: var(--success); }
 #pickup-msg.on { opacity: 1; transition: none; }

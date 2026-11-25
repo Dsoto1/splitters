@@ -578,8 +578,10 @@ export class SessionAudio {
         break;
       }
       case 'pickup': {
-        const kind = getItem(ev.item)?.effect.kind ?? 'ammo';
-        const id = `pickup.${kind}` as SoundId;
+        const fx = getItem(ev.item)?.effect;
+        const kind = fx?.kind ?? 'ammo';
+        // The newer power-ups each have their own (content/sounds.json powerup.<kind>); Speed and Damage the shared one.
+        const id = (fx?.kind === 'powerup' && fx.powerup !== 'speed' && fx.powerup !== 'damage' ? `powerup.${fx.powerup}` : `pickup.${kind}`) as SoundId;
         if (ev.s === me) this.audio.play(id);
         else {
           const at = this.pickupAt.get(ev.id) ?? poseOf(ev.s);

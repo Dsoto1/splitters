@@ -9,6 +9,7 @@ import { validBotCast } from '../content/botThemes.ts';
 import { isWeaponSetId } from './weaponSets.ts';
 import { isWeatherChoice } from '../map/weather.ts';
 import { fireteamMode, fireteamSize } from './fireteams.ts';
+import { POWERUP_KINDS } from './items.ts';
 
 /**
  * Match setup (Play → match setup, saved setups): everything the player
@@ -59,6 +60,8 @@ export interface MatchSetup {
   /** Themed names (absent: on): false, random bots take general names ("Brassneck") instead of their character's ("Coco Bean"). */
   themedNames?: false;
   killstreaks?: boolean;
+  /** Power-ups switched off (sim/items.ts POWERUP_KINDS; absent or empty: all on). */
+  powerupsOff?: string[];
   /** Mix up weapon pickups (absent: off). */
   mixPickups?: boolean;
   /** Drop weapon on death (absent: on). */
@@ -853,6 +856,8 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (Array.isArray(s.botCast)) rules.botCast = validBotCast(s.botCast);
   if (s.themedNames === false) rules.themedNames = false;
   if (s.killstreaks === false) rules.killstreaks = false;
+  const off = Array.isArray(s.powerupsOff) ? POWERUP_KINDS.filter((k) => s.powerupsOff!.includes(k)) : [];
+  if (off.length) rules.powerupsOff = off;
   if (s.mixPickups) rules.mixPickups = true;
   if (s.dropWeapons === false) rules.dropWeapons = false;
   if (s.akimbo === false) rules.akimbo = false;

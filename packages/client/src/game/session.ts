@@ -4169,7 +4169,7 @@ export class GameSession {
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), fav: this.favClassIndex(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());
-      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
+      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel(), local.power);
       // A spectator isn't waiting to respawn: no "Respawning…".
       this.hud.setStatus(this.phase, this.timeLeft, local.alive || this.spectator, this.winner, this.outcome);
       this.rouletteHud?.frame(now);

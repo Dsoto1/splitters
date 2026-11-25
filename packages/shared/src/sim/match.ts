@@ -26,8 +26,15 @@ import { CHUTE, heightAboveGround } from './parachute.ts';
 import type { NavWorld } from '../nav/index.ts';
 import { buildMapNav, loadMapNav, type PrebuiltNav } from './mapNav.ts';
 import {
+  POWERUP_BOTTOMLESS_BIT,
   POWERUP_DAMAGE_BIT,
+  POWERUP_MOON_BIT,
+  POWERUP_OVERDRIVE_BIT,
+  POWERUP_RAPID_BIT,
+  POWERUP_REGEN_BIT,
   POWERUP_SPEED_BIT,
+  POWERUP_VAMPIRE_BIT,
+  FX_PHANTOM,
   STATUS_BURN,
   FX_JACKPOT,
   FX_PROTECTED,
@@ -61,6 +68,10 @@ import { randomLook } from './randomLooks.ts';
 import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
+import {
+  MOON_GRAVITY, MOON_JUMP, OVERDRIVE_SPEED, OVERDRIVE_DAMAGE, OVERDRIVE_KNOCK_EVERY_TICKS, OVERDRIVE_LIFT, OVERDRIVE_PUSH, OVERDRIVE_WEAPON, PHANTOM_REVEAL_TICKS, RAPID_RELOAD, REGEN_PER_TICK, VAMPIRE_SHARE,
+  fillMagazine, noPowers, powersWire, rapidFireRate, rapidSteps, tickPowers, type PowerTicks,
+} from './powerups.ts';
 import { dealPickup, rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
@@ -82,7 +93,7 @@ import { newRigid, rigidOf, rigidSpeeds, rigidWire, rotate as rotateQ, stepRigid
 import { terrainHeightAt } from '../map/terrain.ts';
 import { mapGroundBores, nearGroundCut, type GroundCut } from '../map/groundBore.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
-import { DEFAULT_DEATHMATCH_RULES, akimboAllowed, akimboReady, dropsInPlay, isTeamMode, matchPhysics, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
+import { DEFAULT_DEATHMATCH_RULES, akimboAllowed, akimboReady, dropsInPlay, isTeamMode, matchPhysics, powerupOff, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import type { CheckpointPlayer, CheckpointSquad, MatchCheckpoint } from '../net/handoff.ts';
 import { tallied, tallyOf, tallyRow } from './squadScores.ts';
@@ -484,6 +495,10 @@ export interface Combatant {
   raiseTicks: number;
   speedTicks: number;
   damageTicks: number;
+  /** The other power-ups' timers (sim/powerups.ts): inputs left of each. */
+  power: PowerTicks;
+  /** Tick an enemy's Overdrive last knocked this one over (one bump a second; set from the start, so every combatant keeps one shape). */
+  bumpedAt: number;
   /** Trigger state: buttons last input, spin-up/charge, semi-auto latch, burst in progress, spread bloom. */
   prevButtons: number;
   /** Tick this player last pressed Use (E): objective modes read it (Bomb: plant / defuse). */
@@ -727,6 +742,8 @@ interface PickupState {
   availableAt: number;
   /** Scenario logic can switch pickups off. */
   enabled: boolean;
+  /** A power-up the host switched off (MatchRules.powerupsOff): it never lies there this match. */
+  ruledOut?: true;
 }
 
 const r3 = (v: number): number => Math.round(v * 1000) / 1000;
@@ -955,6 +972,7 @@ export class Match {
         continue;
       }
       const p: PickupState = { id: e.id, item, placed: item, pool: null, rolls: 0, entity: { item: e.item, random: e.random, keepFixed: e.keepFixed }, pos: { x: e.position[0], y: e.position[1], z: e.position[2] }, respawnTicks: Math.round((e.respawnSeconds ?? item.respawnSeconds) * TICK_RATE), availableAt: 0, enabled: true };
+      if (item.effect.kind === 'powerup' && powerupOff(rules, item.effect.powerup)) p.ruledOut = true;
       this.pickups.push(p);
       this.repool(p);
     }
@@ -1522,6 +1540,8 @@ export class Match {
       raiseTicks: 0,
       speedTicks: 0,
       damageTicks: 0,
+      power: noPowers(),
+      bumpedAt: -1e9,
       prevButtons: 0,
       moveSpeed: 0,
       windup: 0,
@@ -2351,6 +2371,8 @@ export class Match {
   private concealed(c: Combatant): boolean {
     // A cloaked Shade (Classes) is as hidden as anyone in a bush.
     if (c.alive && this.classes?.cloaked(c)) return true;
+    // Phantom: as hidden, until firing gives them away for a moment.
+    if (this.phantomHidden(c)) return true;
     if (!this.hides.length || c.mount || !c.alive) return false;
     const fired = this.lastShot.get(c.slot);
     if (fired !== undefined && this.tick - fired < 2 * TICK_RATE) return false;
@@ -2395,7 +2417,7 @@ export class Match {
         lying.push({ id: `box_${b.id}`, item: boxItem, pos: b.pos, available: up && b.health >= b.max * 0.6, ...(!up && b.kind === 'placed' ? { respawnIn: Math.max(0, (b.until - this.tick) / TICK_RATE) } : {}) });
       }
     }
-    const pickups: PickupView[] = [...lying, ...this.pickups.filter((p) => !restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind)).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
+    const pickups: PickupView[] = [...lying, ...this.pickups.filter((p) => !p.ruledOut && (!restrictedWeapons(this.rules) || !['weapon', 'ammo', 'throwable'].includes(p.item.effect.kind))).map((p) => ({ id: p.id, item: p.item, pos: p.pos, available: p.enabled && this.tick >= p.availableAt, ...(p.enabled && this.tick < p.availableAt ? { respawnIn: (p.availableAt - this.tick) / TICK_RATE } : {}) }))];
     const npcPickups: PickupView[] = [];
     // Team-only doors block other teams; buttons a bot may press can open the doors in its way.
     const blockersBy = new Map<string | null, ReturnType<Scenario['blockers']>>();
@@ -3466,9 +3488,12 @@ export class Match {
           env.jet = c.jetFuel !== null && c.jetFuel >= JET.burn;
           env.ladders = this.ladders;
           env.scale = c.size;
-          env.jump = c.stats.jump;
+          // Overdrive's speed, Moon Boots' gravity and jump (sim/powerups.ts; client prediction passes the same).
+          // (Plain numbers, no object a move: this runs for every actor every tick, the clump's hottest loop.)
+          const moon = c.power.moon > 0;
+          env.jump = moon ? c.stats.jump * MOON_JUMP : c.stats.jump;
           env.stamina = c.stats.stamina;
-          env.gravity = this.phys.gravity;
+          env.gravity = moon ? this.phys.gravity * MOON_GRAVITY : this.phys.gravity;
           env.gravityZones = this.gravityZones.length ? this.gravityZones : undefined;
           env.airJumps = c.cls ? (this.classes?.airJumps(c) ?? 0) : undefined;
           env.jetpack = c.jetFuel !== null ? true : undefined;
@@ -3482,7 +3507,7 @@ export class Match {
           // Bots ride a zipline to its end: a stray E (a door, a vehicle) or a stuck-hop must not drop them off it.
           if (c.bot && c.move.zip !== undefined) input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
           const sprinted = !!c.move.sprint;
-          const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
+          const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * (c.power.overdrive > 0 ? OVERDRIVE_SPEED : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
           c.move = applyPads(this.pads, stepped);
           sprintEnded = sprinted && !stepped.sprint;
           // Into a portal: out of its partner, turned by the difference in their facings (as client prediction does).
@@ -3499,6 +3524,13 @@ export class Match {
       }
       if (c.fireCooldown > 0) c.fireCooldown--;
       if (c.fireCooldown2 > 0) c.fireCooldown2--;
+      // Rapid Fire: the cooldowns run faster (less so with Double Damage on: sim/powerups.ts rapidFireRate).
+      const rapidFire = rapidSteps(c.power.rapid, rapidFireRate(c.damageTicks > 0));
+      if (rapidFire) {
+        c.fireCooldown = Math.max(0, c.fireCooldown - rapidFire);
+        c.fireCooldown2 = Math.max(0, c.fireCooldown2 - rapidFire);
+      }
+      const rapidReload = rapidSteps(c.power.rapid, RAPID_RELOAD);
       if (c.throwCooldown > 0) c.throwCooldown--;
       if (c.meleeCooldown > 0) c.meleeCooldown--;
       if (c.raiseTicks > 0) c.raiseTicks--;
@@ -3507,7 +3539,11 @@ export class Match {
       if (sprintEnded) c.raiseTicks = Math.max(c.raiseTicks, handlingOf(c).sprintExit);
       if (c.speedTicks > 0) c.speedTicks--;
       if (c.damageTicks > 0) c.damageTicks--;
+      if (c.power.regen > 0 && c.alive && c.health < c.maxHealth) c.health = Math.min(c.maxHealth, c.health + REGEN_PER_TICK);
+      tickPowers(c.power);
       this.advanceReload(c);
+      if (rapidReload && c.reloadTicks > 0) this.advanceReload(c);
+      if (c.power.overdrive > 0 && c.alive && !c.mount) this.overdriveBump(c);
 
       // E that grabbed or let go of a zipline this tick was used up by it.
       if (input.buttons & BUTTON_USE && (c.move.zip !== undefined) !== (zipBefore !== undefined)) input.buttons &= ~BUTTON_USE;
@@ -3562,6 +3598,12 @@ export class Match {
         const swing = def.kind === 'melee' && ((fireDown && !c.semiLatch) || (pressed & BUTTON_MELEE) !== 0);
         const shoot = (fireDown && !c.semiLatch && roundsReady(held) > 0) || (input.buttons & BUTTON_ALT && !fireDown && def.alt?.reload && held.alt >= def.alt.cost);
         if (swing || shoot) this.cancelReload(c, paired ? 1 : 0);
+      }
+      // Bottomless Mag: the gun in hand stays full, so nothing to reload (and a reload under way stops).
+      const bottomless = c.power.bottomless > 0 && !gun;
+      if (bottomless) {
+        fillMagazine(held);
+        if (c.reload || c.reload2) this.cancelReload(c);
       }
       const ready = c.fireCooldown === 0 && (gun ? this.turretOnAim(c) : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
@@ -3657,6 +3699,7 @@ export class Match {
       // (The second gun's own: an empty magazine reloads by itself while the first goes on firing.)
       if (paired && input.buttons & BUTTON_AUTO_RELOAD && !unarmed && !frozen && !fired && autoReloadDue(def, offBox(held), { reloadTicks: c.reloadTicks2, fireCooldown: c.fireCooldown2, raiseTicks: c.raiseTicks, burstLeft: 0 }, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReloadOff(c);
       if (fired && gun) gun.firedTick = this.tick;
+      if (bottomless) fillMagazine(held);
       // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
       for (const w of c.weapons.values()) {
         if (!w.def.heat || (fired && w === held)) continue;
@@ -4055,6 +4098,40 @@ export class Match {
     else this.kill(c, null, 'core.fall');
   }
 
+  /** Phantom (sim/powerups.ts): on, and not given away by a shot in the last moment. */
+  private phantomHidden(c: Combatant): boolean {
+    if (!c.alive || c.power.phantom <= 0) return false;
+    const fired = this.lastShot.get(c.slot);
+    return fired === undefined || this.tick - fired >= PHANTOM_REVEAL_TICKS;
+  }
+
+  /**
+   * Overdrive: an enemy you run into is knocked back and up for a little damage (once a second each); a fall soon
+   * after is your kill, as for a disc's knock. Nobody in Overdrive themselves, in a vehicle, or just spawned.
+   */
+  private overdriveBump(c: Combatant): void {
+    const p = c.move.pos;
+    const reach = PLAYER.radius * c.size;
+    for (const o of this.actors()) {
+      if (o === c || !o.alive || o.mount || o.power.overdrive > 0 || !this.hostile(c, o)) continue;
+      if (this.tick - o.bumpedAt < OVERDRIVE_KNOCK_EVERY_TICKS) continue;
+      const q = o.move.pos;
+      const dx = q.x - p.x;
+      const dz = q.z - p.z;
+      const touch = reach + PLAYER.radius * o.size + 0.15;
+      if (dx * dx + dz * dz > touch * touch) continue;
+      if (q.y > p.y + PLAYER.height * c.size || p.y > q.y + PLAYER.height * o.size) continue;
+      const h = hypot(dx, dz);
+      const [ux, uz] = h > 0.05 ? [dx / h, dz / h] : [Math.sin(c.yaw), Math.cos(c.yaw)];
+      o.bumpedAt = this.tick;
+      o.move = { ...o.move, vx: (o.move.vx ?? 0) + ux * OVERDRIVE_PUSH, vz: (o.move.vz ?? 0) + uz * OVERDRIVE_PUSH, velY: Math.max(o.move.velY, OVERDRIVE_LIFT), grounded: false };
+      o.knockedBy = { slot: c.slot, tick: this.tick, weapon: OVERDRIVE_WEAPON };
+      o.hurtAt = this.tick;
+      this.pendingEvents.push({ e: 'knock', s: c.slot, t: o.slot });
+      if (OVERDRIVE_DAMAGE > 0) this.damage(o, OVERDRIVE_DAMAGE, c, OVERDRIVE_WEAPON);
+    }
+  }
+
   /** Lightning jumps from the first target to the nearest enemies in reach (with a clear line), weaker each jump. */
   private chainLightning(shooter: Combatant, def: Trigger, first: number, from: Vec3): void {
     const chain = def.chain!;
@@ -4165,7 +4242,7 @@ export class Match {
    * IMPACT.airShove times as much, and keeps it until they land.
    */
   private stagger(victim: Combatant, power: number, dir: Vec3, share: number): void {
-    if (!victim.alive || victim.mount || victim.invulnerable) return;
+    if (!victim.alive || victim.mount || victim.invulnerable || victim.power.overdrive > 0) return;
     const shove = hitImpact(victim.impact, power, share) * (victim.move.grounded ? 1 : IMPACT.airShove);
     if (shove <= 0) return;
     const h = hypot(dir.x, dir.z);
@@ -6706,7 +6783,8 @@ export class Match {
     const free = c.padFlight;
     c.fallPeak = undefined;
     c.padFlight = false;
-    if (!this.phys.fallDamage || peak === undefined || free || before.grounded) return;
+    // Moon Boots: no fall damage.
+    if (!this.phys.fallDamage || peak === undefined || free || before.grounded || c.power.moon > 0) return;
     // A landing in a low-gravity zone is as soft as the gravity there.
     const drop = (peak - m.pos.y) * this.phys.gravity * gravityAt(this.gravityZones, m.pos);
     if (drop > 5) this.damage(c, (drop - 5) * 9, null, 'core.fall');
@@ -6715,6 +6793,8 @@ export class Match {
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
     if (!victim.alive || this.phase !== 'playing' || victim.invulnerable) return;
+    // Overdrive: nothing hurts them (a fall out of the map still kills).
+    if (victim.power.overdrive > 0) return;
     // Shut inside a sealed vehicle (the Tank): nothing from outside reaches the crew; they die with it (destroyMount).
     if (this.sheltered(victim)) return;
     if (this.mode?.blocksDamage?.(victim, attacker)) return;
@@ -6754,6 +6834,11 @@ export class Match {
     // A heavy hit (content/match-play.json heavyHit): the big-hit effect on them, the screen edge if it's you.
     if (attacker && attacker !== victim && hit >= MATCH_PLAY.heavyHit) this.pendingEvents.push({ e: 'hurt', a: 'big', s: victim.slot, k: attacker.slot, n: Math.round(hit), p: [round2(victim.move.pos.x), round2(victim.move.pos.y + 1.1 * victim.size), round2(victim.move.pos.z)] });
     const armoured = dmg < hit;
+    // Vampire: a share of what the hit took off them (never more than they had) comes back to the attacker.
+    if (attacker && attacker !== victim && attacker.alive && attacker.power.vampire > 0 && this.hostile(attacker, victim)) {
+      const took = Math.min(hit, Math.max(0, victim.health) + (hit - dmg));
+      attacker.health = Math.min(attacker.maxHealth, attacker.health + took * VAMPIRE_SHARE);
+    }
     victim.health -= dmg;
     victim.hurtAt = this.tick;
     if (attacker && attacker !== victim) {
@@ -6859,7 +6944,7 @@ export class Match {
 
   private collectPickups(c: Combatant): void {
     for (const p of this.pickups) {
-      if (!p.enabled || this.tick < p.availableAt) continue;
+      if (!p.enabled || p.ruledOut || this.tick < p.availableAt) continue;
       // Spears only: no other weapons, ammo or grenades to pick up.
       if (restrictedWeapons(this.rules) && (p.item.effect.kind === 'weapon' || p.item.effect.kind === 'ammo' || p.item.effect.kind === 'throwable')) continue;
       if (horizontalDistance(p.pos, c.move.pos) > PICKUP_RADIUS || Math.abs(p.pos.y - c.move.pos.y) > 1.5) continue;
@@ -7050,7 +7135,14 @@ export class Match {
         return true;
       case 'powerup':
         if (e.powerup === 'speed') c.speedTicks = e.seconds * TICK_RATE;
-        else c.damageTicks = e.seconds * TICK_RATE;
+        else if (e.powerup === 'damage') c.damageTicks = e.seconds * TICK_RATE;
+        else c.power[e.powerup] = e.seconds * TICK_RATE;
+        // Bottomless Mag: full at once (Match.applyInputs keeps it so).
+        if (e.powerup === 'bottomless') {
+          const w = c.weapons.get(c.current);
+          if (w) fillMagazine(w);
+          this.cancelReload(c);
+        }
         return true;
     }
   }
@@ -7148,6 +7240,8 @@ export class Match {
     c.raiseTicks = 0;
     c.speedTicks = 0;
     c.damageTicks = 0;
+    c.power = noPowers();
+    c.bumpedAt = -1e9;
     // Classes: the class's loadout, health and speed replace all that.
     this.classes?.onSpawn(c);
     // Roulette: the character's signature weapon in hand, a jackpot's armour, a tiny body, spawn protection.
@@ -7713,13 +7807,13 @@ export class Match {
         ar: Math.ceil(c.armor),
         alive: c.alive ? 1 : 0,
         w: c.current,
-        pu: (c.speedTicks > 0 ? POWERUP_SPEED_BIT : 0) | (c.damageTicks > 0 ? POWERUP_DAMAGE_BIT : 0),
+        pu: c.alive ? powerBits(c) : 0,
       };
       if (c.move.vx || c.move.vz) {
         s.vx = c.move.vx ?? 0;
         s.vz = c.move.vz ?? 0;
       }
-      const fx = statusBits(c) | (this.classes?.fx(c) ?? 0) | (c.alive && this.shielded(c) ? FX_PROTECTED : 0) | (this.roulette && c.alive && this.roulette.rollOf(c) === 'jackpot' ? FX_JACKPOT : 0);
+      const fx = statusBits(c) | (this.classes?.fx(c) ?? 0) | (c.alive && this.shielded(c) ? FX_PROTECTED : 0) | (this.roulette && c.alive && this.roulette.rollOf(c) === 'jackpot' ? FX_JACKPOT : 0) | (this.phantomHidden(c) ? FX_PHANTOM : 0);
       if (fx) s.fx = fx;
       if (c.cls) s.cl = classIndex(c.cls.id);
       if (c.bot) s.st = c.bot.state;
@@ -8039,6 +8133,7 @@ export class Match {
       ...([...c.weapons.values()].some((w) => w.unchambered) ? { uc: [...c.weapons.entries()].filter(([, w]) => w.unchambered).map(([code]) => code) } : {}),
       sp: c.speedTicks,
       dm: c.damageTicks,
+      ...(powersWire(c.power) ? { px: powersWire(c.power) } : {}),
       ...(c.jetFuel !== null ? { jp: c.jetFuel } : {}),
       ...(c.glider ? { gl: 1 as const } : {}),
       ...(this.jammed(c) ? { jm: Math.ceil((this.jammed(c) - this.tick) / TICK_RATE) } : {}),
@@ -8096,7 +8191,7 @@ export class Match {
       score: this.scores(),
       ev: events,
       pr: this.projectiles.map((p) => (STREAM_VISUALS.has(p.spec.visual) && !p.extra ? [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual), p.owner] : [p.id, r3(p.pos.x), r3(p.pos.y), r3(p.pos.z), PROJECTILE_VISUALS.indexOf(p.spec.visual)])),
-      pk: this.pickups.filter((p) => !p.enabled || this.tick < p.availableAt).map((p) => p.id),
+      pk: this.pickups.filter((p) => !p.enabled || p.ruledOut || this.tick < p.availableAt).map((p) => p.id),
       ...(this.pickups.some((p) => p.item !== p.placed) ? { pw: this.pickupItems() } : {}),
       ...(this.drops.length ? { dw: this.dropSnapshots() } : {}),
       ...(this.mounts.length ? { mt: this.mountSnapshots() } : {}),
@@ -8133,7 +8228,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}), ...(c.ice !== undefined ? { frozen: true } : {}) };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, overdrive: c.alive && c.power.overdrive > 0, frozen: c.ice !== undefined, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */
@@ -8159,6 +8254,7 @@ function fillView(v: CombatantView, c: Combatant, concealed: boolean, sheltered:
   v.hitScale = c.hitScale;
   v.shielded = !!c.shieldUntil && c.alive;
   v.shieldUntil = c.shieldUntil ?? 0;
+  v.overdrive = c.alive && c.power.overdrive > 0;
   v.lean = c.alive && !c.mount ? (c.move.lean ?? 0) : 0;
   v.stamina = c.move.stamina ?? 1;
   v.sprinting = !!c.move.sprint;
@@ -8797,6 +8893,21 @@ function facingWithin(c: Combatant, at: Vec3, arc: number): boolean {
   if (len < 1e-6) return true;
   const f = viewDirection(c.yaw, 0);
   return (f.x * dx + f.z * dz) / len >= Math.cos(((arc / 2) * Math.PI) / 180);
+}
+
+/** A combatant's PlayerSnapshot `pu` bits (Phantom isn't one: FX_PHANTOM, which firing clears for a moment). */
+function powerBits(c: Pick<Combatant, 'speedTicks' | 'damageTicks' | 'power'>): number {
+  const p = c.power;
+  return (
+    (c.speedTicks > 0 ? POWERUP_SPEED_BIT : 0) |
+    (c.damageTicks > 0 ? POWERUP_DAMAGE_BIT : 0) |
+    (p.overdrive > 0 ? POWERUP_OVERDRIVE_BIT : 0) |
+    (p.rapid > 0 ? POWERUP_RAPID_BIT : 0) |
+    (p.vampire > 0 ? POWERUP_VAMPIRE_BIT : 0) |
+    (p.regen > 0 ? POWERUP_REGEN_BIT : 0) |
+    (p.moon > 0 ? POWERUP_MOON_BIT : 0) |
+    (p.bottomless > 0 ? POWERUP_BOTTOMLESS_BIT : 0)
+  );
 }
 
 function spendRound(w: WeaponState): boolean {

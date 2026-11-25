@@ -6,8 +6,10 @@ import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
 import { CreateSphere } from '@babylonjs/core/Meshes/Builders/sphereBuilder';
+import { CreateTorus } from '@babylonjs/core/Meshes/Builders/torusBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
-import { AMMO_BOX_KIT_SCALE, THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower } from '@tiletrigger/shared';
+import { AMMO_BOX_KIT_SCALE, THROWABLE_DEFS, getItem, getWeapon, throwableModel, type AmmoType, type DiscPower, type PowerupKind } from '@tiletrigger/shared';
+import { POWERUP_LOOKS } from './powerupLook.ts';
 import type { WorldBox } from '@tiletrigger/shared';
 import type { ModelLibrary } from '../content/models.ts';
 import { castSmall } from './shadowFlags.ts';
@@ -248,12 +250,100 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
       }
     }
     part(CreateCylinder(`${name}_ring`, { diameter: 0.8, height: 0.03, tessellation: 24 }, scene), mat(scene, color, 0.5)).position.y = -0.45;
-  } else {
+  } else if (fx.powerup === 'speed' || fx.powerup === 'damage') {
     part(CreateSphere(`${name}_pu`, { diameter: 0.5, segments: 12 }, scene), mat(scene, fx.powerup === 'speed' ? '#36d6ff' : '#c03cff', 0.9));
-  }
+  } else powerupModel(scene, name, fx.powerup, part);
   if (instanced) instanceParts(scene, root);
   if (instanced && batch) batch.adopt(root);
   return root;
+}
+
+/**
+ * The seven newer power-ups' pickups (owner, 2026-11-24), in-house shapes in each one's colour (game/powerupLook.ts),
+ * about half a metre across like the Speed and Damage orbs, each with a ring under it in its colour.
+ */
+function powerupModel(scene: Scene, name: string, kind: Exclude<PowerupKind, 'speed' | 'damage'>, part: (m: Mesh, material: StandardMaterial) => Mesh): void {
+  const color = POWERUP_LOOKS[kind].color;
+  const glow = mat(scene, color, 0.85);
+  const dark = mat(scene, '#22252c');
+  const ring = (y: number) => (part(CreateCylinder(`${name}_puring`, { diameter: 0.7, height: 0.03, tessellation: 24 }, scene), mat(scene, color, 0.5)).position.y = y);
+  const cone = (id: string, base: number, height: number, m: StandardMaterial) => part(CreateCylinder(`${name}_${id}`, { diameterTop: 0, diameterBottom: base, height, tessellation: 10 }, scene), m);
+  switch (kind) {
+    case 'overdrive': {
+      // A gold core with eight rays standing round it like a burst, on edge to the player.
+      part(CreateSphere(`${name}_odcore`, { diameter: 0.3, segments: 12 }, scene), glow);
+      for (let i = 0; i < 8; i++) {
+        const a = (i / 8) * Math.PI * 2;
+        const long = i % 2 === 0;
+        const r = cone(`odray${i}`, 0.1, long ? 0.24 : 0.16, mat(scene, color, long ? 0.9 : 0.6));
+        r.rotation.z = -a;
+        r.position.set(Math.sin(a) * (long ? 0.24 : 0.2), Math.cos(a) * (long ? 0.24 : 0.2), 0);
+      }
+      ring(-0.4);
+      break;
+    }
+    case 'regen': {
+      // A green cross inside a white hoop.
+      part(CreateBox(`${name}_rgv`, { width: 0.13, height: 0.42, depth: 0.13 }, scene), glow);
+      part(CreateBox(`${name}_rgh`, { width: 0.42, height: 0.13, depth: 0.13 }, scene), glow);
+      const hoop = part(CreateTorus(`${name}_rghoop`, { diameter: 0.56, thickness: 0.04, tessellation: 28 }, scene), mat(scene, '#e8fff0', 0.4));
+      hoop.rotation.x = Math.PI / 2;
+      ring(-0.4);
+      break;
+    }
+    case 'rapid': {
+      // Three rounds side by side, tips up, over an orange plate: more of them, faster.
+      for (const x of [-0.13, 0, 0.13]) {
+        part(CreateCylinder(`${name}_rfcase${x}`, { diameter: 0.09, height: 0.26, tessellation: 12 }, scene), mat(scene, '#d9a441', 0.15)).position.set(x, x === 0 ? 0.03 : -0.02, 0);
+        cone(`rftip${x}`, 0.09, 0.1, glow).position.set(x, x === 0 ? 0.21 : 0.16, 0);
+      }
+      part(CreateBox(`${name}_rfplate`, { width: 0.44, height: 0.05, depth: 0.16 }, scene), glow).position.y = -0.17;
+      ring(-0.4);
+      break;
+    }
+    case 'phantom': {
+      // A pale ghost: a round head over a skirt, two dark eyes.
+      part(CreateSphere(`${name}_phhead`, { diameter: 0.38, segments: 12 }, scene), mat(scene, color, 0.6)).position.y = 0.06;
+      part(CreateCylinder(`${name}_phskirt`, { diameterTop: 0.38, diameterBottom: 0.44, height: 0.26, tessellation: 16 }, scene), mat(scene, color, 0.6)).position.y = -0.1;
+      for (const x of [-0.07, 0.07]) part(CreateSphere(`${name}_pheye${x}`, { diameter: 0.07, segments: 8 }, scene), dark).position.set(x, 0.1, 0.17);
+      ring(-0.4);
+      break;
+    }
+    case 'moon': {
+      // A chunky boot on a glowing spring sole.
+      part(CreateBox(`${name}_mbsole`, { width: 0.22, height: 0.07, depth: 0.42 }, scene), glow).position.set(0, -0.2, 0.04);
+      part(CreateBox(`${name}_mbfoot`, { width: 0.22, height: 0.14, depth: 0.38 }, scene), mat(scene, '#dfe6f2')).position.set(0, -0.1, 0.03);
+      part(CreateBox(`${name}_mbleg`, { width: 0.22, height: 0.3, depth: 0.2 }, scene), mat(scene, '#dfe6f2')).position.set(0, 0.12, -0.06);
+      part(CreateBox(`${name}_mbband`, { width: 0.235, height: 0.05, depth: 0.215 }, scene), glow).position.set(0, 0.22, -0.06);
+      for (const z of [-0.1, 0.14]) part(CreateCylinder(`${name}_mbspring${z}`, { diameter: 0.1, height: 0.1, tessellation: 10 }, scene), glow).position.set(0, -0.28, z);
+      ring(-0.4);
+      break;
+    }
+    case 'vampire': {
+      // A drop of crimson with two white fangs under it.
+      part(CreateSphere(`${name}_vpdrop`, { diameter: 0.34, segments: 12 }, scene), glow).position.y = -0.04;
+      cone('vptip', 0.29, 0.26, glow).position.y = 0.2;
+      for (const x of [-0.08, 0.08]) {
+        const f = cone(`vpfang${x}`, 0.06, 0.13, mat(scene, '#f4f1ea', 0.2));
+        f.rotation.z = Math.PI;
+        f.position.set(x, -0.27, 0.06);
+      }
+      ring(-0.42);
+      break;
+    }
+    case 'bottomless': {
+      // A magazine under an infinity of two hoops.
+      part(CreateBox(`${name}_bmmag`, { width: 0.12, height: 0.3, depth: 0.2 }, scene), dark).position.y = -0.14;
+      part(CreateBox(`${name}_bmlip`, { width: 0.125, height: 0.04, depth: 0.205 }, scene), glow).position.y = 0.02;
+      for (const x of [-0.11, 0.11]) {
+        const h = part(CreateTorus(`${name}_bmloop${x}`, { diameter: 0.2, thickness: 0.045, tessellation: 20 }, scene), glow);
+        h.rotation.x = Math.PI / 2;
+        h.position.set(x, 0.17, 0);
+      }
+      ring(-0.4);
+      break;
+    }
+  }
 }
 
 /** The ammo box in code: an olive box with a stripe that tells the ammo type apart (general boxes are yellow). */
@@ -405,7 +495,7 @@ export function itemColor(itemId: string): string {
     case 'weapon':
       return '#ffb03b';
     case 'powerup':
-      return fx.powerup === 'speed' ? '#36d6ff' : '#c03cff';
+      return fx.powerup === 'speed' ? '#36d6ff' : fx.powerup === 'damage' ? '#c03cff' : POWERUP_LOOKS[fx.powerup].color;
     case 'jetpack':
       return '#ff9a3d';
     case 'glider':
