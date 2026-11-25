@@ -980,7 +980,7 @@ describe('what the bays are made of, and what they cost', () => {
     // Room furniture paired (the default since St. John's step 4): a room's desks and chairs one prop, its closet
     // fronts another, so a room is 5 props, not 9.
     expect(made('setpiece.dorm_bay')).toMatchObject({ tiles: 2, blocks: 14, props: 20, doors: 0, lights: 1, tileIds: ['core.room'] });
-    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk', 'kit.cabinet.closet_front_pair', 'kit.door.oak_open', 'kit.table.desk_hutch_pair', 'prop.hh_cupboard_sink']);
+    expect(made('setpiece.dorm_bay').models).toEqual(['kit.bed.bunk_chest', 'kit.cabinet.closet_front_pair', 'kit.cabinet.sink_mirror', 'kit.door.oak_open', 'kit.table.desk_hutch_pair']);
     expect(made('setpiece.dorm_bay_closed')).toMatchObject({ tiles: 2, blocks: 14, props: 18, doors: 0, lights: 1 });
     expect(made('setpiece.hall_centre')).toMatchObject({ props: 65 });
     expect(made('setpiece.stair_end_bay')).toMatchObject({ tiles: 3, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
@@ -1020,7 +1020,8 @@ describe('what the bays are made of, and what they cost', () => {
     // 4 panes. (2026-11-12, with free-standing closets and one desk a room: 110.) 2026-11-19: 114, with the four open
     // doors' leaves and the facade's plinth and buttresses colliding (doorLeaves.test.ts, facadeCover.test.ts).
     // 2026-11-23: 134, with the roof parapet's coping, merlons and pinnacles colliding (facadeCover.test.ts).
-    expect(one.collision).toBeLessThanOrEqual(134);
+    // 2026-11-24 (St. John's 12): 138, a footlocker at each of the four bunks (folded into the bunk: no prop added).
+    expect(one.collision).toBeLessThanOrEqual(138);
     expect(one.trim).toBeLessThanOrEqual(135);
     expect(one.panes).toBe(4);
     expect(one.props).toBe(20);
@@ -1093,12 +1094,12 @@ describe('what the bays are made of, and what they cost', () => {
     const def = library.pieces.get('setpiece.dorm_bay')!;
     expect(checkSetPieceDefinition(def, { packs: library.packs })).toEqual([]);
     // The bunk in the north-east room stands 0.6 m inside the footprint's east edge; moved 0.2 m further east it would reach out of it.
-    const bunk = def.parts.findIndex((p) => p.kind === 'prop' && p.model === 'kit.bed.bunk' && p.position[0] > 2);
+    const bunk = def.parts.findIndex((p) => p.kind === 'prop' && p.model === 'kit.bed.bunk_chest' && p.position[0] > 2);
     const part = def.parts[bunk]!;
     if (part.kind !== 'prop') throw new Error('no bunk');
-    expect(part.position[0] + getProp('kit.bed.bunk')!.size[0] / 2).toBeGreaterThan(3.9);
+    expect(part.position[0] + getProp('kit.bed.bunk_chest')!.size[0] / 2).toBeGreaterThan(3.9);
     const moved = { ...def, parts: def.parts.map((p, i) => (i === bunk && p.kind === 'prop' ? { ...p, position: [p.position[0] + 0.2, p.position[1], p.position[2]] as P3 } : p)) };
-    expect(checkSetPieceDefinition(moved, { packs: library.packs }).join(' ')).toMatch(/kit\.bed\.bunk reaches outside the footprint/);
+    expect(checkSetPieceDefinition(moved, { packs: library.packs }).join(' ')).toMatch(/kit\.bed\.bunk_chest reaches outside the footprint/);
   });
 });
 

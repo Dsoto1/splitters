@@ -6375,7 +6375,7 @@ async function musicChecks(browser) {
   await page.mouse.click(4, 4);
   await page.waitForFunction(() => window.__music?.debug().tracks.length === 1, null, { timeout: T(15000) }).catch(() => {});
   const on = await page.evaluate(() => window.__music?.debug() ?? null);
-  check(!before && on?.scene === 'menu' && on.tracks.length === 1 && /^menu_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (${JSON.stringify(on)})`);
+  check(!before && on?.scene === 'menu' && on.tracks.length === 1 && /^(menu|mapmaker)_[1-5]$/.test(on.tracks[0]), `the menu's music waits for a click, then plays a menu track (Arena or Map Maker: owner, 2026-11-24) (${JSON.stringify(on)})`);
   await page.evaluate(() => window.__audio.setMusicVolume(0));
   await page.waitForFunction(() => window.__music?.debug().tracks.length === 0, null, { timeout: T(5000) }).catch(() => {});
   check((await page.evaluate(() => window.__music?.debug().tracks.length ?? -1)) === 0, 'Music at 0 stops it');
@@ -8521,6 +8521,8 @@ async function teamKillCheck(page) {
     // Two kills this life already, on the page and in the match: one more would be the first burst.
     cs.lifeKills.set(cs.slot, 2);
   });
+  // The rounds before may have killed the teammate (a small look has less health: 85 for the small Animalia): back first.
+  await simWait(page, () => !!globalThis.__ffMate?.alive, null, T(30000));
   const shot = await sim(page, (m, me) => {
     const mate = globalThis.__ffMate;
     if (!mate?.alive) return null;

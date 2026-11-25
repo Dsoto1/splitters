@@ -203,6 +203,11 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
     quadN(m, [px0, py0, -Z], [px0, py0, Z], [px1, py1, Z], [px1, py1, -Z], nIn(s), panel);
     // (Between the wall's top and the panel's foot: the wall plate.)
     quadN(m, [s * wi, Math.max(0, s0 - 0.05), -Z], [s * wi, Math.max(0, s0 - 0.05), Z], [px0, py0, Z], [px0, py0, -Z], [-s, 0, 0], scale3(timber, 0.9));
+    // (Under the plate's foot, from it out to the soffit: the plate's underside. The soffit stops at the wall's outer
+    // face and the plate stands at the inner face of a 0.5 m wall, so over a thinner wall (the Gable Annex's 0.3 m)
+    // the hollow behind the flared eave was open from below: from the room, sky showed along both wall tops through
+    // the shingles' backs (owner, 2026-11-24, St. John's). Closed at any wall thickness.)
+    quadN(m, [s * wi, s0 + 0.002, -Z], [s * wi, s0 + 0.002, Z], [s * (X - oh - 0.05), s0 + 0.002, Z], [s * (X - oh - 0.05), s0 + 0.002, -Z], [0, -1, 0], scale3(timber, 0.8));
     if (level < 2) {
       const n = Math.max(2, Math.round((g.rafters ?? 12) / (level === 0 ? 1 : 2)));
       const [rx0, ry0] = along(s, tw, 0.17);
@@ -264,6 +269,10 @@ export function ridgeRoofMesh(seed, size, g, look, level) {
     const shape = [[-xg, Math.max(0, s0 - 0.02)], [xg, Math.max(0, s0 - 0.02)], [xg, yg(xg)], [kx, yg(kx)], [0, yg(0)], [-kx, yg(kx)], [-xg, yg(xg)]];
     poly(m, shape.map(([x, y]) => [x, y, zo]), [0, 0, dir], outer);
     poly(m, shape.map(([x, y]) => [x * ((xg - 0.5) / xg), y, zi]), [0, 0, -dir], inner);
+    // (Its foot, between the two faces: over a wall thinner than the gable (the Gable Annex's 0.3 m front wall), the
+    // gap between the gable's inner face and the wall's showed the outer face's back, so sky, along the wall's top.)
+    const yf = Math.max(0, s0 - 0.02);
+    quadN(m, [-xg, yf, zi], [xg, yf, zi], [xg, yf, zo], [-xg, yf, zo], [0, -1, 0], scale3(inner, 0.7));
     // The verge (owner, 2026-11-23, St. John's Memorial Hall: "the roofline edges look strange; you can almost see
     // through them"). The slopes are a skin: the shingles, the panel 0.12 m under them and the soffit, with nothing
     // closing their ends, and the gable wall stops 6 cm under the shingles; along a gable that left a slit open from
@@ -735,11 +744,13 @@ export function leadedMesh(seed, size, g, look, level) {
     const zf = (dir * d) / 2;
     const zg = zf - dir * 0.025;
     const q = (x0, y0, x1, y1, z, c) => quadN(m, [x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z], [0, 0, dir], c);
-    // Frame: four bars round, mullions between the lights; a sill.
-    q(-X, sill, X, sill + fw, zf, frame);
-    q(-X, h - fw, X, h, zf, frame);
-    q(-X, sill + fw, -X + fw, h - fw, zf, frame);
-    q(X - fw, sill + fw, X, h - fw, zf, frame);
+    // Frame: four bars round, mullions between the lights; a sill. (Open: the bars are boxes through the wall, below.)
+    if (!open) {
+      q(-X, sill, X, sill + fw, zf, frame);
+      q(-X, h - fw, X, h, zf, frame);
+      q(-X, sill + fw, -X + fw, h - fw, zf, frame);
+      q(X - fw, sill + fw, X, h - fw, zf, frame);
+    }
     if (sill) q(-X, 0, X, sill, zf, scale3(frame, 0.85));
     const lw = (w - 2 * fw - (lights - 1) * fw * 0.7) / lights;
     if (!open) q(-X + fw, sill + fw, X - fw, h - fw, zg, lead);
@@ -771,10 +782,18 @@ export function leadedMesh(seed, size, g, look, level) {
     const Z = d / 2;
     const yb = sill + fw;
     const yt = h - fw;
-    quadN(m, [-X + fw, yb, -Z], [X - fw, yb, -Z], [X - fw, yb, Z], [-X + fw, yb, Z], [0, 1, 0], scale3(frame, 0.9));
-    quadN(m, [-X + fw, yt, -Z], [X - fw, yt, -Z], [X - fw, yt, Z], [-X + fw, yt, Z], [0, -1, 0], scale3(frame, 0.75));
-    quadN(m, [-X + fw, yb, -Z], [-X + fw, yt, -Z], [-X + fw, yt, Z], [-X + fw, yb, Z], [1, 0, 0], scale3(frame, 0.82));
-    quadN(m, [X - fw, yb, -Z], [X - fw, yt, -Z], [X - fw, yt, Z], [X - fw, yb, Z], [-1, 0, 0], scale3(frame, 0.82));
+    // The four bars are boxes through the wall's depth, both faces and the reveal's lining one solid. (They were the
+    // two faces' bars and a lining quad set 2 cm inside the wall's cut: the 2 cm channel between the lining and the
+    // wall's reveal was closed at the outer end only by the outer bar, drawn facing out, so from the room a slit of
+    // sky ran up both jambs and along the head: owner, 2026-11-24, St. John's Memorial Hall.) A bar's faces against
+    // the wall (its outer side) are left out.
+    const tone = (k) => (p, n) => (Math.abs(n[2]) > 0.5 ? frame : scale3(frame, k));
+    // (The far look keeps the bars' two faces: no lining.)
+    const far = level === 2;
+    box(m, [-X, sill, -Z], [X, yb, Z], tone(0.9), ['ny', 'nx', 'px', ...(far ? ['py'] : [])]);
+    box(m, [-X, yt, -Z], [X, h, Z], tone(0.75), ['py', 'nx', 'px', ...(far ? ['ny'] : [])]);
+    box(m, [-X, yb, -Z], [-X + fw, yt, Z], tone(0.82), ['nx', 'ny', 'py', ...(far ? ['px'] : [])]);
+    box(m, [X - fw, yb, -Z], [X, yt, Z], tone(0.82), ['px', 'ny', 'py', ...(far ? ['nx'] : [])]);
     for (let i = 1; i < lights; i++) {
       const x1 = -X + fw + i * (lw + fw * 0.7);
       box(m, [x1 - fw * 0.7, yb, -Z + 0.01], [x1, yt, Z - 0.01], scale3(frame, 0.88), ['ny', 'py', 'nz', 'pz']);
