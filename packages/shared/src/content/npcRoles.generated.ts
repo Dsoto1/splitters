@@ -21,10 +21,10 @@ export const NPC_ROLE_SPECS: Record<(typeof NPC_ROLES)[number], NpcRoleSpec> = {
   scolitex: { label: 'Scolitex', health: 320, weapon: 'core.knife', speed: 0.8, scale: 1, creature: true, melee: true, damage: 1.5 },
   // design: Shambles on the soldiers' rig with its own clips; claws, never shoots. Head shots drop it fast.
   zombie: { label: 'Zombie', health: 90, weapon: 'core.knife', speed: 0.68, scale: 1, melee: true, damage: 0.55 },
-  // design: A creature original on the soldiers' rig with its weapon: darts in with blades.
-  goblin: { label: 'Goblin', health: 55, weapon: 'core.knife', speed: 1.1, scale: 0.9, melee: true, damage: 0.6, look: 'core.goblin' },
-  // design: A creature original on the soldiers' rig: snipes from the back.
-  otter: { label: 'Wealthy Otter', health: 60, weapon: 'core.marksman', speed: 0.85, scale: 1, look: 'core.otter' },
+  // design: Drawn as Goblina (the owner's own; the Goblin model was removed, owner 2026-11-25): darts in with blades.
+  goblin: { label: 'Goblin', health: 55, weapon: 'core.knife', speed: 1.1, scale: 0.9, melee: true, damage: 0.6, look: 'core.grizzelda' },
+  // design: Drawn as Ottis Crema, an otter of the owner's own (the Wealthy Otter model was removed, owner 2026-11-25): snipes from the back.
+  otter: { label: 'Wealthy Otter', health: 60, weapon: 'core.marksman', speed: 0.85, scale: 1, look: 'core.baristaotter' },
   // design: A creature original on the soldiers' rig: soaks up fire.
   boglurker: { label: 'Boglurker', health: 200, weapon: 'core.shotgun', speed: 0.72, scale: 1.1, look: 'core.boglurker' },
   // design: A creature original on the soldiers' rig: shells you.
@@ -35,8 +35,8 @@ export const NPC_ROLE_SPECS: Record<(typeof NPC_ROLES)[number], NpcRoleSpec> = {
   alien: { label: 'Visitor', health: 65, weapon: 'core.laser_rifle', speed: 0.95, scale: 1, look: 'core.visitor' },
   // design: A Meshy community original: pirates board with sawed-offs.
   pirate: { label: 'Pirate', health: 90, weapon: 'core.sawed_off', speed: 0.92, scale: 1, look: 'core.barnacle' },
-  // design: A Meshy community original: the strongman walks a spin gun straight at you, hard to put down.
-  titan: { label: 'Strongman', health: 300, weapon: 'core.lmg', speed: 0.66, scale: 1.18, look: 'core.bogdan' },
+  // design: Drawn as Ignatius Slagg, a large character of the owner's own (Big Bogdan was removed, owner 2026-11-25): the strongman walks a spin gun straight at you, hard to put down.
+  titan: { label: 'Strongman', health: 300, weapon: 'core.lmg', speed: 0.66, scale: 1.18, look: 'core.magmajuggernaut' },
 };
 
 /** What each role's bot profile changes from NPC_PROFILE (sim/npc.ts NPC_ROLE_PROFILES). */

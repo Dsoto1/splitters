@@ -135,9 +135,18 @@ describe("Character Select's groups", () => {
     expect(getLook('core.magmajuggernaut').group).toBe('legends');
   });
 
-  it('Santa is in Legends (owner, 2026-11-22)', () => {
-    expect(getLook('core.saintnick').group).toBe('legends');
-    expect(lookBranch('core.saintnick')).toBeFalsy();
+  it('eleven characters are gone entirely (owner, 2026-11-25): a saved choice or bot set plays a near kept look', () => {
+    const gone = ['core.bill', 'core.hector', 'core.bogdan', 'core.otter', 'core.hollowvisitor', 'core.crimsonop', 'core.goblin', 'core.rourke', 'core.rustymech', 'core.saintnick', 'core.umpire'];
+    for (const id of gone) {
+      expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
+      expect(PICKABLE_LOOKS.some((l) => l.id === id), id).toBe(false);
+      const now = validLookId(id);
+      expect(now, id).not.toBe(id);
+      expect(CORE_LOOKS.some((l) => l.id === now), `${id} plays ${now}`).toBe(true);
+      expect(getLook(id).id, id).toBe(now);
+    }
+    expect(validLookId('core.saintnick')).toBe('core.halvard');
+    expect(validLookId('core.bogdan')).toBe('core.frostviking');
   });
 
   it('Tinker Goblina and the Sunset Gunslinger are gone (owner, 2026-11-22): their models are Goblina\'s and Dusty Ranger\'s', () => {

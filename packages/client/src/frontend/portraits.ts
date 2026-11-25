@@ -56,8 +56,6 @@ const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   // Rattles and Rotter hold their heads tilted to one side: wider, the aim onto the face.
   'core.rattles': { aim: [-0.05, 0, 0], zoom: 1.25 },
   'core.rotter': { from: [0.8, 0, 1], aim: [0.12, -0.04, 0], zoom: 1.3 },
-  // Saint Nick's tall hat (rebuilt finer, 2026-11-01) put his face at the bottom.
-  'core.saintnick': { aim: [0, -0.12, 0], zoom: 1.1 },
 };
 
 /** Creatures framed on the top share of their body instead of whole (owner, 2026-11-03: "zoom in on the imp thumbnail"). */

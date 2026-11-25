@@ -76,7 +76,7 @@ describe('creature NPC kinds', () => {
     expect(looked).toEqual(['goblin', 'otter', 'boglurker', 'warlord', 'hyena', 'alien', 'pirate', 'titan']);
     for (const role of looked) {
       const spec = NPC_ROLE_SPECS[role];
-      // Drawn as its look even when the look is off the roster (the goblin: NPC_KEPT_LOOKS).
+      // Drawn as its look (the goblin, otter and strongman as the owner's own Goblina, Ottis Crema and Ignatius Slagg since 2026-11-25).
       const look = getLook(spec.look);
       expect(look.id, role).toBe(spec.look);
       expect(look.whole, role).toBeDefined();

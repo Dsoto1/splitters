@@ -7918,7 +7918,7 @@ async function tracersFlow(browser) {
 }
 
 async function tracers2Flow(browser) {
-  await tracerMuzzleChecks(browser, ['core.otter']);
+  await tracerMuzzleChecks(browser, ['core.baristaotter']);
 }
 
 async function tracers3Flow(browser) {
@@ -7929,7 +7929,7 @@ async function tracers3Flow(browser) {
  * Bullets come out of the gun (grips auto-fit, owner 2026-11-18: "ensure bullets come out of the gun properly
  * (especially in 3rd person)"): every round you fire (a tracer or not: the pistol draws none) starts at your gun's muzzle as drawn the frame it first shows,
  * in third person (your character's gun) and first person (the viewmodel), for a few builds of character (the
- * Ranger, the small Wealthy Otter, the large Iron Knight), the rifle and the pistol, standing and crouched, still,
+ * Ranger, the small Ottis Crema, the large Iron Knight), the rifle and the pistol, standing and crouched, still,
  * strafing and aiming. Two measures each tracer: the gap to the muzzle point the game keeps (view muzzleOf /
  * localMuzzle, the drift), and the gap to the drawn gun itself (the nearest of its drawn vertices, and how far behind its
  * front along the barrel), so a muzzle point off the barrel fails too. Before, your own tracers in third person

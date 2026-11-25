@@ -329,7 +329,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.goblin': 'core.grizzelda',
   'core.rotter': 'core.shambler',
   // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
-  // hands can't be fixed. The otter NPC role keeps its model (NPC_KEPT_LOOKS).
+  // hands can't be fixed. (Removed entirely 2026-11-25; the otter NPC role is drawn as Ottis Crema.)
   'core.otter': 'core.biscuit',
   'core.shade': 'core.mei',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
@@ -360,6 +360,15 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-22 (the raccoon question): Zero Ringtail's model (the raccoon hacker of that afternoon) is Bandit's now,
   // and its own entry went (manifest and portrait; its built files renamed to Bandit's). Saved choices and bot sets play Bandit.
   'core.raccoonhacker': 'core.bandit',
+  // Owner, 2026-11-25 (fix batch 11-26): eleven removed entirely, files and all (models, first-person arms, portraits,
+  // manifests, grips, locks and provenance): Bill, Bill the Barbarian, Big Bogdan, Wealthy Otter, The Hollow Visitor,
+  // Crimson Operative, Goblin, Rourke, Rusty Mech, Santa and Umpire. Seven were already off the roster above (their
+  // entries stay: a saved pick still plays that look); the other four play the nearest kept look. The goblin, otter and
+  // strongman NPC roles are drawn as the owner's own Goblina, Ottis Crema and Ignatius Slagg (content/npcs.json).
+  'core.bogdan': 'core.frostviking', // Big Bogdan -> Frost Viking (a large brawler)
+  'core.rourke': 'core.pruitt', // Rourke -> Sgt. Mackie
+  'core.saintnick': 'core.halvard', // Santa -> Old King Halvard (white-bearded)
+  'core.umpire': 'core.dale', // Umpire -> Cal
 };
 
 /**
@@ -370,7 +379,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
 const DESIGNER_BASE_ID = 'core.ranger';
 /** The sim's fixed default look: Cal, a kept, pickable look (owner, 2026-11-24: the default is never a retired look). */
 const DEFAULT_LOOK_ID = 'core.dale';
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter', DESIGNER_BASE_ID]);
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set([DESIGNER_BASE_ID]);
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [
