@@ -645,11 +645,11 @@ export const BlockEntity = EntityBase.extend({
    * Doorways cut through it (v52, doors that fit themselves: a door placed in a wall of free blocks cuts its doorway;
    * map/blockDoorways.ts builds it). Each is an edge style's doorway (`style`) across the block's long side: its
    * middle `at` metres along that side from the block's middle, its sill `y` metres up from the block's bottom (absent:
-   * 0). The block is built as that style's pieces round the opening, framed on both faces, the reveal through its
+   * 0; below 0 where the block starts above the door's floor, a wall on a plinth's top). The block is built as that style's pieces round the opening, framed on both faces, the reveal through its
    * thickness. Static solid blocks only (a breakable, moving, hidden, glass, force-field or tilted block keeps its box).
    */
   doorways: z
-    .array(z.object({ style: z.enum(DOORWAY_STYLES), at: z.number().finite(), y: z.number().min(0).optional() }))
+    .array(z.object({ style: z.enum(DOORWAY_STYLES), at: z.number().finite(), y: z.number().min(-8).max(32).optional() }))
     .max(8)
     .optional(),
 });

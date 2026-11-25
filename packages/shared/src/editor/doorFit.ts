@@ -10,9 +10,10 @@
 import type { EditCommand } from './commands.ts';
 import { blockRun, blockTakesDoorways } from '../map/blockDoorways.ts';
 import { WALL_THICKNESS } from '../map/edgeShapes.ts';
-import { buildOccupancy, cellKey, dynamicBlockIds, edgeKey, localSide, resolveEdge, type CellOccupant } from '../map/geometry.ts';
+import { buildOccupancy, cellKey, dynamicBlockIds, resolveEdge } from '../map/geometry.ts';
+import { setEdgeCommand } from './operations.ts';
 import { coreCatalog, type Side, type TileCatalog } from '../map/catalog.ts';
-import { doorwayOf, type DoorwayStyle, type MapDocument, type MapEntity, type TilePlacement } from '../map/schema.ts';
+import { doorwayOf, type DoorwayStyle, type MapDocument, type MapEntity } from '../map/schema.ts';
 import { DOOR } from '../sim/scenarioDefs.ts';
 
 type Door = Extract<MapEntity, { kind: 'door' }>;
@@ -77,19 +78,12 @@ function fitTileSide(doc: MapDocument, door: Door, doorway: DoorwayStyle, catalo
   const shift = built.length === 2 ? 0 : (built[0]![3] * WALL_THICKNESS) / 2;
   const at = round(boundary + shift);
   const moved: Door = { ...door, position: alongX ? [x, level * levelHeight, at] : [at, level * levelHeight, z] };
-  // Every cell's record of the side becomes the doorway (the neighbour's too, so neither one's own choice wins over it).
-  const tiles = new Map(doc.classicStructure.tiles.map((t) => [t.id, t]));
-  const after = new Map<string, TilePlacement>();
-  for (const [gx, gy, side] of sides) {
-    const occ: CellOccupant | undefined = cells.get(cellKey(gx, gy, level));
-    if (!occ || !tiles.has(occ.placement.id)) continue;
-    const key = edgeKey(occ.local, localSide(side, occ.placement.rotation));
-    const p = after.get(occ.placement.id) ?? occ.placement;
-    if (p.edges?.[key] === doorway) continue;
-    after.set(occ.placement.id, { ...p, edges: { ...p.edges, [key]: doorway } });
-  }
-  const before = [...after.keys()].map((id) => tiles.get(id)!);
-  return { door: moved, commands: after.size ? [{ kind: 'updateTiles', before, after: [...after.values()] }] : [], wall: 'side', doorway };
+  // The side becomes the doorway, as MapMaker's Walls & Openings sets it (on one cell's record; the other's own choice goes).
+  const [gx, gy, side] = built[0]!;
+  if (resolveEdge(cells, gx, gy, level, side) === doorway) return { door: moved, commands: [], wall: 'side', doorway };
+  const set = setEdgeCommand(doc, { cell: [gx, gy, level], side }, doorway, catalog);
+  if ('error' in set) return null;
+  return { door: moved, commands: [set], wall: 'side', doorway };
 }
 
 /** A static block's run direction and its across direction in the world (x, z). */

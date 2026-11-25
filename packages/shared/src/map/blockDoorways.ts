@@ -53,7 +53,7 @@ export function blockDoorwayPieces(e: Block): { solids: RunPiece[]; trim: RunPie
     const from = i === 0 ? -L / 2 : (doorways[i - 1]!.at + d.at) / 2;
     const to = i === doorways.length - 1 ? L / 2 : (d.at + doorways[i + 1]!.at) / 2;
     if (!(to > from)) continue;
-    const sill = Math.min(Math.max(0, d.y ?? 0), H);
+    const sill = Math.min(d.y ?? 0, H);
     const height = H - sill;
     // Half a side long enough that the style's wall reaches both ends of the doorway's stretch.
     const half = L + Math.abs(d.at) + 1;
@@ -62,11 +62,14 @@ export function blockDoorwayPieces(e: Block): { solids: RunPiece[]; trim: RunPie
     for (const [u0, u1, y0, y1] of edgeSegments(d.style, half, height, T)) {
       const a = Math.max(from, u0 + d.at);
       const b = Math.min(to, u1 + d.at);
-      if (b - a > 1e-6 && y1 - y0 > 1e-6) solids.push({ u0: a, u1: b, y0: sill + y0, y1: sill + y1, v0: 0, v1: T });
+      const lo = Math.max(0, sill + y0);
+      const hi = Math.min(H, sill + y1);
+      if (b - a > 1e-6 && hi - lo > 1e-6) solids.push({ u0: a, u1: b, y0: lo, y1: hi, v0: 0, v1: T });
     }
     for (const p of edgeTrimBoxes(d.style, half, height, true, 'all', { wall: T, bare: true })) {
       const mid = (p.u0 + p.u1) / 2 + d.at;
-      if (mid < from || mid > to) continue;
+      const up = sill + (p.y0 + p.y1) / 2;
+      if (mid < from || mid > to || up < 0 || up > H) continue;
       trim.push({ u0: p.u0 + d.at, u1: p.u1 + d.at, y0: sill + p.y0, y1: sill + p.y1, v0: p.v0, v1: p.v1, ...(p.tilt ? { tilt: p.tilt } : {}), ...(p.surface ? { surface: p.surface } : {}) });
     }
   }
