@@ -261,6 +261,22 @@ export function carryReleaseOverGroundLayers(map: MapDocument): MapDocument {
   return { ...map, metadata: { ...map.metadata, release: { ...r, contentHash: mapContentHash(map), schemaVersion: MAP_FORMAT_VERSION } } };
 }
 
+/**
+ * A release stamp made at v50 still describes a map whose only change since is v51's (categoryV51: the tag pairs
+ * became one category). The file's own pairs (`raw`) are put back in place of the pick to check the stamp; one that
+ * matches is carried over to the map as it is now (same mapId, versionId and revision; the new hash and format), as
+ * carryReleaseOverGroundLayers does for v45. Anything else: the map unchanged.
+ */
+export function carryReleaseOverCategoryPick(raw: unknown, map: MapDocument): MapDocument {
+  const r = map.metadata.release;
+  if (!r || r.schemaVersion !== 50 || releaseCurrent(map)) return map;
+  const md = raw && typeof raw === 'object' ? (raw as { metadata?: { categories?: unknown } }).metadata : undefined;
+  const { category: _c, ...rest } = map.metadata;
+  const back = { ...map, formatVersion: 50, metadata: { ...rest, ...(md && 'categories' in md ? { categories: md.categories } : {}) } } as unknown as MapDocument;
+  if (mapContentHash(back) !== r.contentHash) return map;
+  return { ...map, metadata: { ...map.metadata, release: { ...r, contentHash: mapContentHash(map), schemaVersion: MAP_FORMAT_VERSION } } };
+}
+
 /** The map with its terrain as groundLayersV45 found it (the eight layers' indices, no Ground theme), or null when it isn't one that migration made. */
 export function withOldGroundEncoding(map: MapDocument): MapDocument | null {
   const t = map.terrain;

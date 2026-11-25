@@ -102,6 +102,18 @@ describe('map categories: the format (v51)', () => {
   });
 });
 
+describe('map categories: a release stamped at v50', () => {
+  it('keeps its version: the one category in place of the pairs was all that changed', () => {
+    const stamped = ids.filter((id) => read(id).metadata.release?.schemaVersion === 50 && read(id).metadata.categories);
+    expect(stamped.length).toBeGreaterThan(0);
+    for (const id of stamped.slice(0, 6)) {
+      const r = loadMap(readFileSync(new URL(`${id}.json`, MAPS), 'utf8'), undefined, { forEditing: true });
+      expect(r.ok && r.issues.filter((i) => i.code === 'release.changed'), id).toEqual([]);
+      if (r.ok) expect(r.map.metadata.release?.versionId, id).toBe(read(id).metadata.release.versionId);
+    }
+  });
+});
+
 describe("map categories: the maps' own (docs/map-briefs/categories/steps.json)", () => {
   it('every map is in the step list, with a known pick', () => {
     expect(ids.filter((id) => !(id in steps.maps))).toEqual([]);
