@@ -86,6 +86,7 @@ export * from './sim/matchSetup.ts';
 export * from './sim/setupVariants.ts';
 export * from './sim/scenarioDefs.ts';
 export * from './sim/glass.ts';
+export * from './sim/breakWalls.ts';
 export * from './sim/scenario.ts';
 export * from './sim/movers.ts';
 export * from './sim/portals.ts';

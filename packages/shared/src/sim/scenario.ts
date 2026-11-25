@@ -10,6 +10,7 @@ import { OPENING_BITS, PLAYER, TICK_RATE } from './constants.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import type { PhysicsWorld } from './physics.ts';
 import { rayOBox, windowPanes, type GlassPane } from './glass.ts';
+import { cachedWallSections, wallSectionIndex } from './breakWalls.ts';
 import {
   BUTTON,
   DESTRUCTIBLE_SPECS,
@@ -19,6 +20,7 @@ import {
   TRAP_SPECS,
   breakableOf,
   glassBreakable,
+  wallBreakable,
   windowPaneIndex,
   type Breakable,
   doorway,
@@ -104,6 +106,8 @@ interface DestructibleRt {
   block?: { e: BlockEntity; triggeredAt: number | null; respawnAt: number | null };
   /** Shattered glass: when it comes back (the map's glass respawn time; null: next round). */
   glassBack?: number | null;
+  /** A pane in a breakable wall: the wall's scenario index (it stays gone while the wall is). */
+  inWall?: number;
 }
 
 interface ZoneRt {
@@ -330,6 +334,17 @@ export class Scenario {
       this.destructibles.set(i, { i, id: p.id, b, health: b.health, max: b.health, alive: true });
       this.bodies.setSolid(i, true);
     });
+    // Breakable walls, after the panes (sim/breakWalls.ts; see wallSectionIndex).
+    cachedWallSections(this.map).forEach((sec, k) => {
+      const i = wallSectionIndex(this.map, k);
+      const b = wallBreakable(sec);
+      this.destructibles.set(i, { i, id: sec.id, b, health: b.health, max: b.health, alive: true });
+      this.bodies.setSolid(i, true);
+      for (const g of sec.glass) {
+        const pane = this.destructibles.get(g);
+        if (pane) pane.inWall = i;
+      }
+    });
     this.glass = [...this.destructibles.values()].filter((d) => d.b.glass);
     const logic = this.map.logic;
     this.vars = new Map(logic.variables.map((v) => [v.id, v.initial]));
@@ -481,6 +496,8 @@ export class Scenario {
     let actors: readonly { slot: number; alive: boolean; pos: Vec3 }[] | null = null;
     for (const d of this.glass) {
       if (d.alive || d.glassBack == null || tick < d.glassBack) continue;
+      // Glass in a broken wall stays gone with it (back with the wall next round).
+      if (d.inWall !== undefined && !this.destructibles.get(d.inWall)?.alive) continue;
       actors ??= this.host.actors().filter((a) => a.alive);
       if (actors.some((a) => playerInOBox(d.b.box, a.pos))) continue;
       d.alive = true;
@@ -786,7 +803,7 @@ export class Scenario {
   shootableTarget(handle: number): boolean {
     const i = this.bodies.entityAt(handle);
     const d = i === undefined ? undefined : this.destructibles.get(i);
-    return !!d && d.alive && !d.b.explosiveOnly && d.b.shootable !== false && !d.b.glass;
+    return !!d && d.alive && !d.b.explosiveOnly && d.b.shootable !== false && !d.b.glass && !d.b.wall;
   }
 
   /** Explosion damage to destructibles in range. */
@@ -834,6 +851,11 @@ export class Scenario {
     const blast = d.b.blast;
     if (blast) this.host.blast(d.b.box.center, blast.radius, blast.damage, blast.edge, instigator, BARREL_WEAPON_ID);
     this.fire('destroyed', d.id, instigator);
+    // A broken wall takes the glass in it along.
+    for (const g of d.b.wall?.glass ?? []) {
+      const pane = this.destructibles.get(g);
+      if (pane?.alive) this.destroy(pane, instigator);
+    }
   }
 
   /** A pickup was taken (Match calls this). */
@@ -1213,7 +1235,8 @@ export class Scenario {
     });
     for (const d of this.destructibles.values()) {
       // (Walls and boards that block paths are openings already; glass is no floor; a mover's block goes with its mover.)
-      if (d.b.blocksPaths || d.b.glass || carried.has(d.i)) continue;
+      // (Breakable walls stay in the navmesh: bots keep treating them as walls.)
+      if (d.b.blocksPaths || d.b.glass || d.b.wall || carried.has(d.i)) continue;
       out.push({ box: oboxAabb(d.b.box), d });
     }
     return (this.surfaceCache = out);

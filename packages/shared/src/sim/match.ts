@@ -1,3 +1,4 @@
+import { cachedWallSections } from './breakWalls.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { simProfile } from './profile.ts';
 import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type OrderGoal, type PickupView, type SeatView } from '../bots/brain.ts';
@@ -1044,6 +1045,8 @@ export class Match {
       this.phaseEndTick = START_WAIT_SECONDS * TICK_RATE;
     }
     const match = this;
+    // Breakable walls are worked out from the geometry already built (sim/breakWalls.ts; the scenario's bodies read them).
+    cachedWallSections(map, this.geometry);
     this.scenario = new Scenario(map, this.physics, {
       get tick() {
         return match.tick;

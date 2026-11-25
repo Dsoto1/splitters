@@ -1,5 +1,5 @@
 import { z } from 'zod';
-import { MAP_FORMAT, MAP_FORMAT_VERSION, MAP_MAX_ENTITIES, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
+import { BREAK_WALL_HEALTH, MAP_FORMAT, MAP_FORMAT_VERSION, MAP_MAX_ENTITIES, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
 import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './tileOptions.ts';
 import { MAX_GROUNDS, MAX_TERRAIN_VERTS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
@@ -185,6 +185,21 @@ export const GLASS_KIND_LABELS: Record<GlassKind, string> = { breakable: 'Breaka
 
 export const Rotation = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 
+/**
+ * Breakable walls (format v53; sim/breakWalls.ts): a placed piece's walls a blast (or, with `shots`, gunfire too) can
+ * break into a ragged hole, back at the next round. A wall between two pieces is one wall: it breaks if either side
+ * is marked. Facaded pieces and see-through sides (fences, bars) never break.
+ */
+export const BreakWalls = z.object({
+  /** The sides that break (tile-local edge keys, as `edges`); absent: every wall side of the piece. */
+  sides: z.array(EdgeKey).max(256).optional(),
+  /** Damage it takes before it gives way; absent: BREAK_WALL_HEALTH.default. */
+  health: z.number().int().min(BREAK_WALL_HEALTH.min).max(BREAK_WALL_HEALTH.max).optional(),
+  /** Gunfire breaks it too; absent: explosives only. */
+  shots: z.boolean().optional(),
+});
+export type BreakWalls = z.infer<typeof BreakWalls>;
+
 /** The build limit (MapMaker draws it): tiles stand within this many cells of the centre, across and along. */
 export const MAX_TILE_CELL = 256;
 /** ...and this many levels up or down. */
@@ -219,6 +234,8 @@ export const TilePlacement = z.object({
    * take one (geometry.ts `canAddFloor`); others are ignored.
    */
   upperFloors: z.array(LocalCellKey).max(256).optional(),
+  /** Breakable walls (format v53): which of its walls a blast breaks, how tough they are, whether shots do too. */
+  breakWalls: BreakWalls.optional(),
   /** Room options on rooms that take them (catalog `configurable`); absent fields leave the tile as designed. */
   options: z
     .object({
@@ -1277,6 +1294,8 @@ export const SetPiecePlacement = z.object({
    * that don't come in it are left as they are.
    */
   family: z.string().regex(/^[a-z][a-z0-9_]*$/).max(32).optional(),
+  /** (Format v53) every wall of its tile parts breakable (BreakWalls without `sides`), as a placed tile's `breakWalls`. */
+  breakWalls: BreakWalls.omit({ sides: true }).optional(),
   /**
    * Small per-placement tweaks: a role's value, parts left out (by index), and (format v41) paint on single parts by
    * index: a tile part's surfaces (`{ "walls": … }`) or a block part's material (`{ "material": …, "tint": … }`). Paint

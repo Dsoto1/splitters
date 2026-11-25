@@ -81,6 +81,8 @@ import {
   fireModeCount,
   DESTRUCTIBLE_SPECS,
   glassAt,
+  cachedWallSections,
+  wallSectionAt,
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
@@ -2420,6 +2422,8 @@ export class GameSession {
         this.hud.minimap.setMap(loaded.map);
         void this.opts.portrait?.then((src) => this.portraitLook === null && this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
+        // Breakable walls from the geometry just built (sim/breakWalls.ts: the view, the prediction bodies and the effects read them).
+        cachedWallSections(loaded.map, geometry);
         this.map = loaded.map;
         this.hostPanel.setMap(loaded.map);
         this.view.buildMap(loaded.map, geometry);

@@ -1,6 +1,7 @@
 import { PLAYER } from '../sim/constants.ts';
 import { MODEL_FACADES, SIDES, SIDE_DIRS, TILE_DIMENSIONS, coreCatalog, floorInsertBoxes, footprintSize, roomLayoutBoxes, seededRandom, vault, type Corner, type EdgeStyle, type Facade, type LocalBox, type Side, type TileCatalog, type TileDefinition } from './catalog.ts';
 import type { MapDocument, MapEntity, TilePlacement } from './schema.ts';
+import { BREAK_WALL_HEALTH } from './mapKeys.ts';
 import { logicTargets } from './logic.ts';
 import { getProp } from '../content/props.ts';
 import { getKitFamily, isKitModel } from '../content/kitProps.ts';
@@ -66,6 +67,96 @@ export interface WorldBox {
   bodyOnly?: true;
   /** The face closing a buried passage's open end (buriedOpenEnds): gone once a portal, a Dead End or another piece is put there. */
   endCap?: true;
+  /**
+   * Part of breakable wall section k (breakWallEdges; sim/breakWalls.ts): a wall box, or a trim box on that side. Play
+   * collides with it through the scenario (it goes when the wall breaks) and draws it apart from the level; the navmesh,
+   * MapMaker and every check keep it as a wall.
+   */
+  breakWall?: number;
+}
+
+/** The most breakable wall sections a map plays (sim/breakWalls.ts): walls marked past it stay solid (a validator warning). */
+export const MAX_BREAK_WALLS = 64;
+
+/** A breakable wall section: the cell sides it is (one, or the two faces of a wall between two pieces), its health and whether shots break it. */
+export interface BreakWallEdge {
+  k: number;
+  /** "gx,gy,gz:S" or ":W" of the wall's line (its south or west cell side). */
+  edge: string;
+  health: number;
+  shots: boolean;
+  /** The marked placement that gave it its settings. */
+  sourceId: string;
+  /** Glass pane ids in it (sim/glass.ts windowPanes ids, without a `:n` suffix): they break with it. */
+  glassIds: string[];
+}
+
+/**
+ * Which cell sides are breakable walls, as section numbers: a side of a piece with `breakWalls` (its `sides`, or all),
+ * and the facing side of the piece beyond it (a wall between two pieces is one wall). Not a piece with a facade, not
+ * a see-through side (bars, fences), not a side with no wall. In the cells' order, at most MAX_BREAK_WALLS.
+ * Keys: "gx,gy,gz:<world side>".
+ */
+export function breakWallEdges(map: MapDocument, cells: Map<string, CellOccupant>): { bySide: Map<string, number>; sections: BreakWallEdge[]; over: number } {
+  const bySide = new Map<string, number>();
+  const sections: BreakWallEdge[] = [];
+  let over = 0;
+  if (!map.classicStructure.tiles.some((t) => t.breakWalls)) return { bySide, sections, over };
+  const { cellSize, levelHeight } = map.classicStructure;
+  const half = cellSize / 2;
+  const facaded = (occ: CellOccupant | undefined) => !!occ?.placement.options?.facade && occ.placement.options.facade !== 'none';
+  const marks = (occ: CellOccupant | undefined, side: Side) => {
+    const bw = occ?.placement.breakWalls;
+    if (!bw) return false;
+    return !bw.sides || bw.sides.includes(edgeKey(occ.local, localSide(side, occ.placement.rotation)));
+  };
+  // A side's wall: none (no boxes), or see-through (never breaks).
+  const wallOf = (x: number, y: number, z: number, side: Side): 'none' | 'lattice' | 'wall' => {
+    const style = resolveEdge(cells, x, y, z, side);
+    const segs = edgeSegments(style, half, levelHeight);
+    if (!segs.length) return 'none';
+    return segs.some((seg) => edgeLattice(style, seg)) ? 'lattice' : 'wall';
+  };
+  for (const [key, occ] of cells) {
+    const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
+    for (const side of SIDES) {
+      const [dx, dy] = SIDE_DIRS[side];
+      const there = cells.get(cellKey(gx + dx, gy + dy, gz));
+      const here = `${key}:${side}`;
+      if (bySide.has(here)) continue;
+      const mine = marks(occ, side);
+      if (!mine && !marks(there, OPPOSITE[side])) continue;
+      if (facaded(occ) || facaded(there)) continue;
+      const a = wallOf(gx, gy, gz, side);
+      const b = there ? wallOf(gx + dx, gy + dy, gz, OPPOSITE[side]) : 'none';
+      if (a === 'lattice' || b === 'lattice' || (a === 'none' && b === 'none')) continue;
+      if (sections.length >= MAX_BREAK_WALLS) {
+        over++;
+        continue;
+      }
+      const k = sections.length;
+      const giver = mine ? occ : there!;
+      const bw = giver.placement.breakWalls!;
+      const glassIds: string[] = [];
+      const glassOf = (o: CellOccupant | undefined, s: Side) => {
+        const ek = o && edgeKey(o.local, localSide(s, o.placement.rotation));
+        if (o && ek && o.placement.glass?.[ek]) glassIds.push(`${o.placement.id}:${ek}`);
+      };
+      const lineX = side === 'N' ? gx : side === 'E' ? gx + 1 : gx;
+      const lineY = side === 'N' ? gy + 1 : gy;
+      const edge = `${lineX},${lineY},${gz}:${side === 'N' || side === 'S' ? 'S' : 'W'}`;
+      if (a !== 'none') {
+        bySide.set(here, k);
+        glassOf(occ, side);
+      }
+      if (b !== 'none') {
+        bySide.set(`${cellKey(gx + dx, gy + dy, gz)}:${OPPOSITE[side]}`, k);
+        glassOf(there, OPPOSITE[side]);
+      }
+      sections.push({ k, edge, health: bw.health ?? BREAK_WALL_HEALTH.default, shots: !!bw.shots, sourceId: giver.placement.id, glassIds });
+    }
+  }
+  return { bySide, sections, over };
 }
 
 /** Turn an (x, z) offset by `yaw` about +Y (right-handed, the same as physics and the renderer). */
@@ -688,6 +779,8 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
   const half = cellSize / 2;
   const rooms = roomOptionBoxes(map, catalog, cells, decor);
   boxes.push(...rooms.boxes);
+  // Breakable walls (sim/breakWalls.ts): their sides' boxes carry their section.
+  const breakAt = breakWallEdges(map, cells).bySide;
 
   for (const [key, occ] of cells) {
     const [gx, gy, gz] = key.split(',').map(Number) as [number, number, number];
@@ -702,6 +795,8 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
 
     for (const side of SIDES) {
       const style = resolveEdge(cells, gx, gy, gz, side);
+      const bw = breakAt.size ? breakAt.get(`${key}:${side}`) : undefined;
+      const tag = bw === undefined ? {} : { breakWall: bw };
       if (decor) {
         // Trim marked `outside` dresses the wall's outer face too where nothing is built beyond (an arch from the street).
         const [dx, dy] = SIDE_DIRS[side];
@@ -710,7 +805,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         // Glass in this window: its sash bars are the pane's (drawn with it, gone when it breaks: sim/glass.ts).
         const glazed = !!occ.placement.glass?.[edgeKey(occ.local, localSide(side, occ.placement.rotation))] && GLASS_STYLES.has(style);
         for (const p of edgeTrimBoxes(style, half, levelHeight, outer, glazed ? 'without' : 'all')) {
-          const b = sideTrimBox(side, cx, cz, half, baseY, p, id);
+          const b = { ...sideTrimBox(side, cx, cz, half, baseY, p, id), ...tag };
           boxes.push(metal && !b.surface ? { ...b, paint: metal } : b);
         }
       } else {
@@ -719,7 +814,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         for (const seg of segs) {
           const [u0, u1, y0, y1, t] = seg;
           const b = sideBox(side, cx, cz, half, u0, u1, baseY + y0, baseY + y1, 0, t, id, 'wall');
-          boxes.push({ ...b, ...(metal ? { paint: metal } : {}), ...(edgeLattice(style, seg) ? { lattice: true as const } : {}) });
+          boxes.push({ ...b, ...(metal ? { paint: metal } : {}), ...(edgeLattice(style, seg) ? { lattice: true as const } : {}), ...tag });
         }
         const [dx, dy] = SIDE_DIRS[side];
         if (!cells.has(cellKey(gx + dx, gy + dy, gz))) {

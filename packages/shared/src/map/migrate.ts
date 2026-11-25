@@ -152,6 +152,13 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v50 -> v51: one category a map (`metadata.category`, map/categories.ts; owner, 2026-11-24: one tab per map) in
   // place of v50's `categories` pairs, which go: the pick is the lead's first assignment from them (categoryFromV50Tags).
   [50, categoryV51],
+  // v51 -> v52: kept for doors that fit themselves (`wip/doors-fit-1125`: the arched door look and doorway, block
+  // `doorways`); nothing changes.
+  [51, (doc) => ({ ...doc })],
+  // v52 -> v53: breakable walls (sim/breakWalls.ts): a placed tile's and a set piece placement's optional `breakWalls`.
+  // Absent = walls that never break, as before: v52 data is valid as is. The bump is for the other direction: an older
+  // build would play the walls as solid without a word.
+  [52, (doc) => ({ ...doc })],
 ]);
 
 /** v50 -> v51: the `categories` pairs become one `category` (none when there were none). */

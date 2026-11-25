@@ -8,13 +8,16 @@
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 51;
+export const MAP_FORMAT_VERSION = 53;
 /**
  * The most entities a map holds (the schema's cap, RESOURCE_BUDGETS.entities, and SET_PIECE_PLAYED_MAX's for the map as
  * played): 8,192 since v48 (owner, 2026-11-18; 4,096 before). Entity indices travel as plain JSON numbers, so nothing in
  * the net protocol is sized off it (docs/MULTIPLAYER_REVIEW.md 5.3).
  */
 export const MAP_MAX_ENTITIES = 8192;
+
+/** A breakable wall's health (schema BreakWalls, format v53): absent means `default`; explosives only unless it says `shots`. */
+export const BREAK_WALL_HEALTH = { default: 300, min: 50, max: 5000 } as const;
 
 /** `players` is the built-in faction of every player in co-op. */
 export const PLAYERS_FACTION = 'players';
