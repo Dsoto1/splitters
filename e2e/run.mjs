@@ -12607,7 +12607,7 @@ const FLASHING_PARTS = {
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
-  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick'] },
+  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
 };
 
 /**
@@ -12770,6 +12770,38 @@ const FLASHING_DAY = {
         // The surround was seen part-way out on several frames (a fade, not a cut), and the shadow moved.
         sees: (on, s) => s.scoped && s.up && s.fades >= (on ? 4 : 2) && s.box > 0.1 && s.box <= (on ? 0.31 : 0.51),
         after: () => page.evaluate(() => (window.__autoInput = { buttons: 0 })),
+      },
+      // Power-ups on bodies by day over the white tiles (game/powerupGlow.ts; owner, 2026-11-24): a bot 2.6 m in front
+      // in Overdrive (its gold glow swelling and settling under once a second, held still with the setting on), and one
+      // beside it in Phantom (a faint shimmer), coming on as the recording starts and the Phantom shown by a shot.
+      {
+        name: 'powerups',
+        label: "power-ups on bodies 2.6 m in front by day: Overdrive's gold glow and Phantom's shimmer coming on, the Phantom shown by its shot",
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.4],
+        look: { yaw: Math.PI, pitch: -0.12 },
+        bots: [[-24.4, 0, -21], [-23.1, 0, -21.3]],
+        before: () => sim(page, (m) => m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0))),
+        at: {
+          2: () =>
+            sim(page, (m) => {
+              const [a, b] = m.combatants().filter((c) => c.bot);
+              if (a) a.power.overdrive = 60 * 30;
+              if (b) b.power.phantom = 60 * 30;
+              // (The Phantom holds its fire: its own shots would show it before the moment's one.)
+              clearInterval(self.__phantomKnife);
+              self.__phantomKnife = setInterval(() => b && (b.fireCooldown = b.fireCooldown2 = b.throwCooldown = 600), 1000 / 60);
+            }),
+          // (A shot shows a Phantom for a second: the host clears FX_PHANTOM; the client eases it back in.)
+          12: () => sim(page, (m) => { const b = m.combatants().filter((c) => c.bot)[1]; if (b) m.lastShot.set(b.slot, m.tick); }),
+        },
+        seen: () =>
+          page.evaluate(() => {
+            const av = [...window.__cs.view.avatars.values()];
+            return { gold: av.some((a) => (a.glowKey ?? '').startsWith('#ffc83a')), phantom: av.some((a) => (a.phantom ?? 0) > 0) };
+          }),
+        sees: (_on, s) => s.gold && s.phantom,
+        after: () => sim(page, (m) => (clearInterval(self.__phantomKnife), m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0)))),
       },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
       // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
@@ -14457,6 +14489,73 @@ async function impGrips(browser) {
  * repeats); A picks a map; Y stars it; RB / LB step the categories; RT the settings' tabs; right off the grid into the
  * settings, a stepper takes left and right; the right stick scrolls; the hints show the controller's glyphs; Menu starts.
  */
+/**
+ * Crash and error reports (docs/CRASH_REPORTS.md): a break shows the calm "Something went wrong" panel (no red);
+ * what it would send is scrubbed (no name, email, site address); Send posts it to a real hub, which keeps it; the same
+ * break isn't offered twice; Dismiss sends nothing. `&crashpanel=1`: test mode keeps the panel off otherwise.
+ */
+async function crashreportFlow(browser) {
+  const HUB_PORT = await pickPort('E2E_CRASH_HUB_PORT', 9083);
+  const dir = mkdtempSync(join(tmpdir(), 'tt-reports-e2e-'));
+  start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1', LAN_DISCOVERY: '0', TURN_SECRET: 'e2e-secret', TURN_URLS: 'turn:127.0.0.1:3478', REPORTS_DIR: dir });
+  const up = await until(() => fetch(`http://127.0.0.1:${HUB_PORT}/lobby/health`).then((r) => r.ok), T(30000));
+  check(up, 'the hub starts');
+  const page = await (await browser.newContext({ viewport: { width: 1280, height: 720 } })).newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.addInitScript(() => localStorage.setItem('cs.name', 'Crashy McTest'));
+  await page.goto(`${CLIENT}/?test=1&crashpanel=1&hub=127.0.0.1:${HUB_PORT}`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  const kept = () => readdirSync(dir).filter((f) => f.endsWith('.jsonl')).flatMap((f) => readFileSync(join(dir, f), 'utf8').split('\n').filter(Boolean).map((l) => JSON.parse(l)));
+  const panelText = () => page.evaluate(() => document.getElementById('crash-panel')?.innerText ?? null);
+  // An uncaught error in one of the game's own scripts (an ErrorEvent as the browser fires it).
+  const breakWith = (message) =>
+    page.evaluate((m) => {
+      const error = new Error(m);
+      dispatchEvent(new ErrorEvent('error', { error, message: m, filename: `${location.origin}/assets/main-e2e.js` }));
+    }, message);
+  await breakWith('e2e break: Crashy McTest at https://trigger.example/assets/deep/main-abc12345.js:1:2 (crashy@example.com)');
+  const shown = await page.waitForSelector('#crash-panel', { timeout: T(10000) }).then(() => true, () => false);
+  const look = await page.evaluate(() => {
+    const p = document.getElementById('crash-panel');
+    if (!p) return null;
+    const cs = getComputedStyle(p);
+    const sent = JSON.parse(p.querySelector('pre')?.textContent ?? '{}');
+    return { bg: cs.backgroundColor, anim: cs.animationName, buttons: [...p.querySelectorAll('button')].map((b) => [b.textContent, getComputedStyle(b).backgroundColor]), sent };
+  });
+  const text = await panelText();
+  check(shown && /Something went wrong/.test(text ?? '') && /Send report/i.test(text ?? '') && /Dismiss/i.test(text ?? ''), `a break shows "Something went wrong" with Send report and Dismiss (${JSON.stringify(text)})`);
+  // Calm (Reduce flashing): no animation and nothing red ([r, g, b] with red well above the others).
+  const red = (c) => ((m) => !!m && +m[1] > 150 && +m[1] > 2 * +m[2] && +m[1] > 2 * +m[3])(/rgba?\((\d+), (\d+), (\d+)/.exec(c ?? ''));
+  check(!!look && (look.anim === 'none' || !look.anim) && !red(look.bg) && look.buttons.every(([, c]) => !red(c)), `the panel is calm: no animation, nothing red (${JSON.stringify(look && { bg: look.bg, anim: look.anim, buttons: look.buttons })})`);
+  const sent = JSON.stringify(look?.sent ?? {});
+  check(
+    !!look?.sent.message?.includes('[name]') && sent.includes('main-abc12345.js:1:2') && !/Crashy|crashy@|trigger\.example|deep\//.test(sent) && look.sent.screen === 'menu' && look.sent.map === null && /^\d+\.\d+\.\d+/.test(look.sent.version) && /^(Chrome|other)/.test(look.sent.browser),
+    `"What is sent" is scrubbed: no name, email or site address; the build, the screen and the browser family (${sent.slice(0, 400)})`,
+  );
+  check(kept().length === 0, 'nothing is sent before Send');
+  await page.click('#crash-panel button.send');
+  const thanked = await page.waitForFunction(() => /Sent\. Thank you\./.test(document.getElementById('crash-panel')?.innerText ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
+  const got = kept();
+  check(thanked && got.length === 1 && got[0].sig === look?.sent.sig && !/Crashy|crashy@|trigger\.example/.test(JSON.stringify(got)), `Send posts it and the hub keeps it, scrubbed (${JSON.stringify(got).slice(0, 300)})`);
+  await page.click('#crash-panel button');
+  await page.waitForFunction(() => !document.getElementById('crash-panel'), null, { timeout: T(5000) });
+  // The same break again: not offered a second time.
+  await breakWith('e2e break: Crashy McTest at https://trigger.example/assets/deep/main-abc12345.js:1:2 (crashy@example.com)');
+  const again = await page.waitForSelector('#crash-panel', { timeout: 1500 }).then(() => true, () => false);
+  check(!again, 'the same break is offered once a session');
+  // A different one (an unhandled rejection) is; Dismiss closes it and sends nothing.
+  await page.evaluate(() => void Promise.reject(new TypeError('e2e break: another kind')));
+  const second = await page.waitForSelector('#crash-panel', { timeout: T(10000) }).then(() => true, () => false);
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/crashreport.png` });
+  await page.click('#crash-panel button:not(.send)');
+  const gone = await page.waitForFunction(() => !document.getElementById('crash-panel'), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(second && gone && kept().length === 1, `another break is offered; Dismiss closes it and sends nothing (${kept().length} kept)`);
+  const others = errors.filter((e) => !e.includes('e2e break'));
+  check(others.length === 0, `no page errors (${others.join('; ')})`);
+  await page.context().close();
+}
+
 async function padsetupFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1500, height: 844 } })).newPage();
   const errors = [];
@@ -16938,7 +17037,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, captions: captionsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

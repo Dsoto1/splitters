@@ -190,7 +190,7 @@ export interface PlayerSnapshot {
   alive: 0 | 1;
   /** Held weapon code (see weaponCode; for third-person models and HUD). */
   w: number;
-  /** Active powerups: bit 1 speed, bit 2 damage. */
+  /** Active powerups (POWERUP_*_BIT): speed, damage, overdrive, rapid, vampire, regen, moon, bottomless. Phantom isn't here (it would give you away): FX_PHANTOM. */
   pu: number;
   /** Knockback / slide velocity (m/s), when non-zero. */
   vx?: number;
@@ -285,6 +285,8 @@ export interface PrivateState {
   /** Remaining inputs of speed / damage boost. */
   sp: number;
   dm: number;
+  /** Remaining inputs of the other power-ups, in sim/powerups.ts EXTRA_POWERUPS order; absent when none runs. */
+  px?: number[];
   /** Jetpack fuel units (see JET); absent without a jetpack. */
   jp?: number;
   /** Carrying a glider (canopies open as gliders). */
@@ -327,6 +329,8 @@ export const FX_OVERCHARGE = 256;
 /** Roulette: under spawn protection (a soft shimmer), and playing a jackpot roll (a steady glow). */
 export const FX_PROTECTED = 512;
 export const FX_JACKPOT = 1024;
+/** Phantom power-up: a shimmer to enemies, until firing shows you for a moment (sim/powerups.ts). */
+export const FX_PHANTOM = 2048;
 
 /**
  * A turret, sentry or vehicle: [map entity index, x, y, z, yaw, aim yaw, aim
@@ -344,6 +348,12 @@ export type ZoneSnapshot = [number, number, number, number, number, number];
 
 export const POWERUP_SPEED_BIT = 1;
 export const POWERUP_DAMAGE_BIT = 2;
+export const POWERUP_OVERDRIVE_BIT = 4;
+export const POWERUP_RAPID_BIT = 8;
+export const POWERUP_VAMPIRE_BIT = 16;
+export const POWERUP_REGEN_BIT = 32;
+export const POWERUP_MOON_BIT = 64;
+export const POWERUP_BOTTOMLESS_BIT = 128;
 
 export type GameEvent =
   /** One trigger pull: `to`/`hit` hold one entry per pellet (one for most weapons). */

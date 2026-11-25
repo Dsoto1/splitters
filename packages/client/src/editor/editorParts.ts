@@ -1,4 +1,5 @@
 import {
+  getItem,
   DEFAULT_GROUND_THEME,
   coreMaterials,
   type GroundThemeDefinition,
@@ -20,6 +21,7 @@ import {
   type Vec3
 } from '@tiletrigger/shared';
 import { itemColor } from '../game/pickupVisuals.ts';
+import { POWERUP_LOOKS } from '../game/powerupLook.ts';
 import { isBuiltInMap } from '../mapIndex.ts';
 
 // New map's sizes and blank map live with its setup screen (newMapSetup.ts).
@@ -33,6 +35,13 @@ export const SHIPPED_IDS = { has: isBuiltInMap };
 /** Small palette icon for a pickup item, coloured by item type. */
 export function itemIcon(itemId: string): string {
   const c = itemColor(itemId);
+  // A power-up: its HUD icon (game/powerupLook.ts) in the ring, so the nine read apart in the palette.
+  const fx = getItem(itemId)?.effect;
+  if (fx?.kind === 'powerup') {
+    const l = POWERUP_LOOKS[fx.powerup];
+    const paint = l.stroke ? `fill="none" stroke="${c}" stroke-width="1.8"` : `fill="${c}"`;
+    return `<svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="19" fill="${c}" fill-opacity=".18" stroke="${c}" stroke-width="3"/><g transform="translate(15.4 15.4) scale(1.8)"><path d="${l.icon}" ${paint}/></g></svg>`;
+  }
   return `<svg viewBox="0 0 56 56"><circle cx="28" cy="28" r="15" fill="${c}" fill-opacity=".25" stroke="${c}" stroke-width="3"/><circle cx="28" cy="28" r="6" fill="${c}"/></svg>`;
 }
 

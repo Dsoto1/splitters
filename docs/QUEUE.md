@@ -36,9 +36,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/captions-1124` · 4f5e5ad5 · 45480779970 (sound captions; frees 37.1 kB of the menu's first JS, 2799.9 → 2762.8 kB: map release records out of the map index, the Bots window loaded on first open; ahead of `wip/crash-reports-1124`, which needs the room)
-- `wip/crash-reports-1124` · 273c40a5 · 45464588015 (crash and error reports; adds 0.6 kB to the menu, 2799.6 of 2800 kB alone: land it after `wip/captions-1124` frees room, merging main and re-checking; the hub restarts on the owner's `sudo tiletrigger-update`, docs/CRASH_REPORTS.md)
-- `wip/colourblind-1124` · 9142dd2c · 45526944177 (colour vision; re-checked green with main 66ac2b2d merged; now also kept on the account through captions' `prefs`)
+- `wip/colourblind-1124` · 52af939a · 45476320445 (colour vision: attempt 1, full suite; menu JS 2795.9 kB, 3.1-3.4 kB under main, as steer mode leaves vehicleCamera.ts; the account copy of the setting waits for captions' `prefs`)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -168,6 +166,9 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-25** train check/train-20261125-024943 (0b6cbff, run 45535725391), landed by the splitters lead: crash and error reports (`wip/crash-reports-1124`, lane B; the hub picks it up on `sudo tiletrigger-update`); St. Jasper's fictional names (docs/map-briefs/st_johns/NAMES.md) and plain glass mirrors, a new `glazed` surface and Wall Mirror prop (`wip/stjohns-13`).
+- **2026-11-25** train check/train-20261125-011608 (f27d808, run 45524566573), landed by the splitters lead: seven power-ups: Overdrive, Regen, Rapid Fire, Phantom, Moon Boots, Vampire, Bottomless Mag (`wip/powerups-1124`; clumpPerf regression fixed: no per-move allocation).
+- **2026-11-25** train check/train-20261125-001333 (66ac2b2, run 45516427124; teams e2e passed on its one re-run), landed by the splitters lead: sound captions (`wip/captions-1124`, lane B).
 - **2026-11-24** train check/train-20261124-225810 (1c148ee, run 45505806410), landed by the splitters lead: fix batch `wip/fixes-20261124`: menu music shuffles in the Map Maker tracks; bullet holes on breakable blocks (game/blockHoles.ts: the range's wood boards); Blaster X-42 bolts drawn leaving the muzzle; small riders see and fire from full-size eye height on mounts (a small bot never fired a turret); the first nine Animalia small (Newt Calloway, Rufus Boomtown, Barnaby Burrows, Ollie Hootman); Brutus Hornbeck retired to Gorilla G.
 - **2026-11-24** train check/train-20261124-215821 (86b2bd7, run 45496392080), landed by the splitters lead: `wip/stjohns-12`: light gaps closed in gable/ridge roofs and leaded windows, dorm rooms (sink with mirror cabinet, bunk with footlocker, desks flush in the corner), St. John's renamed St. Jasper's Military Academy.
 - **2026-11-24** train check/train-20261124-190819 (cef97a4, run 45467075483; e2e 3/12 timed out on a slow runner, passed on its one re-run), landed by the splitters lead: Verdant Ziggurat retired (owner: too close to Vinefall Sanctum), its menu picture and card removed (`wip/retire-ziggurat`).

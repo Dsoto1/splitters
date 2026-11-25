@@ -1,4 +1,5 @@
 import { endedReaders } from './endedHooks.ts';
+import { crashContext } from '../crashReport.ts';
 import { targetLabel } from './targetLabel.ts';
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import {
@@ -2358,6 +2359,8 @@ export class GameSession {
         this.hud.self = msg.slot;
         if (this.markers.ally !== 'team') this.hud.partyColor = this.markers.ally;
         this.rules = msg.rules;
+        // Crash reports name a suite map by its ID, any other map only as "custom" (crashReport.ts).
+        Object.assign(crashContext, { map: inSuite(loaded.map.metadata.id) ? loaded.map.metadata.id : 'custom', mode: msg.rules.mode });
         // Grenades wear the weapon set's looks (the Military frag, the Sci-fi smoke canister) before the map's pickups are drawn.
         this.view.setWeaponSetLook(weaponSetInPlay(msg.rules, loaded.map)?.id);
         // The match's weather (the host's choice, else the map's), fixed while it plays.
@@ -4163,7 +4166,7 @@ export class GameSession {
       this.hud.setMessageMenu(this.input.msgMenu && this.rules?.emotes !== false, QUICK_MESSAGES);
       this.hud.setClassMenu(this.classesOn && this.input.classMenu, this.classesOn ? { current: this.myClass?.[0] ?? null, next: this.myClass?.[1] ?? null, full: this.classesFull(), fav: this.favClassIndex(), pick: (i) => this.input.chooseClass(i) } : null);
       this.hud.setStatusLines(this.classStatusLines());
-      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel());
+      this.hud.setPowerups(local.speedTicks / TICK_RATE, local.damageTicks / TICK_RATE, local.jetFuel === null ? null : local.jetFuel / JET.max, this.uav, this.jam, this.streakLabel(), local.power);
       // A spectator isn't waiting to respawn: no "Respawning…".
       this.hud.setStatus(this.phase, this.timeLeft, local.alive || this.spectator, this.winner, this.outcome);
       this.rouletteHud?.frame(now);
