@@ -50,7 +50,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/doors-fit-1125` · 67058d8d · 45718330599 (doors that fit themselves, map format v52; origin/main with the tunnel kit merged, coverage pieces re-placed through MapMaker)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -180,6 +179,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-25** `wip/doors-fit-1125` (green 67058d8d, run 45718330599; main merged by the lead's helper, coverage pieces re-placed through MapMaker), landed alone by the splitters lead: doors that fit themselves (lane B; map format v52): a placed door cuts a matching opening through both faces of its wall, whatever it's built from.
 - **2026-11-25** train check/train-20261125-210903 (49890fc, run 45701672711; hostcontrols flake passed on its one re-run), landed by the splitters lead: seamless tunnels (`wip/tunnel-seamless-1125`, lane B): textures run on across turned and tilted tunnel blocks, the kit's joints on the lattice, a Stair Tunnel in every family.
 - **2026-11-25** train check/train-20261125-195359 (7bfc6c4, run 45689794932), landed by the splitters lead: sharper characters (`wip/chartex-1125`: KTX2 textures, 177 characters at 2048 px colour, the rest compressed at 1024; GPU memory for all characters 2.1 → 1.3 GB, character files 3.2 MB budget); the campaign framework (`wip/campaign-1125`: sector data, progress on the device and the profile, map locks with joining allowed, the Operations Database with the Unknown tile, the menu as Story · Quick Play · Local · Online; character locks built, off).
 - **2026-11-25** train check/train-20261125-145926 (9235ce6, run 45640114571), landed by the splitters lead: fix batch `wip/fixes-20261125`: every projectile gun's shot drawn leaving its barrel; Bottomless Mag pickup as rounds with ∞; Elder Tomo's new model; Pip Quickfoot is a her.
