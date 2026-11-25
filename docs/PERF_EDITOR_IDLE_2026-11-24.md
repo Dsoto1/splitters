@@ -73,10 +73,11 @@ map in Chrome's Performance panel with and without `?perfoff=editoridle`.
 
 `IDLE_SHOTS=<dir> node tools/perf/editor-idle.mjs` (1280 × 720 at deviceScaleFactor 2) after: the map opened, the
 camera flown forward, a thing selected, dragged, a Pistol's ghost hovered and placed, Structure paint hovered and
-clicked, plan view and back. Each picture against the same view drawn afresh: **0% of pixels differ** in all ten
-(the Structure paint click: 1.46%, its toast fading between the two pictures). Each against the same step with
-`?perfoff=editoridle`: **identical** in nine, the paint step differing only in that toast. Pictures: the helper's
-scratchpad `idle/on/` and `idle/off/`.
+clicked, plan view and back (the select step picks the prop nearest the middle of the view, Mine Cart (Ore) 2, and
+the drag shows its handle). Each picture against the same view drawn afresh: **0% of pixels differ, in all ten**.
+Each against the same step with `?perfoff=editoridle`: **identical, all ten**. (An earlier run differed only in a
+toast fading between pictures, on the DOM, not the view.) Pictures: the helper's scratchpad `idle/on/` and
+`idle/off/` (`<step>.png` as shown, `<step>-fresh.png` drawn afresh).
 
 ## 2. The leak question (task 2)
 
