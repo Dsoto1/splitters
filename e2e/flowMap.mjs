@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'colourvision', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions',
+  'firstperson', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -147,9 +147,9 @@ const RULES = [
   // packages/shared/src/content/*.generated.ts: those run everything), so a manifest alone runs the flows that
   // look at that kind of content, and the unit tests that read it. Any other content/ path: everything.
   // (A character change also runs `offline`: its Character Select lists every character by section.)
-  [/^content\/(characters\/|characters\.lock\.json$)/, [...CHARACTER_FLOWS, 'offline', 'designer', 'visual'], ['client', 'content', 'shared']],
+  [/^content\/(characters\/|characters\.lock\.json$)/, [...CHARACTER_FLOWS, 'offline', 'firstperson', 'visual'], ['client', 'content', 'shared']],
   [/^content\/(clip-sets\/|clip-sets\.lock\.json$)/, [...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
-  [/^content\/gear(\.lock)?\.json$/, [...CHARACTER_FLOWS, 'designer', 'visual'], ['shared']],
+  [/^content\/gear(\.lock)?\.json$/, [...CHARACTER_FLOWS, 'firstperson', 'visual'], ['shared']],
   // Props: one file per content pack (content/props/<pack>.json); the palette test reads them too.
   [/^content\/(props\/|props(\.lock)?\.json$)/, ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
   // Guns: the arsenal, the grips on them (characters), mounted guns (vehicles).
@@ -191,10 +191,9 @@ const RULES = [
   [/^packages\/client\/src\/game\/(clusteredLights|roomLights|indoorFill|feedLimit)\.ts$/, ['mobile', 'offline', ...FLASHING_FLOWS, 'setpieces'], ['client']],
   // (Every flow that opens Map settings: the coverage map's flow checks its Test map box there.)
   [/^packages\/client\/src\/editor\//, ['editor', ...EDITOR_UX_FLOWS, 'scenery', 'canyon', 'traffic', 'weaponsets', 'coverage', 'visual'], ['client']],
-  [/^packages\/client\/src\/designer\//, ['designer', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/tools\/characterViewer/, [...CHARACTER_FLOWS], ['client']],
   // Your own body and arms in first person, and where hands are drawn on guns (the grip checks).
-  [/^packages\/client\/src\/game\/(firstPersonBody|firstPersonArms|handProbe)\.ts$/, [...CHARACTER_FLOWS, 'offline', 'arsenal', 'visual'], ['client']],
+  [/^packages\/client\/src\/game\/(firstPersonBody|firstPersonArms|handProbe)\.ts$/, [...CHARACTER_FLOWS, 'offline', 'arsenal', 'firstperson', 'visual'], ['client']],
   // The procedural environment (renderer behind ?env=1, materials, the lab).
   [/^packages\/client\/src\/(environment\/|tools\/envLab\.ts$)/, ['environment', 'webgpu', 'scenery', 'visual'], ['client']],
   // The grip page and its audit (the grip checks drive it).
@@ -206,7 +205,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
   [/^packages\/client\/src\/(inputMode\.ts$|frontend\/padNav\.ts$)/, ['padsetup', 'offline', 'mobile', 'newplayer', 'visual', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/campaign\//, ['story', 'offline'], ['client']],
-  [/^packages\/client\/src\/frontend\//, ['story', 'padsetup', 'newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual', 'testrange', 'captions'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['story', 'padsetup', 'newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'firstperson', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual', 'testrange', 'captions'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   // Crash and error reports (docs/CRASH_REPORTS.md): the panel, and the owner's list on Profile.
   [/^packages\/client\/src\/(crashReport|crashPanel|crashReportsUi)\.ts$/, ['crashreport'], ['client']],

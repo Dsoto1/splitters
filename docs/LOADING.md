@@ -14,7 +14,7 @@ Measured with a module-size dump of the 0.3.0 build (sizes before minifying):
 | every map in `maps/` (eager `import.meta.glob` in main.ts) | 15.0 MB |
 | Rapier (`@dimforge/rapier3d-compat`: its WebAssembly inlined as base64) | 4.3 MB |
 | Babylon (engine, materials, meshes, post-processes, glTF with every extension, flow graph, audio…) | ~7 MB |
-| the match, MapMaker, Character Designer, shared sim and content tables | ~2.5 MB |
+| the match, MapMaker, shared sim and content tables | ~2.5 MB |
 
 ## How it's split now
 
@@ -57,7 +57,7 @@ Measured with a module-size dump of the 0.3.0 build (sizes before minifying):
   dynamic import at main.ts's mode switch. Physics (Rapier) initialises with it
   instead of before the menu. The match worker (`simWorker`) shares the page's
   Rapier file (`rapier-*.js`: same bytes, same hashed name, one download).
-- **MapMaker** and the **Character Designer**: dynamic imports when opened.
+- **MapMaker**: a dynamic import when opened (the Character Designer, also one, was removed on 2026-11-25).
   MapMaker's Open list comes from the map index; a template loads when its row
   is seen or opened.
 - **WebGPU's engine** loads only with `?renderer=webgpu`.
@@ -75,7 +75,7 @@ Measured with a module-size dump of the 0.3.0 build (sizes before minifying):
   would also take in the shaders the menu fetches on demand.
 
 Hooks for browser tests are unchanged: `window.__front` once the menu is up,
-`__editor` when MapMaker opens, `__designer` when the designer does, `__cs`
+`__editor` when MapMaker opens, `__cs`
 when a match is ready.
 
 ## Prefetch
@@ -154,7 +154,7 @@ page until the first screen is ready: `client/src/boot.ts` counts the steps
 `main.ts` gives it (the engine, fonts, the menu scene, your character's
 portrait, the shipped portraits and the first map pictures, each capped) and
 fades out when they're done, after 12 s at the most, or as soon as a match,
-MapMaker or the Character Designer takes over (they have their own). The
+MapMaker takes over (they have their own). The
 /host page, the team tools and test mode (`?test=1`) skip it.
 
 ## Starting a match

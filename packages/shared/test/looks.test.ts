@@ -104,7 +104,7 @@ describe('character looks', () => {
   });
 });
 
-describe('custom looks', () => {
+describe('custom look IDs (drawn for the client, no longer played: the Character Designer went, 2026-11-25)', () => {
   it('lists exactly the shipped parts', () => {
     const shipped = lock.files.filter((f) => f.role === 'part').map((f) => f.id).sort();
     expect(CHARACTER_PARTS.map((p) => p.id).sort()).toEqual(shipped);
@@ -141,10 +141,18 @@ describe('custom looks', () => {
     expect(getLook(noLegs).id).toBe(DEFAULT_LOOK);
   });
 
-  it('keeps a valid custom look for a joining player', () => {
+  it('a saved custom look (from the removed Character Designer) plays the default, on the device and in a match', () => {
     const custom = encodeLook({ body: 'female', parts: ['peasant_torso_f', 'ranger_arms_f', 'athlete_legs_f', 'ranger_feet_f'], hair: ['hair_buns'], colorways: ['peasant_dusk'], skin: '#9a6a4e', hairColor: '#8a3a2a' });
+    expect(decodeLook(custom)).not.toBeNull();
+    expect(validLookId(custom)).toBe(DEFAULT_LOOK);
+    // An old design with size, dyes and gear, and one made from Linktifa's base ("Design new").
+    expect(validLookId(encodeLook({ ...DESIGNER_BASE_LOOK, size: 'large', cloth: '#2a3a5c', trim: null, gear: ['goggles', 'vest'] }))).toBe(DEFAULT_LOOK);
+    expect(validLookId(encodeLook(DESIGNER_BASE_LOOK))).toBe(DEFAULT_LOOK);
+    // Presets, retired ones and NPC skins are as before.
+    expect(validLookId('core.dale')).toBe('core.dale');
+    expect(validLookId('npc:cyclops')).toBe('npc:cyclops');
     const match = new Match(loadArena());
     match.addHuman('Kit', custom);
-    expect(match.roster()[0]!.look).toBe(custom);
+    expect(match.roster()[0]!.look).toBe(DEFAULT_LOOK);
   });
 });

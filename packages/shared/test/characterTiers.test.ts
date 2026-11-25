@@ -88,7 +88,7 @@ describe('character tiers', () => {
     expect(characterTier(getLook('core.nobody_by_this_name'))).toBe('core');
   });
 
-  it('Character Select: an Experimental section before Yours, only when someone is in it', () => {
+  it('Character Select: an Experimental section, only when someone is in it, and no Yours', () => {
     const entry = (l: CharacterLook) => ({ id: l.id, name: l.name, group: characterSectionOf(l)! });
     const mine = { id: 'm1', name: 'Mine', group: 'mine' };
     // (An experimental character in a collection sits in the collection's section, so it belongs with the core tier here.)
@@ -104,8 +104,9 @@ describe('character tiers', () => {
     expect(exp.looks.map((l) => l.id).sort()).toEqual([trial.id, ...EXPERIMENTAL.filter((l) => !l.collection).map((l) => l.id)].sort());
     // It left its group's section.
     expect(withOne.find((s) => s.id === 'machines')!.looks.map((l) => l.id)).not.toContain(trial.id);
-    // Yours is there even when empty (it holds "Design new").
-    expect(characterSections(CORE_LOOKS.map(entry)).at(-1)).toEqual({ id: 'mine', label: 'Yours', looks: [] });
+    // Yours went with the Character Designer (2026-11-25): an entry with no group sits under Other, only when there is one.
+    expect(characterSections(CORE_LOOKS.map(entry)).map((s) => s.id)).not.toContain('mine');
+    expect(without.at(-1)).toEqual({ id: 'mine', label: 'Other', looks: [mine] });
   });
 });
 
