@@ -8,7 +8,7 @@ import { LIFT_FLAG, PLAYER, STANCES, TICK_DT, TICK_RATE, type Stance } from '../
 import { PICKUP_RADIUS, type ItemDefinition, type ItemEffect } from '../sim/items.ts';
 import { MATCH_PLAY } from '../content/matchPlay.generated.ts';
 import { BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_MELEE, BUTTON_JUMP, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, type PlayerInput } from '../sim/movement.ts';
-import { SLIDE, eyePoint } from '../sim/moves.ts';
+import { SLIDE, eyePoint, eyeScaleOf } from '../sim/moves.ts';
 import { AMMO_BOX_REACH } from '../sim/resupply.ts';
 import { botFireMode } from './fireModePick.ts';
 import { THROWABLE_DEFS, getWeapon, inHand, smokeBlocks, weaponCode, type AltFire, type ProjectileSpec, type SmokeCloud, type ThrowableKind, type WeaponDefinition } from '../sim/weapons.ts';
@@ -1215,7 +1215,7 @@ export class BotBrain {
     return {
       tick: view.tick,
       // Where its rounds start: the sim fires from the eye, which scales with body size.
-      eye: me.lean ? eyePoint(me.pos, me.yaw ?? 0, stance, me.lean, me.size ?? 1) : { x: me.pos.x, y: me.pos.y + STANCES[stance].eye * (me.size ?? 1), z: me.pos.z },
+      eye: me.lean ? eyePoint(me.pos, me.yaw ?? 0, stance, me.lean, me.size ?? 1) : { x: me.pos.x, y: me.pos.y + STANCES[stance].eye * eyeScaleOf(me.size ?? 1, !!me.mounted), z: me.pos.z },
       speed: this.speed,
       airborne: false,
       stance,
@@ -4081,7 +4081,7 @@ export class BotBrain {
     const tick = view.tick;
     const myEye = this.eyeAt;
     myEye.x = me.pos.x;
-    myEye.y = me.pos.y + STANCES[me.stance ?? 0].eye * (me.size ?? 1);
+    myEye.y = me.pos.y + STANCES[me.stance ?? 0].eye * eyeScaleOf(me.size ?? 1, !!me.mounted);
     myEye.z = me.pos.z;
     // Leaning, its eye is out round the corner (sim/moves.ts eyePoint), as the match has it.
     if (me.lean) Object.assign(myEye, eyePoint(me.pos, me.yaw ?? 0, me.stance ?? 0, me.lean, me.size ?? 1));
@@ -4138,7 +4138,7 @@ export class BotBrain {
       if (view.crowded && rays >= (best ? SIGHT_TRACK : SIGHT_SEARCH)) break;
       const o = c.o;
       theirEye.x = o.pos.x;
-      theirEye.y = o.pos.y + STANCES[o.stance ?? 0].eye * (o.size ?? 1);
+      theirEye.y = o.pos.y + STANCES[o.stance ?? 0].eye * eyeScaleOf(o.size ?? 1, !!o.mounted);
       theirEye.z = o.pos.z;
       // Someone leaning round a corner shows their head there: seen there (fair both ways).
       if (o.lean) Object.assign(theirEye, eyePoint(o.pos, o.yaw ?? 0, o.stance ?? 0, o.lean, o.size ?? 1));

@@ -13,7 +13,7 @@ import { chromium } from 'playwright';
 
 const PORT = process.env.TV_PORT ?? '4192';
 const CLIENT = process.env.TV_URL ?? `http://127.0.0.1:${PORT}`;
-const MAPS = process.argv.slice(2).length ? process.argv.slice(2) : ["St. John's", 'Flavius Rule'];
+const MAPS = process.argv.slice(2).length ? process.argv.slice(2) : ["St. Jasper's Military Academy", 'Flavius Rule'];
 
 const server = process.env.TV_URL ? { pid: 0 } : spawn('pnpm', ['--filter', '@tiletrigger/client', 'exec', 'vite', 'preview', '--host', '127.0.0.1', '--port', PORT, '--strictPort'], { stdio: 'ignore', detached: true });
 const stop = () => {

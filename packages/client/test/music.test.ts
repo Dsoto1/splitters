@@ -4,9 +4,11 @@ import { fileURLToPath } from 'node:url';
 import { MUSIC_TRACKS, ShuffleDeck } from '../src/audio/music.ts';
 
 describe('music', () => {
-  it('has five tracks a scene, each shipped', () => {
+  it('has five Map Maker tracks, the menu shuffling them in with its own five, each shipped', () => {
+    expect(MUSIC_TRACKS.mapmaker.length).toBe(5);
+    expect(MUSIC_TRACKS.menu.length).toBe(10);
+    for (const id of MUSIC_TRACKS.mapmaker) expect(MUSIC_TRACKS.menu).toContain(id);
     for (const scene of ['menu', 'mapmaker'] as const) {
-      expect(MUSIC_TRACKS[scene].length).toBe(5);
       for (const id of MUSIC_TRACKS[scene]) {
         const path = fileURLToPath(new URL(`../public/music/${id}.ogg`, import.meta.url));
         expect(existsSync(path)).toBe(true);

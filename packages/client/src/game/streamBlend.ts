@@ -2,7 +2,7 @@ import type { Vec3 } from '@tiletrigger/shared';
 import { following, type MuzzleAnchor } from './muzzleAnchor.ts';
 
 /**
- * Projectile streams (the flamethrower's flame, goo, bubbles, plasma, oil: shared STREAM_VISUALS) leave the
+ * Projectile streams (the flamethrower's flame, goo, bubbles, plasma, oil, the Blaster X-42's bolts: shared STREAM_VISUALS) leave the
  * shooter's muzzle as drawn now, then blend into where the host has them.
  *
  * Why (found with the beam fix, 2026-11-16): a projectile is drawn from the snapshots, about 100 ms in the past

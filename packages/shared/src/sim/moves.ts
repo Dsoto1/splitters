@@ -90,6 +90,14 @@ export function leanShift(lean: number, stance: Stance, height: number, scale = 
   return { side: (LEAN.shift * f + arm * Math.sin(a)) * scale, down: arm * (1 - Math.cos(a)) * scale };
 }
 
+/**
+ * The body scale an eye stands at: a combatant's own size on foot, full size on a mount. Seats and guns are built at a
+ * full-size body's height (a turret's tripod gun, a vehicle's gunner ring), so a small rider sees and fires from where
+ * a full-size one would; at its own height a small gunner's sight lines met its own turret (a small bot on a turret never
+ * fired, 2026-11-24).
+ */
+export const eyeScaleOf = (size: number, mounted: boolean): number => (mounted ? 1 : size);
+
 /** The eye of a body standing at `feet`, facing `yaw`, in `stance`, leaning `lean` steps. */
 export function eyePoint(feet: Vec3, yaw: number, stance: Stance, lean: number, scale = 1): Vec3 {
   const eye = STANCES[stance].eye;

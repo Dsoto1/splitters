@@ -148,6 +148,8 @@ What flickered, and what the setting does to each:
 Not changed (nothing flashes there): smoke grenades' haze (already eased), status tints (CSS transitions), the sky (no
 storm lightning exists; a storm flash would have to be capped and eased the same way).
 
+Sound captions (docs/AUDIO.md, "Sound captions") are steady text on a dark backing that fades out eased (slower with Reduce flashing on): not a bright moment, so the flicker check has no moment for them.
+
 ### The flicker check (e2e flows `flashing` to `flashing5`, `e2e/flicker.mjs`)
 
 `E2E_ONLY=flashing,flashing2,flashing3,flashing4,flashing5 node e2e/run.mjs` (`E2E_FLASH_MOMENTS=arc,blast` records just
