@@ -345,7 +345,29 @@ release, copy that release's files in.
 **Memory and download** (`node tools/content/texture-memory.mjs`: maps as uploaded, mip chains included, KTX2 at
 1 byte a texel (BC7/ASTC), JPEG/PNG at 4):
 
-RESULTS_TABLE
+| | Characters | GPU per character, before → after | Download per character, before → after |
+|---|---|---|---|
+| Talon Skycrest (2048 colour, 1024 normal) | 1 | 11.2 → 7.0 MB (2048 uncompressed would be 28 MB) | 1.52 → 2.55 MB |
+| Colour at 2048 (rebuilt from the download) | 177 | 10.3 → 6.8 MB on average | 1.28 → 2.28 MB (largest 2.93) |
+| Colour kept at 1024 (no download here) | 32 | 8.1 → 2.0 MB | 1.06 → 1.29 MB |
+| All | 209 | 2,092 → 1,265 MB in all (10.0 → 6.1 each) | 261 → 444 MB in all (1.25 → 2.13 each) |
+
+So a match of 24 different characters holds about 145 MB of character maps instead of 240, at twice the colour
+resolution; the download is what grew (`characterBudgets.maxBytes` 1.8 → 3.2 MB in `content/models.json`). Pictures:
+Talon in Character Select and from 0.75 m to 15 m, before and after (the lead's scratchpad, `chartex/`).
+
+**How the 177 were rebuilt (2026-11-25).** Each from its download (the owner's Drive, the `characters` folder, by the
+lock's `src` name), with `prepare-meshy-characters.mjs`. 118 came out with the mesh shipped (the rebaked ones in new
+charts, so new texture coordinates and a recut far copy; the rest identical but for the maps). 58 came out with
+another mesh: built by an older pipeline, or changed since by the `*-built.mjs` tools (grafted hands, refits), and
+their grips, hands and skins were approved on the shipped mesh. Those keep the shipped mesh, and
+`COLOUR_FROM=<fresh builds> node tools/content/ktx2-built.mjs` swaps in the fresh build's 2048 colour map once it is the
+same picture in the same layout (32-41 dB over the texels the body covers; the gutters between charts are filled
+differently by the newer `padCharts`); their normal maps are the shipped ones, compressed. The 32 kept at 1024: the
+Meshy rig tasks (Ash Walker, Bonejack, Brannock, Brass Hare, Desert Ranger, Dust Trooper, Gorgle, King, Monk, Punkin,
+Skeleton, Teddy, Uncle Bao, Zombie Groaner), downloads not on the Drive under the lock's name (Bill, Crimson Operative,
+Galloway, Goblin, Grunt-68, Hector, Hollow Visitor, Lancer, Otter, Pirate, Ricochet, Rourke, Rusty Mech, Santa, T-350,
+Titan, Umpire) and Zhao (rebaked, with grafted hands: a rebuild needs `rehand-built.mjs` and a grip check).
 
 ### Environment kits and tiles
 
