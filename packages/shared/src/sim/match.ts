@@ -68,8 +68,8 @@ import { RouletteDirector } from './roulette.ts';
 import { RESOURCE_BUDGETS } from '../map/budgets.ts';
 import { ARMOR_ABSORB, DAMAGE_BOOST, MAX_ARMOR, PICKUP_RADIUS, SPEED_BOOST, STREAK_REWARDS, getItem, type ItemDefinition } from './items.ts';
 import {
-  OVERDRIVE_DAMAGE, OVERDRIVE_KNOCK_EVERY_TICKS, OVERDRIVE_LIFT, OVERDRIVE_PUSH, OVERDRIVE_WEAPON, PHANTOM_REVEAL_TICKS, RAPID_RELOAD, REGEN_PER_TICK, VAMPIRE_SHARE,
-  fillMagazine, noPowers, powerMove, powersWire, rapidFireRate, rapidSteps, tickPowers, type PowerTicks,
+  MOON_GRAVITY, MOON_JUMP, OVERDRIVE_SPEED, OVERDRIVE_DAMAGE, OVERDRIVE_KNOCK_EVERY_TICKS, OVERDRIVE_LIFT, OVERDRIVE_PUSH, OVERDRIVE_WEAPON, PHANTOM_REVEAL_TICKS, RAPID_RELOAD, REGEN_PER_TICK, VAMPIRE_SHARE,
+  fillMagazine, noPowers, powersWire, rapidFireRate, rapidSteps, tickPowers, type PowerTicks,
 } from './powerups.ts';
 import { dealPickup, rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
@@ -494,8 +494,8 @@ export interface Combatant {
   damageTicks: number;
   /** The other power-ups' timers (sim/powerups.ts): inputs left of each. */
   power: PowerTicks;
-  /** Tick an enemy's Overdrive last knocked this one over (one bump a second). */
-  bumpedAt?: number;
+  /** Tick an enemy's Overdrive last knocked this one over (one bump a second; set from the start, so every combatant keeps one shape). */
+  bumpedAt: number;
   /** Trigger state: buttons last input, spin-up/charge, semi-auto latch, burst in progress, spread bloom. */
   prevButtons: number;
   /** Tick this player last pressed Use (E): objective modes read it (Bomb: plant / defuse). */
@@ -1515,6 +1515,7 @@ export class Match {
       speedTicks: 0,
       damageTicks: 0,
       power: noPowers(),
+      bumpedAt: -1e9,
       prevButtons: 0,
       moveSpeed: 0,
       windup: 0,
@@ -3457,10 +3458,11 @@ export class Match {
           env.ladders = this.ladders;
           env.scale = c.size;
           // Overdrive's speed, Moon Boots' gravity and jump (sim/powerups.ts; client prediction passes the same).
-          const pm = powerMove(c.power);
-          env.jump = c.stats.jump * pm.jump;
+          // (Plain numbers, no object a move: this runs for every actor every tick, the clump's hottest loop.)
+          const moon = c.power.moon > 0;
+          env.jump = moon ? c.stats.jump * MOON_JUMP : c.stats.jump;
           env.stamina = c.stats.stamina;
-          env.gravity = this.phys.gravity * pm.gravity;
+          env.gravity = moon ? this.phys.gravity * MOON_GRAVITY : this.phys.gravity;
           env.gravityZones = this.gravityZones.length ? this.gravityZones : undefined;
           env.airJumps = c.cls ? (this.classes?.airJumps(c) ?? 0) : undefined;
           env.jetpack = c.jetFuel !== null ? true : undefined;
@@ -3474,7 +3476,7 @@ export class Match {
           // Bots ride a zipline to its end: a stray E (a door, a vehicle) or a stuck-hop must not drop them off it.
           if (c.bot && c.move.zip !== undefined) input.buttons &= ~(BUTTON_USE | BUTTON_JUMP);
           const sprinted = !!c.move.sprint;
-          const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * pm.speed * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
+          const stepped = stepMovement(this.physics, c.collider, c.move, input, (c.speedTicks > 0 ? SPEED_BOOST : 1) * (c.power.overdrive > 0 ? OVERDRIVE_SPEED : 1) * c.speedMul * statusSpeed(c), dt, this.tractionAt(c.move.pos), env);
           c.move = applyPads(this.pads, stepped);
           sprintEnded = sprinted && !stepped.sprint;
           // Into a portal: out of its partner, turned by the difference in their facings (as client prediction does).
@@ -4070,7 +4072,7 @@ export class Match {
     const reach = PLAYER.radius * c.size;
     for (const o of this.actors()) {
       if (o === c || !o.alive || o.mount || o.power.overdrive > 0 || !this.hostile(c, o)) continue;
-      if (o.bumpedAt !== undefined && this.tick - o.bumpedAt < OVERDRIVE_KNOCK_EVERY_TICKS) continue;
+      if (this.tick - o.bumpedAt < OVERDRIVE_KNOCK_EVERY_TICKS) continue;
       const q = o.move.pos;
       const dx = q.x - p.x;
       const dz = q.z - p.z;
@@ -7139,7 +7141,7 @@ export class Match {
     c.speedTicks = 0;
     c.damageTicks = 0;
     c.power = noPowers();
-    c.bumpedAt = undefined;
+    c.bumpedAt = -1e9;
     // Classes: the class's loadout, health and speed replace all that.
     this.classes?.onSpawn(c);
     // Roulette: the character's signature weapon in hand, a jackpot's armour, a tiny body, spawn protection.
@@ -8124,7 +8126,7 @@ export class Match {
  * reads polymorphic.
  */
 function toView(c: Combatant, concealed = false, sheltered = false): CombatantView {
-  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}), overdrive: c.alive && c.power.overdrive > 0 };
+  return { slot: c.slot, pos: c.move.pos, yaw: c.yaw, pitch: c.pitch, health: c.health, armor: c.armor, alive: c.alive, stance: stanceOf(c.move), human: c.kind === 'human', mounted: !!c.mount, sheltered, grounded: c.move.grounded, object: false, concealed, riding: c.move.zip !== undefined, climbing: !!c.move.climb, chute: !!c.move.chute, size: c.size, box: hitboxOf(c), hitScale: c.hitScale, winded: !!c.move.winded, lean: c.alive && !c.mount ? (c.move.lean ?? 0) : 0, stamina: c.move.stamina ?? 1, sprinting: !!c.move.sprint, overdrive: c.alive && c.power.overdrive > 0, ...(c.hold ? { holding: c.hold.kind } : {}), ...(c.shieldUntil ? { shielded: true, shieldUntil: c.shieldUntil } : {}) };
 }
 
 /** Refill a view made by toView for this tick. */
