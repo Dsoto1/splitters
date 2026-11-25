@@ -33,6 +33,14 @@ The story's bosses, from the owner's Drive uploads of 2026-11-25 ("boss chrono t
 - A weapon or gadget that "catches" characters.
 - A number of kills of a character earns that character.
 
+## Map pass and clusters (owner, 2026-11-25)
+
+The owner's direction, condensed: "we have a considerable amount of maps and i would like to utilize some of what we have already built to plug into our story line. others can be relegated to community maps or another named section."
+- **The big map pass builds the story.** The pass that goes over every map once the features are in (docs/QUEUE.md, Maps) is also the one that builds out the storyline, based on the maps.
+- **Clusters of 3 by theme.** The final map of each 3 is the boss or challenge map (for example Mesoamerica ending with the Jaguar King, with buffs or power-ups).
+- **Convergence maps**, all new, unlock when two sections linked by the timeline or story conflict. Each combines the two themes, with a convergence line that clearly splits one half of the map and shows the fracture ("like a celestial fault line of time and space").
+- **Audit first**, so this is coordinated without extra work where it isn't needed: docs/STORY_MAP_AUDIT.md (every live map, 12 proposed clusters, the maps outside the story, convergence candidates, and the owner's questions).
+
 ## How it fits what exists
 
 - Maps are already one file each, built in MapMaker. Story maps stay ordinary maps, and the campaign is data around them (order, challenges, unlocks).
