@@ -35,7 +35,7 @@ type Block = Extract<MapEntity, { kind: 'block' }>;
 
 const door = (position: [number, number, number], yaw: number, style?: Door['style']): Door => ({ id: 'door_1', kind: 'door', position, yaw, ...(style ? { style } : {}), startOpen: false, locked: false, auto: true });
 const block = (id: string, position: [number, number, number], size: [number, number, number], extra: Partial<Block> = {}): Block => ({ id, kind: 'block', position, size, yaw: 0, material: null, tint: null, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: 8, health: 120, ...extra });
-const room = (id: string, x: number, y: number) => ({ id, tile: 'core.room', x, y, z: 0, rotation: 0 });
+const room = (id: string, x: number, y: number) => ({ id, tile: 'core.room', x, y, z: 0, rotation: 0 as const });
 
 /** Place `d` as MapMaker's door tool does: the door fitted, and the wall's edits, as one batch. */
 function place(doc: MapDocument, d: Door): { doc: MapDocument; door: Door; fit: ReturnType<typeof fitDoor> } {
