@@ -3,6 +3,7 @@ import { readVouched, type Vouched } from './vouch.ts';
 import { cleanEmblemCode } from '../content/emblems.ts';
 import { isTitleId } from '../content/titles.ts';
 import { claimsOfficial } from './lobby.ts';
+import type { CampaignProgress } from '../campaign/progress.ts';
 
 /**
  * Player profiles (the hub's /api/v1/profile, packages/server/src/profiles.ts):
@@ -89,6 +90,8 @@ export interface Profile {
   keys: Record<string, string>;
   /** Small settings kept with the account (option → value, e.g. `captions: 'dir'`: client game/captionPrefs.ts): every browser you sign in on uses them. An older hub sends none. */
   prefs: Record<string, string>;
+  /** Story campaign progress (campaign/progress.ts): the hub merges what a browser sends with what it has (union), so no device's wins are lost. An older hub sends none. */
+  campaign: CampaignProgress;
 }
 
 /** A profile's key bindings, checked: at most 128 actions, each "key,alt" of short letter-and-digit codes; null when it isn't a map. */

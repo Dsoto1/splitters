@@ -6,7 +6,7 @@ const storage = { getItem: (k: string) => store.get(k) ?? null, setItem: (k: str
 Object.assign(globalThis, { localStorage: storage, sessionStorage: storage });
 
 // Signed in as one account whose profile the test sets; saves are recorded.
-const profile: { p: Profile } = { p: { username: 'Toshi_92', region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {}, keys: {}, prefs: {} } };
+const profile: { p: Profile } = { p: { username: 'Toshi_92', region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {}, keys: {}, prefs: {}, campaign: { maps: [], sectors: [], convergences: [], characters: [] } } };
 const saved: unknown[] = [];
 vi.mock('../src/account.ts', () => ({ currentAccount: () => ({ sub: 's1' }) }));
 vi.mock('../src/profile.ts', () => ({
