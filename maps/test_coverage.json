@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 51,
+  "formatVersion": 53,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_2gmiilq5maxor2ou",
-      "revision": 63,
-      "contentHash": "sha256:14b40780444164e812dceb06651db396e65a844555ed890c56dec000c32d246a",
-      "schemaVersion": 51,
-      "releasedAt": "2026-11-25T18:14:15.697Z"
+      "versionId": "v_jgvopy6gz5yooezw",
+      "revision": 64,
+      "contentHash": "sha256:6ec8e84ea5fdb789c0660bcecdd48c3baba5d77f8adf640899e06cdb5aa83033",
+      "schemaVersion": 53,
+      "releasedAt": "2026-11-25T23:48:11.260Z"
     },
     "testOnly": true,
     "category": "weird"
@@ -428,6 +428,11 @@
           "0,0,0:E": "door",
           "0,0,0:S": "wide",
           "0,0,0:W": "arch"
+        },
+        "breakWalls": {
+          "sides": [
+            "0,0,0:N"
+          ]
         }
       },
       {
@@ -1125,6 +1130,10 @@
         "glass": {
           "0,0,0:N": "breakable",
           "0,0,0:E": "reinforced"
+        },
+        "breakWalls": {
+          "health": 200,
+          "shots": true
         }
       },
       {

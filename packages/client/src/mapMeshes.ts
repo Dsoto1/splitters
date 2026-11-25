@@ -165,9 +165,11 @@ export class MapStyler {
     this.images = share?.images ?? new Map();
   }
 
-  build(doc: MapDocument, boxes: readonly WorldBox[], name = 'map'): Mesh[] {
+  /** `apart`: boxes drawn elsewhere (play's breakable walls, game/breakWallVisuals.ts), left out here with their trim. */
+  build(doc: MapDocument, boxes: readonly WorldBox[], name = 'map', apart?: (b: WorldBox) => boolean): Mesh[] {
     // Trim (baseboards, cornices, frames) is drawn with the structure but never collides.
-    this.buildBoxes(doc, [...boxes, ...buildMapDecor(doc)], name);
+    const all = [...boxes, ...buildMapDecor(doc)];
+    this.buildBoxes(doc, apart ? all.filter((b) => !apart(b)) : all, name);
     this.buildTerrain(doc, name);
     return this.meshes;
   }

@@ -82,6 +82,7 @@ import {
   DESTRUCTIBLE_SPECS,
   glassAt,
   cachedWallSections,
+  resolveSurface,
   wallSectionAt,
   NPC_ROLES,
   NPC_ROLE_SPECS,
@@ -2921,8 +2922,14 @@ export class GameSession {
             const e = this.map?.entities[ev.i];
             // Glass (window panes past the entities, glass blocks, Window panes): a shower of shards.
             const pane = this.view.scenario.glass.paneAt(ev.i) ?? (this.map ? glassAt(this.map, ev.i) : null);
+            const wall = !pane && this.map ? wallSectionAt(this.map, ev.i) : null;
             if (pane) {
               this.view.glassShards(pane.box, pane.tint ?? '#d4eef2');
+            } else if (wall && this.map) {
+              // A breakable wall (shared sim/breakWalls.ts): chunks in its own colour out of the hole, both ways.
+              const tile = this.map.classicStructure.tiles.find((t) => t.id === wall.boxes[0]?.sourceId);
+              const style = resolveSurface(this.map, tile, 'walls');
+              this.view.wallBreak(wall, style.tint ?? style.material.base);
             } else if (e?.kind === 'destructible') {
               const spec = DESTRUCTIBLE_SPECS[e.model];
               const h = spec.half;
