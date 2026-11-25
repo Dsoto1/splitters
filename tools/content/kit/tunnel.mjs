@@ -15,6 +15,16 @@
 const SIDES = ['N', 'E', 'S', 'W'];
 const EIGHTHS = [0, 1, 2, 3].map((i) => Math.round(((i * Math.PI) / 4) * 1000) / 1000);
 const r3 = (v) => Math.round(v * 1000) / 1000;
+/**
+ * The places from `from` to `to` (short of `to` by `margin`) on a beat of `every` m kept on the cell's lattice: half a
+ * beat past a multiple of it (every is a whole fraction of the 8 m cell), so a joint, a set or a sleeper falls in the
+ * same place in every piece and on across their joints (seamless tunnels), whichever arm or piece it is in.
+ */
+const beat = (from, to, every, margin = 0.05) => {
+  const out = [];
+  for (let z = Math.ceil((from - every / 2) / every - 1e-9) * every + every / 2; z < to - margin; z += every) out.push(r3(z));
+  return out;
+};
 
 /** A seeded random number generator (mulberry32): the same rock for the same shape every build. */
 function seeded(seed) {
@@ -69,7 +79,10 @@ function archOf(w, { spring, t = 0.25, segs = 9, steps = 6 }, crown) {
     const am = a0 + ((i + 0.5) * span) / segs;
     const half = R * Math.sin(span / segs / 2) + 0.03;
     const rc = R * Math.cos(span / segs / 2) + t / 2;
-    slabs.push({ x: rc * Math.cos(am), y: yc + rc * Math.sin(am), half, roll: am - Math.PI / 2 });
+    // `tex`: where the slab lies along the arch (its inner edge meets the next one's), so the brick runs on across the
+    // slabs (map/faces.ts flatOf). A slab's own +x points back down the arch, hence the sign.
+    const tex = r3(-(i - (segs - 1) / 2) * 2 * R * Math.sin(span / segs / 2));
+    slabs.push({ x: rc * Math.cos(am), y: yc + rc * Math.sin(am), half, roll: am - Math.PI / 2, tex });
   }
   const spandrels = [];
   for (let j = 0; j < steps; j++) {
@@ -101,12 +114,13 @@ function moduleParts(profile, family, shape) {
   const E = 4;
   // A box written in the north arm's frame and rolled about the passage's line (its +X side lifted by `roll`), turned
   // k quarter turns: its centre turns and a yaw carries the turn, as a turned tile's tilted boxes do (geometry.ts).
-  const drawRolled = (k, [x0, y0, z0, x1, y1, z1], roll, material, tint) => {
-    if (!k) return trims.push({ box: [x0, y0, z0, x1, y1, z1].map(r3), kind: 'trim', ...(roll ? { roll: r3(roll) } : {}), ...surf(material, tint) });
+  const drawRolled = (k, [x0, y0, z0, x1, y1, z1], roll, material, tint, tex) => {
+    const t = roll && tex !== undefined ? { tex } : {};
+    if (!k) return trims.push({ box: [x0, y0, z0, x1, y1, z1].map(r3), kind: 'trim', ...(roll ? { roll: r3(roll) } : {}), ...t, ...surf(material, tint) });
     const [tx, , tz] = turnBox([(x0 + x1) / 2, 0, (z0 + z1) / 2, (x0 + x1) / 2, 0, (z0 + z1) / 2], k);
     const hx = (x1 - x0) / 2;
     const hz = (z1 - z0) / 2;
-    trims.push({ box: [tx - hx, y0, tz - hz, tx + hx, y1, tz + hz].map(r3), kind: 'trim', yaw: r3((k * Math.PI) / 2), ...(roll ? { roll: r3(roll) } : {}), ...surf(material, tint) });
+    trims.push({ box: [tx - hx, y0, tz - hz, tx + hx, y1, tz + hz].map(r3), kind: 'trim', yaw: r3((k * Math.PI) / 2), ...(roll ? { roll: r3(roll) } : {}), ...t, ...surf(material, tint) });
   };
   // The passage runs on one line, north–south (a straight, a dead end, a portal, a shaft): its lining runs through
   // the middle square too. At a junction or a curve each arm is lined from the middle square out.
@@ -137,18 +151,21 @@ function moduleParts(profile, family, shape) {
       for (let z = Math.ceil(from / 2) * 2 + 1; z < to - 0.1; z += 2) put([face(0.1)[0], trim.walkway?.height ?? 0, z - 0.05, face(0.1)[1], g.y - 0.15, z + 0.05], g.material, g.tint);
     }
     // Panel joints: a thin rib up the wall every `joints` metres.
-    if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) put([face(0.015)[0], trim.plinth ?? 0, z - 0.02, face(0.015)[1], clear - (lining.haunch ?? 0), z + 0.02], m.trim);
+    if (lining.joints) for (const z of beat(from, to, lining.joints)) put([face(0.015)[0], trim.plinth ?? 0, z - 0.02, face(0.015)[1], clear - (lining.haunch ?? 0), z + 0.02], m.trim);
   };
   // --- a round arch along the passage from z = `from` to `to` (north frame turned k): voussoir slabs on a segmental
   // arch from the springing on each wall to the crown, drawn inside the clear box (the collision is the shell's).
   // `rings`: the ends where the arch shows its face (a ring of the trim stone, the corners over it filled).
   const archRun = (k, from, to, rings = [from, to]) => {
     if (!arch || to - from < 0.05) return;
-    for (const s of arch.slabs) drawRolled(k, [s.x - s.half, s.y - arch.t / 2, from, s.x + s.half, s.y + arch.t / 2, to], s.roll, m.soffit);
+    for (const s of arch.slabs) drawRolled(k, [s.x - s.half, s.y - arch.t / 2, from, s.x + s.half, s.y + arch.t / 2, to], s.roll, m.soffit, undefined, s.tex);
+    // No ring at the cell's edge: there the next piece's arch runs on (a ring each side made a band at every joint;
+    // seamless tunnels). Rings stay where the arch shows its face: a junction's middle, a mouth, a joint piece.
     for (const z of rings) {
+      if (Math.abs(Math.abs(z) - E) < 1e-6) continue;
       const [z0, z1] = z <= from + 1e-6 ? [from, Math.min(to, from + 0.3)] : [Math.max(from, to - 0.3), to];
       // The ring: the same slabs a little deeper, in the trim stone.
-      for (const s of arch.slabs) drawRolled(k, [s.x - s.half, s.y - arch.t / 2 - 0.06, z0, s.x + s.half, s.y + arch.t / 2, z1], s.roll, m.trim);
+      for (const s of arch.slabs) drawRolled(k, [s.x - s.half, s.y - arch.t / 2 - 0.06, z0, s.x + s.half, s.y + arch.t / 2, z1], s.roll, m.trim, undefined, s.tex);
       // The corners over the arch filled to the shell, stepped (seen from a junction or the next family's piece).
       for (const b of arch.spandrels) for (const sx of [-1, 1]) draw(turnBox([Math.min(sx * b.x, sx * w), b.y0, z0, Math.max(sx * b.x, sx * w), b.y1, z1], k), m.wall);
     }
@@ -196,7 +213,7 @@ function moduleParts(profile, family, shape) {
     }
     if (trim.rails && rails) {
       const r = trim.rails;
-      for (let z = 0.35; z < to - 0.1; z += r.sleeperEvery) put([-r.gauge / 2 - 0.25, 0, z - 0.08, r.gauge / 2 + 0.25, 0.03, z + 0.08], r.sleeper);
+      for (const z of beat(0, to, r.sleeperEvery, 0.1)) put([-r.gauge / 2 - 0.25, 0, z - 0.08, r.gauge / 2 + 0.25, 0.03, z + 0.08], r.sleeper);
       for (const sx of [-1, 1]) put([sx * r.gauge / 2 - 0.03, 0, 0, sx * r.gauge / 2 + 0.03, 0.06, to], r.material, r.tint);
     }
   };
@@ -253,7 +270,7 @@ function moduleParts(profile, family, shape) {
     rockRun(k, archFrom, to);
     rubbleRun(k, from, to);
     for (const sx of [-1, 1]) wallTrim(k, sx, from, to, !!arch);
-    if (lining.joints) for (let z = from + lining.joints / 2; z < to - 0.05; z += lining.joints) draw(turnBox([-(w - (lining.haunch ?? 0)), clear - 0.015, z - 0.02, w - (lining.haunch ?? 0), clear, z + 0.02], k), m.trim);
+    if (lining.joints) for (const z of beat(from, to, lining.joints)) draw(turnBox([-(w - (lining.haunch ?? 0)), clear - 0.015, z - 0.02, w - (lining.haunch ?? 0), clear, z + 0.02], k), m.trim);
     floorRun(k, to, kerbFrom, true, !(turns && (SIDES[k] === 'S' || (SIDES[k] === 'E' && !arms.has('W')))));
     archRun(k, archFrom, to, rings);
     setsRun(k, from, to);
@@ -542,6 +559,121 @@ function moduleParts(profile, family, shape) {
 }
 
 /**
+ * A Stair Tunnel (`kind: 'stairway'`; seamless tunnels, owner 2026-11-18): the passage goes down a level over two
+ * cells, the low end south, the high end north. A level landing 2 m long at each end, 16 steps of 0.25 m by 0.75 m
+ * between (18.4 degrees, easier than the one-cell Stairs), the soffit running down with the floor at the passage's
+ * clear height over the steps' line, so a body stands upright the whole way (map/headroom.ts STAIR_HEADROOM). The
+ * lining and trim are the family's straight run's, laid along the flight: each drawn part is lifted by the floor's
+ * rise under it, a long one tilted to follow the slope (split where the landings meet the steps), so the arch, the
+ * timber sets, the rock or the panels run on into the level pieces at either end. Floor fittings (drain, channel,
+ * track, lane lines, walkways, rubble) stay off the steps; lanterns hang over the landings, never over a step.
+ */
+function stairwayParts(profile, family, shape) {
+  const { half: w, clear, cap } = profile;
+  const m = family.materials;
+  const trim = family.trim ?? {};
+  const surf = (material, tint) => ({ surface: tint ? { material, tint } : { material } });
+  const E = 4;
+  const L = 4;
+  const T = r3(cap - clear);
+  const N = 3 * E; // the north edge of the second cell
+  const zA = -E + 2; // the foot of the steps
+  const zB = N - 2; // the head of the steps
+  const steps = 16;
+  const run = (zB - zA) / steps;
+  const a = Math.atan2(L, zB - zA);
+  const rise = (z) => (z <= zA ? 0 : z >= zB ? L : ((z - zA) * L) / (zB - zA));
+  const solids = [];
+  const trims = [];
+  const solid = (box, material, kind = 'wall') => solids.push({ box: box.map(r3), kind, ...surf(material) });
+  // A tilted box over (or under) the line from (z0, y0) to (z1, y1): `t` thick, x0..x1 across, its face on that line.
+  const slab = (x0, x1, z0, y0, z1, y1, t, over = true) => {
+    const l = Math.hypot(z1 - z0, y1 - y0);
+    const tilt = Math.atan2(y1 - y0, z1 - z0);
+    const side = over ? 1 : -1;
+    const cz = (z0 + z1) / 2 - side * (t / 2) * Math.sin(tilt);
+    const cy = (y0 + y1) / 2 + side * (t / 2) * Math.cos(tilt);
+    return { box: [x0, cy - t / 2, cz - l / 2, x1, cy + t / 2, cz + l / 2].map(r3), pitch: r3(tilt) };
+  };
+
+  // --- the shell: the steps and the landings, the masses either side and the soffit, in 2 m stretches.
+  solids.push({ flight: { axis: 'z', dir: 1, from: zA, across: [-w, w], steps, run: r3(run) }, ...surf(m.floor) });
+  solid([-w, 0, zB, w, L, N], m.floor, 'solid');
+  for (let z0 = -E; z0 < N - 1e-6; z0 += 2) {
+    const top = Math.min(rise(z0 + 2) + cap, L + cap);
+    for (const sx of [-1, 1]) solid([Math.min(sx * w, sx * E), 0, z0, Math.max(sx * w, sx * E), top, z0 + 2], m.wall);
+  }
+  solid([-E, clear, -E, E, cap, zA], m.soffit);
+  solids.push({ ...slab(-E, E, zA, clear, zB, L + clear, T), kind: 'wall', ...surf(m.soffit) });
+  // (The high landing's soffit reaches back over the slab's leaning end, hidden in it, so no slit shows at the bend.)
+  solid([-E, L + clear, zB - 0.3, E, L + cap, N], m.soffit);
+
+  // --- the family's lining: its straight's drawn parts over both cells, laid along the flight.
+  const straight = moduleParts(profile, family, { id: `${shape.id}`, arms: ['N', 'S'] });
+  const lanterns = [];
+  const parts = [];
+  for (const dz of [0, 2 * E]) {
+    for (const p of straight.solids) {
+      if (p.kind !== 'trim') continue;
+      const b = p.box;
+      // Floor fittings stay off the steps.
+      if (b[4] <= 0.2) continue;
+      // A hung lantern (small, on the line, low under the crown): moved over the landings.
+      if (trim.light?.style === 'lantern' && Math.abs(b[0] + b[3]) < 0.05 && b[3] - b[0] < 0.3 && b[1] > clear - 0.9 && b[5] - b[2] < 0.3) {
+        if (!dz) lanterns.push(p);
+        continue;
+      }
+      // A half-turned part (the south arm's) as the same box unturned: its roll, and its place along a curve, change sign.
+      let q = { ...p, box: [b[0], b[1], b[2] + dz, b[3], b[4], b[5] + dz] };
+      if (q.yaw && Math.abs(Math.abs(q.yaw) - Math.PI) < 1e-3) {
+        const { yaw, ...rest } = q;
+        q = { ...rest, ...(q.roll ? { roll: -q.roll } : {}), ...(q.tex !== undefined ? { tex: -q.tex } : {}) };
+      }
+      if (q.yaw) throw new Error(`tunnel kit: ${shape.id}: a turned part in a straight run`);
+      parts.push(q);
+    }
+  }
+  for (const p of parts) {
+    const [x0, y0, z0, x1, y1, z1] = p.box;
+    const cuts = [z0, ...[zA, zB].filter((z) => z > z0 + 0.02 && z < z1 - 0.02), z1];
+    for (let i = 0; i < cuts.length - 1; i++) {
+      const [s0, s1] = [cuts[i], cuts[i + 1]];
+      const zm = (s0 + s1) / 2;
+      const sloped = s1 > zA + 1e-6 && s0 < zB - 1e-6;
+      if (!sloped || s1 - s0 <= 0.6) {
+        // Level, or short (a set, a rib, a bracket): lifted by the rise under its middle.
+        const up = rise(zm);
+        trims.push({ ...p, box: [x0, y0 + up, s0, x1, y1 + up, s1].map(r3) });
+        continue;
+      }
+      // Long, on the steps: tilted to follow them, as high over the floor's line as it was over the floor.
+      const l = (s1 - s0) / Math.cos(a);
+      const h = (y1 - y0) * Math.cos(a);
+      const cy = (y0 + y1) / 2 + rise(zm);
+      trims.push({ ...p, box: [x0, cy - h / 2, zm - l / 2, x1, cy + h / 2, zm + l / 2].map(r3), pitch: r3(a) });
+    }
+  }
+  for (const [dz, up] of [[-E + 1, 0], [N - 1, L]]) for (const p of lanterns) trims.push({ ...p, box: [p.box[0], p.box[1] + up, p.box[2] + dz, p.box[3], p.box[4] + up, p.box[5] + dz].map(r3) });
+  // A handrail on each wall, following the steps.
+  for (const sx of [-1, 1]) trims.push({ ...slab(sx * (w - 0.1) - 0.03, sx * (w - 0.1) + 0.03, zA - 0.3, 0.95, zB + 0.3, L + 0.95, 0.06), kind: 'trim', ...surf(m.trim) });
+
+  // --- the ground: cut and kept in 2 m stretches climbing with the soffit (as the Stairs' and the Wide Ramp's).
+  const bore = { cut: [], cover: [], plan: [[-w, -E, -w, N], [w, -E, w, N]] };
+  for (let z0 = -E; z0 < N - 1e-6; z0 += 2) {
+    const top = Math.min(rise(z0 + 2) + cap, L + cap);
+    bore.cut.push([-E, r3(rise(z0) - 0.5), z0, E, r3(top), z0 + 2]);
+    bore.cover.push([-E, z0, E, z0 + 2, r3(top + 0.1)]);
+  }
+  return {
+    cells: [[0, 0, 0], [0, 1, 0], [0, 0, 1], [0, 1, 1]],
+    ports: [{ side: 'S', level: 0 }, { side: 'N', level: 1, cell: [0, 1] }],
+    solids: [...solids, ...trims],
+    floors: [{ box: [-E, -0.5, -E, E, 0, E], ...surf(m.floor) }],
+    bore,
+  };
+}
+
+/**
  * The pieces that are more than one cell or level: `kind` says which.
  *  - flight: the passage climbs one level over the cell, south (low) to north (a level up), on steps or a ramp
  *    (`floor`); the soffit climbs with it, and so do the cut and the cover (the bore follows the floor).
@@ -655,6 +787,8 @@ function specialParts(profile, family, shape, profiles = {}) {
     const ports = n === 1 ? [{ side: 'S', level: 0 }, { side: 'N', level: 1 }] : [{ side: 'S', level: 0 }, { side: 'N', level: 1, cell: [0, 1] }];
     return { cells, ports, solids: [...solids, ...trims], floors: [{ box: [-E, -0.5, -E, E, 0, E], ...surf(m.floor) }], bore };
   }
+
+  if (shape.kind === 'stairway') return stairwayParts(profile, family, shape);
 
   if (shape.kind === 'riser') {
     const top = L + clear;

@@ -507,12 +507,30 @@ function wholeFaces(groups: readonly Group[]): WholeFace[] {
   return out;
 }
 
-/** A point in a box's own unturned frame, where its texture coordinates are laid out. */
-function flatOf(b: WorldBox, p: readonly number[]): Vec3 {
+/**
+ * A point in a box's own unturned frame, where its texture coordinates are laid out: the offset from the box's centre
+ * along each of its own axes, plus where the centre lies along that axis as turned (by the yaw; a tilt keeps the
+ * centre's place, so a vault's strips stay in step across the vault). So the texture is laid in world space along a
+ * turned box's run (seamless tunnels, owner 2026-11-18): a tunnel's vault, arch or lining turned east-west, or half a
+ * turn, runs on from one piece into the next instead of starting again (or mirrored) at every piece. Each axis is read
+ * the way it points most (east or north, never west or south), so pieces turned a half turn apart agree. A box that is
+ * not turned lays its texture as it always did.
+ */
+export function flatOf(b: WorldBox, p: readonly number[]): Vec3 {
   if (!b.yaw && !b.pitch && !b.roll) return [p[0]!, p[1]!, p[2]!];
   const c = centre(b);
   const d = rot(conj(boxQuat(b.yaw, b.pitch, b.roll)), [p[0]! - c[0], p[1]! - c[1], p[2]! - c[2]]);
-  return [c[0] + d[0], c[1] + d[1], c[2] + d[2]];
+  // A strip of a vault or an arch says where it lies along the curve (LocalBox.tex), on the axis its tilt turns.
+  const texX = b.tex !== undefined && !!b.roll;
+  const texZ = b.tex !== undefined && !b.roll && !!b.pitch;
+  if (!b.yaw) return [texX ? b.tex! + d[0] : c[0] + d[0], c[1] + d[1], texZ ? b.tex! + d[2] : c[2] + d[2]];
+  const yq = boxQuat(b.yaw, 0, 0);
+  const along = (axis: Vec3, off: number, tex: number | null): number => {
+    const e = rot(yq, axis);
+    const s = Math.abs(e[0]) > Math.abs(e[2]) + 1e-6 ? Math.sign(e[0]) : Math.sign(e[2]) || 1;
+    return s * ((tex ?? c[0] * e[0] + c[2] * e[2]) + off);
+  };
+  return [along([1, 0, 0], d[0], texX ? b.tex! : null), c[1] + d[1], along([0, 0, 1], d[2], texZ ? b.tex! : null)];
 }
 
 /**
