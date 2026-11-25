@@ -53,3 +53,10 @@ The owner's direction, condensed: "we have a considerable amount of maps and i w
 2. **Saved on the device and on the profile.** The device keeps a copy, so play works signed out and offline. Signed in, the hub keeps it on the player's profile, next to their career stats (packages/server/src/profiles.ts, already per Cognito account on the hub box). On sign-in the two merge: unlocks are a union, and progress takes the furthest. It's a few KB per player on the existing box: no new AWS service or cost. The client reports its own progress; that's fine for a campaign (no rankings depend on it).
 3. **Locked everywhere:** until a player unlocks a character, they can't pick it in any mode (campaign, Quick Play, Match Setup, online). Bots can still use it, so players meet the characters they're working toward. New players start with the Chrono Crew. No existing players to carry over (owner, 2026-11-24: "we have no userbase"): the locks apply to everyone from the day they ship.
 4. **Bosses: keep it simple.** Better bot intelligence (the top skill and more), better stats (more HP, extra damage), and some bosses favour certain weapons or power-ups. The existing bot skill and character stats carry most of it.
+
+### Owner's answers on the map audit (2026-11-25; docs/STORY_MAP_AUDIT.md)
+1. How much story at the start: **waiting**: the owner will share a .md to take inspiration from first.
+2. Mesoamerica's boss fight: **Balam Nightclaw, Talon Skycrest, the Sun Warrior and Aurelio** (all four in the boss encounter).
+3. The 10 homage arenas outside the story: **rework their layouts** (as decided 2026-11-23), not only a new look.
+4. Maps outside the story: **labelled sections** in Match Setup's tabs (Arenas, Arcade, Battlegrounds); the 3 MapMaker samples go to Community.
+5. Film and real-place maps: not yet asked.
