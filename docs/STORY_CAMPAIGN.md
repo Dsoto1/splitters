@@ -25,6 +25,8 @@ The story's bosses, from the owner's Drive uploads of 2026-11-25 ("boss chrono t
 | The Unhour | `core.bossvoid` | boss void rift entity rigged | large | a thing from the rift between times; bleeds spirit |
 | Inquisitor Vesk Tockley | `core.bossinquisitor` | boss temporal inquisitor 15k | standard | the time police: hunts unlicensed travellers, a mid-story boss |
 
+**The crew's 14th (owner, 2026-11-25: "Maybe their 14th is unlocked. We have a boss that is humanish, maybe the story completes and he joins the crew as a good guy").** The Chrono Crew stays at 13 on the roster (no 14th upload is coming). The humanish boss, Inquisitor Vesk Tockley (`core.bossinquisitor`, standard size), turns good when the story completes and joins the crew as its 14th, unlocked by finishing the campaign. Until the campaign's unlocks exist he stays NPC-only as above; the unlock then gives him a roster place in the Chrono Crew section, with a good-guy name and bio from the owner.
+
 ## Unlocking characters (ideas, any or all)
 
 - By playing different maps.
