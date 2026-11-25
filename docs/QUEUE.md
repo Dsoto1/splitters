@@ -36,7 +36,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/chars-1125` · 7fae7e58 · 45549490538 (the owner's characters of 2026-11-25: Clio and Sarge lead the Chrono Crew, Fuse to Machines, Blix Orrin and Juno Hartwell new in the crew (13), 13 more new characters, Pip/Anoobys/Thornweaver new models, Ignatius Slagg to Legends, three story bosses built but parked (NPC-only); attempt 1 after a first run red only on the hand-graft list, e2e all green)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -76,6 +75,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 
 ## Easy wins
+- S · A · Elder Tomo's new model from the owner's "elder tomo rigged" upload (owner, 2026-11-25: use it); keep his id, name and place; in the fix batch `wip/fixes-20261125`.
 
 
 - XS · B · (check: may be done: `beams`, `tracers` and `vehicles` on frozen clocks, 2026-11-20) e2e `vehicles` "a badly damaged buggy catches fire": the buggy burns out in about 200 ticks while the check waits on wall clock for the page to draw it burning (failed once locally under load; HANDOFF "Landed: the e2e `vehicles` flakes").
@@ -146,6 +146,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
   - **Left from the performance batch** (PERF_96, "The performance batch"; the batch landed 2026-11-18): a binary worker-to-page snapshot (1.2 MB/s of clones at 64 players; PERF_FLAVIUS_MEMORY; check: may be done: lane F's binary snapshots in the local match, 2026-11-19); the ground-mist depth pass re-rendering the view (PERF_96 round 2); indoor clustered lights by interior visibility (SCALING_STUDY); the remaining big bundle chunks and a true `.wasm` Rapier.
 
 ## Waiting on the owner
+- Owner: one more Chrono Crew upload, to make the crew 14 (owner, 2026-11-25: wait for it; the crew is 13 after Fuse moved to Machines).
 - Owner: the Shingle Point landing craft's community link (to compare with our model; provenance says "pending"); monetisation (skin packs, storage: ROADMAP_V1, "later") whenever the owner wants it (found in the notes, 2026-11-18).
 - Owner to decide (non-map, found 2026-11-16): a longer lag-compensation window past ~120 ms ping (GUNPLAY_AUDIT G3); official servers in the game browser (running cost); moderation and rules before launch (OPEN_QUESTIONS); Character Lab, an owner-only rigging tool; Machine Pistol balance.
 - A MapMaker memory check (owner, 2026-11-24: "Ill do 15 real one", instead of the hour): 15 minutes of normal MapMaker work on the M1 with `?memory=1` and a few Tests, a screenshot of the memory readout at the start and the end (or a short recording of the last Test, then reload and the same Test again), ad blocker off for the site. The memory readout is in (fix 3a, F3 and the recording; MapMaker's status bar with `?memory=1`): the recording now shows whether memory still climbs. The next St. John's match recording after the main-scene work.
@@ -166,6 +167,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-25** train check/train-20261125-052032 (e86dc6f, run 45552919898), landed by the splitters lead: the owner's characters of 2026-11-25 (`wip/chars-1125`): Clio and Sarge lead the Chrono Crew; Fuse Hollister to Machines; Blix Orrin and Juno Hartwell join the crew (13; the owner will upload the 14th); 13 more new characters; Pip, Anoobys and Thornweaver new models; Ignatius Slagg to Legends; three story bosses built and parked.
 - **2026-11-25** train check/train-20261125-042041 (5078c4e, run 45546156041), landed by the splitters lead: small features batch (`wip/small-1125`: Match Setup one tab per map, map format v51; Weapon Manager Explosion and Impact sound slots; Freeze Ray freeze blast); colour vision (`wip/colourblind-1124`, lane B); MapMaker at rest ≤15 frames/s and the ended Test match freed (`wip/editor-idle-1124`, lane B).
 - **2026-11-25** train check/train-20261125-024943 (0b6cbff, run 45535725391), landed by the splitters lead: crash and error reports (`wip/crash-reports-1124`, lane B; the hub picks it up on `sudo tiletrigger-update`); St. Jasper's fictional names (docs/map-briefs/st_johns/NAMES.md) and plain glass mirrors, a new `glazed` surface and Wall Mirror prop (`wip/stjohns-13`).
 - **2026-11-25** train check/train-20261125-011608 (f27d808, run 45524566573), landed by the splitters lead: seven power-ups: Overdrive, Regen, Rapid Fire, Phantom, Moon Boots, Vampire, Bottomless Mag (`wip/powerups-1124`; clumpPerf regression fixed: no per-move allocation).
