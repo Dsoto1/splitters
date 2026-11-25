@@ -98,8 +98,9 @@ describe('new hand geometry (fixes.hands.graft, handgraft.mjs)', () => {
 describe('the looks with new hand geometry', () => {
   const io = new NodeIO().registerExtensions(ALL_EXTENSIONS);
   const grafted = readManifests({ ready: true }).filter((m) => m.fixes?.hands?.graft);
-  it('are the five whose low-poly fingers folded into shards', () => {
-    expect(grafted.map((m) => m.id).sort()).toEqual(['meshy_alienbiker', 'meshy_anubis', 'meshy_beaniealien', 'meshy_vanguard', 'meshy_zhao']);
+  // Anoobys left the list on 2026-11-25: the owner's new model has whole Meshy fingers of its own.
+  it('are the four whose low-poly fingers folded into shards', () => {
+    expect(grafted.map((m) => m.id).sort()).toEqual(['meshy_alienbiker', 'meshy_beaniealien', 'meshy_vanguard', 'meshy_zhao']);
   });
   it.each(grafted.map((m) => m.id))('%s: built with them, hands measured as their own fingers', async (id) => {
     for (const file of [`${id}.glb`, `${id}_fparms.glb`]) {
