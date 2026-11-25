@@ -1583,8 +1583,8 @@ instead of the ground's quick decay; when the slide ends the push keeps only wha
 lurch. Shooting while sliding is allowed (hip fire's moving spread applies; responsiveness over realism).
 
 **Stamina moves.** `STAMINA_MOVES` is the table the bigger moves take stamina from: a cost to start and one cooldown
-they share (`MoveState.moveCd`, so a slide can't be chained into a dodge). The dodge-step and combat roll (the second
-step, later) are rows of it.
+they share (`MoveState.moveCd`, so a slide can't be chained into a dodge). The dodge-step and combat roll are rows of
+it (below).
 
 **Peek (lean).** Held: Q left, E right (owner, 2026-11-23: "Q and E need to be the peeks"; until then ` and Left Alt,
 with Q the last weapon and E use). Options → Controls rebinds both, like every key (`game/keyBindings.ts`,
@@ -1620,6 +1620,53 @@ the air or from a walk, the cooldown, a replay from any tick; the lean both ways
 lag compensation with the lean; a leaning shooter's rounds), `packages/client/test/slidePeekPrediction.test.ts` (no
 correction at 100-300 ms), the e2e flow `slidepeek` (a slide and leans in a real match, first and third person,
 another body drawn sliding and leaning, and two players on a dedicated server: one sees the other lean and slide).
+
+### Dodge-step and combat roll (owner, 2026-11-18, "a (ensure any of the more substantial moves use stamina too)"; built 2026-11-25)
+
+The second step after slide and peek, on the same footing: `packages/shared/src/sim/moves.ts` (`DODGE`, `ROLL`), stepped
+inside `stepMovement`, so the host and client prediction step them alike and they need no message of their own.
+
+**One button, Dodge** (`BUTTON_DODGE`, sent once per press like Use): **V** on the keyboard (rebindable in Options →
+Controls; V was the second trigger's alternative key, which now has none: middle mouse stays), **B while aiming** (LT held
+or toggled) on a controller, the way the d-pad leans while aiming (B without the aim is the crouch as before), and a
+**Dodge** button on touch. Pressed standing or walking it is a **dodge-step**; pressed crouched or sprinting it is a
+**combat roll**.
+
+| | Dodge-step | Combat roll |
+|---|---|---|
+| Starts from | on the ground, standing or walking (not prone, sliding, in the air, swimming, on a ladder or under a canopy) | the same, crouched or sprinting |
+| Way | the move keys' way in the view's frame; none held: straight back | the same; none held: straight ahead |
+| Burst | 1.5 × running pace (a sprint's 7.8 m/s) held 0.15 s, then it fades as a push does: about 2 m in 0.4 s | 1.15 × running pace (6 m/s) held 0.55 s: about 3.3 m, then the push keeps only what is over a crouch walk |
+| Stamina | 0.15 of the bar (less than a slide's 0.2) | 0.3 |
+| Cooldown (shared with the slide) | 0.4 s | 0.6 s |
+| Body | standing; the legs keep 30 % of their steering | the crouch's height and hit shapes for its time (it goes under what a crouch does); 20 % steering; jump does nothing; ends crouched if crouch is still on, standing otherwise |
+| Gun | stays up: fire and aim as normal (hip fire's moving spread applies) | down: no shot, no aim; it comes up after the roll in the weapon's sprint-exit time (`rollRaise`, on the raise timer, as out of a sprint) |
+| Ends early | a wall in the way (the push stops dead); off the ground (a jump out of it, a ledge) only 0.35 of the push goes on, so a dodge-jump carries no further than a sprint jump | the same |
+
+No invulnerability: the docs never asked for i-frames, and responsiveness over realism is served by the speed and the
+lowered profile (a roll's crouch hit shapes), not by ignoring hits. With less stamina than the move costs, or winded, or in
+the cooldown, the press does nothing. No stamina comes back while either lasts. Character stats' stamina stretches the
+cost as it stretches a sprint.
+
+**First person** stays comfortable: never a flip. The roll's eye drops to a crouch's height (the stance's own eased drop)
+and the gun goes down as out of a sprint; the view banks at most 0.035 rad (a step) or 0.06 rad (a roll) toward a sideways
+move, most at its middle, scaled by Options → Camera shake and none with the system's reduce-motion setting
+(`session.ts leanView`). No flash, no fade, nothing for Reduce flashing to calm.
+
+**Drawn** (third person and everyone else): a roll is the crouch pose turned a full turn about the body's middle toward
+the way it goes, done by 85 % of the roll so a snapshot's lag never leaves it part way round (`characterAnimator.ts`,
+`tumble`); a step leans the body into the step (0.16 rad) and lifts it 5 cm at its middle. Your own body under a
+first-person camera isn't turned. The snapshot says `dg: [kind, ticks]`; docs/MULTIPLAYER_PROTOCOL.md section 28.
+
+**Bots don't use them** (the simpler of the two choices; a bot's own dodging already strafes under fire). Help: the
+Controls page's rows (keys, controller, touch) and a first-time tip once you are hurt and still standing.
+
+Tests: `packages/shared/test/dodgeRoll.test.ts` (each move's distance, time and way, stamina and its refusals, the shared
+cooldown both ways, a dodge-jump's length, no lean, the roll's crouch and how it ends, a wall, a replay from any tick; in a
+match the roll's lowered gun and the step's raised one, the snapshot), `packages/client/test/dodgeRollPrediction.test.ts`
+(no correction at 100-300 ms), `padInput.test.ts` and `inputWheel.test.ts` (B while aiming, V once a press), the e2e flow
+`dodgeroll` (both moves in a real match and predicted on the page, the roll's gun, another body drawn rolling;
+`DODGEROLL_PICS=<dir>` takes frames of each).
 
 ---
 

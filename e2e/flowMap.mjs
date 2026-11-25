@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'colourvision', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'dodgeroll', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -58,7 +58,7 @@ const MAP_USERS = {
   grid_rings: ['classes'],
   apex_ring: ['traffic'],
   atomic_court: ['hostcontrols'],
-  void_yard: ['hostcontrols', 'slidepeek'],
+  void_yard: ['hostcontrols', 'slidepeek', 'dodgeroll'],
   [COVERAGE_MAP]: ['coverage'],
   test_breakthrough: ['breakthrough'],
   grand_marquee: ['colourvision'],

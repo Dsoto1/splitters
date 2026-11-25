@@ -872,3 +872,19 @@ your own loadout) and `zm` is not set for your 2x. An older client ignores the r
 defaults. Host handoff's checkpoint carries no choices: after a handoff the next host has them again only from each
 player's `hello` when they rejoin (the new host's own from its loadout).
 
+
+## 28. Dodge-step and combat roll (November 2026)
+
+docs/GUNPLAY_SPEC.md section 27, "Dodge-step and combat roll". **`PROTOCOL_VERSION` stays 5**: one input bit an older
+host masks off and optional fields an older client ignores. **`SNAPSHOT_BINARY_VERSION` 3 → 4** (the local match's
+binary player record gains the dodge's two bytes: section 22).
+
+| Field | Where | |
+|---|---|---|
+| `BUTTON_DODGE` 262144 | `PlayerInput.buttons` | Sent once per press (like `BUTTON_USE`). An older host's `sanitizeInput` masks it off (nothing happens) |
+| `dg: [kind, ticks]` | `PlayerSnapshot` (public) | A dodge under way: kind 1 a dodge-step, 2 a combat roll; ticks into it. Absent otherwise, dead or seated. Optional key in the deltas; mask bit 512 (two u8) in the binary record. Receivers blend the ticks between snapshots (`game/interpolation.ts`) and draw the step or roll the way the body moves (its `vx`/`vz`) |
+| `mv: [slide, cooldown, ticks, roll]` | `PrivateState` (`me`) | While a dodge is under way the slide's pair gains its ticks and 1 for a roll (0 a step), for prediction; the two-number form otherwise |
+
+A roll holds the raise timer (`rs`) up for its time, so the private state already says the gun is down. **An older
+client** on a new host sees others step and roll as a quick slide of the body (a roll crouched), and cannot press Dodge;
+a new client on an older host steps and rolls only in its own prediction until the host's snapshot puts it back.
