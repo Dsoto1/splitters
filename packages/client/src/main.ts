@@ -31,6 +31,7 @@ import { initLocalMaps, listLocalMaps, readLocalMap } from './localMaps.ts';
 import { communityPicks, pickMapText } from './communityMaps.ts';
 import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
+import { crashContext, installCrashReports, watchGlContext } from './crashReport.ts';
 import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
@@ -289,6 +290,7 @@ volumeInput.addEventListener('input', () => {
 for (const type of ['pointerdown', 'keydown'] as const) window.addEventListener(type, () => audio.unlock(), { capture: true });
 installFullscreenKeys();
 installInputMode();
+installCrashReports();
 (window as unknown as { __audio: AudioSystem }).__audio = audio;
 // The owner's music and announcer have their own volumes (Options); music plays on the menu and in MapMaker only
 // (audio/music.ts). Browser tests leave it off (nothing to fetch), unless a test asks with ?music=1.
@@ -327,6 +329,8 @@ class App {
   }
   private set mode(m: Mode) {
     this.modeNow = m;
+    // Crash reports (crashReport.ts) say where the break happened; the session adds the map and mode.
+    crashContext.screen = m;
     musicScene = MUSIC_SCENES[m];
     music?.setScene(musicScene);
   }
@@ -362,6 +366,7 @@ class App {
       window.addEventListener('tiletrigger:render-scale', () => this.applyRenderScale());
       this.kind = created.kind;
       this.canvas = created.canvas;
+      watchGlContext(created.canvas);
       if (created.note) console.info(created.note);
       window.addEventListener('resize', () => this.engine.resize());
       this.menuScene = new MenuScene(this.engine);
