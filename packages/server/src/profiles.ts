@@ -1,7 +1,7 @@
 import { existsSync, mkdirSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import type { IncomingMessage, ServerResponse } from 'node:http';
 import { join } from 'node:path';
-import { CLASS_IDS, HISTORY_AGE_DAYS, keysShape, prefsShape, opticShape, addVouched, readVouched, vouchProblem, type VouchReport, type Vouched, KeyedLimiter, addMatch, cleanEmblemCode, hasTitle, isTitleId, careerProblem, cleanSummary, emptyCareer, isRegion, matchProblem, readCareer, usernameKey, usernameProblem, type Career, type MatchSummary, type Profile, type PublicCard, type Region } from '@tiletrigger/shared';
+import { emptyProgress, mergeProgress, progressShape, type CampaignProgress, CLASS_IDS, HISTORY_AGE_DAYS, keysShape, prefsShape, opticShape, addVouched, readVouched, vouchProblem, type VouchReport, type Vouched, KeyedLimiter, addMatch, cleanEmblemCode, hasTitle, isTitleId, careerProblem, cleanSummary, emptyCareer, isRegion, matchProblem, readCareer, usernameKey, usernameProblem, type Career, type MatchSummary, type Profile, type PublicCard, type Region } from '@tiletrigger/shared';
 import { clientIp } from './clientIp.ts';
 import type { VerifiedUser } from './auth.ts';
 
@@ -22,6 +22,8 @@ interface Stored {
   /** Key bindings (client keyBindings.ts: action → "key,alt", changes from the defaults only; shape checked here). */
   keys?: Record<string, string>;
   prefs?: Record<string, string>;
+  /** Story campaign progress (shared campaign/progress.ts), merged by union with each save. */
+  campaign?: CampaignProgress;
 }
 
 /** How long the hub remembers the tickets it gave for a join code (a host's report comes at a match's end). */
@@ -65,7 +67,7 @@ export class ProfileStore {
 
   get(sub: string): Profile {
     const p = this.bySub.get(sub);
-    return { username: p?.username ?? null, region: p?.region ?? null, favClass: p?.favClass ?? null, career: readCareer(p?.career) ?? emptyCareer(), emblem: cleanEmblemCode(p?.emblem), title: p?.title && isTitleId(p.title) ? p.title : null, vouched: readVouched(p?.vouched), optics: opticShape(p?.optics, true) ?? {}, keys: keysShape(p?.keys) ?? {}, prefs: prefsShape(p?.prefs) ?? {} };
+    return { username: p?.username ?? null, region: p?.region ?? null, favClass: p?.favClass ?? null, career: readCareer(p?.career) ?? emptyCareer(), emblem: cleanEmblemCode(p?.emblem), title: p?.title && isTitleId(p.title) ? p.title : null, vouched: readVouched(p?.vouched), optics: opticShape(p?.optics, true) ?? {}, keys: keysShape(p?.keys) ?? {}, prefs: prefsShape(p?.prefs) ?? {}, campaign: progressShape(p?.campaign) ?? emptyProgress() };
   }
 
   /** A player's public card by username (any case), or null when no account has that name. */
@@ -140,7 +142,7 @@ export class ProfileStore {
   }
 
   /** Change what's given (`username`, `region`, `favClass`); throws with a message for the page. */
-  update(sub: string, patch: { username?: unknown; region?: unknown; favClass?: unknown; emblem?: unknown; title?: unknown; optics?: unknown; keys?: unknown; prefs?: unknown }): Profile {
+  update(sub: string, patch: { username?: unknown; region?: unknown; favClass?: unknown; emblem?: unknown; title?: unknown; optics?: unknown; keys?: unknown; prefs?: unknown; campaign?: unknown }): Profile {
     const cur = this.bySub.get(sub) ?? { username: null, region: null, at: 0 };
     const next = { ...cur, at: Date.now() };
     if (patch.username !== undefined) {
@@ -176,6 +178,12 @@ export class ProfileStore {
       const k = prefsShape(patch.prefs);
       if (!k) throw new Error('bad settings');
       next.prefs = k;
+    }
+    if (patch.campaign !== undefined) {
+      const c = progressShape(patch.campaign);
+      if (!c) throw new Error('bad campaign progress');
+      // A union with what the hub has: a browser that missed another device's wins never takes them away.
+      next.campaign = mergeProgress(progressShape(cur.campaign) ?? emptyProgress(), c);
     }
     if (patch.title !== undefined) {
       if (patch.title !== null && !isTitleId(patch.title)) throw new Error('unknown title');
@@ -262,6 +270,7 @@ export class ProfileStore {
  *   POST /api/v1/profile/career          a guest's career, moved once onto an account with none → { career }, or { error }
  *   PUT  /api/v1/profile                 also { emblem } ("<id>.<colour>", or null) and { title } (an earned title id, or null)
  *   GET  /api/v1/profile/card?u=<name>   anyone: that player's public card (PublicCard), or 404
+ *   PUT  /api/v1/profile                 also { campaign } (campaign progress: merged with the hub's by union)
  *   POST /api/v1/profile/vouch           signed in (a host): its end-of-match standings (net/vouch.ts) → { counted }
  */
 export function profileHandler(store: ProfileStore, o: { verify: ((token: string) => Promise<VerifiedUser>) | null; trustProxy: boolean }) {
@@ -315,7 +324,8 @@ export function profileHandler(store: ProfileStore, o: { verify: ((token: string
     for await (const c of req) {
       size += (c as Buffer).length;
       // A guest's career moving onto an account carries its modes, guns and history (Phase 3): a few KB more.
-      if (size > (path === '/api/v1/profile/career' || path === '/api/v1/profile/vouch' ? 16_384 : 4096)) return send(413, { error: 'too large' });
+      // (Campaign progress, a few hundred ids at most, also fits in 16 KB.)
+      if (size > (path === '/api/v1/profile/career' || path === '/api/v1/profile/vouch' || path === '/api/v1/profile' ? 16_384 : 4096)) return send(413, { error: 'too large' });
       chunks.push(c as Buffer);
     }
     let body: unknown;

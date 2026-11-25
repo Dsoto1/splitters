@@ -11,6 +11,7 @@ made only on a commit that passed CI on a check branch.
 - **Seven new characters:** El Zarpazo (a white tiger luchador), Tetl Stonewarden (a basalt temple guardian, Legends), Rocco Tickwell (a K9, the Chrono Crew's 14th), and for the history wars Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund and Lien Vo (Soldiers).
 - **MapMaker: Figures.** NPCs → Figures places a character standing in a pose (standing, cheering, dancing, crouching) for scenarios and set dressing: anyone on the roster, or the old models of replaced characters, kept for MapMaker as "Classic …".
 - **Sharper characters up close.** Character colour maps are twice as detailed (2048 px) for 177 of the 209 characters, and every character's maps now stay compressed on the graphics card, so all of them together take about 40% less video memory than before; the game downloads a little more per character.
+- **Story** heads the main menu (Story · Quick Play · Local · Online): the Operations Database, three placeholder sectors on today's maps, played one map at a time against bots and saved on your device and your account; a sector's later maps can't be hosted until you've won them in Story (joining is fine).
 - **Pip Quickfoot is a her**: a woman's body and arms.
 - **A new model for Elder Tomo** (same name, size and place in Character Select).
 - **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).

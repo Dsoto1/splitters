@@ -19,10 +19,22 @@ const temp = () => {
 };
 
 describe('profiles', () => {
+  it('keeps Story campaign progress, merged by union so no device takes wins away, kept across restarts', () => {
+    const dir = temp();
+    const store = new ProfileStore(dir);
+    store.update('a', { campaign: { maps: ['jade_empire/jungle_steps'], characters: ['core.monkeyspirit'] } });
+    // Another device that never saw that win sends its own.
+    const p = store.update('a', { campaign: { maps: ['lockdown/runway_nine'], sectors: [], convergences: [], characters: ['core.tacticalsoldier'] } });
+    expect(p.campaign).toEqual({ maps: ['jade_empire/jungle_steps', 'lockdown/runway_nine'], sectors: [], convergences: [], characters: ['core.monkeyspirit', 'core.tacticalsoldier'] });
+    store.flush();
+    expect(new ProfileStore(dir).get('a').campaign.maps).toEqual(['jade_empire/jungle_steps', 'lockdown/runway_nine']);
+    expect(() => store.update('a', { campaign: { maps: 'all' } })).toThrow(/campaign/);
+  });
+
   it('gives each account a unique username (whatever the case) and a region, kept across restarts', () => {
     const dir = temp();
     const store = new ProfileStore(dir);
-    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {}, keys: {}, prefs: {} });
+    expect(store.get('a')).toEqual({ username: null, region: null, favClass: null, career: emptyCareer(), emblem: null, title: null, vouched: { matches: 0, wins: 0, kills: 0, deaths: 0, seconds: 0 }, optics: {}, keys: {}, prefs: {}, campaign: { maps: [], sectors: [], convergences: [], characters: [] } });
     expect(store.update('a', { username: 'Toshi_92', region: 'na-east' })).toMatchObject({ username: 'Toshi_92', region: 'na-east' });
     // Taken, whatever the case; but the owner may change its own case.
     expect(store.problem('b', 'toshi_92')).toBe('that name is taken');

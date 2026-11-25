@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'colourvision', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions',
+  'designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -140,6 +140,8 @@ const RULES = [
   // The Weapon Manager's change set and its repo tool (unit-tested; the flow checks a copied set with it).
   [/^tools\/content\/(apply-weapon-edits|weapon-edits-format|json-keep-format)\.(mjs|d\.mts)$/, ['weaponmanager'], ['content', 'client']],
   [/^tools\/(ci|content)\//, FULL, UNIT_ALL],
+  // The story campaign's data (docs/CAMPAIGN.md): the Story screen and its flow; the shared test checks its references.
+  [/^content\/campaign\.json$/, ['story', 'offline'], ['client', 'shared']],
   // Content manifests (content/*.json, tools/content builds from them; `pnpm content:check`, which the check job
   // always runs, holds them to the built files). What the runtime reads is the build output (public/models,
   // packages/shared/src/content/*.generated.ts: those run everything), so a manifest alone runs the flows that
@@ -203,7 +205,8 @@ const RULES = [
   // New players: the tutorial, first-time tips and their HUD (Quick Play is frontend/).
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
   [/^packages\/client\/src\/(inputMode\.ts$|frontend\/padNav\.ts$)/, ['padsetup', 'offline', 'mobile', 'newplayer', 'visual', ...CHARACTER_FLOWS], ['client']],
-  [/^packages\/client\/src\/frontend\//, ['padsetup', 'newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual', 'testrange', 'captions'], ['client']],
+  [/^packages\/client\/src\/campaign\//, ['story', 'offline'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['story', 'padsetup', 'newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'designer', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual', 'testrange', 'captions'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   // Crash and error reports (docs/CRASH_REPORTS.md): the panel, and the owner's list on Profile.
   [/^packages\/client\/src\/(crashReport|crashPanel|crashReportsUi)\.ts$/, ['crashreport'], ['client']],
