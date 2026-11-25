@@ -59,4 +59,4 @@ The owner's direction, condensed: "we have a considerable amount of maps and i w
 2. Mesoamerica's boss fight: **Balam Nightclaw, Talon Skycrest, the Sun Warrior and Aurelio** (all four in the boss encounter).
 3. The 10 homage arenas outside the story: **rework their layouts** (as decided 2026-11-23), not only a new look.
 4. Maps outside the story: **labelled sections** in Match Setup's tabs (Arenas, Arcade, Battlegrounds); the 3 MapMaker samples go to Community.
-5. Film and real-place maps: not yet asked.
+5. Film-inspired maps (Fernwood Moon, Serene City and the others in inspirations.ts): **moved to Community** for now; they may be reworked later. So the Space and Future City clusters each need a replacement for them (from existing maps first; docs/STORY_MAP_AUDIT.md).
