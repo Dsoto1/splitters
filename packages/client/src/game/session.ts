@@ -3610,6 +3610,8 @@ export class GameSession {
   }
 
   private requestWeapon(slot: number): void {
+    // Switching weapon cancels a throw being aimed: it stays in the inventory, nothing leaves the hand.
+    this.input.cancelThrow();
     const current = this.local ? this.switchingFrom(this.local) : 0;
     if (slot !== current) this.lastWeapon = current;
     this.weaponAsk.ask(slot);
