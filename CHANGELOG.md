@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Doors that fit themselves.** In MapMaker a door cuts the wall it goes in to its own shape, in a room's wall or a wall of blocks, framed on both faces, and hangs in the middle of the wall; a new **Arched door** cuts an arched doorway; changing a door's look re-cuts it, and removing the door leaves the doorway.
 - **Pip Quickfoot is a her**: a woman's body and arms.
 - **A new model for Elder Tomo** (same name, size and place in Character Select).
 - **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).

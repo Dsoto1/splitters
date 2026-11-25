@@ -743,6 +743,27 @@ Steam Train and Mine Cart palette entries place the blocks, the models and
 the mover in one step; the mover inspector lists nearby props under *Props
 riding along*. Doors take a *Look* (`DoorEntity.style`: sliding, blast,
 saloon or vault); the look never changes how a door opens, locks or blocks.
+
+**Doors that fit themselves** (owner, 2026-11-18, "1a"; map format v52;
+`editor/doorFit.ts`, `map/blockDoorways.ts`). Placing a door with the door tool,
+or picking another *Look* in its inspector, cuts the wall it stands in to the
+look's doorway: on a tile's side the side's wall style becomes the *Doorway*
+(every square look) or the *Arched doorway* (the *Arched door*: a round-headed
+oak double door 3 m wide and 3.6 m high, springing at 2.1 m), as Walls &
+Openings would set it; in a wall of free blocks (static solid blocks standing
+level, 2 m thick or less) each block the opening crosses gets the doorway in
+its `doorways` (`{ style, at, y }`: along its long side from its middle, the
+sill from its bottom) and is built as that wall style's pieces round the
+opening: the same collision (an arch's steps), frames, voussoirs and soffit,
+on both faces and through the block's thickness, in the block's material (the
+trim in the theme's). Over a block wall the door tool snaps into it (on the
+block's middle plane, 50 cm steps along it); elsewhere doors snap to cell sides
+as before. The door goes to the middle of the wall's thickness (a room's
+outside wall: 25 cm in; between two rooms: the boundary). The doorway is the
+wall's: erasing the door leaves it (a block's inspector has *Fill in its
+doorway*); a door already placed is fitted with its inspector's *Fit the wall
+to this door*. The Doorway's frame now dresses both faces of an outside wall
+(not under a facade, which frames its openings itself).
 Breakable props are rule targets for *Object destroyed* (a dynamite crate by
 the vault door can blow it open).
 
