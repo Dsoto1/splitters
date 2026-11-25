@@ -1,0 +1,64 @@
+{
+  "$comment": "The story campaign's content (docs/CAMPAIGN.md; the design: docs/CAMPAIGN_GDD.md, the decisions: docs/STORY_CAMPAIGN.md). Sectors and convergence zones as data, by stable id (never rename an id: progress is saved by it). A sector: id, name, classification (historical, modern, future or unclassified), period, description, exactly 3 maps in play order (map: a maps/<id>.json of the suite; unlock: the one character a win on it unlocks), boss (character: the boss's look; companions: the looks fighting beside it), rewards (looks unlocked when the sector is repaired: the boss or companions), expedition (crew: Chrono Crew members the player picks, 8-10; allies: the sector's local allies on the player's side; crew + allies at most 14 a side). A convergence: id, name, description, sectors (its two prerequisite sectors: it stays completely hidden until both are repaired), maps (in play order), rewards. provisional: true marks a placeholder the owner hasn't named or placed yet. Checked by packages/shared/test/campaign.test.ts (references resolve, sizes, ids unique).",
+  "sectors": [
+    {
+      "id": "jade_empire",
+      "name": "The Jade Empire",
+      "provisional": true,
+      "classification": "historical",
+      "period": "Mesoamerica",
+      "description": "Temple cities swallowed by the jungle, and a jaguar king who means to keep the sun for himself.",
+      "maps": [
+        { "map": "jungle_steps", "unlock": "core.monkeyspirit" },
+        { "map": "vinefall_sanctum", "unlock": "core.snakeshaman" },
+        { "map": "step_temple", "unlock": "core.eagleclan" }
+      ],
+      "boss": { "character": "core.aztecjaguar", "companions": ["core.eagleclan", "core.goldenwarrior", "core.sunpriest"] },
+      "rewards": ["core.aztecjaguar", "core.goldenwarrior", "core.sunpriest"],
+      "expedition": { "crew": 10, "allies": ["core.sugarskull", "core.monkeyspirit", "core.snakeshaman", "core.skywarrior"] }
+    },
+    {
+      "id": "lockdown",
+      "name": "Lockdown",
+      "provisional": true,
+      "classification": "modern",
+      "period": "Today",
+      "description": "An airport, a ship and an island prison, all closed at once, and a customs agent who lets nobody through.",
+      "maps": [
+        { "map": "runway_nine", "unlock": "core.tacticalsoldier" },
+        { "map": "iron_tide", "unlock": "core.stealthop" },
+        { "map": "ironhold_prison", "unlock": "core.stancesoldier" }
+      ],
+      "boss": { "character": "core.zhao", "companions": ["core.imperialguard", "core.resolvesoldier"] },
+      "rewards": ["core.zhao"],
+      "expedition": { "crew": 10, "allies": ["core.ember", "core.desertranger", "core.greensentinel", "core.azuresentinel"] }
+    },
+    {
+      "id": "neon_tomorrow",
+      "name": "Neon Tomorrow",
+      "provisional": true,
+      "classification": "future",
+      "period": "Future city",
+      "description": "Glass towers, neon streets and an orbital station, policed by the time police's own inquisitor.",
+      "maps": [
+        { "map": "express_lobby", "unlock": "core.alienexplorer" },
+        { "map": "neon_spire", "unlock": "core.ricochet" },
+        { "map": "halcyon_station", "unlock": "core.cyberlion" }
+      ],
+      "boss": { "character": "core.bossinquisitor", "companions": ["core.shadowenforcer", "core.steelguardian"] },
+      "rewards": ["core.shadowenforcer"],
+      "expedition": { "crew": 9, "allies": ["core.armoredsentinel", "core.emeraldrobot", "core.starvoyager", "core.spacemarine"] }
+    }
+  ],
+  "convergences": [
+    {
+      "id": "cold_cells",
+      "name": "The Cold Cells",
+      "provisional": true,
+      "description": "Today's prison and 2032's cryo vault meet across one fault line.",
+      "sectors": ["lockdown", "neon_tomorrow"],
+      "maps": ["glasswork_office"],
+      "rewards": ["core.steelguardian"]
+    }
+  ]
+}
