@@ -7,6 +7,9 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **New models for Cyber Lion, Croakley, Elephant Warrior, Hyena Warrior, Greyfang, Gorilla G, Juice and Boglurker** (same names and places); **Lion in a Suit is now Kesi Tallgrass**, a safari lioness.
+- **Seven new characters:** El Zarpazo (a white tiger luchador), Tetl Stonewarden (a basalt temple guardian, Legends), Rocco Tickwell (a K9, the Chrono Crew's 14th), and for the history wars Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund and Lien Vo (Soldiers).
+- **MapMaker: Figures.** NPCs → Figures places a character standing in a pose (standing, cheering, dancing, crouching) for scenarios and set dressing: anyone on the roster, or the old models of replaced characters, kept for MapMaker as "Classic …".
 - **Pip Quickfoot is a her**: a woman's body and arms.
 - **A new model for Elder Tomo** (same name, size and place in Character Select).
 - **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).

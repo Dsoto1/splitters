@@ -1,0 +1,42 @@
+{
+  "id": "meshy_toad_classic",
+  "kind": "character",
+  "use": "figure",
+  "order": 308,
+  "name": "Classic Boglurker",
+  "look": "core.boglurker_classic",
+  "group": "animals",
+  "blood": "red",
+  "nameTheme": "frog",
+  "bio": "Crawled out of the marsh for the noise and stayed for the shooting. Smells exactly as you fear.",
+  "size": "large",
+  "body": "male",
+  "notes": "Retired to MapMaker 2026-11-25 (owner: \"All replacements can be retired to the mapmaker for use in other creations such as scenarios\"): the model Boglurker (`core.boglurker`) wore until the owner's new model of 2026-11-25 took that id, name and place. Its built files kept under this id; `use: figure`: off Character Select, bots, random picks and Roulette; MapMaker places it as a Figure (docs/CHARACTERS.md, \"Retired to MapMaker\"). Was: Its model replaced 2026-11-06 (Drive intake of 2026-11-06, the owner: \"The boglurker can be replaced by the alligator\") by \"A humanoid crocodile wearing a heavy\" (as Meshy names the download): a broad crocodile in iron pauldrons, bracers and greaves with a long tail; rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains without an index finger, so the fingers are re-fitted by hands.mjs; the tail's and the snout's extra joints ride the hips and the head; its two clips are not used). Same name, look ID and size (large); the Boglurker NPC role keeps the look. The model it replaced (\"Boglurker the toad\", an unrigged FBX rigged here from landmarks) is no longer shipped. Licence: Meshy Community, CC0 per the owner (2026-11-06); post URL pending from the owner.",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "A humanoid crocodile wearing a heavy"
+    },
+    "date": "2026-11-06",
+    "url": null,
+    "file": "^Meshy_AI_A_humanoid_crocodile_wearing_a_heavy_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.7
+  },
+  "fixes": {
+    "triangles": 13000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "hands": {
+      "scale": 0.75,
+      "curl": 1
+    },
+    "centre": true
+  }
+}

@@ -1,0 +1,34 @@
+{
+  "id": "meshy_unionofficer",
+  "kind": "character",
+  "use": "player",
+  "order": 220,
+  "name": "Capt. Elias Harrowgate",
+  "look": "core.unionofficer",
+  "group": "soldiers",
+  "branch": "army",
+  "blood": "red",
+  "nameTheme": "soldier",
+  "bio": "Writes home every night. Every letter says the line held.",
+  "body": "male",
+  "notes": "A historical addition (owner, 2026-11-25): Civil War, the Wars sector's first war (docs/STORY_CAMPAIGN.md). Drive intake of 2026-11-25 (\"UnionOfficerRigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
+    "url": null,
+    "file": "^Meshy_AI_UnionOfficerRigged_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

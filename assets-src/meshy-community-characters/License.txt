@@ -168,3 +168,10 @@ tools/content/prepare-meshy-characters.mjs (one manifest each in content/charact
 the textured downloads onto the game's skeleton and builds the shipped character files.
 The raw downloads (FBX, PNG) are not kept in the repo; content/meshy.lock.json
 checks the built files.
+
+Retired to MapMaker, 2026-11-25: the owner's own models replaced these characters' models, and the community models
+below are still shipped under new ids, as MapMaker figures ("Classic …"; docs/CHARACTERS.md, "Retired to MapMaker"):
+"Cyber Lion" -> meshy_cyberlion_classic, "Lion in Suit T Pose" -> meshy_lionsuit_classic, "T Pose Frog in Suspenders"
+-> meshy_croakley_classic, "Elephant Warrior" -> meshy_elephantwarrior_classic, "Gnoll warrior" -> meshy_hyena_classic,
+"Wolf T Pose" -> meshy_greyfang_classic, "Gorilla G Style T Pose" -> meshy_gorillag_classic, "gere com as imagens
+abaixo por favor" (Juice) -> meshy_boxduck_classic, and "A humanoid crocodile wearing a heavy" (Boglurker) -> meshy_toad_classic.

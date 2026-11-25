@@ -8,31 +8,27 @@
   "group": "animals",
   "blood": "red",
   "nameTheme": "wolf",
-  "bio": "Laughs at everything, especially the last thing you tried.",
+  "bio": "Laughs at everything, especially a spare you missed.",
   "body": "male",
   "size": "large",
-  "notes": "Digitigrade: the leg joints sit on the leg's centre line (read off a side profile), so straightening it turns the thigh and shin only a little and the knee doesn't fold; the hock is the ankle, the paw the foot. Its model replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Gnoll warrior\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from the owner's own model. Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner.",
+  "notes": "New model 2026-11-25 (owner: \"many are replacements for what we currently have\"; id, name and place kept, as Thornweaver's and Anoobys's swaps). Hyena Warrior's model until 2026-11-25 (\"Gnoll warrior\", Meshy Community CC0) is retired to MapMaker as `meshy_hyena_classic`. Drive intake of 2026-11-25 (\"bowling hyena 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
-    "community": {
-      "model": "Gnoll warrior"
-    },
-    "date": "2026-11-05",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
     "url": null,
-    "file": "^Meshy_AI_Gnoll_warrior_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_bowling_hyena_15k_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0.15,
+    "metallic": 0.1,
     "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
-    "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true,
-    "hands": { "l": { "curl": 1 } }
+    "feet": true
   }
 }

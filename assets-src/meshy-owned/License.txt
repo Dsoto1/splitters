@@ -141,3 +141,24 @@ Provenance: Meshy, owned.
   - "miami vice detective duck 15k" (2026-11-25)  -> character meshy_detectiveduck (look Det. Drake Montego)
   - "sleepy koala 3d" (2026-11-25)  -> character meshy_koala (look Napsworth)
   - "elder tomo rigged" (2026-11-25)  -> character meshy_elder (look Elder Tomo), his new model (the community "Elder T-pose" it replaced is no longer shipped)
+
+- The owner's Drive characters uploaded 2026-11-25 afternoon (the same kind of download, pack meshy-owned; owner,
+  2026-11-25: all are the owner's own Meshy creations). Built by tools/content/prepare-meshy-characters.mjs. The models
+  they replaced are kept, renamed <id>_classic and retired to MapMaker (still shipped, under their own licences).
+
+  - "futuristic cyber lion 15k" (2026-11-25)  -> character meshy_cyberlion (look Cyber Lion), its new model
+  - "safari scout lioness 15k" (2026-11-25)  -> character meshy_lionsuit (look Kesi Tallgrass, was Lion in a Suit), its new model
+  - "jungle commando croakley 15k" (2026-11-25)  -> character meshy_croakley (look Croakley), its new model
+  - "bouncer elephant 15k" (2026-11-25)  -> character meshy_elephantwarrior (look Elephant Warrior), its new model
+  - "bowling hyena 15k" (2026-11-25)  -> character meshy_hyena (look Hyena Warrior), its new model
+  - "wolf ronin rigged" (2026-11-25)  -> character meshy_greyfang (look Greyfang), its new model
+  - "circus strongman gorilla 15k" (2026-11-25)  -> character meshy_gorillag (look Gorilla G), its new model
+  - "duck mech fps rigged" (2026-11-25)  -> character meshy_boxduck (look Juice), its new model
+  - "boglurker game ready" (2026-11-25)  -> character meshy_toad (look Boglurker), its new model
+  - "white tiger luchador rigged" (2026-11-25)  -> character meshy_whitetiger (look El Zarpazo)
+  - "BasaltGuardianRigged" (2026-11-25)  -> character meshy_basaltguardian (look Tetl Stonewarden)
+  - "crew k9 anthro rigged" (2026-11-25)  -> character meshy_crewk9 (look Rocco Tickwell), Chrono Crew
+  - "UnionOfficerRigged" (2026-11-25)  -> character meshy_unionofficer (look Capt. Elias Harrowgate)
+  - "RebelCommanderRigged" (2026-11-25)  -> character meshy_rebelcommander (look Col. Josiah Beaumont)
+  - "VietnamSoldierRigged" (2026-11-25)  -> character meshy_vietnamsoldier (look Pfc. Danny Okerlund)
+  - "VCScoutRigged" (2026-11-25)  -> character meshy_vcscout (look Lien Vo)

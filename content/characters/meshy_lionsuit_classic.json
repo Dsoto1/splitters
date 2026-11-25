@@ -1,0 +1,36 @@
+{
+  "id": "meshy_lionsuit_classic",
+  "kind": "character",
+  "use": "figure",
+  "order": 301,
+  "name": "Classic Lion in a Suit",
+  "look": "core.lionsuit_classic",
+  "group": "animals",
+  "blood": "red",
+  "nameTheme": "cat",
+  "bio": "Runs the boardroom and the savanna. Today he's here to close a deal.",
+  "body": "male",
+  "notes": "Retired to MapMaker 2026-11-25 (owner: \"All replacements can be retired to the mapmaker for use in other creations such as scenarios\"): the model Lion in a Suit (`core.lionsuit`) wore until the owner's new model of 2026-11-25 took that id, name and place. Its built files kept under this id; `use: figure`: off Character Select, bots, random picks and Roulette; MapMaker places it as a Figure (docs/CHARACTERS.md, \"Retired to MapMaker\"). Was: Drive intake of 2026-11-13 (\"Lion in Suit T Pose\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core since 2026-11-14 (the owner, after looking at the twelve of 2026-11-13: promote all twelve). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Lion in Suit T Pose"
+    },
+    "date": "2026-11-13",
+    "url": null,
+    "file": "^Meshy_AI_Lion_in_Suit_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

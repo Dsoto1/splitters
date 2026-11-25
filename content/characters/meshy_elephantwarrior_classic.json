@@ -1,0 +1,46 @@
+{
+  "id": "meshy_elephantwarrior_classic",
+  "kind": "character",
+  "use": "figure",
+  "order": 303,
+  "name": "Classic Elephant Warrior",
+  "look": "core.elephantwarrior_classic",
+  "group": "animals",
+  "blood": "red",
+  "nameTheme": "barbarian",
+  "bio": "Never forgets a face. Especially one that shot at him.",
+  "body": "male",
+  "notes": "Retired to MapMaker 2026-11-25 (owner: \"All replacements can be retired to the mapmaker for use in other creations such as scenarios\"): the model Elephant Warrior (`core.elephantwarrior`) wore until the owner's new model of 2026-11-25 took that id, name and place. Its built files kept under this id; `use: figure`: off Character Select, bots, random picks and Roulette; MapMaker places it as a Figure (docs/CHARACTERS.md, \"Retired to MapMaker\"). Was: Drive intake of 2026-11-11 (\"Elephant Warrior\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it in game (new characters start there, like maps). Name and bio are ours. Licence: Meshy Community, CC0 per the owner (2026-11-11: \"new character models to my drive from the meshy community (CC0 license)\").",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Elephant Warrior"
+    },
+    "date": "2026-11-11",
+    "url": null,
+    "file": "^Meshy_AI_Elephant_Warrior_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "hands": {
+      "r": {
+        "scale": 0.72
+      }
+    },
+    "hold": {
+      "forward": 0.14,
+      "down": 0.14,
+      "out": 0.06
+    }
+  }
+}

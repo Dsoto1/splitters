@@ -1,0 +1,36 @@
+{
+  "id": "meshy_cyberlion_classic",
+  "kind": "character",
+  "use": "figure",
+  "order": 300,
+  "name": "Classic Cyber Lion",
+  "look": "core.cyberlion_classic",
+  "group": "animals",
+  "blood": "red",
+  "nameTheme": "cat",
+  "bio": "King of the jungle, version two. Now with fewer feelings.",
+  "body": "male",
+  "notes": "Retired to MapMaker 2026-11-25 (owner: \"All replacements can be retired to the mapmaker for use in other creations such as scenarios\"): the model Cyber Lion (`core.cyberlion`) wore until the owner's new model of 2026-11-25 took that id, name and place. Its built files kept under this id; `use: figure`: off Character Select, bots, random picks and Roulette; MapMaker places it as a Figure (docs/CHARACTERS.md, \"Retired to MapMaker\"). Was: Drive intake of 2026-11-13 (\"Cyber Lion\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core since 2026-11-14 (the owner, after looking at the twelve of 2026-11-13: promote all twelve). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
+  "source": {
+    "license": "CC0",
+    "author": "Meshy Community (CC0 per the owner)",
+    "community": {
+      "model": "Cyber Lion"
+    },
+    "date": "2026-11-13",
+    "url": null,
+    "file": "^Meshy_AI_Cyber_Lion_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
