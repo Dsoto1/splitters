@@ -507,30 +507,37 @@ function wholeFaces(groups: readonly Group[]): WholeFace[] {
   return out;
 }
 
+/** A box's yaw to the nearest quarter turn, as a rotation (a box turned a quarter turn lays its texture as a box built that way). */
+const quarterOf = (b: WorldBox): Rot => boxQuat(Math.round((b.yaw ?? 0) / (Math.PI / 2)) * (Math.PI / 2), 0, 0);
+
 /**
- * A point in a box's own unturned frame, where its texture coordinates are laid out: the offset from the box's centre
- * along each of its own axes, plus where the centre lies along that axis as turned (by the yaw; a tilt keeps the
- * centre's place, so a vault's strips stay in step across the vault). So the texture is laid in world space along a
- * turned box's run (seamless tunnels, owner 2026-11-18): a tunnel's vault, arch or lining turned east-west, or half a
- * turn, runs on from one piece into the next instead of starting again (or mirrored) at every piece. Each axis is read
- * the way it points most (east or north, never west or south), so pieces turned a half turn apart agree. A box that is
- * not turned lays its texture as it always did.
+ * A point of a box where its texture is laid out: the box with its tilt, and its turn past the nearest quarter turn,
+ * undone about its centre (so the texture lies square on its faces), while the quarter turns stay. A box turned a
+ * quarter or half turn (a tunnel piece's vault, arch or lining turned east-west, or half a turn) therefore lays its
+ * texture in world space exactly as an unturned box there would: it runs on from one piece into the next instead of
+ * starting again, mirrored or crossways, at every piece (seamless tunnels, owner 2026-11-18). A strip of a vault or an
+ * arch says where it lies along its curve (`tex`, on the axis its tilt turns), so the texture runs on across the
+ * strips too. A box that is not turned past 45 degrees lays its texture as it always did.
  */
 export function flatOf(b: WorldBox, p: readonly number[]): Vec3 {
   if (!b.yaw && !b.pitch && !b.roll) return [p[0]!, p[1]!, p[2]!];
   const c = centre(b);
   const d = rot(conj(boxQuat(b.yaw, b.pitch, b.roll)), [p[0]! - c[0], p[1]! - c[1], p[2]! - c[2]]);
-  // A strip of a vault or an arch says where it lies along the curve (LocalBox.tex), on the axis its tilt turns.
-  const texX = b.tex !== undefined && !!b.roll;
-  const texZ = b.tex !== undefined && !b.roll && !!b.pitch;
-  if (!b.yaw) return [texX ? b.tex! + d[0] : c[0] + d[0], c[1] + d[1], texZ ? b.tex! + d[2] : c[2] + d[2]];
-  const yq = boxQuat(b.yaw, 0, 0);
-  const along = (axis: Vec3, off: number, tex: number | null): number => {
-    const e = rot(yq, axis);
-    const s = Math.abs(e[0]) > Math.abs(e[2]) + 1e-6 ? Math.sign(e[0]) : Math.sign(e[2]) || 1;
-    return s * ((tex ?? c[0] * e[0] + c[2] * e[2]) + off);
-  };
-  return [along([1, 0, 0], d[0], texX ? b.tex! : null), c[1] + d[1], along([0, 0, 1], d[2], texZ ? b.tex! : null)];
+  const k = quarterOf(b);
+  const e = rot(k, d);
+  const out: Vec3 = [c[0] + e[0], c[1] + e[1], c[2] + e[2]];
+  if (b.tex !== undefined && (b.roll || b.pitch)) {
+    // The axis the tilt turns (x for a roll, z for a pitch), as the quarter turns lay it: tex in place of the centre.
+    const a = rot(k, b.roll ? [1, 0, 0] : [0, 0, 1]);
+    const j = Math.abs(a[0]) > Math.abs(a[2]) ? 0 : 2;
+    out[j] = Math.sign(a[j]) * b.tex + e[j];
+  }
+  return out;
+}
+
+/** A face's normal in that frame (flatOf): always along an axis. */
+export function flatNormalOf(b: WorldBox, normal: readonly number[]): Vec3 {
+  return rot(quarterOf(b), rot(conj(boxQuat(b.yaw, b.pitch, b.roll)), normal)).map((v) => Math.round(v) + 0) as Vec3;
 }
 
 /**
@@ -644,7 +651,7 @@ export function visibleFaces(boxes: readonly WorldBox[], draw: (i: number) => bo
       // Back to world, and into the box's own unturned frame for the texture.
       const world = ident ? corners : corners.map((p) => rot(g.q, p));
       const normal = ident ? n : rot(g.q, n);
-      const fn = rot(conj(boxQuat(b.yaw, b.pitch, b.roll)), normal).map((v) => Math.round(v) + 0) as Vec3;
+      const fn = flatNormalOf(b, normal);
       out.push({ box: m.i, corners: world, normal, flat: world.map((p) => flatOf(b, p)), flatNormal: fn });
     }
   }

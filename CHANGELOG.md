@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Seamless tunnels and a Stair Tunnel.** Brick, stone and concrete now run on across tunnel pieces (vaults and arches, pieces turned east-west or back to front, curves and junctions) with no jump or stone band at the joints, and every tunnel family has a Stair Tunnel in MapMaker: down a level over two cells, with landings and room to stand on every step.
 - **Pip Quickfoot is a her**: a woman's body and arms.
 - **A new model for Elder Tomo** (same name, size and place in Character Select).
 - **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).

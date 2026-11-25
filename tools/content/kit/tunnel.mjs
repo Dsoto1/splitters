@@ -646,11 +646,17 @@ function stairwayParts(profile, family, shape) {
         trims.push({ ...p, box: [x0, y0 + up, s0, x1, y1 + up, s1].map(r3) });
         continue;
       }
-      // Long, on the steps: tilted to follow them, as high over the floor's line as it was over the floor.
-      const l = (s1 - s0) / Math.cos(a);
+      // Long, on the steps: tilted to follow them, as high over the floor's line as it was over the floor. Where it
+      // meets its level part at a bend, it runs on a little past the bend (its end leans with the slope, and would
+      // leave a slit against the level part's square end).
       const h = (y1 - y0) * Math.cos(a);
-      const cy = (y0 + y1) / 2 + rise(zm);
-      trims.push({ ...p, box: [x0, cy - h / 2, zm - l / 2, x1, cy + h / 2, zm + l / 2].map(r3), pitch: r3(a) });
+      const ext = (h / 2) * Math.sin(a) + 0.03;
+      const e0 = s0 - (i > 0 ? ext : 0);
+      const e1 = s1 + (i < cuts.length - 2 ? ext : 0);
+      const em = (e0 + e1) / 2;
+      const l = (e1 - e0) / Math.cos(a);
+      const cy = (y0 + y1) / 2 + ((em - zA) * L) / (zB - zA);
+      trims.push({ ...p, box: [x0, cy - h / 2, em - l / 2, x1, cy + h / 2, em + l / 2].map(r3), pitch: r3(a) });
     }
   }
   for (const [dz, up] of [[-E + 1, 0], [N - 1, L]]) for (const p of lanterns) trims.push({ ...p, box: [p.box[0], p.box[1] + up, p.box[2] + dz, p.box[3], p.box[4] + up, p.box[5] + dz].map(r3) });

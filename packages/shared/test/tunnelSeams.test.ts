@@ -7,6 +7,7 @@ import {
   buildMapDecor,
   buildMapGeometry,
   coreCatalog,
+  flatNormalOf,
   flatOf,
   initPhysics,
   lowHeadroom,
@@ -34,13 +35,14 @@ const near = (a: number, b: number, eps = 1e-3) => Math.abs(a - b) < eps;
 
 describe('textures run on across turned tunnel pieces', () => {
   it("a vault's strips: along the run the texture is laid by the world position, whichever way a piece is turned", () => {
+    // (As an unturned box there would lay it: x along an east-west run, z along a north-south one.)
     // East-west: turned 1, 3, 1 (a half turn between neighbours). North-south: turned 0, 2.
     const ew = boxesOf(mapOf([0, 1, 2].map((x, i) => ({ tile: 'core.tunnel_vault', x, y: 0, rotation: i === 1 ? 3 : 1 }))));
     const ns = boxesOf(mapOf([0, 1, 2].map((y, i) => ({ tile: 'core.tunnel_vault', x: 0, y, rotation: i === 1 ? 2 : 0 }))));
     for (const [boxes, axis] of [[ew, 0], [ns, 2]] as const) {
       const strips = boxes.filter((b) => b.roll || b.pitch);
       expect(strips.length).toBeGreaterThanOrEqual(30);
-      for (const b of strips) for (const p of boxCorners(b)) expect(flatOf(b, p)[2]).toBeCloseTo(p[axis], 6);
+      for (const b of strips) for (const p of boxCorners(b)) expect(flatOf(b, p)[axis]).toBeCloseTo(p[axis], 6);
     }
   });
 
@@ -67,7 +69,8 @@ describe('textures run on across turned tunnel pieces', () => {
             joined++;
             const ua = flatOf(a, ca[i]!);
             const ub = flatOf(b, cb[j]!);
-            const k = a.roll ? 0 : 2;
+            // Across the strips: the horizontal axis the vault spans (the one its strips' corners differ on).
+            const k = Math.abs(ca[i]![0] - ca[i ^ 1]![0]) > Math.abs(ca[i]![2] - ca[i ^ 1]![2]) ? 0 : 2;
             expect(Math.abs(ua[k] - ub[k]), `strips ${a.tex} and ${b.tex}`).toBeLessThan(exact ? 1e-3 : 0.1);
           }
         }
@@ -194,5 +197,14 @@ describe('the Stair Tunnel: down a level over two cells, in every family', () =>
         }
       }
     }
+  });
+});
+
+describe('a turned block lays its texture as a block built that way', () => {
+  it('a quarter-turned box: the same coordinates and face axes as the unturned box with the same corners', () => {
+    const turned: WorldBox = { min: [-1, 0, -3], max: [1, 1, 3], yaw: Math.PI / 2, kind: 'wall', sourceId: 'a' };
+    const plain: WorldBox = { min: [-3, 0, -1], max: [3, 1, 1], kind: 'wall', sourceId: 'b' };
+    for (const p of boxCorners(turned)) expect(flatOf(turned, p).map((v) => +v.toFixed(9))).toEqual(p.map((v) => +v.toFixed(9)));
+    for (const n of [[1, 0, 0], [0, 1, 0], [0, 0, -1]]) expect(flatNormalOf(turned, n)).toEqual(flatNormalOf(plain, n));
   });
 });
