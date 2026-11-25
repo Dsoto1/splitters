@@ -50,6 +50,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/doors-fit-1125` · 745c40db · 45685307937 (doors that fit themselves, map format v52; touches `maps/test_coverage.json` like the tunnel kit: rerun the coverage pieces through MapMaker on a conflict)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
