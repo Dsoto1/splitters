@@ -1090,6 +1090,35 @@ describe('what the bays are made of, and what they cost', () => {
     expect(walls).toHaveLength(8);
   });
 
+  it("every dorm room's bunk sits snug in its corner, head to the wall, the footlocker at its open end (owner, 2026-11-25)", () => {
+    // The Bunk Bed with Footlocker's head is its +z end (asset version 2): a ray on from just past it, over the bunk's
+    // top, meets the wall within 0.2 m; from just past the footlocker's end, the room is open for at least 0.6 m.
+    const d = getProp('kit.bed.bunk_chest')!.size[2];
+    // The prop itself: the footlocker (the 0.8 m wide, 0.42 m high box) at its −z end.
+    const trunk = (getProp('kit.bed.bunk_chest')!.boxes ?? []).filter((b) => Math.abs(b[4] - 0.42) < 0.01 && Math.abs(b[3] - b[0] - 0.8) < 0.01);
+    expect(trunk).toHaveLength(1);
+    expect(trunk[0]![5]).toBeLessThan(-d / 2 + 0.5);
+    const pieces: [string, Record<string, string>?][] = [['setpiece.dorm_bay'], ['setpiece.dorm_bay_closed'], ['setpiece.dorm_corner_bay'], ['setpiece.dorm_entry_bay'], ['setpiece.hall_centre'], ['setpiece.dorm_bay_end', { room: 'dorm' }]];
+    let bunks = 0;
+    for (const [piece, options] of pieces)
+      for (const rotation of [0, 1] as Rotation[]) {
+        const map = withPiece(piece, rotation, false, options);
+        const physics = new PhysicsWorld(buildMapGeometry(map), mapTerrainMesh(map));
+        for (const e of map.entities) {
+          if (e.kind !== 'prop' || e.model !== 'kit.bed.bunk_chest') continue;
+          bunks++;
+          const yaw = e.yaw ?? 0;
+          const f = { x: Math.sin(yaw), y: 0, z: Math.cos(yaw) };
+          const at = (k: number) => ({ x: e.position[0] + f.x * k, y: e.position[1] + 2.0, z: e.position[2] + f.z * k });
+          const head = physics.raycastHit(at(d / 2 + 0.02), f, 1);
+          expect(head?.dist ?? Infinity, `${piece} turned ${rotation}: the wall at the bunk's head (${e.position.join(', ')})`).toBeLessThan(0.2);
+          const foot = physics.raycastHit(at(-d / 2 - 0.02), { x: -f.x, y: 0, z: -f.z }, 1);
+          expect(foot?.dist ?? Infinity, `${piece} turned ${rotation}: open floor past the footlocker (${e.position.join(', ')})`).toBeGreaterThan(0.6);
+        }
+      }
+    expect(bunks).toBeGreaterThan(40);
+  });
+
   it("a set piece's footprint holds a prop's own box as it stands (a bunk against the wall at its edge)", () => {
     const def = library.pieces.get('setpiece.dorm_bay')!;
     expect(checkSetPieceDefinition(def, { packs: library.packs })).toEqual([]);
