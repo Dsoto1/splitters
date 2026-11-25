@@ -36,9 +36,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/small-1125` · bc3ab4c6 · 45536189672 (power-ups merged; small features batch: Match Setup one tab per map, map format v51; Weapon Manager Explosion and Impact sound slots, throwables too; Freeze Ray freeze blast on the alt; menu JS under budget)
-- `wip/colourblind-1124` · 4b3d58b8 · 45539416512 (colour vision, also kept on the account through captions' `prefs`; main bd6314da merged after crash reports landed, both flows kept; teams' 7-team scoreboard row check flaky on its shard, green on the one re-run)
-- `wip/editor-idle-1124` · a774957c · 45519824712 (MapMaker at rest: ≤15 frames/s with active meshes frozen, `?perfoff=editoridle`; the ended Test match no longer kept in memory: freshWorld's chain and the scoreboards' rows; inspector built once per edit; touches `game/session.ts` exit (4 lines) and `game/perfSwitches.ts`'s switch list: keep every name)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -168,6 +165,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-25** train check/train-20261125-042041 (5078c4e, run 45546156041), landed by the splitters lead: small features batch (`wip/small-1125`: Match Setup one tab per map, map format v51; Weapon Manager Explosion and Impact sound slots; Freeze Ray freeze blast); colour vision (`wip/colourblind-1124`, lane B); MapMaker at rest ≤15 frames/s and the ended Test match freed (`wip/editor-idle-1124`, lane B).
 - **2026-11-25** train check/train-20261125-024943 (0b6cbff, run 45535725391), landed by the splitters lead: crash and error reports (`wip/crash-reports-1124`, lane B; the hub picks it up on `sudo tiletrigger-update`); St. Jasper's fictional names (docs/map-briefs/st_johns/NAMES.md) and plain glass mirrors, a new `glazed` surface and Wall Mirror prop (`wip/stjohns-13`).
 - **2026-11-25** train check/train-20261125-011608 (f27d808, run 45524566573), landed by the splitters lead: seven power-ups: Overdrive, Regen, Rapid Fire, Phantom, Moon Boots, Vampire, Bottomless Mag (`wip/powerups-1124`; clumpPerf regression fixed: no per-move allocation).
 - **2026-11-25** train check/train-20261125-001333 (66ac2b2, run 45516427124; teams e2e passed on its one re-run), landed by the splitters lead: sound captions (`wip/captions-1124`, lane B).
