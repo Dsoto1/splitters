@@ -60,3 +60,10 @@ The owner's direction, condensed: "we have a considerable amount of maps and i w
 3. The 10 homage arenas outside the story: **rework their layouts** (as decided 2026-11-23), not only a new look.
 4. Maps outside the story: **labelled sections** in Match Setup's tabs (Arenas, Arcade, Battlegrounds); the 3 MapMaker samples go to Community.
 5. Film-inspired maps (Fernwood Moon, Serene City and the others in inspirations.ts): **moved to Community** for now; they may be reworked later. So the Space and Future City clusters each need a replacement for them (from existing maps first; docs/STORY_MAP_AUDIT.md).
+
+### Owner's answers on the campaign design (2026-11-25; docs/CAMPAIGN_GDD.md)
+- **Unlocks:** about 3 characters per sector, one per map; finishing the whole sector may also unlock the boss or the boss's companions. Convergence maps can unlock extras from their two themes. Every other character unlocks through ordinary play: XP and challenges, some with prerequisites.
+- **Team sizes vary by match:** never more than 14 a side (14 v 14 at most). Some matches have a smaller team the player picks (8-10), with the map or sector adding local allies to the player's side (e.g. the Wild West's own heroes fighting with you).
+- **The Playhouse is reimagined:** another dimension for the many anthropomorphic characters; a reworked Pantry Raid belongs to it, with other maps.
+- Lead's suggestions with no objection so far: one map per convergence (the doc allows compact zones); a win moves you on, challenges give stars or cosmetics; in co-op each player saves their own wins; start with a slice (one historical, one modern, one future sector and one convergence); build the campaign system now, on today's maps, and let the map pass polish them.
+- **Later (owner):** 4-player split screen and deeper co-op, all of it able to go online: 1-3 friends on one machine host a match with bots online, and online players join to fill spaces or take bots' places.
