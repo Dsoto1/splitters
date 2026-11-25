@@ -2,7 +2,7 @@
 // same plane, and the audit over every map in maps/ (coplanar overlaps left: none).
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { FLUSH_LIFT, PROP_FLUSH, SLIVER, axisFaces, propCoplanar, propFlushLifts, boxQuat, buildMapDecor, buildMapGeometry, builtInSetPieces, coplanarIssues, coplanarOverlaps, coplanarSpots, expandSetPieces, loadMap, quatRotate, visibleFaces, type MapDocument, type MapEntity, type RenderFace, type WorldBox } from '../src/index.ts';
+import { FLUSH_LIFT, PROP_FLUSH, SLIVER, axisFaces, propCoplanar, propFlushLifts, boxQuat, buildMapDecor, buildMapGeometry, builtInSetPieces, coplanarIssues, coplanarOverlaps, coplanarSpots, expandSetPieces, flatNormalOf, flatOf, loadMap, quatRotate, visibleFaces, type MapDocument, type MapEntity, type RenderFace, type WorldBox } from '../src/index.ts';
 import { makeMap } from './helpers.ts';
 import { PROP_CONTACTS } from '../src/content/propContacts.generated.ts';
 
@@ -159,14 +159,20 @@ function checkCoverage(boxes: readonly WorldBox[], faces: readonly RenderFace[],
     const others = drawn.filter((o) => o.i !== i);
     const near = others.map((o) => dist(o.b, w));
     const hiders = others.filter((o) => sameFrame(o.b, b)).map((o) => dist(o.b, w));
+    // The point and the face's normal in the frame the faces' `flat` corners are in (where the texture is laid out:
+    // the box's own frame, save for its quarter turns, faces.ts flatOf).
+    const n0 = [0, 1, 2].map((k) => (k === axis ? (face & 1 ? -1 : 1) : 0));
+    const fn = flatNormalOf(b, quatRotate(boxQuat(b.yaw, b.pitch, b.roll), n0[0]!, n0[1]!, n0[2]!));
+    const fAxis = fn.findIndex((v) => v !== 0);
+    const lf = flatOf(b, w);
     const covered = (byBox.get(i) ?? []).filter((f) => {
       const fl = f.flat;
-      if (f.flatNormal[axis] !== (face & 1 ? -1 : 1)) return false;
+      if (f.flatNormal[fAxis] !== fn[fAxis]) return false;
       // Inside the (convex) piece, on the face's two in-plane axes.
-      const [ua, va] = [0, 1, 2].filter((k) => k !== axis) as [number, number];
+      const [ua, va] = [0, 1, 2].filter((k) => k !== fAxis) as [number, number];
       const sides = fl.map((p, j) => {
         const q = fl[(j + 1) % fl.length]!;
-        return (q[ua]! - p[ua]!) * (l[va]! - p[va]!) - (q[va]! - p[va]!) * (l[ua]! - p[ua]!);
+        return (q[ua]! - p[ua]!) * (lf[va]! - p[va]!) - (q[va]! - p[va]!) * (lf[ua]! - p[ua]!);
       });
       return sides.every((x) => x >= -1e-9) || sides.every((x) => x <= 1e-9);
     }).length;

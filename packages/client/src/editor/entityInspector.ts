@@ -18,6 +18,8 @@ import {
   DESTRUCTIBLE_MODELS,
   DESTRUCTIBLE_SPECS,
   DOOR_STYLE_LABELS,
+  blockTakesDoorways,
+  fitDoor,
   DOOR_STYLES,
   ELECTRIC_FENCE,
   ENCOUNTER_ENTRANCES,
@@ -229,14 +231,37 @@ export class EntityInspector {
         el.append(small(e.respawnSeconds === null ? `Item default (${def}s)` : 'Custom respawn time'));
         break;
       }
-      case 'door':
-        choose('Look', DOOR_STYLES.map((s) => [s, DOOR_STYLE_LABELS[s]] as const), e.style ?? 'sliding', (v) => ({ style: v === 'sliding' ? undefined : (v as DoorStyle) }));
+      case 'door': {
+        // Doors that fit themselves: a new look re-cuts the wall's doorway to match it, as one undo step.
+        const refit = (label: string, door: typeof e) => {
+          const fit = fitDoor(doc, door);
+          const set = { kind: 'updateEntities' as const, before: [e], after: [fit.door] };
+          return this.app.run(label, fit.commands.length ? { kind: 'batch', commands: [set, ...fit.commands] } : set);
+        };
+        {
+          const sel = document.createElement('select');
+          sel.id = 'ed-door-look';
+          for (const s of DOOR_STYLES) sel.append(new Option(DOOR_STYLE_LABELS[s], s, false, s === (e.style ?? 'sliding')));
+          sel.addEventListener('change', () => refit('Set look', { ...e, style: sel.value === 'sliding' ? undefined : (sel.value as DoorStyle) }));
+          el.append(row('Look', sel));
+        }
+        {
+          const fit = fitDoor(doc, e);
+          const b = document.createElement('button');
+          b.id = 'ed-door-fit';
+          b.textContent = 'Fit the wall to this door';
+          b.disabled = !fit.wall || (!fit.commands.length && fit.door.position.every((v, i) => v === e.position[i]));
+          b.addEventListener('click', () => refit('Fit doorway', e));
+          el.append(row('Doorway', b));
+          el.append(small(!fit.wall ? 'Stands in no wall: put it in a cell side or a wall of blocks to cut its doorway.' : `${fit.doorway === 'door_arched' ? 'An arched' : 'A square'} doorway in ${fit.wall === 'side' ? 'the wall side' : 'the blocks'}${b.disabled ? ', fitted.' : ': not yet cut to this door.'} Removing the door leaves the doorway.`));
+        }
         toggle('Opens by itself', e.auto, (v) => ({ auto: v }));
         toggle('Locked', e.locked, (v) => ({ locked: v }));
         toggle('Starts open', e.startOpen, (v) => ({ startOpen: v }));
         el.append(small(e.auto ? 'Slides open when a player comes close (unless locked).' : 'Players press E to open it, or logic opens it.'));
         teamFilter(e.team, 'opens it by walking up or pressing E (logic still opens it for everyone); bots of other teams path round it');
         break;
+      }
       case 'button':
         {
           const label = document.createElement('input');
@@ -265,6 +290,15 @@ export class EntityInspector {
         number('Depth (Z)', e.size[2], 0.5, (v) => ({ size: [e.size[0], e.size[1], clamp(v, e.glass ? 0.05 : 0.2, 64)] }));
         const labels: Record<(typeof BLOCK_BEHAVIOURS)[number], string> = { solid: 'Solid (sky block)', breakable: 'Breakable (shoot it)', crumble: 'Crumbles when stood on', trapdoor: 'Trapdoor (drops away)' };
         choose('Behaviour', BLOCK_BEHAVIOURS.map((b) => [b, labels[b]] as const), e.behaviour, (v) => ({ behaviour: v as typeof e.behaviour }));
+        if (e.doorways?.length) {
+          // Doorways a door cut (doors that fit themselves); filling them in makes the block whole again.
+          const fill = document.createElement('button');
+          fill.id = 'ed-block-fill';
+          fill.textContent = e.doorways.length === 1 ? 'Fill in its doorway' : `Fill in its ${e.doorways.length} doorways`;
+          fill.addEventListener('click', () => update('Fill in doorways', { doorways: undefined }));
+          el.append(row('Doorways', fill));
+          if (!blockTakesDoorways(e)) el.append(small('Its doorways show only on a plain solid block standing level.'));
+        }
         const mats = document.createElement('select');
         mats.append(new Option("Theme's solid material", '', false, e.material === null));
         for (const m of coreMaterials.all()) mats.append(new Option(m.displayName, m.id, false, m.id === e.material));

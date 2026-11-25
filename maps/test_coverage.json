@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 53,
+  "formatVersion": 52,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_2vnz7gdyvwzfvjwr",
+      "versionId": "v_vxhkrg6j3qgfuo32",
       "revision": 64,
-      "contentHash": "sha256:1a8b8709086f434f7ff43820452a80274e475fc96ec6bb0ea57a2dd3cfb1b361",
-      "schemaVersion": 53,
-      "releasedAt": "2026-11-25T18:08:38.935Z"
+      "contentHash": "sha256:cf8480c2f29859a2ae5354918b35d3031beb32fd0645b77fbae5bd0727ca2b8c",
+      "schemaVersion": 52,
+      "releasedAt": "2026-11-25T22:07:26.924Z"
     },
     "testOnly": true,
     "category": "weird"
@@ -1433,6 +1433,85 @@
         "y": -64,
         "z": 0,
         "rotation": 0
+      },
+      {
+        "id": "tile_stairtunnel_0",
+        "tile": "core.tunnel_concrete_stair_tunnel",
+        "x": 12,
+        "y": -12,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_stairtunnel_1",
+        "tile": "core.tunnel_road_wide_stair_tunnel",
+        "x": 13,
+        "y": -12,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_swkg3agph2",
+        "tile": "core.tunnel_concrete_end",
+        "x": 12,
+        "y": -13,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_24o1vve1ao",
+        "tile": "core.tunnel_concrete_end",
+        "x": 12,
+        "y": -10,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ngmwm1eklv",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 13,
+        "y": -13,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ebrtkv0xvy",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 13,
+        "y": -10,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_doorfit_a",
+        "tile": "core.room",
+        "x": -14,
+        "y": 18,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "walls": {
+            "material": "core.pbr_castle_stone",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door_arched"
+        }
+      },
+      {
+        "id": "tile_doorfit_b",
+        "tile": "core.room",
+        "x": -13,
+        "y": 18,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "walls": {
+            "material": "core.pbr_castle_stone",
+            "tint": null
+          }
+        }
       }
     ]
   },
@@ -5657,28 +5736,88 @@
       "respawnSeconds": null
     },
     {
-      "id": "figure_k2ao4vdgex",
+      "id": "block_doorfit_w",
+      "kind": "block",
       "position": [
-        73,
+        -111,
         0,
-        12
+        132
       ],
-      "kind": "figure",
-      "yaw": 2.356194490192345,
-      "look": "core.croakley_classic",
-      "pose": "stand"
+      "size": [
+        6,
+        4,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "doorways": [
+        {
+          "style": "door_arched",
+          "at": 3
+        }
+      ]
     },
     {
-      "id": "figure_jo0hs1h1zp",
-      "kind": "figure",
+      "id": "block_doorfit_e",
+      "kind": "block",
       "position": [
-        75,
+        -105,
         0,
-        12
+        132
       ],
-      "yaw": 2.356194490192345,
-      "look": "core.dale",
-      "pose": "stand"
+      "size": [
+        6,
+        4,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "doorways": [
+        {
+          "style": "door_arched",
+          "at": -3
+        }
+      ]
+    },
+    {
+      "id": "door_24o1vve1ao",
+      "kind": "door",
+      "position": [
+        -108,
+        0,
+        144
+      ],
+      "yaw": 1.5707963267948966,
+      "startOpen": false,
+      "locked": false,
+      "auto": true,
+      "style": "arched"
+    },
+    {
+      "id": "door_vtihakx4ow",
+      "kind": "door",
+      "position": [
+        -108,
+        0,
+        132
+      ],
+      "yaw": 0,
+      "startOpen": false,
+      "locked": false,
+      "auto": true,
+      "style": "arched"
     }
   ],
   "factions": [],

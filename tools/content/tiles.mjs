@@ -118,7 +118,7 @@ function schemas(root, materials, edgeIds = []) {
   };
   const part = obj({
     ...Object.fromEntries(Object.entries(builders).map(([k, s]) => [`${k}?`, s])),
-    'kind?': en(['solid', 'wall', 'floor', 'trim', 'prop']), 'yaw?': num, 'pitch?': num, 'roll?': num, 'surface?': surface,
+    'kind?': en(['solid', 'wall', 'floor', 'trim', 'prop']), 'yaw?': num, 'pitch?': num, 'roll?': num, 'tex?': num, 'surface?': surface,
   });
   // Builders that hold parts or name an edge style (map/catalog.ts TurnedPart, WallRunPart): a turned group of any
   // parts (itself a part, so groups nest) and a wall run of an edge style along any segment.
@@ -271,13 +271,13 @@ export function build(content, root = ROOT) {
         problems.push(`${where}: ${path}: one of base, cornice, frame, window, arch, or a box (u, y, depth)`);
         return {};
       }
-      if (t.outside && !t.arch && !t.u) problems.push(`${where}: ${path}: outside goes on an arch or a trim box`);
+      if (t.outside && !t.arch && !t.u && !t.frame) problems.push(`${where}: ${path}: outside goes on a frame, an arch or a trim box`);
       if (t.base) return { base: pair(t.base, uValue, `${path}.base`) };
       if (t.cornice) return { cornice: pair(t.cornice, uValue, `${path}.cornice`) };
       const own = t.surface ? { surface: t.surface } : {};
       if (t.surface && !t.frame && !t.arch && !t.u) problems.push(`${where}: ${path}: surface goes on a frame, an arch or a trim box`);
       if (t.surface?.tint !== undefined && !/^#[0-9a-f]{6}$/.test(t.surface.tint)) problems.push(`${where}: ${path}.surface.tint must be #rrggbb`);
-      if (t.frame) return { frame: t.frame, ...own };
+      if (t.frame) return { frame: t.frame, ...(t.outside ? { outside: true } : {}), ...own };
       if (t.window) return { window: t.window };
       if (t.arch) {
         const a = t.arch;

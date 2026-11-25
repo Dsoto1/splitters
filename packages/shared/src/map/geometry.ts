@@ -12,6 +12,7 @@ import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './borde
 import { pathsExtent } from './paths.ts';
 import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, GLASS_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
 import { edgeLattice, edgePaint, edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
+import { blockDoorwayPieces, blockTakesDoorways, runPieceBox } from './blockDoorways.ts';
 export { edgePaint, edgeSegments, edgeTrimBoxes, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 
 /**
@@ -41,6 +42,8 @@ export interface WorldBox {
    */
   pitch?: number;
   roll?: number;
+  /** A tilted strip's place along the curve it is one of, for its texture (LocalBox.tex). */
+  tex?: number;
   /** Material for every face (free blocks), instead of the theme's. */
   surface?: { material: string; tint: string | null };
   /** A room's roof slab (room option Ceiling): its top is painted as the tile's `roof` surface. */
@@ -598,7 +601,26 @@ export function blockBoxes(map: MapDocument, dynamic = false): WorldBox[] {
     if (e.kind !== 'block' || dyn.has(e.id) !== dynamic) continue;
     if (dynamic && e.startHidden) continue;
     const start = starts?.get(e.id);
-    out.push(start ? carriedBox(e, start) : blockBox(e));
+    if (!dynamic && e.doorways?.length && blockTakesDoorways(e)) out.push(...blockDoorwayBoxes(e));
+    else out.push(start ? carriedBox(e, start) : blockBox(e));
+  }
+  return out;
+}
+
+/** A static block with doorways (v52), as the pieces round its openings (map/blockDoorways.ts), each in its material. */
+function blockDoorwayBoxes(e: Extract<MapEntity, { kind: 'block' }>): WorldBox[] {
+  const surface = e.material ? { surface: { material: e.material, tint: e.tint } } : {};
+  return blockDoorwayPieces(e).solids.map((p) => ({ ...runPieceBox(e, p), kind: 'floor' as const, sourceId: e.id, ...surface }));
+}
+
+/** The frames, voussoirs and soffits of static blocks' doorways (drawn, never collide): in the theme's trim, as a tile's are. */
+function blockDoorwayTrim(map: MapDocument): WorldBox[] {
+  const out: WorldBox[] = [];
+  let dyn: Set<string> | null = null;
+  for (const e of map.entities) {
+    if (e.kind !== 'block' || !e.doorways?.length || !blockTakesDoorways(e)) continue;
+    if ((dyn ??= dynamicBlockIds(map)).has(e.id)) continue;
+    for (const p of blockDoorwayPieces(e).trim) out.push({ ...runPieceBox(e, p), kind: 'trim', sourceId: e.id, ...(p.surface ? { surface: p.surface } : {}) });
   }
   return out;
 }
@@ -707,7 +729,9 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         const metal = edgePaint(style);
         // Glass in this window: its sash bars are the pane's (drawn with it, gone when it breaks: sim/glass.ts).
         const glazed = !!occ.placement.glass?.[edgeKey(occ.local, localSide(side, occ.placement.rotation))] && GLASS_STYLES.has(style);
-        for (const p of edgeTrimBoxes(style, half, levelHeight, outer, glazed ? 'without' : 'all')) {
+        // A facade frames the openings outside itself (facadeFrames): no second door frame under it.
+        const facade = occ.placement.options?.facade;
+        for (const p of edgeTrimBoxes(style, half, levelHeight, outer, glazed ? 'without' : 'all', { frames: !facade || facade === 'none' })) {
           const b = sideTrimBox(side, cx, cz, half, baseY, p, id);
           boxes.push(metal && !b.surface ? { ...b, paint: metal } : b);
         }
@@ -730,6 +754,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
 
   if (decor) {
     boxes.push(...facadeFrames(map, cells));
+    boxes.push(...blockDoorwayTrim(map));
     boxes.push(...packFacadeBoxes(map, cells));
     // Trim on curved pieces (it never collides).
     for (const placement of map.classicStructure.tiles) {
@@ -902,7 +927,7 @@ function vaultFrame(cells: Map<string, CellOccupant>, gx: number, gy: number, gz
 
 /** A vault's local boxes (map/catalog.ts vault) as one placement's world boxes. */
 const vaultWorld = (boxes: readonly LocalBox[], kind: BoxKind, sourceId: string): WorldBox[] =>
-  boxes.map((b) => ({ min: [...b.min], max: [...b.max], kind, sourceId, ...(b.pitch ? { pitch: b.pitch } : {}), ...(b.roll ? { roll: b.roll } : {}) }));
+  boxes.map((b) => ({ min: [...b.min], max: [...b.max], kind, sourceId, ...(b.pitch ? { pitch: b.pitch } : {}), ...(b.roll ? { roll: b.roll } : {}), ...(b.tex !== undefined ? { tex: b.tex } : {}) }));
 
 /**
  * The vaulted ceiling (room option `vault`) of one cell of a room: a shallow segmental barrel vault along the room's
@@ -1172,7 +1197,7 @@ function rotateLocalBox(box: LocalBox, rotation: number, cx: number, baseY: numb
     const hz = (box.max[2] - box.min[2]) / 2;
     const [mx, mz] = rotateXZ((box.min[0] + box.max[0]) / 2, (box.min[2] + box.max[2]) / 2, rotation);
     const yaw = (box.yaw ?? 0) + (rotation % 4) * (Math.PI / 2);
-    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, ...(yaw ? { yaw } : {}), ...(box.pitch ? { pitch: box.pitch } : {}), ...(box.roll ? { roll: box.roll } : {}), ...surface };
+    return { min: [cx + mx - hx, baseY + box.min[1], cz + mz - hz], max: [cx + mx + hx, baseY + box.max[1], cz + mz + hz], kind, sourceId, ...(yaw ? { yaw } : {}), ...(box.pitch ? { pitch: box.pitch } : {}), ...(box.roll ? { roll: box.roll } : {}), ...(box.tex !== undefined ? { tex: box.tex } : {}), ...surface };
   }
   const [ax, az] = rotateXZ(box.min[0], box.min[2], rotation);
   const [bx, bz] = rotateXZ(box.max[0], box.max[2], rotation);

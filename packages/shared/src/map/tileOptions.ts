@@ -91,7 +91,7 @@ export interface EdgeArch {
 export type EdgeTrim =
   | { base: readonly [EdgeValue, EdgeValue] }
   | { cornice: readonly [EdgeValue, EdgeValue] }
-  | { frame: { half: number; top: number }; surface?: EdgeTrimSurface }
+  | { frame: { half: number; top: number }; outside?: boolean; surface?: EdgeTrimSurface }
   | { window: { u: readonly [number, number]; y: readonly [number, number] } }
   | { arch: EdgeArch; outside?: boolean; surface?: EdgeTrimSurface }
   | { u: readonly [EdgeValue, EdgeValue]; y: readonly [EdgeValue, EdgeValue]; depth: number; repeat?: EdgeRepeat; outside?: boolean; surface?: EdgeTrimSurface }

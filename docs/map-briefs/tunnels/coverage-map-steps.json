@@ -26,5 +26,8 @@
   {"tile":"core.tunnel_concrete_slope","gx":8,"gy":-9,"level":-2,"rot":3},
   {"tile":"core.tunnel_concrete_straight","gx":9,"gy":-9,"level":-2,"rot":1},
   {"piece":"setpiece.tunnel_riser","gx":10,"gy":-9,"level":-2,"rot":1},
-  {"tile":"core.tunnel_concrete_end","gx":11,"gy":-9,"level":-1,"rot":1}
+  {"tile":"core.tunnel_concrete_end","gx":11,"gy":-9,"level":-1,"rot":1},
+  {"tile":"core.tunnel_concrete_stair_tunnel","gx":12,"gy":-12,"level":-2,"rot":0},
+  {"tile":"core.tunnel_road_wide_stair_tunnel","gx":13,"gy":-12,"level":-2,"rot":0},
+  {"closeOpenEnds":["core.tunnel_concrete_stair_tunnel","core.tunnel_road_wide_stair_tunnel"]}
 ]
