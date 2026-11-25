@@ -50,7 +50,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/tunnel-seamless-1125` · 9dbc9a6c · 45681475256 (seamless tunnel textures for turned and tilted blocks, the kit's joints on the lattice, a Stair Tunnel in every family; generated kit tiles and palette atlas: rerun `pnpm content:rebuild` on a conflict)
 - `wip/doors-fit-1125` · 745c40db · 45685307937 (doors that fit themselves, map format v52; touches `maps/test_coverage.json` like the tunnel kit: rerun the coverage pieces through MapMaker on a conflict)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
@@ -181,6 +180,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-25** train check/train-20261125-210903 (49890fc, run 45701672711; hostcontrols flake passed on its one re-run), landed by the splitters lead: seamless tunnels (`wip/tunnel-seamless-1125`, lane B): textures run on across turned and tilted tunnel blocks, the kit's joints on the lattice, a Stair Tunnel in every family.
 - **2026-11-25** train check/train-20261125-195359 (7bfc6c4, run 45689794932), landed by the splitters lead: sharper characters (`wip/chartex-1125`: KTX2 textures, 177 characters at 2048 px colour, the rest compressed at 1024; GPU memory for all characters 2.1 → 1.3 GB, character files 3.2 MB budget); the campaign framework (`wip/campaign-1125`: sector data, progress on the device and the profile, map locks with joining allowed, the Operations Database with the Unknown tile, the menu as Story · Quick Play · Local · Online; character locks built, off).
 - **2026-11-25** train check/train-20261125-145926 (9235ce6, run 45640114571), landed by the splitters lead: fix batch `wip/fixes-20261125`: every projectile gun's shot drawn leaving its barrel; Bottomless Mag pickup as rounds with ∞; Elder Tomo's new model; Pip Quickfoot is a her.
 - **2026-11-25** train check/train-20261125-052032 (e86dc6f, run 45552919898), landed by the splitters lead: the owner's characters of 2026-11-25 (`wip/chars-1125`): Clio and Sarge lead the Chrono Crew; Fuse Hollister to Machines; Blix Orrin and Juno Hartwell join the crew (13; the owner will upload the 14th); 13 more new characters; Pip, Anoobys and Thornweaver new models; Ignatius Slagg to Legends; three story bosses built and parked.

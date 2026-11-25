@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 50,
+  "formatVersion": 51,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,19 +18,14 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_zl4frgyxc3iqcgwt",
-      "revision": 62,
-      "contentHash": "sha256:e3dcde3e9e2b4cdf46e09687309666ecf4497595217cc9c1f62f5609041407d7",
-      "schemaVersion": 50,
-      "releasedAt": "2026-11-24T20:10:32.124Z"
+      "versionId": "v_2gmiilq5maxor2ou",
+      "revision": 63,
+      "contentHash": "sha256:14b40780444164e812dceb06651db396e65a844555ed890c56dec000c32d246a",
+      "schemaVersion": 51,
+      "releasedAt": "2026-11-25T18:14:15.697Z"
     },
     "testOnly": true,
-    "categories": [
-      {
-        "category": "anomalous",
-        "tag": "experimental"
-      }
-    ]
+    "category": "weird"
   },
   "classicStructure": {
     "cellSize": 8,
@@ -1437,6 +1432,54 @@
         "x": -10,
         "y": -64,
         "z": 0,
+        "rotation": 0
+      },
+      {
+        "id": "tile_stairtunnel_0",
+        "tile": "core.tunnel_concrete_stair_tunnel",
+        "x": 12,
+        "y": -12,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_stairtunnel_1",
+        "tile": "core.tunnel_road_wide_stair_tunnel",
+        "x": 13,
+        "y": -12,
+        "z": -2,
+        "rotation": 0
+      },
+      {
+        "id": "tile_swkg3agph2",
+        "tile": "core.tunnel_concrete_end",
+        "x": 12,
+        "y": -13,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_24o1vve1ao",
+        "tile": "core.tunnel_concrete_end",
+        "x": 12,
+        "y": -10,
+        "z": -1,
+        "rotation": 0
+      },
+      {
+        "id": "tile_ngmwm1eklv",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 13,
+        "y": -13,
+        "z": -2,
+        "rotation": 2
+      },
+      {
+        "id": "tile_ebrtkv0xvy",
+        "tile": "core.tunnel_road_wide_end",
+        "x": 13,
+        "y": -10,
+        "z": -1,
         "rotation": 0
       }
     ]
@@ -5586,78 +5629,78 @@
     },
     {
       "id": "pickup_c8qu5hkhjn",
-      "kind": "pickup",
       "position": [
         -70,
         0,
         15
       ],
+      "kind": "pickup",
       "item": "core.powerup_overdrive",
       "respawnSeconds": null
     },
     {
       "id": "pickup_2j9fnr4kd4",
-      "kind": "pickup",
       "position": [
         -68,
         0,
         15
       ],
+      "kind": "pickup",
       "item": "core.powerup_regen",
       "respawnSeconds": null
     },
     {
       "id": "pickup_27s9chzhh7",
-      "kind": "pickup",
       "position": [
         -66,
         0,
         15
       ],
+      "kind": "pickup",
       "item": "core.powerup_rapid",
       "respawnSeconds": null
     },
     {
       "id": "pickup_qm6wywjrgy",
-      "kind": "pickup",
       "position": [
         -64,
         0,
         15
       ],
+      "kind": "pickup",
       "item": "core.powerup_phantom",
       "respawnSeconds": null
     },
     {
       "id": "pickup_y8mpk7g4np",
-      "kind": "pickup",
       "position": [
         -62,
         0,
         15
       ],
+      "kind": "pickup",
       "item": "core.powerup_moon",
       "respawnSeconds": null
     },
     {
       "id": "pickup_i61lyyh4gj",
-      "kind": "pickup",
       "position": [
         -60,
         0,
         15
       ],
+      "kind": "pickup",
       "item": "core.powerup_vampire",
       "respawnSeconds": null
     },
     {
       "id": "pickup_swkg3agph2",
-      "kind": "pickup",
       "position": [
         -58,
         0,
         15
       ],
+      "kind": "pickup",
       "item": "core.powerup_bottomless",
       "respawnSeconds": null
     }

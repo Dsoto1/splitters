@@ -84,11 +84,13 @@ describe('the brick sewer and mine families', () => {
   it('brick: a round arch inside the clear box, a water channel between kerbs (drawn, never a liquid) and a lantern; mine: timber sets, lagging and a track', () => {
     const solidsOf = (id: string) => coreCatalog.get(id)!.solids ?? [];
     const brick = solidsOf('core.tunnel_brick_straight');
-    // The arch: slabs rolled to the curve from springing to crown, in the walls' brick, a ring of the trim stone at each end.
+    // The arch: slabs rolled to the curve from springing to crown, in the walls' brick. No ring of the trim stone at the
+    // straight's ends (the next piece's arch runs on: seamless tunnels); a junction shows its arches' rings.
     const arch = brick.filter((b) => b.roll && b.surface?.material === 'core.pbr_brick_old');
     expect(arch.length).toBeGreaterThanOrEqual(9);
     expect(Math.min(...arch.map((b) => b.min[1]))).toBeGreaterThan(1.9);
-    expect(brick.some((b) => b.roll && b.surface?.material === 'core.pbr_castle_stone')).toBe(true);
+    expect(brick.some((b) => b.roll && b.surface?.material === 'core.pbr_castle_stone')).toBe(false);
+    expect(solidsOf('core.tunnel_brick_t').some((b) => b.roll && b.surface?.material === 'core.pbr_castle_stone')).toBe(true);
     // The water: a surface a hand over the floor, glossy and dark; kerbs either side; a grate.
     expect(brick.filter((b) => b.surface?.material === 'core.paint_gloss').every((b) => b.max[1] <= 0.03)).toBe(true);
     expect(brick.some((b) => b.surface?.material === 'core.grate')).toBe(true);

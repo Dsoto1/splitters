@@ -76,7 +76,7 @@
           "material": "core.pbr_steel",
           "tint": "#8a8078",
           "sleeper": "core.oak_beam",
-          "sleeperEvery": 0.7
+          "sleeperEvery": 0.8
         },
         "light": {
           "style": "lantern",
@@ -193,6 +193,12 @@
       "blurb": "The passage climbs one level on a ramp (1 in 2), from the south (low) to the north (a level up), buried like the stairs."
     },
     {
+      "id": "stair_tunnel",
+      "name": "Stair Tunnel",
+      "kind": "stairway",
+      "blurb": "The passage goes down a level over two cells, lined all the way: a landing at each end and 16 easy steps between, standing headroom over every step, the high end north, the low end south. Buried: the soffit and the earth over it follow the steps."
+    },
+    {
       "id": "descent",
       "name": "Surface Stairs",
       "kind": "descent",
@@ -281,6 +287,14 @@
       "name": "Wide Ramp",
       "kind": "ramp",
       "blurb": "The 7 m bore climbs one level over two cells (1 in 4, which vehicles drive), from the south (low) to the north (a level up), buried: the soffit and the earth over it climb with the floor."
+    },
+    {
+      "id": "wide_stair_tunnel",
+      "profile": "L",
+      "families": ["road", "concrete", "brick"],
+      "name": "Wide Stair Tunnel",
+      "kind": "stairway",
+      "blurb": "The 7 m bore goes down a level over two cells on steps (people, not vehicles: the Wide Ramp is for wheels): a landing at each end, standing headroom over every step, the high end north, the low end south. Buried like the ramp."
     },
     {
       "id": "reducer",
