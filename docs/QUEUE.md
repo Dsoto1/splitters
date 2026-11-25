@@ -37,6 +37,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/colourblind-1124` · 4b3d58b8 · 45539416512 (colour vision, also kept on the account through captions' `prefs`; main bd6314da merged after crash reports landed, both flows kept; teams' 7-team scoreboard row check flaky on its shard, green on the one re-run)
+- `wip/editor-idle-1124` · a774957c · 45519824712 (MapMaker at rest: ≤15 frames/s with active meshes frozen, `?perfoff=editoridle`; the ended Test match no longer kept in memory: freshWorld's chain and the scoreboards' rows; inspector built once per edit; touches `game/session.ts` exit (4 lines) and `game/perfSwitches.ts`'s switch list: keep every name)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
