@@ -48,6 +48,8 @@ const NO_COLLISION = new Set([
   'kit.dome.trim_top', 'kit.dome.trim_middle', 'kit.dome.trim_bottom',
   // The built-in closet's front: the wall it is set in is the closet, and collides.
   'kit.cabinet.closet_front',
+  // St. Jasper's washrooms: a wall mirror hangs on the wall (the household pack's mirror it stands in for collided as nothing too).
+  'kit.cabinet.mirror_wall',
   // The two either side of a doorway as one prop (St. John's step 4: lighter dorm rooms).
   'kit.cabinet.closet_front_pair',
   // Tileset 11 (Urban & Civilian): the Shop Awning hangs on a wall above head height, as the game's other awnings
