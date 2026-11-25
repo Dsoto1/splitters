@@ -15148,32 +15148,41 @@ async function dodgerollFlow(browser) {
   }, slot);
   const drive = (forward, right, buttons, once = 0) => page.evaluate(([f, r, b, o]) => (window.__autoInput = { forward: f, right: r, buttons: b, once: o }), [forward, right, buttons, once]);
   const look = (yaw, pitch = 0) => page.evaluate(([y, p]) => Object.assign(window.__cs.input, { yaw: y, pitch: p }), [yaw, pitch]);
-  /** The match's longest dodge of `slot` (ticks), whether it was a roll, and the gun's raise seen during a roll, from now on. */
+  /**
+   * The match's longest dodge of `slot` (ticks), whether it was a roll, and the gun's raise seen during a roll, from now
+   * on: read after every step of the match (a step lasts 9 ticks, and a loaded runner's worker can run that many in one
+   * go, so a timer between steps could miss it).
+   */
   const latch = (slot) => sim(page, (m, me, a) => {
     const c = m.combatants().find((x) => x.slot === a);
-    clearInterval(self.__dodgeLatch);
-    self.__dodge = { ticks: 0, roll: false, raise: 0, stance: 0, from: { ...c.move.pos } };
-    self.__dodgeLatch = setInterval(() => {
+    self.__dodge = { ticks: 0, roll: false, raise: 0, stance: 0, stamina: 1, from: { ...c.move.pos } };
+    const stepFn = (m.__latchStep ??= m.step);
+    m.step = function () {
+      const out = stepFn.call(this);
       const d = self.__dodge;
       if ((c.move.dodge ?? 0) > d.ticks) d.ticks = c.move.dodge;
+      d.stamina = Math.min(d.stamina, c.move.stamina ?? 1);
       if (c.move.roll) {
         d.roll = true;
         d.raise = Math.max(d.raise, c.raiseTicks);
         d.stance = Math.max(d.stance, c.move.stance ?? 0);
       }
-    }, 4);
+      return out;
+    };
   }, slot);
-  const latched = () => sim(page, (m, me) => ({ ...self.__dodge, to: { ...me.move.pos }, stamina: me.move.stamina ?? 1 }));
-  /** The page's own predicted dodge, its longest, from now on. */
+  const latched = () => sim(page, (m, me) => ({ ...self.__dodge, to: { ...me.move.pos } }));
+  /** The page's own predicted dodge, its longest, from now on (read after every predicted tick, not every frame drawn). */
   const ownLatch = () => page.evaluate(() => {
-    const s = window.__cs;
+    const local = window.__cs.local;
     window.__ownDodge = { ticks: 0, roll: false };
-    if (window.__ownWatch) s.view.scene.onAfterRenderObservable.remove(window.__ownWatch);
-    window.__ownWatch = s.view.scene.onAfterRenderObservable.add(() => {
-      const st = s.local.state;
+    const tickFn = (local.__latchTick ??= local.tick);
+    local.tick = function (...args) {
+      const out = tickFn.apply(this, args);
+      const st = this.state;
       if ((st.dodge ?? 0) > window.__ownDodge.ticks) window.__ownDodge.ticks = st.dodge;
       if (st.roll) window.__ownDodge.roll = true;
-    });
+      return out;
+    };
   });
   // An open stretch of the yard's floor, facing +z (the bot well out of the way).
   await place(bot, { x: 14, y: 0, z: 14 }, 0);
@@ -15186,13 +15195,16 @@ async function dodgerollFlow(browser) {
   await rested(me);
   await latch(me);
   await ownLatch();
+  const before = await sim(page, (m, me) => JSON.stringify(me.move));
+  const ownBefore = await page.evaluate(() => JSON.stringify(window.__cs.local.state));
   await drive(0, 1, 0, DODGE);
-  check(await meWait(page, () => self.__dodge.ticks >= 8, null, 2), 'Dodge (once, moving right): a dodge-step in the match');
+  const stepped = await meWait(page, () => self.__dodge.ticks >= 8, null, 2);
+  check(stepped, `Dodge (once, moving right): a dodge-step in the match${stepped ? '' : ` (before: ${before}; page: ${ownBefore})`}`);
   await drive(0, 0, 0);
   check(await meWait(page, (m, me) => !me.move.dodge && Math.hypot(me.move.vx ?? 0, me.move.vz ?? 0) < 0.05, null, 2), 'the step ends and its push fades');
   const step = await latched();
   check(!step.roll && step.to.x - step.from.x > 1.4 && step.to.x - step.from.x < 3, `it went about 2 m the way you moved (${(step.to.x - step.from.x).toFixed(2)} m)`);
-  check(step.stamina < 0.9, `it took its stamina (${step.stamina.toFixed(3)} left)`);
+  check(step.stamina <= 0.86, `it took its stamina (${step.stamina.toFixed(3)} at the least)`);
   const ownStep = await page.evaluate(() => window.__ownDodge);
   check(ownStep.ticks >= 8 && !ownStep.roll, `the step is predicted on the page (${ownStep.ticks} ticks)`);
   // A combat roll, from a crouch, forward: the gun down for it, crouched after it (crouch still on).
@@ -15290,7 +15302,7 @@ async function dodgerollFlow(browser) {
     }
     await letGo();
   }
-  await sim(page, () => clearInterval(self.__dodgeLatch));
+  await sim(page, (m) => void (m.__latchStep && (m.step = m.__latchStep)));
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await context.close();
   livePages.delete(page);

@@ -85,7 +85,7 @@ import { getEnvSpecies } from '../content/environment.ts';
 import { environmentShapes, type EnvWorldShape } from '../map/environment.ts';
 import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
+import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, BUTTON_DODGE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type ChassisBody, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
@@ -2248,6 +2248,8 @@ export class Match {
       // A backlog drops old inputs, but not a class pick (or quick message) one of them carried.
       const say = dropped.reverse().find((i) => i.say)?.say;
       if (say && !c.queue[0]!.say) c.queue[0]!.say = say;
+      // Nor a press of Dodge (sent once per press): the oldest input kept takes it.
+      if (dropped.some((i) => i.buttons & BUTTON_DODGE)) c.queue[0]!.buttons |= BUTTON_DODGE;
     }
   }
 

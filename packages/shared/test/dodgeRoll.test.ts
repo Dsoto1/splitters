@@ -283,6 +283,15 @@ describe('combat roll in the match: the gun is down for it', () => {
     expect(shots(step)).toBeGreaterThan(0);
   });
 
+  it('a press of Dodge in a backlog the host drops is kept (on the oldest input it keeps)', () => {
+    const { match, a } = solo();
+    const inputs = Array.from({ length: 40 }, (_, i) => ({ seq: 1000 + i, forward: 0, right: 0, yaw: 0, pitch: 0, buttons: i === 2 ? BUTTON_DODGE : 0 }));
+    match.queueInputs(a.slot, inputs);
+    expect(a.queue.length).toBeLessThan(40);
+    expect(a.queue[0]!.buttons & BUTTON_DODGE).toBe(BUTTON_DODGE);
+    expect(a.queue.filter((i) => i.buttons & BUTTON_DODGE)).toHaveLength(1);
+  });
+
   it('the snapshot says it: public dg [kind, ticks], private mv with the dodge', () => {
     const { match, a, run } = solo();
     run(10, {});
