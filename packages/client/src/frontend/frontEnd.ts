@@ -165,6 +165,8 @@ import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
 import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 import { QUICK_MODES, loadQuickPrefs, pickQuickMap, quickSetup, saveQuickPrefs, type QuickMode } from './quickPlay.ts';
+import { storyScreen } from './storyScreen.ts';
+import { CAMPAIGN, hostLockReason, myStoryProgress, syncStoryProgress } from '../campaign/storyProgress.ts';
 import { setTutorialState, tutorialState } from '../game/tutorial.ts';
 import { loadTipState, resetTips, setTipsOn } from '../game/tips.ts';
 import { testMode } from '../testMode.ts';
@@ -335,7 +337,8 @@ export interface FrontEndHooks {
   openDesigner(look: string): void;
   /** `host`: online from the start (Match setup's Host online, the Host tab's Host online without its restart): listed in the game browser when there's a hub, and a join code. */
   /** `botSet`: the host's own bots (Bots → Edit bots…). `spectate`: join it watching (Match setup → Spectate). */
-  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean, botSet?: BotSet | null, spectate?: boolean): void;
+  /** `story`: a Story stage (sector or convergence id, map key): a win completes it. */
+  playLocal(map: MapDocument, rules: MatchRules, bots: number, skill: ArcadeSetup['skill'], host?: boolean, botSet?: BotSet | null, spectate?: boolean, story?: { owner: string; map: string }): void;
   playOnline(server: string, name: string): void;
   /** Play a scenario chain (maps/playlists): its maps in order, each once the one before is won. */
   playPlaylist(id: string, botFill: number, skill: ArcadeSetup['skill'], botSet?: BotSet | null): void;
@@ -347,7 +350,7 @@ export interface FrontEndHooks {
   playRange(): void;
 }
 
-type ScreenId = 'home' | 'play' | 'characters' | 'online' | 'options' | 'profile';
+type ScreenId = 'home' | 'story' | 'play' | 'characters' | 'online' | 'options' | 'profile';
 /** Profile's career tabs (player profiles, Phase 3). */
 type CareerTab = 'overview' | 'modes' | 'weapons' | 'history';
 
@@ -479,7 +482,8 @@ const hintButton = (id: string, keys: HTMLElement[], label: string, title: strin
  */
 export class FrontEnd {
   private screen: ScreenId = 'home';
-  private navIndex = 0;
+  /** The main menu's highlighted item: Quick Play to start with (new players' way in). */
+  private navIndex = 1;
   private readonly body = el('div', { class: 'screens' });
   private readonly status = el('p', { id: 'menu-status' });
   private readonly footerHints = el('div', { class: 'hintbar' });
@@ -729,7 +733,7 @@ export class FrontEnd {
   /** Where Back goes from this screen (for its tooltip): the main menu, or the screen that opened Character Select. */
   private backTarget(): string {
     const to = this.screen === 'characters' ? this.charFrom : 'home';
-    const names: Record<ScreenId, string> = { home: 'the main menu', profile: 'your profile', online: 'Online', options: 'Options', play: 'match setup', characters: 'the main menu' };
+    const names: Record<ScreenId, string> = { home: 'the main menu', story: 'Story', profile: 'your profile', online: 'Online', options: 'Options', play: 'match setup', characters: 'the main menu' };
     return names[to];
   }
 
@@ -744,7 +748,11 @@ export class FrontEnd {
   /** Back one level: every screen is one step from the main menu, and Character Select from where it was opened. */
   private back(): void {
     if (this.screen === 'characters') this.go(this.charFrom === 'characters' ? 'home' : this.charFrom);
-    else if (this.screen !== 'home') this.go('home');
+    // Story: a sector's detail goes back to the database first.
+    else if (this.screen === 'story' && this.storyOpen) {
+      this.storyOpen = null;
+      this.go('story');
+    } else if (this.screen !== 'home') this.go('home');
   }
 
   /** Q / E (LB / RB): the next or previous mode, Character Select section or Options section. */
@@ -958,6 +966,8 @@ export class FrontEnd {
     switch (screen) {
       case 'home':
         return this.home();
+      case 'story':
+        return this.story();
       case 'play':
         return this.arcade();
       case 'characters':
@@ -973,13 +983,15 @@ export class FrontEnd {
 
   // ---------------------------------------------------------------- home
 
-  private readonly navItems: { id: string; label: string; act: () => void }[] = [
+  // The ways to play first (owner, 2026-11-25: Story · Quick Play · Local · Online), then the rest below them.
+  private readonly navItems: { id: string; label: string; act: () => void; minor?: boolean }[] = [
+    { id: 'nav-story', label: 'Story', act: () => this.openStory() },
     { id: 'nav-quick', label: 'Quick Play', act: () => this.openQuickPlay() },
-    { id: 'nav-play', label: 'Play', act: () => this.go('play') },
-    { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor() },
-    { id: 'nav-characters', label: 'Characters', act: () => this.go('characters') },
+    { id: 'nav-play', label: 'Local', act: () => this.go('play') },
     { id: 'nav-online', label: 'Online', act: () => this.go('online') },
-    { id: 'nav-options', label: 'Options', act: () => this.go('options') },
+    { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor(), minor: true },
+    { id: 'nav-characters', label: 'Characters', act: () => this.go('characters'), minor: true },
+    { id: 'nav-options', label: 'Options', act: () => this.go('options'), minor: true },
   ];
 
   private home(): HTMLElement {
@@ -987,6 +999,9 @@ export class FrontEnd {
     this.navItems.forEach((item, i) => {
       const b = el('button', { id: item.id, textContent: item.label });
       b.classList.toggle('on', i === this.navIndex);
+      if (item.minor) b.classList.add('minor');
+      // The first of the rest starts the lower group.
+      if (item.minor && !this.navItems[i - 1]?.minor) b.classList.add('minor-first');
       b.addEventListener('mouseenter', () => this.setNav(i));
       b.addEventListener('click', item.act);
       nav.append(b);
@@ -1019,6 +1034,66 @@ export class FrontEnd {
       ...offer,
       ...(this.quickOpen ? [this.quickPanel()] : []),
     );
+  }
+
+  // ---------------------------------------------------------------- Story: the Operations Database
+
+  /** The sector (or discovered convergence) open in the database, or null: the list. */
+  private storyOpen: string | null = null;
+
+  /** Why this map can't be hosted yet (a Story map not won), or null; a player's own and community maps never are. */
+  private hostLock(m: ArcadeMap): string | null {
+    return m.group ? null : hostLockReason(m.key, (k) => this.maps.find((x) => x.key === k)?.metadata.name ?? k);
+  }
+
+  private openStory(): void {
+    this.storyOpen = null;
+    this.go('story');
+    // Signed in: the account's progress joins this device's, then the database redraws.
+    void syncStoryProgress().then(() => !this.root.hidden && this.screen === 'story' && this.go('story'));
+  }
+
+  private story(): HTMLElement {
+    const entry = (k: string) => this.maps.find((m) => m.key === k);
+    return storyScreen({
+      head: this.head('Operations <em>Database</em>'),
+      data: CAMPAIGN,
+      progress: myStoryProgress(),
+      open: this.storyOpen,
+      mapName: (k) => entry(k)?.metadata.name ?? k,
+      mapPicture: (k) => {
+        const e = entry(k);
+        if (!e) return null;
+        const t = mapThumbs(e, isBuiltInEntry(e));
+        requestAnimationFrame(t.draw);
+        return t.pic;
+      },
+      lookName: (id) => this.lookName(id),
+      select: (id) => {
+        this.storyOpen = id;
+        this.go('story');
+      },
+      launch: (owner, map) => void this.launchStory(owner, map),
+    });
+  }
+
+  /** A Story stage: a normal bot match on its map (Quick Play's setup: Team Deathmatch where the map plays it), started like Match Setup's Start. */
+  private async launchStory(owner: string, key: string): Promise<void> {
+    const entry = this.maps.find((m) => m.key === key);
+    if (!entry) return this.setStatus('That map is not here.');
+    const mode: QuickMode = entry.modes.includes('core.tdm') ? 'core.tdm' : 'core.deathmatch';
+    this.setStatus(`Story: ${entry.metadata.name}…`);
+    let map: MapDocument;
+    try {
+      map = await entry.load();
+    } catch {
+      return this.setStatus(`${entry.metadata.name} failed to load`);
+    }
+    if (this.root.hidden) return;
+    const setup = quickSetup(mode, map, entry.key, deviceMaxPlayers());
+    const { rules, fill } = rulesFromSetup(setup, map, playerCap(mode, map, deviceMaxPlayers()).max);
+    (window as unknown as { __story: unknown }).__story = { owner, map: entry.key, mode, fill };
+    this.hooks.playLocal(map, rules, fill, 'normal', false, null, false, { owner, map: entry.key });
   }
 
   // ---------------------------------------------------------------- new players: Quick Play, the tutorial's offer
@@ -1132,7 +1207,7 @@ export class FrontEnd {
    */
   private async quickPlay(mode: QuickMode): Promise<void> {
     const prefs = loadQuickPrefs();
-    const candidates = this.maps.map((m) => ({ key: m.key, modes: m.modes, recommendedMax: m.metadata.recommendedPlayers.max, official: !m.group }));
+    const candidates = this.maps.filter((m) => !this.hostLock(m)).map((m) => ({ key: m.key, modes: m.modes, recommendedMax: m.metadata.recommendedPlayers.max, official: !m.group }));
     const key = pickQuickMap(mode, candidates, deviceMaxPlayers(), prefs.last, testMode() ? 0 : Math.random());
     const entry = key ? this.maps.find((m) => m.key === key) : undefined;
     if (!entry) return this.setStatus('Quick Play has no map for that mode here.');
@@ -1572,7 +1647,8 @@ export class FrontEnd {
         }
         const featured = !m.group && FEATURED_MAPS.includes(m.key);
         // Community maps say so on the card (docs/COMMUNITY_MAPS.md; owner: a clear "Community map" label).
-        const { card, draw } = mapCard(m, m.key === current.key, m.group === PICK_GROUP ? 'Community map' : featured ? 'Featured' : undefined, {
+        const lock = this.hostLock(m);
+        const { card, draw } = mapCard(m, m.key === current.key, lock ? 'Locked: Story' : m.group === PICK_GROUP ? 'Community map' : featured ? 'Featured' : undefined, {
           on: favs.has(m.key),
           toggle: () => {
             const now = !this.browse.favs.includes(m.key);
@@ -1594,6 +1670,11 @@ export class FrontEnd {
           // A phone: the pick pulls the settings up (the strip at the bottom names it; ▼ goes back to the grid).
           if (narrowSetup()) this.setSheet(true);
         });
+        if (lock) {
+          card.classList.add('locked');
+          card.dataset.lock = lock;
+          card.title = lock;
+        }
         cards.append(card);
         lazy(card, draw);
       }
@@ -2390,6 +2471,9 @@ export class FrontEnd {
    */
   private start(o: { spectate?: boolean } = {}): void {
     const m = this.currentMap();
+    // A Story map not won yet can't be hosted (joining one someone else hosts is fine): campaign/storyProgress.ts.
+    const lock = this.hostLock(m);
+    if (lock) return this.setStatus(lock);
     if (!m.map) return void m.load().then(() => this.currentMap() === m && this.start(o), () => this.setStatus(`${m.metadata.name} failed to load`));
     this.saveSetup();
     // The Recent tab: this map first.
@@ -2414,7 +2498,8 @@ export class FrontEnd {
    * your MapMaker maps).
    */
   hostMapPicker(o: { mode: GameMode; current: string; suiteOnly: boolean; isSuite: (id: string) => boolean; own?: readonly ArcadeMap[]; title?: string; onPick: (m: ArcadeMap, mode: GameMode) => void; onClose: () => void }): HTMLElement {
-    const maps = [...this.maps.filter((m) => !o.suiteOnly || (!m.group && o.isSuite(m.metadata.id))), ...(o.suiteOnly ? [] : (o.own ?? []))];
+    // (A Story map not won yet isn't offered: it can't be hosted.)
+    const maps = [...this.maps.filter((m) => (!o.suiteOnly || (!m.group && o.isSuite(m.metadata.id))) && !this.hostLock(m)), ...(o.suiteOnly ? [] : (o.own ?? []))];
     const modes = GAME_MODES.filter((mode) => maps.some((m) => m.modes.includes(mode)));
     let mode: GameMode = modes.includes(o.mode) ? o.mode : (modes[0] ?? 'core.deathmatch');
     let picked: ArcadeMap | null = null;

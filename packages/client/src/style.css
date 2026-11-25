@@ -2352,3 +2352,75 @@ html.touch .bumper-btn .bumper-arrow { display: inline-flex; align-items: center
   html.touch .char-info.sheet-open > img { display: block; grid-area: pic; width: 84px; height: 84px; }
   html.touch .char-spin { display: none; }
 }
+
+/* The main menu's lower group (MapMaker, Characters, Options): below the ways to play, a gap and a quieter look. */
+.nav button.minor { font-size: 16px; padding: 8px 16px; background: rgba(11, 15, 26, 0.55); }
+.nav button.minor-first { margin-top: 10px; }
+
+/* Story: the Operations Database (frontend/storyScreen.ts; docs/CAMPAIGN.md). A bare framework: rows of sector cards, each with its convergence tile. */
+#menu .screen.story { display: flex; flex-direction: column; gap: 12px; }
+.story-db, .story-detail { min-height: 0; overflow-y: auto; max-width: 1100px; padding-right: 6px; display: flex; flex-direction: column; gap: 10px; }
+.story-sub { margin: 0; color: var(--muted); font-size: 14px; }
+.story-rows { display: flex; flex-direction: column; gap: 10px; }
+.story-row { display: grid; grid-template-columns: minmax(0, 1fr) 170px; gap: 10px; }
+.story-card { display: flex; flex-direction: column; gap: 4px; text-align: left; padding: 12px 16px; border-left: 4px solid var(--cyan); cursor: pointer; color: var(--text); }
+.story-card.in-progress { border-left-color: var(--orange); }
+.story-card.repaired { border-left-color: var(--success); }
+.story-card:hover, .story-card:focus-visible { border-color: var(--cyan); outline: none; background: rgba(0, 209, 255, 0.08); }
+.story-card h3, .story-detail-head h3 { margin: 0; font: italic 700 24px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
+.story-kicker { display: flex; gap: 8px; align-items: baseline; color: var(--cyan); font: 700 12px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; }
+.story-prov { color: var(--muted); font: italic 500 11px var(--font-body); letter-spacing: 0.04em; text-transform: none; border: 1px dashed var(--line); padding: 0 5px; }
+.story-desc { margin: 0; color: var(--muted); font-size: 14px; }
+.story-meta { display: flex; flex-wrap: wrap; gap: 6px 16px; align-items: center; font-size: 13px; color: var(--text); }
+.story-status { display: inline-flex; gap: 6px; align-items: center; padding: 2px 8px; font: 700 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 3px; color: var(--cyan); }
+.story-status.in-progress { color: var(--orange); }
+.story-status.repaired { color: var(--success); }
+.story-next { color: var(--muted); }
+.story-tiles { display: flex; flex-direction: column; gap: 10px; }
+.story-tile { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 2px; padding: 10px; text-align: center; color: var(--text); }
+.story-tile b { font: 700 26px var(--font-display); line-height: 1; }
+.story-tile span { font: 700 14px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+.story-tile small { color: var(--muted); font-size: 12px; }
+.story-tile.unknown { border-style: dashed; color: var(--muted); }
+.story-tile.known { border-color: var(--purple); cursor: pointer; }
+.story-tile.known b { color: var(--purple); }
+.story-tile.known:hover, .story-tile.known:focus-visible { background: rgba(135, 101, 255, 0.12); outline: none; }
+.story-detail-head { display: flex; flex-direction: column; gap: 4px; align-items: flex-start; }
+.story-back { padding: 0; margin-bottom: 4px; }
+.story-maps { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.story-map { display: grid; grid-template-columns: 132px minmax(0, 1fr) auto; gap: 14px; align-items: center; padding: 8px 12px 8px 8px; }
+.story-map.locked { opacity: 0.55; }
+.story-pic { width: 132px; aspect-ratio: 16 / 9; overflow: hidden; border-radius: 3px; background: var(--surface-1); }
+.story-pic > * { width: 100%; height: 100%; object-fit: cover; display: block; }
+.story-map-text { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+.story-map-text > small:first-child { color: var(--muted); font: 700 11px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; }
+.story-map-text > b { font: 700 18px var(--font-display); }
+.story-unlock { color: var(--muted); font-size: 13px; }
+.story-stage { display: inline-flex; gap: 5px; align-items: center; font: 700 12px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); }
+.story-stage.done { color: var(--success); }
+.story-stage.next { color: var(--cyan); }
+.story-map > button { min-width: 96px; }
+.story-facts { margin: 0; padding: 10px 14px; display: grid; grid-template-columns: max-content minmax(0, 1fr); gap: 6px 14px; font-size: 14px; }
+.story-facts dt { color: var(--muted); font: 700 12px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; padding-top: 2px; }
+.story-facts dd { margin: 0; }
+/* Match Setup: a Story map not won yet (it can't be hosted until then; joining one is fine). */
+.map-card.locked { opacity: 0.5; }
+@media (max-width: 760px), (max-height: 520px) {
+  #menu .screen.story { padding: 10px 14px 52px; gap: 8px; }
+  #menu .screen.story .screen-head h2 { font-size: 24px; }
+  .story-row { grid-template-columns: minmax(0, 1fr) 110px; gap: 6px; }
+  .story-card { padding: 8px 10px; }
+  .story-card h3, .story-detail-head h3 { font-size: 19px; }
+  .story-desc { font-size: 13px; }
+  .story-map { grid-template-columns: 84px minmax(0, 1fr) auto; gap: 8px; padding: 6px; }
+  .story-pic { width: 84px; }
+  .story-map-text > b { font-size: 15px; }
+  .story-map > button { min-width: 72px; padding: 6px 8px; }
+  .story-facts { grid-template-columns: minmax(0, 1fr); font-size: 13px; }
+}
+@media (max-width: 520px) and (orientation: portrait) {
+  .story-row { grid-template-columns: minmax(0, 1fr); }
+  .story-tiles { flex-direction: row; }
+  .story-tile { flex-direction: row; gap: 8px; padding: 6px 10px; }
+  .story-tile b { font-size: 18px; }
+}

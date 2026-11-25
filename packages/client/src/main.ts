@@ -9,7 +9,7 @@ import '@fontsource/chakra-petch/700-italic.css';
 import '@fontsource/barlow/400.css';
 import '@fontsource/barlow/500.css';
 import '@fontsource/barlow/600.css';
-import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isUnlistedMap, isGameMode, MODE_LABELS, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type Playlist, type CommunityPick } from '@tiletrigger/shared';
+import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECONDS, MapRotation, gameIsGone, keepJoining, type JoinTry, isUnlistedMap, isGameMode, MODE_LABELS, mapCanRun, playableModes, playlistNext, rulesForMap, rulesForMode, setIdRandom, type BotSet, type CarryOver, type GameMode, type MapDocument, type MatchCheckpoint, type MatchRules, type MatchSummary, type Playlist, type CommunityPick } from '@tiletrigger/shared';
 import { AudioSystem } from './audio/audio.ts';
 import type { MusicPlayer, MusicScene } from './audio/music.ts';
 import { createEngine, type RendererKind } from './engine.ts';
@@ -36,6 +36,7 @@ import { installInputMode } from './inputMode.ts';
 import { markTouchDevice } from './touchDevice.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { myCareer, myEmblem, myFavClass, myRankPoints, myTitle, recordMatch } from './careerStats.ts';
+import { recordStoryWin } from './campaign/storyProgress.ts';
 import { loadSignaling, type HostLink, type Transport } from './game/transport.ts';
 import type { Handoff } from './game/peerLink.ts';
 import { seededRng, testMode } from './testMode.ts';
@@ -375,18 +376,21 @@ class App {
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
         openDesigner: (look) => void this.openDesigner(look),
-        playLocal: (map, rules, bots, skill, host, botSet, spectate) => {
+        playLocal: (map, rules, bots, skill, host, botSet, spectate, story) => {
           this.botSet = botSet ?? null;
+          // A Story match (frontend Story screen): its win completes that map (campaign/storyProgress.ts).
+          this.storyRun = story ?? null;
           this.playLocal(map, rules, bots, skill, undefined, undefined, host, spectate ? { spectate } : {});
         },
-        playOnline: (server, name) => void this.playOnline(server, name),
+        playOnline: (server, name) => ((this.storyRun = null), void this.playOnline(server, name)),
         playPlaylist: (id, botFill, skill, botSet) => {
+          this.storyRun = null;
           this.botSet = botSet ?? null;
           this.playPlaylist(id, botFill, skill);
         },
-        joinCode: (code, name) => void this.joinCode(code, name),
-        playTutorial: () => void this.playTutorial(),
-        playRange: () => void this.playRange(),
+        joinCode: (code, name) => ((this.storyRun = null), void this.joinCode(code, name)),
+        playTutorial: () => ((this.storyRun = null), void this.playTutorial()),
+        playRange: () => ((this.storyRun = null), void this.playRange()),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
     })();
@@ -650,6 +654,16 @@ class App {
    * from map to map with the match, and the setup's set again when a new match starts from the menu.
    */
   private botSet: BotSet | null = null;
+  /** The Story stage being played (sector or convergence id and map), or null: any other match. */
+  private storyRun: { owner: string; map: string } | null = null;
+
+  /** A match's result: a win in a Story match completes its map (once; campaign/storyProgress.ts). */
+  private storyResult(summary: MatchSummary): void {
+    const run = this.storyRun;
+    if (!run || summary.result !== 'win') return;
+    const events = recordStoryWin(run.owner, run.map);
+    if (events.completed.length) console.info(`[story] ${events.completed.join(', ')} won; unlocked ${events.unlocked.join(', ') || 'nothing new'}; repaired ${events.repaired.join(', ') || 'none'}; discovered ${events.discovered.join(', ') || 'none'}`);
+  }
 
   /** The scenario chain being played (Arcade → co-op → Playlist): which playlist, how far in, and its settings. */
   private chain: { playlist: Playlist; index: number; botFill: number; difficulty: 'easy' | 'normal' | 'hard' } | null = null;
@@ -678,6 +692,8 @@ class App {
       ...(extra.greeting ? { greeting: extra.greeting } : {}),
       onExit: (reason, travel) => {
         // The host changed map (or the rotation moved on): the same rules, players and bot skill there (Host game friends follow).
+        // Another map (the host's Change map, a rotation): no longer the Story stage.
+        if (reason === 'travel') this.storyRun = null;
         if (reason === 'travel' && travel?.host) {
           if (travel.host.botSet !== undefined) this.botSet = travel.host.botSet;
           return this.playLocal(travel.host.map, travel.host.rules, travel.host.fill, travel.host.skill, undefined, travel.hosting);
@@ -1001,7 +1017,7 @@ class App {
         ? {}
         : {
             career: {
-              record: o.range ? () => undefined : recordMatch,
+              record: o.range ? () => undefined : (m: MatchSummary) => (recordMatch(m), this.storyResult(m)),
               favClass: myFavClass,
               points: myRankPoints,
               card: () => {
