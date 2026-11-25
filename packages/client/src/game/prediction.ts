@@ -159,6 +159,11 @@ export class LocalPlayer {
   unarmed = false;
   /** Movement multiplier from status effects (server value). */
   statusSpeed = 1;
+  /** Held in a freeze blast's block of ice (the snapshot's `ic` lists this player): no movement at all, as the server. */
+  iced = false;
+  /** A second trigger's own cooldown (AltFire.cooldownTicks), by weapon code: the predicted tick it is ready. */
+  private readonly altReady = new Map<number, number>();
+
   /** Your body's own speed, jump and stamina (size class and character stats; server values). */
   bodySpeed = 1;
   jump = 1;
@@ -565,6 +570,11 @@ export class LocalPlayer {
       const ridden = this.platforms.carry(state.pos, tick);
       if (ridden) state = { ...state, pos: ridden };
     }
+    // Held in ice: still where the block holds them (Match.step).
+    if (this.iced) {
+      if (this.speedTicks > 0) this.speedTicks--;
+      return { ...state, velY: 0, vx: 0, vz: 0 };
+    }
     const jet = this.jetFuel !== null && this.jetFuel >= JET.burn;
     const before = state;
     // Overdrive's speed, Moon Boots' gravity and jump (as the server's movement environment).
@@ -725,14 +735,25 @@ export class LocalPlayer {
       return { shot: this.primaryShot(def, input, ammo, firing, paired), fired: true };
     }
     if (input.buttons & BUTTON_ALT && def.alt) {
-      // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine.
+      // Mirrors the server: own-ammo triggers spend their own rounds, shared ones the magazine, heat ones the heat bar;
+      // a trigger with its own cooldown waits it out.
       const a = def.alt;
+      const code = this.held;
+      if (a.cooldownTicks && this.predTick < (this.altReady.get(code) ?? 0)) return none;
+      if (a.ammo === 'heat') {
+        if (ammo[3] >= 100) return none;
+        ammo[3] = Math.min(100, ammo[3] + a.cost);
+        if (a.cooldownTicks) this.altReady.set(code, this.predTick + a.cooldownTicks);
+        this.fireCooldown = a.fireIntervalTicks;
+        return { shot: { def, ends: [], alt: true }, fired: false };
+      }
       if (a.ammo === 'own' ? ammo[2] < a.cost : ammo[0] < a.cost) {
         if ((a.ammo === 'shared' || a.reload) && !this.seatGun) this.startReload();
         return none;
       }
       if (a.ammo === 'own') ammo[2] -= a.cost;
       else ammo[0] -= a.cost;
+      if (a.cooldownTicks) this.altReady.set(code, this.predTick + a.cooldownTicks);
       this.fireCooldown = a.fireIntervalTicks;
       // Its own kick after the aim it fired along (Match.fireNow).
       const aim = this.shotAim(input);

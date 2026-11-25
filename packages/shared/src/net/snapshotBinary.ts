@@ -44,6 +44,7 @@ export const SNAPSHOT_ROW_KEYS = [
   ['cv', 6, 6],
   ['ab', 8, 255],
   ['fs', 10, 255],
+  ['ic', 7, 7],
 ] as const;
 /**
  * As JSON text (UTF-8): [key, 'a' an array or 'o' an object, kept: a value whose text didn't change is the same

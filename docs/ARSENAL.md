@@ -481,7 +481,7 @@ recipes.
 | 8 | Singularity Cannon | A field that drags players in for 2.4 s, then collapses with a blast |
 | 9 | Arc Caster | Lightning that jumps to three more enemies; heat instead of ammo |
 | 9 | Flamethrower | Short-range flame stream: sets players burning, lights oil |
-| 9 | Freeze Ray | Beam that chills; enough chill freezes the target solid for 1.4 s |
+| 9 | Freeze Ray | Beam that chills; enough chill freezes the target solid for 1.4 s. Second trigger, **freeze blast** (owner, 2026-11-24): a slow cold ball (14 m/s) that holds whoever it hits in a block of ice for 3 s (can't move or act, 5 HP/s, every other hit in full; the block a force field: solid to others, never to shots; melts at the end, shatters if they die); 60 % of the heat bar and its own 6 s cooldown (AltFire `ammo: heat`, `cooldownTicks`), the beam free meanwhile |
 
 **Battle Axe** (`core.battle_axe`, slot 1, pickup `core.weapon_battle_axe`,
 category melee). The model is a flintlock blunderbuss with an axe blade under

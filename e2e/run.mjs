@@ -6040,21 +6040,20 @@ async function offlineFlow(browser) {
   const feat = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
   check(feat > 0 && feat < all.length, `the Featured tab lists the featured maps (${feat})`);
   await page.click('#map-tabs [data-tab="all"]');
-  // The category tabs (the owner's six; shared map/categories.ts, the tags in each map's file): a category lists its
-  // maps and shows its sub-tags; a sub-tag narrows to its own; Custom (your own and community maps) holds no built-in map.
+  // The category tabs (one tab per map; shared map/categories.ts, each map's one category): a tab lists its maps, its
+  // count on it; the five counts add up to All maps'; no sub-tag row; Custom (your own and community maps) holds no built-in map.
   const catTabs = await page.$$eval('#map-cats .map-cat', (b) => b.map((x) => x.dataset.cat));
-  await page.click('#map-cats [data-cat="temporal"]');
-  const temporal = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, count: Number(document.querySelector('#map-cats [data-cat="temporal"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, tags: [...document.querySelectorAll('#map-subtags .map-subtag')].map((b) => b.dataset.tag), shown: !document.getElementById('map-subtags').hidden }));
-  await page.click('#map-subtags [data-tag="medieval"]');
-  const medieval = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
+  const counts = await page.$$eval('#map-cats .map-cat:not(.all) .cat-n', (b) => b.map((x) => Number(x.textContent)));
+  await page.click('#map-cats [data-cat="historic"]');
+  const historic = await page.evaluate(() => ({ cards: [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.dataset.map), count: Number(document.querySelector('#map-cats [data-cat="historic"] .cat-n')?.textContent), on: document.querySelector('#map-cats .map-cat.on')?.dataset.cat, subtags: !!document.getElementById('map-subtags') }));
   await page.click('#map-cats [data-cat="custom"]');
   const custom = await page.evaluate(() => ({ cards: document.querySelectorAll('#map-cards .map-card').length, empty: document.querySelector('#map-cards .map-empty')?.textContent ?? '' }));
   await page.click('#map-cats [data-cat="all"]');
   const back = await page.$$eval('#map-cards .map-card', (cs) => cs.length);
-  check(catTabs.join() === 'all,temporal,dimensional,environmental,fictional,anomalous,custom' && temporal.on === 'temporal' && temporal.shown && temporal.cards === temporal.count && temporal.cards > 20 && temporal.cards < all.length && temporal.tags[0] === '' && temporal.tags.includes('medieval'), `the category tabs: Temporal lists its maps, its count on the tab, and its sub-tags (${JSON.stringify({ catTabs, temporal })})`);
-  check(medieval.includes('gallows_yard') && medieval.includes('market_town') && !medieval.includes('sandgate') && !medieval.includes('training_range') && medieval.length < 10, `Temporal → Medieval lists the medieval maps only (${medieval.join(', ')})`);
+  check(catTabs.join() === 'all,modern,historic,future,weird,custom' && counts.reduce((x, y) => x + y, 0) === all.length && !historic.subtags, `the category tabs: one a map, their counts add up to All maps' (${JSON.stringify({ catTabs, counts, all: all.length })}), no sub-tag row`);
+  check(historic.on === 'historic' && historic.cards.length === historic.count && historic.cards.includes('gallows_yard') && historic.cards.includes('market_town') && !historic.cards.includes('sandgate') && !historic.cards.includes('training_range'), `Historic lists its maps only, its count on the tab (${historic.cards.join(', ')})`);
   check(!all.some((c) => c.map === 'training_range'), 'the Training Range is not in the map grid (it moves to the loadout screen)');
-  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All dimensions lists every map again (${back})`);
+  check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All maps lists every map again (${back})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -12606,7 +12605,7 @@ const FLASHING_PARTS = {
   flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
-  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope'] },
+  flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
   flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
 };
 
@@ -12737,6 +12736,22 @@ const FLASHING_DAY = {
         seen: () => page.evaluate(() => ({ ...window.__cs.lowHealth(), hp: window.__cs.local.health })),
         sees: (_on, s) => s.level > 0.6 && s.edge > 0.5,
         after: () => sim(page, () => void (self.__flashHp = undefined)),
+      },
+      // Frozen in a freeze blast's ice (the Freeze Ray's second trigger; hud.ts setFrost): as the recording starts you are
+      // held in a block of ice, by day over the white tiles: the frost creeps in from the edges, eased (slower and paler
+      // with the setting on), the middle clear: never a flash or a white-out. Before each run the ice is let go.
+      {
+        name: 'frozen',
+        label: 'frozen in a block of ice by day over white tiles: the frost creeping in over the view, then the block round you',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -18.5],
+        look: { yaw: Math.PI, pitch: -0.3 },
+        bots: [],
+        before: () => sim(page, (m) => { for (const b of [...m.ices]) m.removeIce(b, false); }).then(() => step(45)),
+        at: { 2: () => sim(page, (m, me) => m.freezeSolid(me, 60 * 6)) },
+        seen: () => page.evaluate(() => ({ frost: Number(getComputedStyle(document.getElementById('frost-view') ?? document.body).opacity), on: !!document.getElementById('frost-view')?.classList.contains('on'), iced: !!window.__cs.local.iced })),
+        sees: (_on, s) => s.on && s.iced && s.frost > 0.3,
+        after: () => sim(page, (m) => { for (const b of [...m.ices]) m.removeIce(b, false); }),
       },
       // A scope coming up and going away (game/scopeFeel.ts; hud.ts setScope): by day over the white tiles (the
       // brightest ground: where the black round the glass changes the picture most), the Sniper Rifle's scope comes up
@@ -14629,7 +14644,7 @@ async function padsetupFlow(browser) {
   await press(B.rt);
   const tab = await page.evaluate(() => document.querySelector('#setup-tabs .setup-tab.on')?.dataset.tab);
   await press(B.lt);
-  check(cat1 === 'temporal' && cat2 === 'dimensional' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
+  check(cat1 === 'modern' && cat2 === 'historic' && cat0 === 'all' && tab === 'bots', `RB / LB step the categories (${cat1}, ${cat2}, back to ${cat0}) and RT the settings' tabs (${tab})`);
   // Right off the grid's edge into the settings; a stepper takes left and right; left off the settings back to the grid.
   await press(B.down);
   for (let i = 0; i < 6 && !(await focus()).id.startsWith('setup') && !(await page.evaluate(() => !!document.activeElement.closest('#match-setup'))); i++) await press(B.right);
@@ -15844,9 +15859,9 @@ async function weaponmanagerFlow(browser) {
   await page.waitForFunction(() => document.querySelectorAll('#weapon-tuning main canvas').length > 0, null, { timeout: T(60000) });
   check(true, 'the weapon tuning page opens on Compare');
   await page.click('#wt-tab-manage');
-  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
+  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card[data-id]').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
   const cards = await page.evaluate(() => {
-    const all = [...document.querySelectorAll('#wm-list .wm-card')];
+    const all = [...document.querySelectorAll('#wm-list .wm-card[data-id]')];
     const without = all.filter((c) => !c.querySelector('.wm-pic img')).map((c) => c.dataset.id);
     return { n: all.length, pics: all.length - without.length, without, url: location.search };
   });

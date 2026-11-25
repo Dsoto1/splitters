@@ -1,4 +1,4 @@
-import { MAP_CATEGORY_IDS, type GameMode, type MapDocument } from '@tiletrigger/shared';
+import { type GameMode, type MapDocument } from '@tiletrigger/shared';
 import index from 'virtual:map-index';
 import { loadMapContent } from './mapContentLoader.ts';
 import { publishedMapJson } from './publishedMaps.ts';
@@ -11,7 +11,7 @@ import { publishedMapJson } from './publishedMaps.ts';
  */
 
 /** What a map card shows before the map itself has loaded. */
-export type MapMeta = Pick<MapDocument['metadata'], 'id' | 'name' | 'description' | 'author' | 'recommendedPlayers' | 'thumbnail' | 'tier' | 'categories'>;
+export type MapMeta = Pick<MapDocument['metadata'], 'id' | 'name' | 'description' | 'author' | 'recommendedPlayers' | 'thumbnail' | 'tier' | 'category'>;
 
 export interface MapIndexEntry {
   /** The file name without .json. */
@@ -23,13 +23,8 @@ export interface MapIndexEntry {
   caps?: number[];
 }
 
-/**
- * Every built-in map that loads (sorted by key). The index carries a map's categories as "t:modern" strings (the category's initial; none for retired maps) (the
- * menu's first download is on a budget: tools/ci/bundle-budget.mjs); they are pairs again here.
- */
-export const MAP_INDEX: readonly MapIndexEntry[] = (index as (Omit<MapIndexEntry, 'metadata'> & { metadata: Omit<MapMeta, 'categories'> & { categories?: string[] } })[]).map((e) =>
-  e.metadata.categories ? { ...e, metadata: { ...e.metadata, categories: e.metadata.categories.map((c) => ({ category: MAP_CATEGORY_IDS.find((id) => id[0] === c[0])!, tag: c.slice(2) })) } } : (e as MapIndexEntry),
-);
+/** Every built-in map that loads (sorted by key), with its one category (none for retired maps: no list shows them). */
+export const MAP_INDEX: readonly MapIndexEntry[] = index as MapIndexEntry[];
 
 const FILES = import.meta.glob<unknown>('../../../maps/*.json', { import: 'default' });
 const path = (key: string) => `../../../maps/${key}.json`;

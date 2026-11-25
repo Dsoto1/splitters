@@ -16,7 +16,7 @@ import { DEFAULT_GROUND_THEME, isGroundMaterial, terrainHeightAt } from './terra
 import { borderRect, hasBorder } from './border.ts';
 import { botHintIssues } from './botHints.ts';
 import { floatingProps, terrainUnderFloors, withGroundAsPlayed } from './settle.ts';
-import { carryReleaseOverGroundLayers, migrateMapDocument, MapMigrationError, withOldGroundEncoding } from './migrate.ts';
+import { carryReleaseOverCategoryPick, carryReleaseOverGroundLayers, migrateMapDocument, MapMigrationError, withOldGroundEncoding } from './migrate.ts';
 import { MapDocument, type MapEntity } from './schema.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from '../sim/spawns.ts';
 import { validateScenario } from './validateScenario.ts';
@@ -94,6 +94,8 @@ export function loadMap(json: string | unknown, catalog: TileCatalog = coreCatal
   // A release stamp from before v39 whose map changed only by losing race mode's dead track settings keeps its version.
   // One from before v45 whose map changed only by v45's ground encoding (groundLayersV45) keeps its version too, and
   // one from before v39 checks its race settings with the ground put back as it was then.
+  // One stamped at v50 whose map changed only by v51's one category (its tag pairs, the file's, put back) keeps its version.
+  if (migrated.fromVersion === 50) parsed.data = carryReleaseOverCategoryPick(raw, parsed.data);
   if (migrated.fromVersion < 45) parsed.data = carryReleaseOverGroundLayers(parsed.data);
   if (migrated.fromVersion < 39 && !releaseCurrent(parsed.data)) {
     const asOld = withOldGroundEncoding(parsed.data) ?? parsed.data;

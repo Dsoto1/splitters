@@ -342,6 +342,8 @@ export const FX_PHANTOM = 2048;
 export type MountSnapshot = number[];
 /** Deployed cover (sandbags): [id, x, y (ground), z, yaw, health %]. */
 export type CoverSnapshot = [number, number, number, number, number, number];
+/** A freeze blast's block of ice (sim/match.ts IceBlock): [id, the slot it holds, x, y (ground), z, half width, half height]. */
+export type IceSnapshot = [number, number, number, number, number, number, number];
 
 /** A ground hazard or field: [index into ZONE_KINDS, x, y, z, radius, seconds left]. */
 export type ZoneSnapshot = [number, number, number, number, number, number];
@@ -376,6 +378,8 @@ export type GameEvent =
   | { e: 'melee'; s: number; hit: number | null; /** Unarmed: 1 punch, 2 kick. */ u?: 1 | 2 }
   /** `m`: a mount (map entity index) blowing up, drawn as a bigger, layered vehicle explosion. `w`: what blew (a weapon id, `core.barrel`, `core.trap_<type>`, `core.bomb`), for its look (content/vfx.json map.explosions). */
   | { e: 'explode'; s: number; p: Tuple3; r: number; m?: number; w?: string }
+  /** A freeze blast froze `s` in a block of ice at `p` (`on` 1), or the block went (`on` 0: melted, or `x` shattered). */
+  | { e: 'ice'; s: number; p: Tuple3; on: 0 | 1; x?: 1 }
   /** A vehicle hit something hard (another vehicle, a wreck, a turret, a person): `n` 0..1 how hard. */
   | { e: 'crash'; p: Tuple3; n: number }
   /** Disc Arena: `s`'s disc struck `t` and knocked them about (no damage). */
@@ -709,6 +713,8 @@ export type ServerMessage =
       ms?: number[][];
       /** Deployed cover walls, when any stand (absent means none). */
       cv?: CoverSnapshot[];
+      /** Blocks of ice round frozen players (the Freeze Ray's freeze blast), when any stand. Older clients ignore it. */
+      ic?: IceSnapshot[];
       /**
        * Ammo boxes standing (sim/resupply.ts): [id, x, y (ground), z, yaw, health %, uses left, 1 when deployed (0:
        * a map's Ammo Box)]. Absent: none stands. Older clients ignore it.

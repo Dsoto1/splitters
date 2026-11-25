@@ -3,9 +3,16 @@
 export const CHANGE_SET_FORMAT: 'tiletrigger.weapon-edits';
 export const CHANGE_SET_VERSION: 1;
 export const TEXT_LIMITS: { name: number; description: number; note: number };
-export type SoundSlot = 'fire' | 'alt' | 'reload';
+export type SoundSlot = 'fire' | 'alt' | 'reload' | 'explosion' | 'impact';
 export const SOUND_SLOTS: readonly SoundSlot[];
 export const EDIT_KEYS: readonly string[];
+export const OPTIONAL_SOUND_SLOTS: readonly SoundSlot[];
+export const NO_SOUND: 'none';
+export type ThrowableSoundSlot = 'explosion';
+export const THROWABLE_SOUND_SLOTS: readonly ThrowableSoundSlot[];
+export const THROWABLE_EDIT_KEYS: readonly string[];
+export const SOUND_KEYS: { explosion: 'explosionSound'; impact: 'impactSound' };
+export function blowsUp(p: { splashRadius?: number } | null | undefined): boolean;
 
 export interface WeaponInfo {
   kind: string;
@@ -18,6 +25,7 @@ export interface WeaponInfo {
   hasBallistic: boolean;
   hasProjectile: boolean;
   hasAlt: boolean;
+  blowsUp: boolean;
   category: string | null;
 }
 
@@ -56,9 +64,16 @@ export interface ChangeSet {
   created: string;
   from: string;
   weapons: Record<string, WeaponEdit>;
+  throwables?: Record<string, ThrowableEdit>;
 }
+export interface ThrowableEdit {
+  sounds?: Partial<Record<ThrowableSoundSlot, string>>;
+  note?: string;
+  was?: Record<string, unknown>;
+}
+export function isEmptyThrowableEdit(e: ThrowableEdit | undefined): boolean;
 export function isEmptyEdit(e: WeaponEdit | undefined): boolean;
-export function buildChangeSet(edits: Record<string, WeaponEdit>, meta?: { created?: string; from?: string }): ChangeSet;
+export function buildChangeSet(edits: Record<string, WeaponEdit>, meta?: { created?: string; from?: string; throwables?: Record<string, ThrowableEdit> }): ChangeSet;
 export function statProblems(path: string, value: unknown, info?: WeaponInfo): string[];
 
 export interface ValidationContext {
@@ -68,5 +83,6 @@ export interface ValidationContext {
   categories: readonly string[];
   blockers: (id: string) => string[];
   canJoinSet: (id: string) => string | null;
+  throwables?: Map<string, { name: string; blowsUp: boolean }>;
 }
 export function validateChangeSet(cs: unknown, ctx: ValidationContext): { problems: string[]; warnings: string[] };

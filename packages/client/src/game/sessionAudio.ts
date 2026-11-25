@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook, weaponByCode } from '@tiletrigger/shared';
+import { CORE_WEAPONS, THROWABLE_DEFS, type ThrowableKind, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook, weaponByCode } from '@tiletrigger/shared';
 import { gunPan } from './pairView.ts';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import { Announcer, loadVoiceLines } from '../audio/announcer.ts';
@@ -14,7 +14,7 @@ const BLAST_KILL_MS = 300;
 /** Shotgun pellets that each make an impact sound (the rest would only add mush). */
 const MAX_IMPACTS_PER_SHOT = 2;
 
-/** Every sound a weapon plays: its shot, its second trigger's, its reload and its pump or bolt. */
+/** Every sound a weapon plays: its shot, its second trigger's, its reload, its pump or bolt, its own blast and hit; and a throwable's blast. */
 export function weaponSoundIds(): Set<string> {
   const out = new Set<string>();
   for (const def of Object.values(CORE_WEAPONS)) {
@@ -22,9 +22,25 @@ export function weaponSoundIds(): Set<string> {
     if (def.view.altShot?.sound) out.add(def.view.altShot.sound);
     if (def.view.reloadSound) out.add(def.view.reloadSound);
     if (def.view.cycle?.sound) out.add(def.view.cycle.sound);
+    if (def.view.explosionSound) out.add(def.view.explosionSound);
+    if (def.view.impactSound) out.add(def.view.impactSound);
   }
+  for (const t of Object.values(THROWABLE_DEFS)) if (t.explosionSound) out.add(t.explosionSound);
   return out;
 }
+
+/**
+ * The blast sound of what blew up (`weapon`: a weapon's id, or a throwable's `core.<kind>`): its own (the Weapon
+ * Manager's Explosion pick), else the shared one.
+ */
+export function explosionSoundOf(weapon: string | undefined): SoundId {
+  if (!weapon) return 'explosion';
+  const own = CORE_WEAPONS[weapon]?.view.explosionSound ?? THROWABLE_DEFS[weapon.replace(/^core\./, '') as ThrowableKind]?.explosionSound;
+  return (own ?? 'explosion') as SoundId;
+}
+
+/** A weapon's own hit sound (the Weapon Manager's Impact pick), layered on the struck surface's; none by default. */
+export const impactSoundOf = (weapon: string): SoundId | null => (CORE_WEAPONS[weapon]?.view.impactSound as SoundId | undefined) ?? null;
 const fireSound = (weaponId: string) => (CORE_WEAPONS[weaponId]?.view.sound ?? `fire.${weaponId.replace(/^core\./, '')}`) as SoundId;
 /** Engines: how often a copy starts (ms; each is 1.2 s, so two overlap), how many others are heard, and how far (m). */
 const ENGINE_REPEAT_MS = 600;
@@ -452,6 +468,8 @@ export class SessionAudio {
           }
         }
         let impacts = 0;
+        // The weapon's own hit sound (none unless picked), on top of the surface's.
+        const ownHit = impactSoundOf(ev.w);
         // Bodies: one meaty hit per victim (a shotgun blast is one big hit, not nine little ones), heavier for big damage.
         const def = getWeapon(ev.w);
         const perVictim = new Map<number, { at: Tuple3; pellets: number; head: boolean }>();
@@ -468,6 +486,7 @@ export class SessionAudio {
           impacts++;
           const sound = this.worldImpact(tuple(ev.from), tuple(to));
           if (sound) this.audio.play(sound, { at: tuple(to) });
+          if (ownHit) this.audio.play(ownHit, { at: tuple(to) });
         });
         for (const [victim, v] of perVictim) {
           const heavy = v.head || ((ev.alt ? def.alt?.damage : undefined) ?? def.damage) * v.pellets >= 45;
@@ -490,6 +509,8 @@ export class SessionAudio {
         } else {
           const sound = this.worldImpact(tuple(ev.from), tuple(ev.to));
           if (sound) this.audio.play(sound, { at: tuple(ev.to) });
+          const ownHit = impactSoundOf(ev.w);
+          if (ownHit) this.audio.play(ownHit, { at: tuple(ev.to) });
         }
         if (ev.s === me) this.hitSound([ev.hit], ev.z !== undefined ? [ev.z] : undefined, !!ev.ar);
         break;
@@ -530,9 +551,16 @@ export class SessionAudio {
         }
         // A vehicle going up: a deeper, longer boom under the usual crack, and metal raining down.
         if (ev.m !== undefined) this.audio.play('explosion.vehicle', { at });
-        this.audio.play('explosion', { at });
+        this.audio.play(explosionSoundOf(ev.w), { at });
         this.audio.play('explosion.debris', { at });
         if (ev.m !== undefined) this.audio.play('vehicle.crash', { at, gain: 0.7 });
+        break;
+      }
+      case 'ice': {
+        // A freeze blast: the ice cracking shut round them; when they die in it, the block breaking. A melt is quiet.
+        const at = ev.s === me ? undefined : tuple(ev.p);
+        if (ev.on) this.audio.play('glass.crack', { at, gain: 0.8 });
+        else if (ev.x) this.audio.play('break.glass', { at, gain: 0.6 });
         break;
       }
       case 'crash': {

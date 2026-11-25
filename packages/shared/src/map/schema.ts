@@ -5,7 +5,7 @@ import { MAX_GROUNDS, MAX_TERRAIN_VERTS } from './terrain.ts';
 import { BACKDROP_GROUNDS, SCENERY_IDS, SKY_IDS } from './backdrop.ts';
 import { BORDER_STYLES } from './border.ts';
 import { PRECIPITATION } from './weather.ts';
-import { MAP_CATEGORY_IDS, MAX_MAP_CATEGORY_TAGS } from './categories.ts';
+import { MAP_CATEGORY_IDS } from './categories.ts';
 import { ScenarioLogic } from './logic.ts';
 
 // The plain constants (format, factions, NPC roles, squad orders): mapKeys.ts, which the menu reads without the schemas.
@@ -24,8 +24,8 @@ import { WEAPON_CATEGORIES } from '../sim/weapons.ts';
  * `sector` and `objective` entities and spawn groups: a spawn's `sector` and `side`, v30 the menu card shot's camera,
  * `metadata.cardCamera`, v31 MapMaker's groups and note pins, `groups` and `editorNotes`, v32 a terrain up to 321 vertices a side and the border
  * style `coast`, v33 bot hints, `botHints`, v34 the time of day and weather, `timeOfDay` and `weather`, v37 a placed tile's
- * material `family`: the tunnel kit, v39 race mode's dead track settings dropped, v44 a placed set piece's `family`, v50 the map's categories,
- * `metadata.categories`).
+ * material `family`: the tunnel kit, v39 race mode's dead track settings dropped, v44 a placed set piece's `family`, v50 the map's categories, v51 one category a map (`metadata.category`,
+ * in place of v50's `metadata.categories`).
  *
  * Maps are data, never code. Every placed item carries a stable string ID and
  * references catalog content by content ID. Domains the spec reserves
@@ -137,14 +137,11 @@ export const MapMetadata = z.object({
    */
   destruction: z.boolean().optional(),
   /**
-   * The map's categories (v50; the owner's six, map/categories.ts), set in MapMaker's Map properties: `{ category, tag }`
-   * pairs, several allowed. Match Setup's category tabs filter by them. Custom is never tagged (worked out: your own
-   * and community maps). A tag this build doesn't know is kept and ignored. Absent: none.
+   * The map's category (v51; one pick, map/categories.ts), set in MapMaker's Map properties: Match Setup lists it under
+   * that tab only. Custom is never picked (worked out: your own and community maps). Absent: Modern. (v50's
+   * `categories` pairs become this pick on the way in: migrate.ts.)
    */
-  categories: z
-    .array(z.object({ category: z.enum(MAP_CATEGORY_IDS), tag: z.string().regex(/^[a-z][a-z0-9_]{1,23}$/) }))
-    .max(MAX_MAP_CATEGORY_TAGS)
-    .optional(),
+  category: z.enum(MAP_CATEGORY_IDS).optional(),
 });
 
 /** A material from the library plus an optional tint, applied to one surface slot. */
