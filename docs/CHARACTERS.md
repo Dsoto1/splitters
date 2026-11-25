@@ -151,7 +151,7 @@ enemies where enemy markers are shown; hidden as the arrow is, under smoke or a 
 | Outer Space (`space`) | star | Cadet | Ensign | Pilot | Navigator | Flight Officer | Commander | Captain | Commodore | Admiral |
 | Machines (`machines`) | gear | Unit | Drone | Servo | Automaton | Android | Titan | Overseer | Mainframe | Prime, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
 | Legends (`legends`) | crown | Squire | Knight | Champion | Baron | Earl | Duke | Prince | King | Emperor |
-| Animalia (`animals`) | paw | Pup | Cub | Scout | Tracker | Hunter | Stalker | Prowler | Alpha | Apex, and from 2026-11-25 Fenn Dustwhirl, Mojo Banyan, Deuce Droopwell, Ottis Brewster, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
+| Animalia (`animals`) | paw | Pup | Cub | Scout | Tracker | Hunter | Stalker | Prowler | Alpha | Apex, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
 | Everyday Folk (`folk`; also a design of yours) | plain chevron | Rookie | Regular | Local | Pro | Ace | Star | Hero | Superstar | Icon |
 
 The first and last titles are the owner's ("as written is fine"); the steps between are the lead's. **Badges**
@@ -187,7 +187,7 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
 | Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Blix Orrin, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Vesper Quill, Wren Halloway (their group is Outer Space) |
 | Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo, Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Santa, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw |
-| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Mojo Banyan, Deuce Droopwell, Ottis Brewster, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
+| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
@@ -1586,8 +1586,8 @@ notes); the owner can rename any.
   Balam Nightclaw (`core.aztecjaguar`, "AztecJaguar"): the Aztec period's people (docs/STORY_CAMPAIGN.md); and Ignatius
   Slagg moved here from Horrors & Creatures.
 - **Everyday Folk:** Cutter McCrae (`core.outlawranger`, "OutlawRanger").
-- **Animalia:** Fenn Dustwhirl (`core.fennec`, desert rally fennec, small), Mojo Banyan (`core.monkeyspirit`, monkey
-  spirit; bleeds spirit), Deuce Droopwell (`core.blobfish`, Vegas dealer blobfish), Ottis Brewster (`core.baristaotter`,
+- **Animalia:** Fenn Dustwhirl (`core.fennec`, desert rally fennec, small), Kiko Banyan (`core.monkeyspirit`, monkey
+  spirit; bleeds spirit), Deuce Droopwell (`core.blobfish`, Vegas dealer blobfish), Ottis Crema (`core.baristaotter`,
   espresso barista otter, small), Boogie Tuskworth (`core.warthog`, funky biker warthog, large), Det. Drake Montego
   (`core.detectiveduck`, Miami detective duck), Napsworth (`core.koala`, sleepy koala, small).
 - **Not taken:** "elder tomo rigged" (2026-11-25) is a re-upload of Elder Tomo, already on the roster; as with the
@@ -1596,7 +1596,7 @@ notes); the owner can rename any.
 ### Bosses, parked
 
 The three Chrono Crew story bosses (docs/STORY_CAMPAIGN.md, "Bosses"; provisional names: Emperor Kronax
-`core.bosstyrant`, The Unhour `core.bossvoid`, Inquisitor Sable Tock `core.bossinquisitor`) are built like any
+`core.bosstyrant`, The Unhour `core.bossvoid`, Inquisitor Vesk Tockley `core.bossinquisitor`) are built like any
 character but kept out of play: `use: "npc"` (an NPC-only body: `WHOLE_BODY_NPC_LOOKS`, not on the roster, so not on
 Character Select, never a bot's, a random or a Roulette pick; a saved or typed id falls back as an unknown one does) and
 `tier: "experimental"`, and no NPC role (`NPC_ROLE_SPECS`) names them. Bringing one in is naming its look in a role or

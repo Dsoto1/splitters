@@ -165,7 +165,7 @@ export const WHOLE_BODY_BLOOD: Readonly<Record<string, BloodKind>> = {
   'core.coachtortoise': 'red',
   'core.crewalchemist': 'red',
   'core.crewcyborg': 'red',
-  'core.crewdemolitions': 'red',
+  'core.crewdemolitions': 'oil',
   'core.crewgunslinger': 'red',
   'core.crewmechanic': 'red',
   'core.crewmedic': 'red',

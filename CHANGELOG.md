@@ -8,7 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **Chrono Crew: Clio Everwhen joins and leads it with Sarge Tobias Crane** (the first two in its Character Select section), two new members, **Blix Orrin** (an alien recruit) and **Juno Hartwell** (a pilot); Fuse Hollister moves to Machines.
-- **Fifteen new characters:** Cpl. Tinwhistle and Pvt. Pete Plastic (Soldiers), Silas Coilwhisper, Talon Skycrest and Balam Nightclaw (Legends), Cutter McCrae (Everyday Folk), Fenn Dustwhirl, Mojo Banyan, Deuce Droopwell, Ottis Brewster, Boogie Tuskworth, Det. Drake Montego and Napsworth (Animalia), with the two new Chrono Crew.
+- **Fifteen new characters:** Cpl. Tinwhistle and Pvt. Pete Plastic (Soldiers), Silas Coilwhisper, Talon Skycrest and Balam Nightclaw (Legends), Cutter McCrae (Everyday Folk), Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego and Napsworth (Animalia), with the two new Chrono Crew.
 - **New models for Pip Quickfoot, Anoobys and Thornweaver** (now a plains huntress); Ignatius Slagg moves to Legends.
 - **Seven new power-ups:** Overdrive (rare: a few seconds nothing hurts you and you knock enemies flying, a steady gold glow), Regen, Rapid Fire, Phantom (nearly invisible until you fire), Moon Boots, Vampire and Bottomless Mag, each with its own pickup, sound and HUD timer, in MapMaker's palette and switchable one by one in Match setup and a server's rules.
 - **St. John's is now St. Jasper's Military Academy**, a fictional school: its name in every map list, Featured, Quick Play and MapMaker, and its description (the map's id stays `st_johns`).

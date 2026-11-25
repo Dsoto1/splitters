@@ -126,7 +126,7 @@ Provenance: Meshy, owned.
   - "crew pilot v2 rigged" (2026-11-25)  -> character meshy_crewpilot (look Juno Hartwell), Chrono Crew
   - "boss chrono tyrant rigged" (2026-11-25)  -> character meshy_bosstyrant (look Emperor Kronax, provisional), a story boss, NPC-only, out of play
   - "boss void rift entity rigged" (2026-11-25)  -> character meshy_bossvoid (look The Unhour, provisional), a story boss, NPC-only, out of play
-  - "boss temporal inquisitor 15k" (2026-11-25)  -> character meshy_bossinquisitor (look Inquisitor Sable Tock, provisional), a story boss, NPC-only, out of play
+  - "boss temporal inquisitor 15k" (2026-11-25)  -> character meshy_bossinquisitor (look Inquisitor Vesk Tockley, provisional), a story boss, NPC-only, out of play
   - "ToySoldierRigged" (2026-11-25)  -> character meshy_toysoldier (look Cpl. Tinwhistle)
   - "GreenArmySoldierRigged" (2026-11-25)  -> character meshy_greenarmy (look Pvt. Pete Plastic)
   - "SnakeEyeShamanRigged" (2026-11-25)  -> character meshy_snakeshaman (look Silas Coilwhisper)
@@ -134,9 +134,9 @@ Provenance: Meshy, owned.
   - "AztecJaguarRemesh15k" (2026-11-25)  -> character meshy_aztecjaguar (look Balam Nightclaw)
   - "OutlawRangerRigged" (2026-11-25)  -> character meshy_outlawranger (look Cutter McCrae)
   - "desert rally fennec 15k" (2026-11-25)  -> character meshy_fennec (look Fenn Dustwhirl)
-  - "monkey spirit rigged" (2026-11-25)  -> character meshy_monkeyspirit (look Mojo Banyan)
+  - "monkey spirit rigged" (2026-11-25)  -> character meshy_monkeyspirit (look Kiko Banyan)
   - "vegas dealer blobfish 15k" (2026-11-25)  -> character meshy_blobfish (look Deuce Droopwell)
-  - "espresso barista otter 15k" (2026-11-25)  -> character meshy_baristaotter (look Ottis Brewster)
+  - "espresso barista otter 15k" (2026-11-25)  -> character meshy_baristaotter (look Ottis Crema)
   - "biker warthog funky 15k" (2026-11-25)  -> character meshy_warthog (look Boogie Tuskworth)
   - "miami vice detective duck 15k" (2026-11-25)  -> character meshy_detectiveduck (look Det. Drake Montego)
   - "sleepy koala 3d" (2026-11-25)  -> character meshy_koala (look Napsworth)

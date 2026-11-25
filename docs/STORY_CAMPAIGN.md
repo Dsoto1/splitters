@@ -23,7 +23,7 @@ The story's bosses, from the owner's Drive uploads of 2026-11-25 ("boss chrono t
 |---|---|---|---|---|
 | Emperor Kronax | `core.bosstyrant` | boss chrono tyrant rigged | large | the Chrono Tyrant: the crew's arch-enemy, the end of the line |
 | The Unhour | `core.bossvoid` | boss void rift entity rigged | large | a thing from the rift between times; bleeds spirit |
-| Inquisitor Sable Tock | `core.bossinquisitor` | boss temporal inquisitor 15k | standard | the time police: hunts unlicensed travellers, a mid-story boss |
+| Inquisitor Vesk Tockley | `core.bossinquisitor` | boss temporal inquisitor 15k | standard | the time police: hunts unlicensed travellers, a mid-story boss |
 
 ## Unlocking characters (ideas, any or all)
 

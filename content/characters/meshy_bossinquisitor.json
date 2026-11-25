@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "npc",
   "order": 203,
-  "name": "Inquisitor Sable Tock",
+  "name": "Inquisitor Vesk Tockley",
   "look": "core.bossinquisitor",
   "group": "space",
   "tier": "experimental",
