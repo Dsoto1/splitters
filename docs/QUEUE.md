@@ -38,6 +38,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 (`branch · green sha · run`; the next train takes them all in this order)
 - `wip/colourblind-1124` · 52af939a · 45476320445 (colour vision: attempt 1, full suite; menu JS 2795.9 kB, 3.1-3.4 kB under main, as steer mode leaves vehicleCamera.ts; the account copy of the setting waits for captions' `prefs`)
 - `wip/editor-idle-1124` · a774957c · 45519824712 (MapMaker at rest: ≤15 frames/s with active meshes frozen, `?perfoff=editoridle`; the ended Test match no longer kept in memory: freshWorld's chain and the scoreboards' rows; inspector built once per edit; touches `game/session.ts` exit (4 lines) and `game/perfSwitches.ts`'s switch list: keep every name)
+- `wip/chars-1125` · 7fae7e58 · 45549490538 (the owner's characters of 2026-11-25: Clio and Sarge lead the Chrono Crew, Fuse to Machines, Blix Orrin and Juno Hartwell new in the crew (13), 13 more new characters, Pip/Anoobys/Thornweaver new models, Ignatius Slagg to Legends, three story bosses built but parked (NPC-only); attempt 1 after a first run red only on the hand-graft list, e2e all green)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
