@@ -32,8 +32,9 @@ export interface LandStyle {
 export function landStyle(look: ProjectileVisual | undefined, calm: boolean): LandStyle | null {
   switch (look) {
     case 'blasterBolt': {
-      // Orange like its bolt (view.tracer #ff8a1e). Calm: unlit, half as bright, eased out over twice as long.
-      const splash: LandGlow = calm ? { hex: '#c4702e', size: 0.32, life: 0.55, rise: 0.05, glow: false } : { hex: '#ff8a2a', size: 0.4, life: 0.26, rise: 0.1, glow: true };
+      // Orange like its bolt (view.tracer #ff8a1e): lit, its colour is drawn twice (diffuse and glow), so a darker
+      // orange reads orange where #ff8a2a washed out to yellow. Calm: unlit, dimmer, eased out over twice as long.
+      const splash: LandGlow = calm ? { hex: '#c4702e', size: 0.32, life: 0.55, rise: 0.05, glow: false } : { hex: '#b8460a', size: 0.4, life: 0.26, rise: 0.1, glow: true };
       return {
         surface: { glow: splash, sparks: calm ? 2 : 6, scorch: 2.2 },
         body: { blood: 0.4, glow: calm ? { ...splash, size: 0.26 } : { ...splash, size: 0.3 } },
