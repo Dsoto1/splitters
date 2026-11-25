@@ -13,6 +13,7 @@
 //   PROBE_URL=<url>           a client already being served;  CHROMIUM=<path>  another Chromium
 //   PROBE_SAMPLE_S=0          also read every this many seconds while a Test plays (collected first): what a Test
 //                             itself leaves (the owner's trace of 2026-11-24 rose in a Test; docs/PERF_EDITOR_IDLE_2026-11-24.md)
+//   PROBE_LATER_S=0           also read this many seconds after each Back (what a Test's loading waits still hold)
 //   PROBE_QUERY=<query>       more of the page's query (`&perfoff=…`)
 //   PROBE_CHECK=<MB>,<nodes>,<listeners>   fail (exit 1) if, from the second round back in MapMaker to the last, the
 //                             script heap grew more than <MB>, or DOM nodes or listeners more than those counts
@@ -33,6 +34,7 @@ const PLAY_S = Number(process.env.PROBE_TEST_S ?? 20);
 const BOTS = Number(process.env.PROBE_BOTS ?? 15);
 const HEAP = process.env.PROBE_HEAP;
 const SAMPLE_S = Number(process.env.PROBE_SAMPLE_S ?? 0);
+const LATER_S = Number(process.env.PROBE_LATER_S ?? 0);
 const QUERY = process.env.PROBE_QUERY ?? '';
 const CHECK = process.env.PROBE_CHECK ? process.env.PROBE_CHECK.split(',').map(Number) : null;
 if (HEAP) mkdirSync(HEAP, { recursive: true });
@@ -207,6 +209,10 @@ async function main() {
     await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: 60000 });
     await sleep(3000);
     await read(page, cdp, `round ${i}, back in MapMaker`);
+    if (LATER_S > 0) {
+      await sleep(LATER_S * 1000);
+      await read(page, cdp, `round ${i}, ${LATER_S} s later`);
+    }
     if (i === 1) await heapSnapshot(cdp, 'after-round-1');
   }
   if (ROUNDS) await heapSnapshot(cdp, `after-round-${ROUNDS}`);
