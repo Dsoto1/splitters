@@ -13,6 +13,12 @@ function loadShared(): Promise<Shared> {
 
 const ID = 'virtual:map-index';
 const RESOLVED = `\0${ID}`;
+/**
+ * The built-in maps' release records (key → builtInRecord), apart from the index: only publishedMaps.ts reads them,
+ * on demand, so they stay out of the menu's first download (about 27 kB raw: tools/ci/bundle-budget.mjs).
+ */
+const RELEASES = 'virtual:map-releases';
+const RELEASES_RESOLVED = `\0${RELEASES}`;
 
 /**
  * `virtual:map-index`: what the menu shows of every built-in map (maps/*.json),
@@ -34,9 +40,9 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
     async buildStart() {
       await loadShared();
     },
-    resolveId: (id) => (id === ID ? RESOLVED : undefined),
+    resolveId: (id) => (id === ID ? RESOLVED : id === RELEASES ? RELEASES_RESOLVED : undefined),
     async load(id) {
-      if (id !== RESOLVED) return undefined;
+      if (id !== RESOLVED && id !== RELEASES_RESOLVED) return undefined;
       const { loadMap, playableModes, mapPlayerCaps, builtInRecord, isRetiredMap } = await loadShared();
       const entries = [];
       for (const file of readdirSync(mapsDir).filter((f) => f.endsWith('.json')).sort()) {
@@ -57,9 +63,10 @@ export function mapIndexPlugin(mapsDir: string): Plugin {
           modes,
           // The most players each mode takes (the next-map vote leaves out maps too small for the people in a match).
           caps: modes.map((mode) => mapPlayerCaps(r.map, mode).max),
-          ...(md.release ? { builtIn: editingRecord(text) } : {}),
+          ...(id === RELEASES_RESOLVED && md.release ? { builtIn: editingRecord(text) } : {}),
         });
       }
+      if (id === RELEASES_RESOLVED) return `export default ${JSON.stringify(Object.fromEntries(entries.filter((e) => e.builtIn).map((e) => [e.key, e.builtIn])))};`;
       return `export default ${JSON.stringify(entries)};`;
       /** The record as the hub would hash this map: loaded for editing (paths not laid into the ground). */
       function editingRecord(text: string) {

@@ -162,7 +162,6 @@ import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscr
 import { PAD, glyphs, onPadPress, onPadScroll } from '../inputMode.ts';
 import { nextInDirection, type Dir } from './padNav.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
-import { botManager } from './botManager.ts';
 import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 import { QUICK_MODES, loadQuickPrefs, pickQuickMap, quickSetup, saveQuickPrefs, type QuickMode } from './quickPlay.ts';
@@ -2256,7 +2255,12 @@ export class FrontEnd {
   private botSetRow(map: MapDocument, sizes: readonly number[], players: number): HTMLElement {
     const s = this.setup;
     const edit = el('button', { type: 'button', id: 'arcade-botset', textContent: s.botSet ? 'Edit bots…' : 'Name your bots…', title: 'Your own bots: names, looks, skill, style, team and squad' });
-    edit.addEventListener('click', () => {
+    // The Bots window loads on first open (botManager.ts; the menu's first download is on a budget).
+    let opening = false;
+    edit.addEventListener('click', async () => {
+      if (document.getElementById('bot-manager') || opening) return;
+      opening = true;
+      const { botManager } = await import('./botManager.ts').finally(() => (opening = false));
       if (document.getElementById('bot-manager')) return;
       const sides = sizes.length ? mapTeams(map, sizes.length) : [];
       const win = botManager({
@@ -3440,6 +3444,17 @@ export class FrontEnd {
     const calmFlashes = el('input', { type: 'checkbox', checked: reduceFlashing() });
     calmFlashes.id = 'opt-reduce-flashing';
     calmFlashes.addEventListener('change', () => saveReduceFlashing(calmFlashes.checked));
+    // Sound captions (game/captionPrefs.ts, its key and event written out here to keep that file out of the menu's
+    // first load): off by default; signed in, the account's (the profile's `prefs`) and saved there too; a match
+    // brings this browser in step with the account as it starts (game/prefSync.ts).
+    const capKey = 'tiletrigger.captions';
+    const capNow = (currentAccount() && cachedProfile()?.prefs.captions) || storage(capKey);
+    const captions = el('select', { id: 'opt-captions' }, ...['off', 'on', 'dir'].map((m, i) => el('option', { value: m, textContent: ['Off', 'On', 'On, with direction'][i], selected: m === capNow })));
+    captions.addEventListener('change', () => {
+      storage(capKey, captions.value);
+      window.dispatchEvent(new Event('tiletrigger:captions'));
+      if (currentAccount()) void saveProfile({ prefs: { ...cachedProfile()?.prefs, captions: captions.value } }).catch(() => undefined);
+    });
     // Combat accessibility (game/combatPrefs.ts): aim held or toggled, camera shake, controller vibration; the pause menu has them too.
     const combat = combatPrefs();
     const aimMode = el('select', {}, ...AIM_MODES.map((m) => el('option', { value: m, textContent: AIM_LABELS[m], selected: m === combat.aim })));
@@ -3670,6 +3685,7 @@ export class FrontEnd {
       ]],
       ['accessibility', 'Accessibility', [
         row('Reduce flashing', toggle(calmFlashes), 'On by default. Lightning glows steadily instead of crackling, blasts and muzzle flashes near you are dimmer and fade in, blinking lights pulse gently at most once a second, and taking damage tints the screen edge a dull red that eases in. For players sensitive to flashing light (photosensitive epilepsy). Also in the pause menu (Settings).'),
+        row('Sound captions', captions, 'Gunfire, grenades, footsteps… shown on screen, for play with the sound off.'),
         row('Aim', aimMode, `Hold: aim down the sights or through a scope while the aim button is held (${keysFor('aim')}, or LT). Toggle: press it once to aim and again to stop; sprinting, changing weapons, getting in a vehicle or dying lets go, and a reload keeps it (the sights come back up). With a scope or optic in hand Shift holds your breath instead of letting go. Works the same with every scope and the Battle Rifle\'s optic. On a phone Toggle is the default (Controls → Touch has it too). Also in the pause menu.`),
         row('Camera shake', shake, 'How much the view shakes on its own: the jolt of a heavy shot, the kick when you are hit, blasts and crashes near you, and the view\'s gentle roll as you lean or ride a zipline. Reduced keeps about a third, Off none. Your weapon\'s recoil still climbs (it is where your rounds go). Reduce flashing keeps its own calmer limits on top. Also in the pause menu.'),
         ...(vibrationSupported()

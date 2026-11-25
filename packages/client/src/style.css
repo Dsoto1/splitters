@@ -1198,6 +1198,16 @@ html.touch .char-spin .spin-label kbd { display: none; }
 /* The use prompt ("[E] Drive the Dropship"): white text and a light green key cap on a dark backing, each with a soft
    dark outline, so it reads on sand, snow and sky alike (the key's letter took the global kbd's dark ink on a dark cap).
    Refused ("Locked", "The Dropship is full"): a light red, on the same dark outline, with no key. */
+/* Sound captions (game/soundCaptions.ts; docs/AUDIO.md, "Sound captions"): a few steady lines over a dark backing, fading out eased. */
+#captions { position: absolute; left: 50%; bottom: 96px; transform: translateX(-50%); display: flex; flex-direction: column; align-items: center; gap: 3px; max-width: min(560px, calc(100vw - 32px)); z-index: 4; }
+#captions .cap { display: flex; align-items: center; gap: 7px; padding: 3px 11px; border-radius: 6px; background: rgba(6, 9, 16, 0.78); color: #f4f6fa; font-weight: 600; font-size: 16px; line-height: 1.25; letter-spacing: 0.01em; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; max-width: 100%; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); opacity: 1; transition: opacity 0.5s ease-out; }
+#captions .cap.far { opacity: 0.72; color: #d6dbe4; }
+#captions .cap.friend { color: #bfe6ff; }
+#captions .cap.out { opacity: 0; }
+#captions.calm .cap { transition-duration: 0.8s; }
+#captions .cap-dir { font-size: 12px; color: #ffd27a; min-width: 12px; text-align: center; }
+#captions .cap[hidden], #captions .cap-dir[hidden] { display: none; }
+@media (max-width: 760px), (max-height: 520px) { #captions { bottom: auto; top: 58%; } #captions .cap { font-size: 14px; padding: 2px 9px; } }
 #prompt { position: absolute; left: 50%; top: calc(50% + 34px); transform: translateX(-50%); font-weight: 600; color: #fff; text-shadow: 0 0 2px rgba(0, 0, 0, 0.95), 0 1px 3px rgba(0, 0, 0, 0.9), 0 0 8px rgba(0, 0, 0, 0.6); white-space: nowrap; }
 #prompt:not(:empty) { padding: 2px 10px; border-radius: 6px; background: rgba(6, 10, 18, 0.42); }
 #prompt kbd { display: inline-block; min-width: 18px; height: auto; padding: 0 5px; margin-right: 6px; border: 1px solid #7dff9a; border-radius: 4px; background: rgba(8, 22, 12, 0.88); color: #7dff9a; font: inherit; text-align: center; text-shadow: none; box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.7), 0 1px 4px rgba(0, 0, 0, 0.6); }

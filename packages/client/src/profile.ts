@@ -24,6 +24,8 @@ function readProfile(v: unknown): Profile {
     vouched: readVouched(o.vouched),
     optics: opticShape(o.optics, true) ?? {},
     keys: keysShape(o.keys) ?? {},
+    // (Checked by the hub; each reader checks its own value: captionPrefs.ts parseCaptionMode.)
+    prefs: (o.prefs ?? {}) as Record<string, string>,
   };
 }
 
@@ -71,7 +73,7 @@ export function sendVouch(report: VouchReport): void {
   void call('profile/vouch', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(report), keepalive: true }).catch(() => undefined);
 }
 
-export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null; emblem?: string | null; title?: string | null; optics?: Record<string, string>; keys?: Record<string, string> }): Promise<Profile> {
+export async function saveProfile(patch: { username?: string; region?: Region; favClass?: string | null; emblem?: string | null; title?: string | null; optics?: Record<string, string>; keys?: Record<string, string>; prefs?: Record<string, string> }): Promise<Profile> {
   const who = currentAccount();
   const res = await call('profile', { method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(patch) });
   const profile = readProfile(await res.json());

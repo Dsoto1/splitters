@@ -14502,6 +14502,122 @@ async function padsetupFlow(browser) {
  * opens the pause menu and Esc again (its Back, "Loadout") comes back to the loadout, Test weapons focused. Desktop,
  * then a phone (a tap on the button, the pause menu's exit). TESTRANGE_PICS=<dir>: pictures at twice the pixels.
  */
+/**
+ * Sound captions (Options → Accessibility; game/soundCaptions.ts, docs/AUDIO.md "Sound captions"): the setting saves,
+ * and in a test match with it on (with direction) a bot's shot makes a caption whose side matches where the shooter
+ * was against the camera's own right and forward (Babylon's, not the captions' own maths); never one for your own shots.
+ * E2E_SHOTS: pictures of the stack at deviceScaleFactor 2, desktop and phone.
+ */
+async function captionsFlow(browser) {
+  const shots = process.env.E2E_SHOTS;
+  const run = async (label, ctxOpts, useOptions, map = 'sandgate') => {
+    const context = await browser.newContext(ctxOpts);
+    const page = await context.newPage();
+    const errors = [];
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.addInitScript((m) => {
+      if (sessionStorage.getItem('seeded')) return;
+      sessionStorage.setItem('seeded', '1');
+      localStorage.setItem('cs.arcade', JSON.stringify({ map: m, mode: 'core.deathmatch', bots: 3, skill: 'normal', scoreLimit: 200, minutes: 20 }));
+    }, map);
+    await page.goto(`${CLIENT}/?test=1&god=1`);
+    if (useOptions) {
+      // The Options row: Off at first, three choices, the pick saved.
+      await page.click('#nav-options');
+      await page.waitForSelector('.opt-nav');
+      await page.click('.opt-nav [data-tab="accessibility"]');
+      const first = await page.$eval('#opt-captions', (s) => ({ value: s.value, options: [...s.options].map((o) => o.textContent) }));
+      await page.selectOption('#opt-captions', 'dir');
+      const saved = await page.evaluate(() => localStorage.getItem('tiletrigger.captions'));
+      check(first.value === 'off' && first.options.join('|') === 'Off|On|On, with direction' && saved === 'dir', `${label}: Accessibility → Sound captions is Off at first, offers Off / On / On, with direction, and saves (${JSON.stringify({ first, saved })})`);
+      await page.goto(`${CLIENT}/?test=1&god=1`);
+    } else await page.evaluate(() => localStorage.setItem('tiletrigger.captions', 'dir'));
+    await page.click('#nav-play');
+    await page.click('#arcade-start');
+    const started = await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing', null, { timeout: T(shots ? 300000 : 90000) }).then(() => true, () => false);
+    if (!started) {
+      const state = await page.evaluate(() => ({ cs: !!window.__cs, phase: window.__cs?.phase?.(), inv: window.__cs?.local?.inventory?.size ?? null, menu: document.getElementById('menu')?.hidden }));
+      check(false, `${label}: the match starts (${JSON.stringify(state)}; errors: ${errors.join('; ')})`);
+      await context.close();
+      return;
+    }
+    await fight(page, !!ctxOpts.hasTouch).catch(() => {});
+    await page.waitForFunction(() => document.getElementById('pause')?.hidden !== false, null, { timeout: T(10000) }).catch(() => {});
+    await playWithoutMouse(page);
+    // Your own shots: fire a few, no caption comes of them.
+    await page.evaluate(() => window.__cs.input.virtualAction('fire', true));
+    await sleep(800);
+    await page.evaluate(() => window.__cs.input.virtualAction('fire', false));
+    // A bot's shot: a caption with a direction (bots fight each other and you; god mode keeps you up).
+    const shot = await page.waitForFunction(() => window.__cs.captions().log.some((e) => e.id === 'fire.shot' && e.dir), null, { timeout: T(90000) }).then(() => true, () => false);
+    const d = await page.evaluate(() => {
+      const c = window.__cs.captions();
+      const me = window.__cs.slot;
+      const cam = window.__cs.view.camera;
+      const V = cam.position.constructor;
+      const right = cam.getDirection(new V(1, 0, 0));
+      const fwd = cam.getDirection(new V(0, 0, 1));
+      const yaw = cam.rotation.y;
+      // Each shot captioned while facing the way the camera faces now: which quarter Babylon puts it in.
+      const checked = c.log.filter((e) => e.id === 'fire.shot' && e.dir && Math.abs(Math.atan2(Math.sin(e.yaw - yaw), Math.cos(e.yaw - yaw))) < 0.05).map((e) => {
+        const dx = e.at.x - e.ear.x;
+        const dz = e.at.z - e.ear.z;
+        const r = dx * right.x + dz * right.z;
+        const f = dx * fwd.x + dz * fwd.z;
+        const want = Math.abs(f) >= Math.abs(r) ? (f > 0 ? 'ahead' : 'behind') : r > 0 ? 'right' : 'left';
+        // Close to a quarter's edge either answer is fair.
+        const edge = Math.abs(Math.abs(f) - Math.abs(r)) < 0.1 * Math.hypot(f, r);
+        return { dir: e.dir, want, edge, by: e.by, text: e.text };
+      });
+      return { checked, mine: c.log.filter((e) => e.by === me).length, shown: c.shown, lines: c.lines, stats: c.stats, mode: c.mode };
+    });
+    const wrong = d.checked.filter((x) => !x.edge && x.dir !== x.want);
+    check(shot && d.mode === 'dir' && d.checked.length > 0 && wrong.length === 0, `${label}: a bot's shot makes a caption on the side the camera has it (${d.checked.length} checked, wrong: ${JSON.stringify(wrong.slice(0, 3))}; ${JSON.stringify(d.checked.slice(0, 3))})`);
+    check(d.mine === 0, `${label}: no caption for your own shots (${d.mine})`);
+    const drawn = await page.waitForFunction(() => {
+      const el = document.getElementById('captions');
+      const rows = [...(el?.querySelectorAll('.cap:not([hidden])') ?? [])];
+      if (!el || el.hidden || !rows.length) return null;
+      const box = el.getBoundingClientRect();
+      const cs = getComputedStyle(rows[0]);
+      return { rows: rows.length, text: rows.map((r) => r.textContent), inside: box.left >= 0 && box.right <= innerWidth && box.bottom <= innerHeight, backing: cs.backgroundColor };
+    }, null, { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
+    check(!!drawn && drawn.rows >= 1 && drawn.rows <= 4 && drawn.inside && /rgba\(6, 9, 16, 0\.7/.test(drawn.backing) && drawn.text.some((t) => /Gunfire|Explosion|Grenade|Near miss|Footsteps/.test(t)), `${label}: the captions show (1-4 lines on a dark backing, inside the screen: ${JSON.stringify(drawn)})`);
+    check(d.stats.renders <= Math.max(10, d.stats.kept), `${label}: drawn only when something changes, a few times a second (${JSON.stringify(d.stats)})`);
+    if (shots) {
+      // A picture takes seconds at deviceScaleFactor 2, longer than a caption lasts: a few of the real kinds of sound
+      // keep coming through the captions' own hook while it is taken (where you'd hear them, around you).
+      await page.evaluate(() => {
+        const c = window.__cs.captionsHud;
+        const ear = window.__cs.view.camera.position;
+        const yaw = window.__cs.view.camera.rotation.y;
+        const around = (deg, d) => ({ x: ear.x + Math.sin(yaw + (deg * Math.PI) / 180) * d, y: ear.y, z: ear.z + Math.cos(yaw + (deg * Math.PI) / 180) * d });
+        const feed = () => {
+          c.hear('fire.shot', around(-80, 25), 25, 250, 1);
+          c.hear('throw', around(170, 8), 8, 60, 2);
+          c.hear('footstep', around(90, 6), 6, 30, 3);
+          c.hear('explosion', around(10, 140), 140, 250, 2);
+          c.update(performance.now());
+        };
+        feed();
+        window.__capFeed = setInterval(feed, 400);
+      });
+      await sleep(600);
+      await page.screenshot({ path: `${shots}/captions-${label}.png`, timeout: T(120000) }).catch((e) => console.log(`captions: no picture (${e.message.split('\n')[0]})`));
+      await page.evaluate(() => clearInterval(window.__capFeed));
+    }
+    check(errors.length === 0, `${label}: no page errors (${errors.join('; ')})`);
+    await context.close();
+  };
+  await run('desktop', { viewport: { width: 1280, height: 720 }, deviceScaleFactor: shots ? 2 : 1 }, true);
+  await run('phone', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, false);
+  if (shots) {
+    // The same over a dark scene (Gallows Yard's night).
+    await run('desktop-dark', { viewport: { width: 1280, height: 720 }, deviceScaleFactor: 2 }, false, 'gallows_yard');
+    await run('phone-dark', { viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: 2 }, false, 'gallows_yard');
+  }
+}
+
 async function testrangeFlow(browser) {
   const pics = process.env.TESTRANGE_PICS;
   const run = async (label, ctxOpts, tap) => {
@@ -16750,7 +16866,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, captions: captionsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
