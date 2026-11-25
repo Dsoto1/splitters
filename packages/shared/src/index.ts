@@ -177,3 +177,5 @@ export * from './editor/tour.ts';
 export * from './sim/forts.ts';
 export * from './sim/classes.ts';
 export * from './sim/discs.ts';
+export * from './map/blockDoorways.ts';
+export * from './editor/doorFit.ts';

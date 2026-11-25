@@ -305,9 +305,18 @@ const TeamFilter = z
  * half-doors, `vault` a round bank-vault door that swings open. Looks only:
  * every style opens, locks and blocks the same way.
  */
-export const DOOR_STYLES = ['sliding', 'blast', 'saloon', 'vault', 'portcullis', 'oak'] as const;
+export const DOOR_STYLES = ['sliding', 'blast', 'saloon', 'vault', 'portcullis', 'oak', 'arched'] as const;
 export type DoorStyle = (typeof DOOR_STYLES)[number];
-export const DOOR_STYLE_LABELS: Record<DoorStyle, string> = { sliding: 'Sliding steel', blast: 'Blast door', saloon: 'Saloon doors', vault: 'Vault door', portcullis: 'Portcullis', oak: 'Oak door (iron-bound)' };
+export const DOOR_STYLE_LABELS: Record<DoorStyle, string> = { sliding: 'Sliding steel', blast: 'Blast door', saloon: 'Saloon doors', vault: 'Vault door', portcullis: 'Portcullis', oak: 'Oak door (iron-bound)', arched: 'Arched door' };
+
+/**
+ * The doorways a door cuts in the wall it stands in (doors that fit themselves, v52: editor/doorFit.ts): the edge
+ * style of a tile's side, or of a free block's `doorways`. Every look but the Arched door (v52: a round-headed oak
+ * double door 3.6 m high) is square, 3 m by 3 m: the Doorway.
+ */
+export const DOORWAY_STYLES = ['door', 'door_arched'] as const;
+export type DoorwayStyle = (typeof DOORWAY_STYLES)[number];
+export const doorwayOf = (style: DoorStyle | undefined): DoorwayStyle => (style === 'arched' ? 'door_arched' : 'door');
 
 /** A sliding double door, sized for a Classic Grid doorway (3 m × 3 m). */
 export const DoorEntity = EntityBase.extend({
@@ -632,6 +641,17 @@ export const BlockEntity = EntityBase.extend({
    * shots and cracks. Solid behaviour only.
    */
   glass: z.enum(GLASS_KINDS).optional(),
+  /**
+   * Doorways cut through it (v52, doors that fit themselves: a door placed in a wall of free blocks cuts its doorway;
+   * map/blockDoorways.ts builds it). Each is an edge style's doorway (`style`) across the block's long side: its
+   * middle `at` metres along that side from the block's middle, its sill `y` metres up from the block's bottom (absent:
+   * 0). The block is built as that style's pieces round the opening, framed on both faces, the reveal through its
+   * thickness. Static solid blocks only (a breakable, moving, hidden, glass, force-field or tilted block keeps its box).
+   */
+  doorways: z
+    .array(z.object({ style: z.enum(DOORWAY_STYLES), at: z.number().finite(), y: z.number().min(0).optional() }))
+    .max(8)
+    .optional(),
 });
 
 /** A body of liquid (position: centre of its floor). Water is swum in; lava and acid hurt; swamp slows you down. */

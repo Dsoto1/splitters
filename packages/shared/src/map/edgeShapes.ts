@@ -56,12 +56,15 @@ function repeatAlong(r: EdgeRepeat, half: number, height: number, at: (u: number
   else for (let u = from; u < to; u += r.step) at(u);
 }
 
-/** Wall pieces of an edge style along one side: [u0, u1, y0, y1, thickness] with u along the side (-half..half). */
-export function edgeSegments(style: ResolvedEdge, half: number, height: number): [number, number, number, number, number][] {
+/**
+ * Wall pieces of an edge style along one side: [u0, u1, y0, y1, thickness] with u along the side (-half..half).
+ * `wall`: the thickness of a piece that gives none (a tile's side: the kit's 0.5 m; a free block's doorway: the block's).
+ */
+export function edgeSegments(style: ResolvedEdge, half: number, height: number, wall = WALL_THICKNESS): [number, number, number, number, number][] {
   const out: [number, number, number, number, number][] = [];
   const v = (x: EdgeValue) => edgeValue(x, half, height);
   for (const s of shapeOf(style)?.segments ?? []) {
-    const t = s.t ?? WALL_THICKNESS;
+    const t = s.t ?? wall;
     const r = s.repeat;
     if (r) {
       const [o0, o1] = s.u as readonly [number, number];
@@ -130,18 +133,29 @@ function archTrim(a: EdgeArch, v0: number, outward: boolean, soffit: number, sur
   return out;
 }
 
+/** How edgeTrimBoxes dresses a side beyond the style itself. */
+export interface EdgeTrimOptions {
+  /** The thickness of a piece that gives none (edgeSegments' `wall`): a free block's doorway is as thick as the block. */
+  wall?: number;
+  /** No baseboards or cornices (a doorway cut in a free block: the block has neither). */
+  bare?: boolean;
+  /** Door frames marked `outside` dress the outer face too (with `outer`); false where a facade frames the openings. */
+  frames?: boolean;
+}
+
 /**
  * Every trim box of an edge style on one side (map/geometry.ts draws them; they never collide): the pieces on the
  * wall's inner face, standing off it from `from` (the style's trimFrom, else its thickest piece's thickness); an arch's soffit
  * through the wall; and with `outer`, the pieces marked `outside` once more on the wall's outer face (the cell's
  * boundary), for a side nothing is built beyond.
  */
-export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false, sash: 'all' | 'only' | 'without' = 'all'): SideTrim[] {
+export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number, outer = false, sash: 'all' | 'only' | 'without' = 'all', opts: EdgeTrimOptions = {}): SideTrim[] {
   const shape = shapeOf(style);
+  const wall = opts.wall ?? WALL_THICKNESS;
   // The wall's own face: a style with thicker piers (the Grand arch's 0.8 m, the Gate arch's 1.2 m) dresses that face,
   // not one buried inside it, and its arch's soffit runs through the whole thickness (owner, 2026-11-16: the Grand
   // arch's curve showed as a coarse staircase of its collision steps).
-  const thickest = Math.max(WALL_THICKNESS, ...(shape?.segments ?? []).map((g) => g.t ?? WALL_THICKNESS));
+  const thickest = Math.max(wall, ...(shape?.segments ?? []).map((g) => g.t ?? wall));
   const from = shape?.trimFrom ?? thickest;
   const out: SideTrim[] = [];
   const own = (p: { surface?: { material: string; tint?: string } }) => (p.surface ? { surface: { material: p.surface.material, tint: p.surface.tint ?? null } } : {});
@@ -151,15 +165,17 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
     // `sash`: the pieces set in the wall by the glass (`v`: a sash's inner frame, meeting rail and centre bars), which
     // a glazed window's pane carries (sim/glass.ts windowPanes): only those, or all but those (map/geometry.ts).
     if (sash === 'only' && !('v' in p)) continue;
-    if ('base' in p) at(v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04);
-    else if ('cornice' in p) {
-      if (height >= 3) at(v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07);
+    if ('base' in p) {
+      if (!opts.bare) at(v(p.base[0]), v(p.base[1]), 0, 0.16, 0.04);
+    } else if ('cornice' in p) {
+      if (height >= 3 && !opts.bare) at(v(p.cornice[0]), v(p.cornice[1]), height - 0.2, height, 0.07);
     } else if ('frame' in p) {
       const { half: d, top: h } = p.frame;
       if (height > h + 0.2) {
-        at(-d - 0.16, -d, 0, h, 0.06, own(p));
-        at(d, d + 0.16, 0, h, 0.06, own(p));
-        at(-d - 0.16, d + 0.16, h, h + 0.16, 0.06, own(p));
+        const pieces: [number, number, number, number][] = [[-d - 0.16, -d, 0, h], [d, d + 0.16, 0, h], [-d - 0.16, d + 0.16, h, h + 0.16]];
+        for (const [u0, u1, y0, y1] of pieces) at(u0, u1, y0, y1, 0.06, own(p));
+        // The same frame on the outer face (doors that fit themselves: framed inside and out).
+        if (outer && p.outside && opts.frames !== false) for (const [u0, u1, y0, y1] of pieces) out.push({ u0, u1, y0, y1, v0: -0.06, v1: 0, ...own(p) });
       }
     } else if ('window' in p) {
       const [u0, u1] = p.window.u;

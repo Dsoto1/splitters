@@ -731,6 +731,7 @@ export const SCENARIO_PALETTE = [
   { key: 'light:brazier', label: 'Brazier', search: 'light brazier fire torch flame bowl warm roman egypt temple' },
   // Style Pack gameplay pieces (10 Medieval Village).
   { key: 'door:oak', label: 'Oak Door', search: 'door oak wooden plank ironbound iron bound hinged medieval village house castle' },
+  { key: 'door:arched', label: 'Arched Door', search: 'door arched arch round headed oak church chapel castle stone gothic double' },
   { key: 'block:wattle', label: 'Wattle Hurdle', search: 'block wattle hurdle fence woven breakable wood medieval village farm' },
   // Style Pack gameplay pieces (12 Snow Outpost).
   { key: 'mover:rollup_door', label: 'Roll-up Door', search: 'mover roll up rolling shutter door hangar garage warehouse wide steel logic snow outpost' },
@@ -975,6 +976,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
     case 'door:oak':
       // An iron-bound plank door on one side's hinges: opens as anyone comes close (or lock it and wire it to logic).
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: true, style: 'oak' };
+    case 'door:arched':
+      // A round-headed oak double door (v52): it cuts an Arched doorway in the wall it goes in (editor/doorFit.ts).
+      return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: true, style: 'arched' };
     case 'door:portcullis':
       // Raised by logic or E (a winch beside the gate).
       return { id: newId('door'), kind: 'door', ...base, startOpen: false, locked: false, auto: false, style: 'portcullis' };

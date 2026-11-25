@@ -675,7 +675,8 @@ export function wallRunBoxes(w: WallRunPart, kind: NonNullable<LocalBox['kind']>
     const crown = Math.max(...raised.map((g) => g[2]));
     bay.push({ min: [Math.min(...raised.map((g) => g[0])), base + crown, v0], max: [Math.max(...raised.map((g) => g[1])), base + top, v1], kind });
   }
-  for (const p of edgeTrimBoxes(w.style, half, height, w.outer ?? true)) {
+  // Kit pieces keep their doorways' frames inside only (the outer face is the piece's own to dress).
+  for (const p of edgeTrimBoxes(w.style, half, height, w.outer ?? true, 'all', { frames: false })) {
     const [v0, v1] = across(p.v0, p.v1);
     bay.push({ min: [p.u0, base + p.y0, v0], max: [p.u1, base + p.y1, v1], kind: 'trim', ...(p.tilt ? { roll: p.tilt } : {}), ...(p.surface ? { surface: p.surface } : metal ? { paint: metal } : {}) });
   }
