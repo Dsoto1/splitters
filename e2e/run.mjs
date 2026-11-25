@@ -15557,9 +15557,9 @@ async function weaponmanagerFlow(browser) {
   await page.waitForFunction(() => document.querySelectorAll('#weapon-tuning main canvas').length > 0, null, { timeout: T(60000) });
   check(true, 'the weapon tuning page opens on Compare');
   await page.click('#wt-tab-manage');
-  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
+  const listed = await page.waitForFunction(() => document.querySelectorAll('#wm-list .wm-card[data-id]').length > 40, null, { timeout: T(30000) }).then(() => true, () => false);
   const cards = await page.evaluate(() => {
-    const all = [...document.querySelectorAll('#wm-list .wm-card')];
+    const all = [...document.querySelectorAll('#wm-list .wm-card[data-id]')];
     const without = all.filter((c) => !c.querySelector('.wm-pic img')).map((c) => c.dataset.id);
     return { n: all.length, pics: all.length - without.length, without, url: location.search };
   });

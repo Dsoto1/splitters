@@ -1532,14 +1532,15 @@ export class FrontEnd {
       const cat = this.mapCat;
       const inTab = (m: (typeof this.maps)[number]) =>
         tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
-      // The maps the tab, the mode filter and the search leave; under All maps that takes the community maps (Community Picks,
-      // under their heading) too, so the category tabs' counts (Custom holds them) add up to All maps'.
+      // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under
+      // All maps, which leaves them to their own tab (so with picks on the hub, Custom counts them beyond All maps' total).
       const found = (m: ArcadeMap) => !q || m.metadata.name.toLowerCase().includes(q) || m.blurb.toLowerCase().includes(q) || m.modes.some((x) => MODE_LABEL[x].toLowerCase().includes(q));
       const base = built.filter(({ m }) => (inTab(m) || (tab === 'all' && m.group === PICK_GROUP)) && playsTicked(m) && found(m));
+      const plain = base.filter(({ m }) => inTab(m));
       drawCategoryTabs(catBar, {
         filter: cat,
         counts: categoryCounts(base.map(({ m }) => catOf(m))),
-        total: base.length,
+        total: plain.length,
         onPick: (f) => {
           this.mapCat = f;
           this.mapScroll = 0;
@@ -1547,7 +1548,7 @@ export class FrontEnd {
           drawCards();
         },
       });
-      const shown = cat ? base.filter(({ m }) => inMapCategory(catOf(m), cat)) : base;
+      const shown = cat ? base.filter(({ m }) => inMapCategory(catOf(m), cat)) : plain;
       const rank = (key: string) => {
         const f = FEATURED_MAPS.indexOf(key);
         return f < 0 ? FEATURED_MAPS.length : f;
