@@ -12,8 +12,18 @@ Owner's notes, 2026-11-24. A direction to build toward, not yet a plan: the owne
 ## The Chrono Crew is the player's team
 
 - The player uses the Chrono Crew through the whole storyline.
-- Today there are 11 (Dex Calloway, Doc Seraphine Vale, Flicker, Fuse Hollister, Gears Okafor, Lyra Vantis, Mags Petrov, Nova Kade, Sarge Tobias Crane, Vesper Quill, Wren Halloway). The owner will make **3 more**, for a team of **14**.
+- Today there are 13 (owner, 2026-11-25): **Clio Everwhen** and **Sarge Tobias Crane**, the team's #1 and #2 (first in Character Select's Chrono Crew section), then Blix Orrin (the alien recruit), Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell (the pilot), Lyra Vantis, Mags Petrov, Nova Kade, Vesper Quill and Wren Halloway. Fuse Hollister left the crew for Machines. The owner's plan is a team of **14** (2026-11-25: "two new ... bring the team to 14"; with Fuse out it is 13: one more to come, or Fuse stays; an owner question).
 - **Team management:** the player swaps team members out for characters they've unlocked.
+
+## Bosses (owner, 2026-11-25)
+
+The story's bosses, from the owner's Drive uploads of 2026-11-25 ("boss chrono tyrant", "boss void rift entity", "boss temporal inquisitor"). **Names are provisional** (the lead's; the owner names them for the story). Built into the game like any character (manifest, model, hit shape, grips), but **out of play for now**: each is an NPC-only manifest (`use: "npc"`, `tier: "experimental"`) that no NPC role names, so none is on Character Select, a bot's, a random or a Roulette pick, and a saved id falls back to the default look. To bring one into a fight, an NPC role or a boss rule names its look (docs/CHARACTERS.md, "Bosses, parked").
+
+| Boss (provisional) | Look id | Model | Size | Ideas from the model |
+|---|---|---|---|---|
+| Emperor Kronax | `core.bosstyrant` | boss chrono tyrant rigged | large | the Chrono Tyrant: the crew's arch-enemy, the end of the line |
+| The Unhour | `core.bossvoid` | boss void rift entity rigged | large | a thing from the rift between times; bleeds spirit |
+| Inquisitor Vesk Tockley | `core.bossinquisitor` | boss temporal inquisitor 15k | standard | the time police: hunts unlicensed travellers, a mid-story boss |
 
 ## Unlocking characters (ideas, any or all)
 

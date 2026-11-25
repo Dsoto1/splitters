@@ -132,7 +132,9 @@ describe('hitbox audit: shapes match each model (posed as the game draws it stan
   // wide enough for the brim would be three times anyone else's. Its shapes' top, bottom and head centre pass as measured.
   // Axel Gainz, the gym bro axolotl (2026-11-22, experimental): 83% inside, the rest its six feathery gills fanned out round the head
   // (wider than the shoulders); a head sphere wide enough for them would cover the air round it.
-  const OWN_COVER = { 'core.inspector': 0.55, 'core.axolotl': 0.8 };
+  // Napsworth, the sleepy koala (2026-11-25): 58% inside, the rest its fur-fringed ears (a head and a half across) and
+  // the baggy pyjama trousers and slippers round thin legs; shapes that wide would be hit in the air beside him.
+  const OWN_COVER = { 'core.inspector': 0.55, 'core.axolotl': 0.8, 'core.koala': 0.55 };
   it('every look and creature', { timeout: 240_000 }, async () => {
     const bad = [];
     const report = [];

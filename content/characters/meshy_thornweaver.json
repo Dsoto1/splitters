@@ -10,31 +10,24 @@
   "nameTheme": "knight",
   "bio": "Tracks anything across any ground, then waits for it.",
   "body": "female",
-  "notes": "Not in the intake queue: found among the owner's downloads (2026-10-29) and brought in as a new character (named here; the owner reviews it on the grip and portrait sheets). Rigged by Meshy's rigging API from the unrigged textured GLB (source.modelUrl \"upload\"). Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
+  "notes": "Thornweaver's model since 2026-11-25 (owner: \"plains huntress\" replaces Thornweaver; id, name and place kept, as Shiba's and the Salamander Warlord's swaps were; was \"Tribal Warrior Charac\", Meshy Community CC0, built 2026-10-29). Built from the Drive download \"PlainsHuntressRemesh15k\" (rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "Tribal Warrior Charac"
-    },
-    "date": "2026-10-29",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
     "url": null,
-    "modelUrl": "upload",
-    "file": "^Meshy_AI_Tribal_Warrior_Charac_\\d+_(image-to-3d-)?texture\\.glb$",
-    "meshy": {
-      "rig": "01a18a0b-64fb-7054-9580-9320b4285f70"
-    }
+    "file": "^Meshy_AI_PlainsHuntressRemesh15k_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 16000,
-    "feet": true,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
-    "handsShare": 0.08,
     "normalSize": 1024,
-    "surface": "rebake"
+    "lod": 0.25,
+    "feet": true
   }
 }

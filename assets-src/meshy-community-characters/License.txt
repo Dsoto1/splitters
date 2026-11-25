@@ -43,7 +43,7 @@ The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landma
 - "T Pose Santa" (downloaded 2026-10-29, https://www.meshy.ai/posts/christmas-santa-claus-3d-character-model-animation-ready-01a0698e-123a-7439-90ce-586dbbc91226)  -> character meshy_santa (look Saint Nick)
 - "a raccoon warrior in T-pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/01990582-7d15-78ed-82d9-279f1a3a60cf)  -> character meshy_bandit (look Bandit) until 2026-11-22, when the owner's "raccoon hacker game ready" replaced its model (no longer shipped)
 - "An adorable teddy bear" (downloaded 2026-10-29, https://www.meshy.ai/posts/01994b60-9f84-7cb2-8db5-4d6c1efd598e)  -> character meshy_teddy (look Teddy)
-- "An ancient Egyptian Anubis" (downloaded 2026-10-29, https://www.meshy.ai/posts/01949bdc-c981-76ab-a761-77581ea062da)  -> character meshy_anubis (look Anubis)
+- "An ancient Egyptian Anubis" (downloaded 2026-10-29, https://www.meshy.ai/posts/01949bdc-c981-76ab-a761-77581ea062da)  -> character meshy_anubis (look Anubis) until 2026-11-25, when the owner's "AnubisSentinelRigged" replaced its model (no longer shipped)
 - "Knight Stance" (downloaded 2026-10-29, https://www.meshy.ai/posts/019cee3e-fd2f-7ebb-9d95-b12f1aee4046)  -> character meshy_brannock (look Ser Brannock)
 - "Medieval Monk in Contemplation" (downloaded 2026-10-29, https://www.meshy.ai/posts/019b0a85-3058-7a32-829c-1ecfeee310b3)  -> character meshy_monk (look Brother Ansel)
 - "T Pose Monkey" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f6ba3-0841-7739-af7e-d60ab20641e0)  -> character meshy_big_bab (look Big Bab)
@@ -130,7 +130,7 @@ goes back to owned). Name as on the download, the date recorded for it:
 
 - "a black tribal man wi" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_ashwalker (look Shaka Mpande)
 - "The object is a reali" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_bonejack (look Bonejack)
-- "Tribal Warrior Charac" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_thornweaver (look Thornweaver)
+- "Tribal Warrior Charac" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_thornweaver (look Thornweaver) until 2026-11-25, when the owner's "PlainsHuntressRemesh15k" replaced its model (no longer shipped)
 - "Arms Outstretched for" (2026-10-29; rigged through Meshy's rigging API)  -> character meshy_uncle_bao (look Uncle Bao)
 - "dapper man rigged" (2026-11-01)  -> character meshy_dapper (look The Dapper); the model it replaced (generated through our Meshy API on 2026-10-25) is no longer shipped
 - "scary larry rigged" (2026-11-01)  -> character meshy_larry (look Scary Larry)

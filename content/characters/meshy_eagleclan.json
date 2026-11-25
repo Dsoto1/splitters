@@ -1,0 +1,33 @@
+{
+  "id": "meshy_eagleclan",
+  "kind": "character",
+  "use": "player",
+  "order": 207,
+  "name": "Talon Skycrest",
+  "look": "core.eagleclan",
+  "group": "legends",
+  "blood": "red",
+  "nameTheme": "myth",
+  "bio": "Strikes from above, then is above again.",
+  "body": "male",
+  "notes": "Drive intake of 2026-11-25 (\"EagleClanRigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
+    "url": null,
+    "file": "^Meshy_AI_EagleClanRigged_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

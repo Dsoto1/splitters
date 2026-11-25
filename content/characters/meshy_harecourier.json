@@ -12,13 +12,13 @@
   "bio": "Delivers anything anywhere, usually before you ordered it.",
   "body": "male",
   "size": "small",
-  "notes": "Drive intake of 2026-11-22, afternoon (\"hare courier game ready\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\").",
+  "notes": "Pip Quickfoot's model since 2026-11-25 (owner: an updated model; id, name, place and small size kept). Built from the Drive download \"hare courier clean game ready\" (rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
-    "date": "2026-11-22",
+    "date": "2026-11-25",
     "url": null,
-    "file": "^Meshy_AI_hare_courier_game_ready_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_hare_courier_clean_game_ready_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.1,

@@ -112,20 +112,27 @@ describe("Character Select's groups", () => {
     expect(PICKABLE_LOOKS.some((l) => l.id === 'core.gasmaskengineer')).toBe(false);
   });
 
-  it('the Chrono Crew (owner, 2026-11-22): a section of its own after Outer Space, whatever their tier; they stay in Outer Space for the rest', () => {
-    const crew = ['Vesper Quill', 'Nova Kade', 'Fuse Hollister', 'Dex Calloway', 'Gears Okafor', 'Doc Seraphine Vale', 'Flicker', 'Wren Halloway', 'Sarge Tobias Crane', 'Mags Petrov', 'Lyra Vantis'];
+  it('the Chrono Crew (owner, 2026-11-22; 13 since 2026-11-25): a section of its own after Outer Space, whatever their tier; they stay in Outer Space for the rest', () => {
+    // Owner, 2026-11-25: Clio Everwhen joins and leads it with Sarge Tobias Crane; Fuse Hollister leaves for Machines;
+    // two new members (the alien recruit and the pilot).
+    const crew = ['Clio Everwhen', 'Sarge Tobias Crane', 'Vesper Quill', 'Nova Kade', 'Dex Calloway', 'Gears Okafor', 'Doc Seraphine Vale', 'Flicker', 'Wren Halloway', 'Mags Petrov', 'Lyra Vantis', 'Blix Orrin', 'Juno Hartwell'];
     const inCrew = CORE_LOOKS.filter((l) => l.collection === 'chrono');
     expect(inCrew.map((l) => l.name).sort()).toEqual([...crew].sort());
     for (const l of inCrew) expect(l.group, l.id).toBe('space');
-    const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine' }));
+    const roster = CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine', ...(l.sortAs ? { sortAs: l.sortAs } : {}) }));
     const sections = characterSections(roster);
     const ids = sections.map((s) => s.id);
     expect(ids.indexOf('chrono')).toBe(ids.indexOf('space') + 1);
-    expect(sections.find((s) => s.id === 'chrono')!.label).toBe('Chrono Crew');
-    expect(sections.find((s) => s.id === 'chrono')!.looks.map((l) => l.name).sort()).toEqual([...crew].sort());
-    // The Time Traveler stays with Outer Space (core since the owner's 2026-11-24 promotion of the experimental ones).
-    expect(characterSectionOf(getLook('core.timetraveler'))).toBe('space');
+    const chrono = sections.find((s) => s.id === 'chrono')!;
+    expect(chrono.label).toBe('Chrono Crew');
+    expect(chrono.looks.map((l) => l.name).sort()).toEqual([...crew].sort());
+    // Clio and Sarge are #1 and #2: the first two tiles of the section's first row.
+    expect(chrono.looks.slice(0, 2).map((l) => l.name)).toEqual(['Clio Everwhen', 'Sarge Tobias Crane']);
+    expect(characterSectionOf(getLook('core.timetraveler'))).toBe('chrono');
     expect(getLook('core.timetraveler').group).toBe('space');
+    // Fuse Hollister is a Machine now, out of the crew; Ignatius Slagg is in Legends.
+    expect(characterSectionOf(getLook('core.crewdemolitions'))).toBe('machines');
+    expect(getLook('core.magmajuggernaut').group).toBe('legends');
   });
 
   it('Santa is in Legends (owner, 2026-11-22)', () => {

@@ -4,6 +4,7 @@
   "use": "player",
   "order": 179,
   "name": "Sarge Tobias Crane",
+  "sortAs": "02 Sarge Tobias Crane",
   "look": "core.veterancrew",
   "group": "space",
   "collection": "chrono",
@@ -11,7 +12,7 @@
   "nameTheme": "soldier",
   "bio": "Fought in every war, some twice.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-21/22 (\"veteran time crew 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it); \"Crew Veteran\" until 2026-11-22, when the crew got its own names (owner, the lead's list). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\"; recorded as Meshy Community CC0 until then).",
+  "notes": "Drive intake of 2026-11-21/22 (\"veteran time crew 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it); \"Crew Veteran\" until 2026-11-22, when the crew got its own names (owner, the lead's list). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\"; recorded as Meshy Community CC0 until then). Second in the Chrono Crew's section after Clio Everwhen (owner, 2026-11-25: the two are the team's #1 and #2; sortAs).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",

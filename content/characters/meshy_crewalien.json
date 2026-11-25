@@ -1,0 +1,34 @@
+{
+  "id": "meshy_crewalien",
+  "kind": "character",
+  "use": "player",
+  "order": 199,
+  "name": "Blix Orrin",
+  "look": "core.crewalien",
+  "group": "space",
+  "collection": "chrono",
+  "blood": "green",
+  "nameTheme": "alien",
+  "bio": "Signed up for one trip through time. That was four centuries ago.",
+  "body": "female",
+  "notes": "Drive intake of 2026-11-25 (\"crew alien recruit rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Chrono Crew (owner, 2026-11-25: one of the two new members that bring the team to 14). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
+    "url": null,
+    "file": "^Meshy_AI_crew_alien_recruit_rigged_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

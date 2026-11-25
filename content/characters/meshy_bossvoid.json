@@ -1,0 +1,35 @@
+{
+  "id": "meshy_bossvoid",
+  "kind": "character",
+  "use": "npc",
+  "order": 202,
+  "name": "The Unhour",
+  "look": "core.bossvoid",
+  "group": "space",
+  "tier": "experimental",
+  "blood": "spirit",
+  "nameTheme": "alien",
+  "bio": "What waits in the gap between seconds. Provisional name.",
+  "body": "male",
+  "size": "large",
+  "notes": "Drive intake of 2026-11-25 (\"boss void rift entity rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). A Chrono Crew story boss (owner, 2026-11-25): built but out of play for now (NPC-only, and no NPC role names it, so it is never a player's, a bot's, a random or a Roulette pick); the name is provisional (docs/STORY_CAMPAIGN.md, \"Bosses\"). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
+    "url": null,
+    "file": "^Meshy_AI_boss_void_rift_entity_rigged_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
