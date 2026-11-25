@@ -15118,10 +15118,11 @@ async function dodgerollFlow(browser) {
   const page = await context.newPage();
   livePages.add(page);
   page.on('pageerror', (e) => errors.push(e.message));
-  await page.goto(`${CLIENT}/?offline=void_yard&test=1&god=1&bots=1&name=Tester`);
+  await page.goto(`${CLIENT}/?offline=void_yard&test=1&god=1&bots=2&name=Tester`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), null, { timeout: T(90000) });
   await playWithoutMouse(page);
   await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
+  await simWait(page, (m) => m.combatants().some((c) => c.bot), null, T(30000));
   // The bot does as the flow says (queue.fwd, queue.right, queue.btn, queue.once for one input, queue.yaw); nobody shoots.
   const bot = await sim(page, (m) => {
     const b = m.combatants().find((c) => c.bot);
