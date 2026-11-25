@@ -673,8 +673,8 @@ export const getLook = (id: string | undefined): CharacterLook => {
 
 /**
  * Characters retired to MapMaker (owner, 2026-11-25: "All replacements can be retired to the mapmaker for use in other
- * creations such as scenarios"): the old models of replaced characters, kept under their own ids (`use: figure` in their
- * manifests). They are on no roster: not Character Select's, never a bot's, a random or a Roulette pick, and getLook does
+ * creations such as scenarios"; the owner's own models only: a retired look that isn't theirs is removed): the old
+ * models of replaced characters, kept under their own ids (`use: figure` in their manifests; none yet). They are on no roster: not Character Select's, never a bot's, a random or a Roulette pick, and getLook does
  * not give them (a saved or typed id falls back as an unknown one does). MapMaker's Figure (map/schema.ts FigureEntity)
  * can wear them, and figureLook draws them.
  */

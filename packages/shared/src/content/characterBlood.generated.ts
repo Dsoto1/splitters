@@ -220,13 +220,4 @@ export const WHOLE_BODY_BLOOD: Readonly<Record<string, BloodKind>> = {
   'core.rebelcommander': 'red',
   'core.vietnamsoldier': 'red',
   'core.vcscout': 'red',
-  'core.cyberlion_classic': 'red',
-  'core.lionsuit_classic': 'red',
-  'core.croakley_classic': 'red',
-  'core.elephantwarrior_classic': 'red',
-  'core.hyena_classic': 'red',
-  'core.greyfang_classic': 'red',
-  'core.gorillag_classic': 'red',
-  'core.boxduck_classic': 'red',
-  'core.boglurker_classic': 'red',
 };

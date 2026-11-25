@@ -37,7 +37,7 @@ export const MESHY_TASKS = {
 /** The provenance pack (content/models.json) for each licence. */
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
-/** `figure`: retired to MapMaker (owner, 2026-11-25): off the roster, bots and Roulette; MapMaker places it as a Figure (docs/CHARACTERS.md, "Retired to MapMaker"). */
+/** `figure`: retired to MapMaker (owner, 2026-11-25): off the roster, bots and Roulette; MapMaker places it as a Figure (docs/CHARACTERS.md, "Retired to MapMaker"). The owner's own models only. */
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player', 'figure']);
 const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'plugs', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
@@ -115,6 +115,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(`${m.id}.json` === file, `id ${m.id} does not match the file name`);
   need(KINDS.has(m.kind ?? 'character'), 'kind: character or creature');
   need(USES.has(m.use ?? 'player'), 'use: player, npc, player+npc or figure (retired to MapMaker)');
+  need(m.use !== 'figure' || m.source?.license === 'owned', 'use: figure only for the owner\'s own models (owner, 2026-11-25: a retired look that isn\'t the owner\'s is removed, not kept)');
   need(m.status === undefined || m.status === 'queued', 'status: queued (a stub not ready to build) or left out');
   need(typeof m.name === 'string' && m.name.length > 0 && m.name.length <= 24, 'name: 1–24 characters');
   const s = m.source ?? {};

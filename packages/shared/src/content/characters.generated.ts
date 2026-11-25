@@ -227,17 +227,7 @@ export const WHOLE_BODY_NPC_LOOKS: readonly CharacterLook[] = [
 ];
 
 /** Characters retired to MapMaker (`use: figure`; owner, 2026-11-25): on no roster, never a bot's, a random or a Roulette pick; MapMaker's Figure can wear them. */
-export const WHOLE_BODY_FIGURE_LOOKS: readonly CharacterLook[] = [
-  { id: 'core.cyberlion_classic', name: 'Classic Cyber Lion', body: 'male', head: '', parts: ['meshy_cyberlion_classic'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'cat' },
-  { id: 'core.lionsuit_classic', name: 'Classic Lion in a Suit', body: 'male', head: '', parts: ['meshy_lionsuit_classic'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'cat' },
-  { id: 'core.croakley_classic', name: 'Classic Croakley', body: 'male', head: '', parts: ['meshy_croakley_classic'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m', grip: { curlL: 1.2, rollL: -0.25 } }, group: 'animals', nameTheme: 'frog' },
-  { id: 'core.elephantwarrior_classic', name: 'Classic Elephant Warrior', body: 'male', head: '', parts: ['meshy_elephantwarrior_classic'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m', hold: { forward: 0.14, down: 0.14, out: 0.06 } }, group: 'animals', nameTheme: 'barbarian' },
-  { id: 'core.hyena_classic', name: 'Classic Hyena Warrior', body: 'male', head: '', parts: ['meshy_hyena_classic'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'wolf' },
-  { id: 'core.greyfang_classic', name: 'Classic Greyfang', body: 'male', head: '', parts: ['meshy_greyfang_classic'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'wolf' },
-  { id: 'core.gorillag_classic', name: 'Classic Gorilla G', body: 'male', head: '', parts: ['meshy_gorillag_classic'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m', hold: { forward: -0.15 } }, group: 'animals', nameTheme: 'monkey' },
-  { id: 'core.boxduck_classic', name: 'Classic Juice', body: 'male', head: '', parts: ['meshy_boxduck_classic'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'critter' },
-  { id: 'core.boglurker_classic', name: 'Classic Boglurker', body: 'male', head: '', parts: ['meshy_toad_classic'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'frog' },
-];
+export const WHOLE_BODY_FIGURE_LOOKS: readonly CharacterLook[] = [];
 
 /** Their one-line bios (character select). */
 export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {

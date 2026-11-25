@@ -37,8 +37,6 @@ into its data):
 - **Wars:** Civil War: Capt. Elias Harrowgate (`core.unionofficer`) and Col. Josiah Beaumont (`core.rebelcommander`);
   Vietnam: Pfc. Danny Okerlund (`core.vietnamsoldier`) and Lien Vo (`core.vcscout`) (2026-11-25); WW2: WWII Infantry and
   the Army soldiers already on the roster.
-- **Characters retired to MapMaker** (the old models of the 2026-11-25 replacements, "Classic …"; docs/CHARACTERS.md,
-  "Retired to MapMaker") can stand in a scenario as Figures.
 
 ## Unlocking characters (ideas, any or all)
 

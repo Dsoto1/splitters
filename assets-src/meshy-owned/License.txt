@@ -143,8 +143,8 @@ Provenance: Meshy, owned.
   - "elder tomo rigged" (2026-11-25)  -> character meshy_elder (look Elder Tomo), his new model (the community "Elder T-pose" it replaced is no longer shipped)
 
 - The owner's Drive characters uploaded 2026-11-25 afternoon (the same kind of download, pack meshy-owned; owner,
-  2026-11-25: all are the owner's own Meshy creations). Built by tools/content/prepare-meshy-characters.mjs. The models
-  they replaced are kept, renamed <id>_classic and retired to MapMaker (still shipped, under their own licences).
+  2026-11-25: all are the owner's own Meshy creations). Built by tools/content/prepare-meshy-characters.mjs. The community
+  models they replaced no longer ship.
 
   - "futuristic cyber lion 15k" (2026-11-25)  -> character meshy_cyberlion (look Cyber Lion), its new model
   - "safari scout lioness 15k" (2026-11-25)  -> character meshy_lionsuit (look Kesi Tallgrass, was Lion in a Suit), its new model

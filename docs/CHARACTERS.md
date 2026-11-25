@@ -1635,20 +1635,19 @@ portraits captured). Names of new characters are the lead's (the owner can renam
 
 ### Retired to MapMaker (owner, 2026-11-25)
 
-A replaced character's old model is not deleted: it is **retired to MapMaker**. Its manifest is copied to a new id
-(`<id>_classic`, look `core.<look>_classic`, named "Classic …") with `use: "figure"`, and its built files are renamed to
-that id (no rebuild). A `figure` manifest is on no roster: not on Character Select, never a bot's, a random or a Roulette
-pick, and `getLook` / `validLookId` don't give it (a saved or typed id falls back as an unknown one does); it needs no
-grip fit or portrait. The generated table lists them in `WHOLE_BODY_FIGURE_LOOKS` (looks.ts `RETIRED_FIGURE_LOOKS`).
+A replaced character's old model **of the owner's own** is not deleted: it is **retired to MapMaker**. Its manifest is
+copied to a new id (`<id>_classic`, look `core.<look>_classic`, named "Classic …") with `use: "figure"`, and its built
+files and lock entries are renamed to that id (no rebuild). A `figure` manifest is on no roster: not on Character
+Select, never a bot's, a random or a Roulette pick, and `getLook` / `validLookId` don't give it (a saved or typed id
+falls back as an unknown one does); it needs no grip fit or portrait. The generated table lists them in
+`WHOLE_BODY_FIGURE_LOOKS` (looks.ts `RETIRED_FIGURE_LOOKS`). **The owner's own models only** (owner, 2026-11-25: "i dont
+want to support them and they are not my models"; the manifest checker refuses `use: figure` on a community model): a
+retired model that isn't the owner's is removed entirely. All nine models replaced on 2026-11-25 were community models
+(Meshy Community CC0), so they were removed and no figure look ships yet.
 
 MapMaker places them, and anyone on the roster, with the **Figure** (NPCs tab, "Figures"; map format v53,
 `FigureEntity` in map/schema.ts): a character standing on the map in a pose (Standing, Cheering, Dancing, Crouching),
 empty-handed, at the look's body size, for scenarios and set dressing. The inspector's Character list has the retired
-looks first, then the roster by group. Looks only: no collision and no part in play (stand it on a block or a prop to
-make it solid). The game and MapMaker draw it with the same character library (`figureLook` resolves a retired id;
-`ScenarioVisuals.figure`). Retired this way on 2026-11-25: Classic Cyber Lion, Classic Lion in a Suit, Classic
-Croakley, Classic Elephant Warrior, Classic Hyena Warrior, Classic Greyfang, Classic Gorilla G, Classic Juice, Classic
-Boglurker. To retire another character the same way: copy its manifest to `<id>_classic` with `use: "figure"`, rename
-its built files and lock entries, and give the original id its new model. The older retirements in `RETIRED_LOOKS`
-(Big Bab, Brutus Hornbeck, Shellback…) are not figures, and no NPC squad wears a retired look (owner, 2026-11-25: Figures
-are for the owner's own retirements only).
+looks first (when there are any), then the roster by group. Looks only: no collision and no part in play (stand it on a
+block or a prop to make it solid). The game and MapMaker draw it with the same character library (`figureLook` resolves
+a retired id; `ScenarioVisuals.figure`). No NPC squad wears a retired look (owner, 2026-11-25: not wanted).
