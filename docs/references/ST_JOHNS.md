@@ -12,6 +12,10 @@ script (the first pass was built by a script that no longer exists).
 
 No photos are stored in the repository: everything below is a link.
 
+In the game the map is **St. Jasper's Military Academy**, a fictional school, and its halls, streets and gate have
+fictional names (owner, 2026-11-24): `docs/map-briefs/st_johns/NAMES.md` has the real → fictional table. This file
+keeps the real names: it is about the real place.
+
 ## Real layout and ground (2026-10-30)
 
 The halls, streets and ground follow the real place, from two public sources
