@@ -36,7 +36,6 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/fixes-20261125` · d9a49e0f · run 45624249036: fix batch 11-25 (lane A): every projectile gun's shot leaves its barrel like the X-42; Bottomless Mag's pickup a stack of rounds under an ∞; Elder Tomo's new model ("elder tomo rigged", Meshy, owned); Pip Quickfoot is a her (HANDOFF "Fix batch 2026-11-25").
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -158,6 +157,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-25** train check/train-20261125-145926 (9235ce6, run 45640114571), landed by the splitters lead: fix batch `wip/fixes-20261125`: every projectile gun's shot drawn leaving its barrel; Bottomless Mag pickup as rounds with ∞; Elder Tomo's new model; Pip Quickfoot is a her.
 - **2026-11-25** train check/train-20261125-052032 (e86dc6f, run 45552919898), landed by the splitters lead: the owner's characters of 2026-11-25 (`wip/chars-1125`): Clio and Sarge lead the Chrono Crew; Fuse Hollister to Machines; Blix Orrin and Juno Hartwell join the crew (13; the owner will upload the 14th); 13 more new characters; Pip, Anoobys and Thornweaver new models; Ignatius Slagg to Legends; three story bosses built and parked.
 - **2026-11-25** train check/train-20261125-042041 (5078c4e, run 45546156041), landed by the splitters lead: small features batch (`wip/small-1125`: Match Setup one tab per map, map format v51; Weapon Manager Explosion and Impact sound slots; Freeze Ray freeze blast); colour vision (`wip/colourblind-1124`, lane B); MapMaker at rest ≤15 frames/s and the ended Test match freed (`wip/editor-idle-1124`, lane B).
 - **2026-11-25** train check/train-20261125-024943 (0b6cbff, run 45535725391), landed by the splitters lead: crash and error reports (`wip/crash-reports-1124`, lane B; the hub picks it up on `sudo tiletrigger-update`); St. Jasper's fictional names (docs/map-briefs/st_johns/NAMES.md) and plain glass mirrors, a new `glazed` surface and Wall Mirror prop (`wip/stjohns-13`).
