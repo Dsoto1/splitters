@@ -179,7 +179,7 @@ import { CRASH_REACH, blastReach, blastShake, crashShake, rollScale, shotShake }
 import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, pointerAsk, pointerWanted, releasePointer, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, releasePointer, requestMouse, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
@@ -984,12 +984,8 @@ export class GameSession {
         this.input.setTouchEngaged(true);
         return;
       }
-      // Raw mouse movement (no OS acceleration) where the browser has it; Safari and older ones refuse
-      // the option, so ask again plainly: unless the page has let the mouse go since (a window opened over the pause
-      // menu), when the refusal comes back late and a lock now would hide the menu under it (the hostcontrols flake).
-      const ask = pointerAsk();
-      const raw = (opts.canvas.requestPointerLock as (this: HTMLCanvasElement, o?: { unadjustedMovement?: boolean }) => Promise<void> | void).call(opts.canvas, { unadjustedMovement: true });
-      if (raw instanceof Promise) raw.catch(() => (pointerWanted(ask) ? opts.canvas.requestPointerLock() : undefined));
+      // Raw mouse movement where the browser has it, else plainly; a refusal is never an unhandled rejection (requestMouse).
+      requestMouse(opts.canvas);
     };
     this.takeMouse = lock;
     opts.canvas.addEventListener('click', lock, { signal });
