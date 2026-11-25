@@ -18,13 +18,13 @@
         { "u": [1.5, "half"], "y": [0, "height"] },
         { "u": [-1.5, 1.5], "y": ["min(3,height)", "height"] }
       ],
-      "trim": [{ "base": ["-half", -1.66] }, { "base": [1.66, "half"] }, { "cornice": ["-half", "half"] }, { "frame": { "half": 1.5, "top": 3 }, "outside": true }],
+      "trim": [{ "base": ["-half", -1.66] }, { "base": [1.66, "half"] }, { "cornice": ["-half", "half"] }, { "frame": { "half": 1.5, "top": 3 } }],
       "openings": [[-1.5, 1.5, 0, 3]],
       "corner": true,
       "facade": true,
       "street": true,
       "dressing": { "kind": "door", "span": 3 },
-      "notes": { "design": "3 m wide, 3 m high: the tile kit's doorWidth and doorHeight (map/catalog.ts TILE_DIMENSIONS). Every square door look fits it (doors that fit themselves: editor/doorFit.ts); its frame dresses the outer face too where nothing is built beyond and no facade dresses the wall." }
+      "notes": { "design": "3 m wide, 3 m high: the tile kit's doorWidth and doorHeight (map/catalog.ts TILE_DIMENSIONS). Every square door look fits it (doors that fit themselves: editor/doorFit.ts); cut in a free block, its frame dresses both faces." }
     },
     {
       "id": "door_arched",

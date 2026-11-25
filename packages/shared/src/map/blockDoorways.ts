@@ -66,7 +66,7 @@ export function blockDoorwayPieces(e: Block): { solids: RunPiece[]; trim: RunPie
       const hi = Math.min(H, sill + y1);
       if (b - a > 1e-6 && hi - lo > 1e-6) solids.push({ u0: a, u1: b, y0: lo, y1: hi, v0: 0, v1: T });
     }
-    for (const p of edgeTrimBoxes(d.style, half, height, true, 'all', { wall: T, bare: true })) {
+    for (const p of edgeTrimBoxes(d.style, half, height, true, 'all', { wall: T, bare: true, frames: 'both' })) {
       const mid = (p.u0 + p.u1) / 2 + d.at;
       const up = sill + (p.y0 + p.y1) / 2;
       if (mid < from || mid > to || up < 0 || up > H) continue;

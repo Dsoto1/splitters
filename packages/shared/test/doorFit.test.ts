@@ -98,15 +98,15 @@ describe('doors that fit themselves: in a tile\'s side', () => {
     expect(trim.some((b) => b.min[0] >= 4.5)).toBe(true);
   });
 
-  it('in an outside wall the door moves into the middle of the wall\'s thickness, and the frame dresses both faces', () => {
+  it('in an outside wall the door moves into the middle of the wall\'s thickness (the Doorway framed inside, as on every shipped map)', () => {
     const { doc, door: d } = place(makeMap([room('a', 0, 0)]), door([4, 0, 0], Math.PI / 2));
     const { cells } = buildOccupancy(doc);
     expect(resolveEdge(cells, 0, 0, 0, 'E')).toBe('door');
     expect(d.position[0]).toBeCloseTo(3.75);
-    // The Doorway's frame: on the inner face (x < 3.5) and the outer one (x > 4).
+    // The Doorway's frame: on the inner face (x < 3.5); the outer face as before (no shipped map's look changes).
     const posts = buildMapDecor(doc).filter((b) => b.kind === 'trim' && b.max[1] > 2.5 && b.min[1] < 0.1 && Math.abs((b.min[2] + b.max[2]) / 2) > 1.4 && Math.abs((b.min[2] + b.max[2]) / 2) < 1.7);
     expect(posts.some((b) => b.max[0] <= 3.5 + 1e-6)).toBe(true);
-    expect(posts.some((b) => b.min[0] >= 4 - 1e-6)).toBe(true);
+    expect(posts.some((b) => b.min[0] >= 4 - 1e-6)).toBe(false);
   });
 
   it('changing the look re-cuts the doorway; removing the door leaves it', () => {

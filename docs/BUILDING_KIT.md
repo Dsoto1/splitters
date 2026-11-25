@@ -762,8 +762,9 @@ as before. The door goes to the middle of the wall's thickness (a room's
 outside wall: 25 cm in; between two rooms: the boundary). The doorway is the
 wall's: erasing the door leaves it (a block's inspector has *Fill in its
 doorway*); a door already placed is fitted with its inspector's *Fit the wall
-to this door*. The Doorway's frame now dresses both faces of an outside wall
-(not under a facade, which frames its openings itself).
+to this door*. A doorway cut in blocks is framed on both faces; a tile's
+outside wall keeps the Doorway framed inside only, as on every shipped map (the
+Arched doorway's voussoirs dress both faces).
 Breakable props are rule targets for *Object destroyed* (a dynamite crate by
 the vault door can blow it open).
 

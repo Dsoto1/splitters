@@ -139,8 +139,11 @@ export interface EdgeTrimOptions {
   wall?: number;
   /** No baseboards or cornices (a doorway cut in a free block: the block has neither). */
   bare?: boolean;
-  /** Door frames marked `outside` dress the outer face too (with `outer`); false where a facade frames the openings. */
-  frames?: boolean;
+  /**
+   * Door frames on the outer face too (with `outer`): `true` those marked `outside`, `'both'` every frame (a doorway cut
+   * in a free block: the same frame on both its faces), false none (a facade frames the openings itself).
+   */
+  frames?: boolean | 'both';
 }
 
 /**
@@ -175,7 +178,7 @@ export function edgeTrimBoxes(style: ResolvedEdge, half: number, height: number,
         const pieces: [number, number, number, number][] = [[-d - 0.16, -d, 0, h], [d, d + 0.16, 0, h], [-d - 0.16, d + 0.16, h, h + 0.16]];
         for (const [u0, u1, y0, y1] of pieces) at(u0, u1, y0, y1, 0.06, own(p));
         // The same frame on the outer face (doors that fit themselves: framed inside and out).
-        if (outer && p.outside && opts.frames !== false) for (const [u0, u1, y0, y1] of pieces) out.push({ u0, u1, y0, y1, v0: -0.06, v1: 0, ...own(p) });
+        if (outer && opts.frames !== false && (p.outside || opts.frames === 'both')) for (const [u0, u1, y0, y1] of pieces) out.push({ u0, u1, y0, y1, v0: -0.06, v1: 0, ...own(p) });
       }
     } else if ('window' in p) {
       const [u0, u1] = p.window.u;
