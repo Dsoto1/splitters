@@ -13,6 +13,9 @@ import { MeshPool } from './meshPool.ts';
 
 /** How fast drawn rounds fly (m/s): slow enough to see leave the muzzle and land, fast enough to feel like bullets. */
 export const BULLET_SPEED = 260;
+/** Bullet holes kept on one block the scenario drives (holeOn; the oldest reused first). */
+const MAX_BLOCK_HOLES = 48;
+
 /** Bullet holes kept per match (oldest reused first). */
 const MAX_HOLES = 700;
 const STREAK_LENGTH = 2.2;
@@ -113,6 +116,8 @@ export class ImpactVisuals {
   /** Holes made since the last upload (first and last index): sent to the GPU once a frame, not the whole buffer per hit. */
   private holeDirty: [number, number] | null = null;
   private readonly holeMatrices = new Float32Array(MAX_HOLES * 16);
+  /** Holes on blocks the scenario drives, by the block's body (holeOn); they go with the block's meshes. */
+  private readonly blockHoles = new WeakMap<Mesh, { mesh: Mesh; buf: Float32Array; count: number; next: number }>();
 
   constructor(
     private readonly scene: Scene,
@@ -340,16 +345,51 @@ export class ImpactVisuals {
 
   /** A bullet hole that stays for the match (the oldest reused past MAX_HOLES). */
   private hole(point: Vec3, n: Vector3, size: number): void {
-    const q = new Quaternion();
-    Quaternion.FromUnitVectorsToRef(new Vector3(0, 0, -1), n, q);
-    const twist = Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2);
-    const s = size * (0.8 + Math.random() * 0.4);
-    const m = Matrix.Compose(new Vector3(s, s, s), q.multiply(twist), new Vector3(point.x + n.x * 0.01, point.y + n.y * 0.01, point.z + n.z * 0.01));
-    m.copyToArray(this.holeMatrices, this.holeNext * 16);
+    holeMatrix(point, n, size).copyToArray(this.holeMatrices, this.holeNext * 16);
     this.holeDirty = this.holeDirty ? [Math.min(this.holeDirty[0], this.holeNext), Math.max(this.holeDirty[1], this.holeNext)] : [this.holeNext, this.holeNext];
     this.holeNext = (this.holeNext + 1) % MAX_HOLES;
     this.holeCount = Math.min(MAX_HOLES, this.holeCount + 1);
     this.holes.thinInstanceCount = this.holeCount;
+  }
+
+  /**
+   * A bullet hole on a block the scenario drives (blockHoles.ts): `point` and `normal` in the block body's own frame.
+   * The holes are thin instances of a disc parented to the body, so they ride a mover and break away with the block;
+   * up to MAX_BLOCK_HOLES a block (the oldest reused). Cleared when the block comes back (clearHolesOn).
+   */
+  holeOn(body: Mesh, point: Vec3, normal: Vec3, size: number): void {
+    let h = this.blockHoles.get(body);
+    if (!h || h.mesh.isDisposed()) {
+      const mesh = CreateDisc(`${body.name}_holes`, { radius: 0.05, tessellation: 10 }, this.scene);
+      mesh.material = this.holes.material;
+      mesh.isPickable = false;
+      mesh.parent = body;
+      const buf = new Float32Array(MAX_BLOCK_HOLES * 16);
+      mesh.thinInstanceSetBuffer('matrix', buf, 16, false);
+      mesh.thinInstanceCount = 0;
+      h = { mesh, buf, count: 0, next: 0 };
+      this.blockHoles.set(body, h);
+    }
+    const n = new Vector3(normal.x, normal.y, normal.z).normalize();
+    holeMatrix(point, n, size).copyToArray(h.buf, h.next * 16);
+    h.next = (h.next + 1) % MAX_BLOCK_HOLES;
+    h.count = Math.min(MAX_BLOCK_HOLES, h.count + 1);
+    h.mesh.thinInstanceCount = h.count;
+    h.mesh.thinInstanceBufferUpdated('matrix');
+  }
+
+  /** A block came back (respawned, shown again): it is whole, with no holes. */
+  clearHolesOn(body: Mesh): void {
+    const h = this.blockHoles.get(body);
+    if (!h || h.count === 0) return;
+    h.count = 0;
+    h.next = 0;
+    if (!h.mesh.isDisposed()) h.mesh.thinInstanceCount = 0;
+  }
+
+  /** Bullet holes on a block the scenario drives (for tests). */
+  holesOn(body: Mesh): number {
+    return this.blockHoles.get(body)?.count ?? 0;
   }
 
   /** A spray of hot sparks from a point (a badly damaged vehicle shorting out, a crash). */
@@ -490,6 +530,15 @@ export class ImpactVisuals {
     this.spark.dispose();
     this.holes.dispose();
   }
+}
+
+/** A hole's matrix: the disc facing out along `n` (unit), turned at random, a touch off the face. */
+function holeMatrix(point: Vec3, n: Vector3, size: number): Matrix {
+  const q = new Quaternion();
+  Quaternion.FromUnitVectorsToRef(new Vector3(0, 0, -1), n, q);
+  const twist = Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2);
+  const s = size * (0.8 + Math.random() * 0.4);
+  return Matrix.Compose(new Vector3(s, s, s), q.multiply(twist), new Vector3(point.x + n.x * 0.01, point.y + n.y * 0.01, point.z + n.z * 0.01));
 }
 
 /** A dark, ragged hole with a lighter chipped rim (drawn once, in code). */

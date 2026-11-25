@@ -60,11 +60,13 @@ import {
   buildMapGeometry,
   fixtureGap,
   type WorldBox,
+  type Vec3,
 } from '@tiletrigger/shared';
 import { BT_COLORS, createBombsiteModel, createFlagBase, createFlagModel, createHillModel, createSectorModel, createTargetModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
 import { GlassVisuals, glassMaterial } from './glassVisuals.ts';
 import { WaterVisuals } from './waterVisuals.ts';
+import { rayBoxLocalHit, type LocalHit } from './blockHoles.ts';
 import { loadGraphicsQuality } from './atmosphere.ts';
 import { SAFE_LIGHT, blinkLevel, ease, reduceFlashing } from './reduceFlashing.ts';
 import { PAD_FX_RANGE, PAD_MOTION, PORTAL_FX_RANGE, PORTAL_GATE, fixtureLevel, padChevrons, padRings, portalCover, portalFit } from './fixtureFx.ts';
@@ -164,6 +166,31 @@ export class ScenarioVisuals {
 
   /** Every pane of glass (windows, glass blocks, Window pane destructibles), instanced; see glassVisuals.ts. */
   readonly glass: GlassVisuals;
+
+  /** Blocks the scenario drives that a round can hole (breakable, crumbling, trapdoor, logic-driven, carried): their bodies as drawn. */
+  private holeTargets: { body: Mesh; half: Vec3; material: string | null }[] = [];
+
+  /** A block that had holes came back whole (respawned, or hidden by logic): the game view clears its holes. */
+  onBlockReset: ((body: Mesh) => void) | null = null;
+
+  /**
+   * The block the scenario drives that a round from `from` stopped on at `to` (blockHoles.ts), as drawn now: its body,
+   * the point and face normal in the body's frame and in the world, and its material. Null: none (the level's static
+   * shapes are EffectsWorld's).
+   */
+  strikeBlock(from: Vec3, to: Vec3): { body: Mesh; local: LocalHit; point: Vec3; normal: Vec3; material: string | null } | null {
+    let best: { body: Mesh; local: LocalHit; material: string | null } | null = null;
+    for (const t of this.holeTargets) {
+      if (!t.body.isEnabled() || t.body.isDisposed()) continue;
+      const hit = rayBoxLocalHit(from, to, t.body.computeWorldMatrix(true), t.half);
+      if (hit && (!best || hit.dist < best.local.dist)) best = { body: t.body, local: hit, material: t.material };
+    }
+    if (!best) return null;
+    const world = best.body.getWorldMatrix();
+    const p = Vector3.TransformCoordinates(best.local.point, world);
+    const n = Vector3.TransformNormal(best.local.normal, world).normalize();
+    return { ...best, point: { x: p.x, y: p.y, z: p.z }, normal: { x: n.x, y: n.y, z: n.z } };
+  }
 
   /** Blocks movers carry (they follow their mover, so they can't be instanced with the static glass). */
   private carriedBlocks: ReadonlySet<string> = new Set();
@@ -447,6 +474,7 @@ export class ScenarioVisuals {
   }
 
   clear(): void {
+    this.holeTargets = [];
     for (const v of this.visuals.values()) v.root.dispose(false, false);
     this.visuals.clear();
     this.animated = null;
@@ -1149,16 +1177,26 @@ export class ScenarioVisuals {
         if (e.startHidden) body.visibility = 0.45;
         return { root };
       }
+      this.holeTargets.push({ body, half: { x: w / 2, y: h / 2, z: d / 2 }, material: e.material });
       return {
         root,
-        update: (a) => hinge.setEnabled(a > 0),
+        update: (a) => {
+          // Gone (logic hid it): its holes go with it, so it comes back whole.
+          if (a <= 0 && hinge.isEnabled(false)) this.onBlockReset?.(body);
+          hinge.setEnabled(a > 0);
+        },
       };
     }
+    if (!this.opts.editor) this.holeTargets.push({ body, half: { x: w / 2, y: h / 2, z: d / 2 }, material: e.material });
     let gone = 0;
+    let broken = false;
     return {
       root,
       update: (a, b, now, dt) => {
         if (a > 0) {
+          // Back after breaking (respawned): whole again, no holes.
+          if (broken) this.onBlockReset?.(body);
+          broken = false;
           gone = 0;
           hinge.setEnabled(true);
           hinge.rotation.z = 0;
@@ -1169,6 +1207,7 @@ export class ScenarioVisuals {
           return;
         }
         gone += dt;
+        broken = true;
         if (e.behaviour === 'trapdoor') hinge.rotation.z = -Math.min(Math.PI / 2, gone * 7);
         else {
           body.position.y = h / 2 - gone * gone * 9;

@@ -710,12 +710,14 @@ html.calm .setup .go.primary { box-shadow: 0 0 8px rgba(0, 209, 255, 0.18); }
   .setup .go.peek-start .glyph { width: 16px; height: 16px; }
   .screen.play.sheet-open .go.peek-start { display: none; }
   .screen.play:not(.sheet-open) .setup > :not(.sheet-peek) { visibility: hidden; }
-  /* Small cards: the name gets the width (no plan tile; the sheet's header shows it once picked), two lines if it needs. */
+  /* Small cards: the name gets the width (no plan tile; the sheet's header shows it once picked), on one line (a long
+     name ends in an ellipsis; the card's title has it whole): two lines made that row taller, so a phone held
+     sideways no longer showed the second row (St. Jasper's Military Academy, 2026-11-24). */
   .screen.play .map-cards { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 10px; }
   .screen.play .map-tabs { flex: 1 1 100%; }
   .screen.play .map-card .meta { height: auto; min-height: 58px; padding: 6px 8px 8px 10px; }
   .screen.play .map-card .meta .card-plan { display: none; }
-  .screen.play .map-card b { font-size: 14px; white-space: normal; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; }
+  .screen.play .map-card b { font-size: 14px; }
   .screen.play .map-card .meta-text { gap: 4px; }
   .screen.play .view-pick { display: none; }
   .screen.play .map-tools { flex-wrap: nowrap; min-width: 0; }

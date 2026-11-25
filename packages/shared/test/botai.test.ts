@@ -2,6 +2,7 @@ import { beforeAll, describe, expect, it } from 'vitest';
 import {
   BOT_DIFFICULTIES,
   BUTTON_FIRE,
+  BUTTON_USE,
   CORE_BOT_PROFILES,
   DEFAULT_COOP_RULES,
   DEFAULT_DEATHMATCH_RULES,
@@ -267,6 +268,51 @@ describe('bot tactics', () => {
     expect(mountedAt).toBeGreaterThanOrEqual(0);
     expect(mountedAt).toBeLessThan(60 * 6);
     expect(events.some((e) => e.e === 'shot' && e.s === bot.slot && e.w === 'core.mount_mg')).toBe(true);
+  });
+
+  it('a small bot mans the turret and fires it too (a rider sees and fires from a full-size eye: eyeScaleOf)', () => {
+    const turret = { id: 'mount_0', kind: 'mount' as const, model: 'turret_mg' as const, position: [8, 0, 4] as [number, number, number], yaw: 0, faction: null, respawnSeconds: null };
+    const match = new Match(yard([turret]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, 4);
+    const enemy = match.addHuman('enemy')!;
+    const bot = match.addBot('bot', { ...CORE_BOT_PROFILES[3]!, tags: [] }, BOT_DIFFICULTIES.normal)!;
+    // A small look's body (Pip Quickfoot's 0.78): its own eye is under the turret's top.
+    bot.size = 0.78;
+    place(enemy, 8, 18, Math.PI);
+    place(bot, 10.5, 1, 0);
+    const input = driver(match, enemy);
+    let mountedAt = -1;
+    let eyeY = 0;
+    const events: GameEvent[] = [];
+    for (let t = 0; t < 60 * 10; t++) {
+      input();
+      enemy.health = 100;
+      events.push(...match.step());
+      if (mountedAt < 0 && bot.mount) {
+        mountedAt = t;
+        eyeY = (match as unknown as { eyeOf(c: Combatant): { y: number } }).eyeOf(bot).y - bot.move.pos.y;
+      }
+    }
+    expect(bot.size).toBe(0.78);
+    expect(mountedAt).toBeGreaterThanOrEqual(0);
+    expect(eyeY).toBeCloseTo(STANCES[0].eye, 5);
+    expect(events.some((e) => e.e === 'shot' && e.s === bot.slot && e.w === 'core.mount_mg')).toBe(true);
+  });
+
+  it('a small player on a turret has a full-size eye, and their own on foot', () => {
+    const turret = { id: 'mount_0', kind: 'mount' as const, model: 'turret_mg' as const, position: [8, 0, 4] as [number, number, number], yaw: 0, faction: null, respawnSeconds: null };
+    const match = new Match(yard([turret]), { ...DEFAULT_DEATHMATCH_RULES, scoreLimit: 0 }, 4);
+    const me = match.addHuman('me')!;
+    me.size = 0.78;
+    place(me, 8, 2.5, 0);
+    const eye = () => (match as unknown as { eyeOf(c: Combatant): { y: number } }).eyeOf(me).y - me.move.pos.y;
+    expect(eye()).toBeCloseTo(STANCES[0].eye * 0.78, 5);
+    const input = driver(match, me);
+    for (let t = 0; t < 30 && !me.mount; t++) {
+      input({ buttons: t % 2 ? BUTTON_USE : 0 });
+      match.step();
+    }
+    expect(me.mount).toBeTruthy();
+    expect(eye()).toBeCloseTo(STANCES[0].eye, 5);
   });
 
   it('shoots back at a sentry gun that is shooting at it, and destroys it', () => {

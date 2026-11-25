@@ -1158,7 +1158,14 @@ corners rounded 4.7 m at the eave: each corner a cone between two flat faces; va
 and `kit.roof.hip_round` (the −z half of such a pyramid with a Ridge Roof Bay's span, rise and flare: a hall's hipped
 end that meets the bay in one line; generator `roundroof`), `kit.bookcase.press_tall` (3.15 m) and
 `kit.bookcase.double_tall` (3.2 m), six rows of books a face. Ridge roofs (`ridgeroof`) close a gable's verge with a
-barge board 0.45 m deep (the slopes were a skin with open ends; a slit showed along every gable). Set pieces: the
+barge board 0.45 m deep (the slopes were a skin with open ends; a slit showed along every gable). Light seams (St. John's 12, 2026-11-24): a ridge roof's eave hollow is closed from below from the wall plate out to the
+soffit, so a wall thinner than 0.5 m under it shows no sky along its top; an `open` leaded window's four bars are boxes
+through the wall's depth (the lining had stood 2 cm inside the wall's cut, a channel open to the sky at its outer end).
+Dorm furniture: `kit.bed.bunk_chest` (Bunk Bed with Footlocker: the bunk with a black trunk with grey edging and three
+latches 4 cm off its foot, colliding as the bunk's boxes and the trunk's), `kit.cabinet.sink_mirror` (Sink with Mirror
+Cabinet, generator `sinkmirror`: a vanity on the Sink Unit's footprint, a basin and tap, a small mirror cabinet on the
+wall over it; collides as the vanity) and `kit.table.desk_hutch_pair` 2.8 m long with the desks flush; every dorm
+piece's rooms put the desk run in the window corner and the bunk's trunk against the window wall. Set pieces: the
 Library Faceted End and Library End Bay take **Plan** (Faceted or Square as built / Rounded corners: the tiles above,
 glass windows, taller and more bookcases; the Faceted End without its stair), the Faceted End **Annex door** (the
 doorway end) and **Window bench** (a seat 1.2 m deep, 1 m up three steps of 0.25 m on 0.5 m treads, along a side's
