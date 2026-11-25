@@ -14259,7 +14259,7 @@ async function farBodies(browser) {
   // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
   // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
   // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
-  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.zencapybara', 'core.knight', 'core.croakley'];
   await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
     const c = m.combatants().find((x) => x.slot === s);
     if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);

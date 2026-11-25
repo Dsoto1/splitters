@@ -114,6 +114,15 @@ before). The NPC roles they drew are drawn as the owner's own: the goblin as Gob
 Crema, the Strongman as Ignatius Slagg (content/npcs.json). The shooter clip set's run clips still come from The Hollow
 Visitor's animation download (motion only).
 
+**Retired looks that aren't the owner's own, removed entirely (owner, 2026-11-25: "i dont want to support them and they
+are not my models"):** Astronaut Explorer, Big Bab, Brass Hare, Dust Trooper, Giggles, Neon Guardian, Neon Shadow Ninja,
+Shade, Capt. Nova, Bamboo, Ivory Rustwalker, Slugger-9, Shellback, Hollis, Briggs, Uncle Bao, Vampire and Rotter, as the
+eleven above. Every removed id (these and the eleven) plays a near look of the owner's own (Meshy, owned) in
+`RETIRED_LOOKS` (Big Bab Chester Knuckleby, Shellback Coach Hank Shelton, Capt. Nova Juno Hartwell, Santa Elder Tomo,
+and so on); `lookGroups.test.ts` holds that. Retired looks of the owner's own models (Brutus Hornbeck) stay; the modular
+presets (Linktifa and the 2026-11-01 retirements) have no files of their own and keep their entries. Zombies no longer
+draw Rotter (`ZOMBIE_LOOKS`).
+
 **Collections: the Chrono Crew (owner, 2026-11-22).** A collection (`CHARACTER_COLLECTIONS` in looks.ts; `collection`
 in a manifest, the checker's `COLLECTIONS` the same list) is a set of characters with a Character Select section of its
 own, placed after the group it names (`after`). It is only Character Select's: its characters keep their `group` for
@@ -192,12 +201,12 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 |---|---|
 | Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Grunt '68, Kenji, Pemberton, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry, and from 2026-11-25 Cpl. Tinwhistle, Pvt. Pete Plastic |
 | Everyday Folk (`folk`) | Biker Gang Girl, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver (the plains huntress model since 2026-11-25), Cutter McCrae (2026-11-25), Velvet Vance |
-| Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
+| Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
 | Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Blix Orrin, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Vesper Quill, Wren Halloway (their group is Outer Space) |
 | Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo (new model 2026-11-25), Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw |
-| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
+| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Biscuit, Boglurker, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
-| Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
+| Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
@@ -332,7 +341,7 @@ white-grey; 133 characters on the roster):
 
 | Kind | How many | Who |
 |---|---|---|
-| **Red** (`red`) | 94 | Anoobys, Astronaut Explorer, Azure Sentinel, Rascal McGraw, Barnaby Bruin, Big Bab, Biker Gang Girl, Biscuit, Boglurker, Brass Hare, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Neon Guardian, Neon Shadow Ninja, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Salamander Warlord, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shellback, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
+| **Red** (`red`) | 87 | Anoobys, Azure Sentinel, Rascal McGraw, Barnaby Bruin, Biker Gang Girl, Biscuit, Boglurker, Brother Silencio, Cal, Cap'n Rusty Barnacle, Chef Basile, Coffee Brown, Cool Hands Rex, Croakley, Customs Agent Zhao, Cyber Lion, Desert Ranger, Dusty Ranger, Elder Tomo, Elephant Warrior, Fearsome Undead, Fishy Fred, Flt. Lt. Ember, Freaky Frida, Frost Viking, Goblin Gunslinger, Goblin Warlord, Goblina, Gorilla G, Grandpa Chains, Greyfang, Groaner, Grunt '68, Hazmat Joe, Honest Abe, Hyena Warrior, Imperial Guard, Iron Knight, Kenji, King Aldric, Lancer Mei, Lion in a Suit, Luther Vanguard, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Pemberton, Punkin, Rosa Rivets, Salamander Warlord, Scamp, Scary Larry, Seetah J. Chloth, Sentinel in Green, Ser Brannock, Sgt. Mackie, Shadow Enforcer, Shaka Mpande, Shambler, Shiba, Sir Galloway, Snikkit, Spacewalker, Spike Scavenger, Star Voyager, Starfarer, Stealth Operative, Steampunk Warrior, Sun Warrior, Tactical Soldier, The Butcher, The Dapper, The Masked Figure, The Mechanic, The Prospector, The Purple Comet, The Racer, Thornweaver, Velvet Vance, Virtua Soldier, Warrior of the Skies, Warrior Sentinel, WWII Infantry, Zombie Soldier A |
 | **Green** (`green`) | 5 | *Alien Encounter*, *Beanie Alien*, *Gorgle*, *Pink Mantis*, *The Visitor* |
 | **Blue** (`blue`) | 6 | *Alien Biker*, *Octo Buddy*, *Reef Wanderer*, *Ricochet*, *Space Marine*, *Spud Marshal* |
 | **Black oil and sparks** (`oil`) | 10 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
@@ -340,7 +349,7 @@ white-grey; 133 characters on the roster):
 | **Stone dust** (`stone`) | 1 | *Bronzer* |
 | **Spectral wisp** (`spirit`) | 1 | *The Hollow Pilgrim* |
 
-Retired looks (`RETIRED_LOOKS`) keep a `blood` in their manifests, but bleed as the look they play: Bamboo (as Shellback), Briggs (as Grunt '68), Capt. Nova (as Spacewalker), Dust Trooper (as Desert Ranger), Hollis (as WWII Infantry), Ivory Rustwalker (as T-TreeFitty), Rotter (as Shambler), Shade (as Lancer Mei), Slugger-9 (as T-TreeFitty), Uncle Bao (as Old Timer), Vampire (as Count Bonesworth).
+Retired looks (`RETIRED_LOOKS`) bleed as the look they play; those still on disk (the owner's own, Brutus Hornbeck) keep a `blood` in their manifests, and the removed ones bleed as the owner's look they now play.
 
 **Stone dust** (`stone`) is bone dust's chips and cloud in grey (`#a6a39b`), for a statue. The **wisp** is white-grey:
 its own mist `#c4c6ca`, the pack's burst tinted `#a9adb3` at 0.22 of its size and 0.45 of its strength, eased in (softer than a white burst; owner, 2026-11-18).
