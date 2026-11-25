@@ -1,3 +1,4 @@
+import { perfOn } from '../game/perfSwitches.ts';
 import {
   buildOccupancy,
   CEILING_LABELS,
@@ -99,6 +100,27 @@ export class Inspector {
   renderInspector(): void {
     if (this.emptyStands()) return;
     rebuildKeepingEdit($('ed-inspector'), () => this.buildInspector());
+    this.builtFor = this.shownKey();
+  }
+
+  /**
+   * After an edit (EditorApp.refresh): built again unless it already shows this very map and selection. An edit that
+   * picks what it made (placing, pasting, duplicating) built it once in setSelection, and the frame's refresh built
+   * it a second time (the owner's trace of 2026-11-24: a tile's inspector, about 1,400 nodes, twice within 70 ms).
+   * `?perfoff=editoridle` builds it again every time, as before.
+   */
+  refreshInspector(): void {
+    const k = this.builtFor;
+    const now = this.shownKey();
+    if (k && perfOn('editoridle') && k.doc === now.doc && k.rev === now.rev && k.sel === now.sel && k.ws === now.ws && k.hint === now.hint) return;
+    this.renderInspector();
+  }
+
+  /** What a built inspector shows (refreshInspector). */
+  private builtFor: ReturnType<Inspector['shownKey']> | null = null;
+
+  private shownKey(): { doc: MapDocument; rev: number; sel: number; ws: string; hint: boolean } {
+    return { doc: this.app.doc, rev: this.app.history.revision, sel: this.app.selectionRev, ws: this.app.paletteWs, hint: !!this.app.hints.selected() };
   }
 
   /** What the empty inspector (the line and the tab's section) was last built from, while it is what the inspector shows. */

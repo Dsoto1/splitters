@@ -20,6 +20,16 @@ import { perfOn } from './perfSwitches.ts';
  */
 export function freshWorld(n: TransformNode): Matrix {
   if (!gripFitOn()) return n.computeWorldMatrix(true);
+  try {
+    return fresh(n);
+  } finally {
+    // Emptied after every use: a chain left here held the last body's nodes, and through them its whole scene, after
+    // the match ended (a MapMaker Test's ended match stayed in memory until the next: docs/PERF_EDITOR_IDLE_2026-11-24.md).
+    CHAIN.length = 0;
+  }
+}
+
+function fresh(n: TransformNode): Matrix {
   const chain = CHAIN;
   chain.length = 0;
   let p: unknown = n;
@@ -68,6 +78,11 @@ export function setGripFit(v: boolean | null): void {
 type Inside = { _isDirty: boolean; _isSynchronized(): boolean; _parentUpdateId: number; _childUpdateId: number; _isWorldMatrixFrozen: boolean; _transformToBoneReferal: unknown };
 
 const CHAIN: TransformNode[] = [];
+
+/** Tests: nodes still held from the last call (always 0: nothing kept after a call). */
+export function freshChainHeld(): number {
+  return CHAIN.length;
+}
 
 function forced(n: TransformNode): Matrix {
   return n.computeWorldMatrix(true);

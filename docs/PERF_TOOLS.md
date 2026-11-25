@@ -99,7 +99,15 @@ memory     script 642 MB · 3,730 meshes, 891 materials, 2,835 geometries, 433 t
 - **The repeat probe**: `node tools/perf/memory-probe.mjs` (after `pnpm build`) opens a big map in MapMaker,
   runs rounds of a small edit, a Test with bots and Back to MapMaker, then plain matches from the menu, and
   after each collects garbage and prints what the page holds, including objects still in the heap that were
-  disposed (a disposed scene there is a leak). Its options are at the top of the file.
+  disposed (a disposed scene there is a leak). Its options are at the top of the file. For the leak question of
+  2026-11-24 (docs/PERF_EDITOR_IDLE_2026-11-24.md) it also reads every `PROBE_SAMPLE_S` seconds inside a Test,
+  counts elements not in the page, Web Audio nodes and Babylon observers in the heap, and with
+  `PROBE_CHECK=<MB>,<nodes>,<listeners>` fails when rounds 2 to the last grow more than that.
+- **MapMaker at rest**: `node tools/perf/editor-idle.mjs [map]` opens a map in MapMaker and reports the main thread's
+  share, frames drawn and display refreshes a second at rest, and the time a frame takes, frozen or not; with
+  `IDLE_SHOTS=<dir>` it takes pictures after common actions (select, drag, place, paint, plan view), each beside the
+  same view drawn afresh, and prints how much differs (anything but a toast is something left stale).
+  `IDLE_QUERY=&perfoff=editoridle` measures the old every-frame drawing.
 - **A match's heap and garbage**: `node tools/perf/match-profile.mjs` (after `pnpm build`) plays an offline bot match
   (default Flavius Rule, 64 bots, Medium) and reports, in one page:
   - what the live heap holds by the code that allocated it;

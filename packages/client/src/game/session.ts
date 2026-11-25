@@ -2307,6 +2307,10 @@ export class GameSession {
     $('pause').hidden = true;
     this.view.dispose();
     this.dropTestHooks();
+    // The scoreboards' rows stay in the page (#scoreboard, the pause menu's Match tab) until the next match draws its
+    // own, and their click listeners reach this session: the whole ended match stayed in memory under MapMaker (about
+    // 290 MB on Iron Maw, docs/PERF_EDITOR_IDLE_2026-11-24.md). Emptied as the match goes.
+    for (const id of ['scoreboard', 'pause-scores']) document.getElementById(id)?.replaceChildren();
     this.opts.onExit(reason, this.travel ?? undefined, how ?? (this.rejected ? 'rejected' : undefined), end);
   }
 

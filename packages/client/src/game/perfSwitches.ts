@@ -29,9 +29,10 @@
  * sorted once and tested again only when the camera moves (atmosphere.ts); `casterbounds`, the cascades' casters' box
  * kept for the still casters (shadowBounds.ts); `fxlight`, the effects' sun and sky colours set on their materials only
  * when they change (godotVfx.ts update); fewer prop draws, docs/PERF_PROPS_2026-11-23.md, adds `propatlas`, a prop's materials of one atlas kind drawn as one material shared by its pack (content/models.ts, tools/content/prop-atlas.mjs), and `propmerge`, still props merged into one mesh per material and square (game/propBatches.ts, game/propMerge.ts).
+ * MapMaker at rest, docs/PERF_EDITOR_IDLE_2026-11-24.md, adds `editoridle`: MapMaker drawn every frame with what is in view worked out every frame, instead of only when something changes, a few frames a second at rest with the active meshes frozen (editor/renderGate.ts).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight' | 'propatlas' | 'propmerge';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight' | 'propatlas' | 'propmerge' | 'editoridle';
 
 let off: Set<string> | null = null;
 
