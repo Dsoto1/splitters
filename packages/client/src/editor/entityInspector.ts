@@ -234,6 +234,7 @@ export class EntityInspector {
         };
         {
           const sel = document.createElement('select');
+          sel.id = 'ed-door-look';
           for (const s of DOOR_STYLES) sel.append(new Option(DOOR_STYLE_LABELS[s], s, false, s === (e.style ?? 'sliding')));
           sel.addEventListener('change', () => refit('Set look', { ...e, style: sel.value === 'sliding' ? undefined : (sel.value as DoorStyle) }));
           el.append(row('Look', sel));

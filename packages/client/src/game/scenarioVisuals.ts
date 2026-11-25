@@ -1763,7 +1763,7 @@ export class ScenarioVisuals {
     const r = DOOR.width / 2;
     const top = doorHeight(e);
     const spring = top - r;
-    const planks = 5;
+    const planks = 8;
     const leafW = r - 0.03;
     const hinges: { node: TransformNode; dir: number }[] = [];
     for (const side of [-1, 1]) {
