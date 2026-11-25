@@ -105,8 +105,8 @@ export function weaponInfo(def, family) {
   };
 }
 
-/** Whether a projectile bursts with a blast (splash damage over a radius): what an explosion sound is for. */
-export const blowsUp = (p) => !!p && (p.splashRadius ?? 0) > 0;
+/** Whether a projectile bursts with a blast (splash damage over a radius), or its bomblets or bombs do: what an explosion sound is for. */
+export const blowsUp = (p) => !!p && ((p.splashRadius ?? 0) > 0 || blowsUp(p.cluster?.spec) || blowsUp(p.airstrike?.bomb));
 
 export const applicableStats = (info) => STAT_FIELDS.filter((f) => f.when(info));
 
