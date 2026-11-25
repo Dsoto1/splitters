@@ -116,6 +116,7 @@ import {
   indoorProps,
   TICK_RATE,
   materialSurface,
+  dodgeTicks,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -2938,6 +2939,7 @@ export class GameView {
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
           ...(p.sliding ? { sliding: true } : {}),
+          ...(p.dodge ? { dodge: p.dodge, dodgePhase: Math.min(1, (p.dodgeTicks ?? 0) / dodgeTicks(p.dodge, 1 / TICK_RATE)) } : {}),
           ...(p.lean ? { lean: p.lean } : {}),
           ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(seatDrawnYaw(p.yaw, sit.yaw), sit.yaw) } : {}),
         });

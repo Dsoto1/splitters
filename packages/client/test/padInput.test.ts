@@ -1,5 +1,5 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
-import { BUTTON_CROUCH, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, BUTTON_PRONE } from '@tiletrigger/shared';
+import { BUTTON_CROUCH, BUTTON_DODGE, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, BUTTON_PRONE } from '@tiletrigger/shared';
 
 beforeAll(() => {
   const g = globalThis as unknown as Record<string, unknown>;
@@ -111,6 +111,27 @@ describe('controller: d-pad lean while aiming, B for crouch and prone', () => {
     expect(step(input, 16) & BUTTON_PRONE).toBe(BUTTON_PRONE);
     step(input, 16, A);
     expect(step(input, 16) & BUTTON_PRONE).toBe(0);
+    input.dispose();
+  });
+
+  it('B while LT aims is Dodge, at once and once: it never crouches or goes prone', async () => {
+    const input = await make();
+    step(input, 16, LT);
+    expect(step(input, 16, LT, B) & BUTTON_DODGE).toBe(BUTTON_DODGE);
+    // Sent once per press, like Use; held past the prone time, still nothing more.
+    expect(step(input, 16, LT, B) & BUTTON_DODGE).toBe(0);
+    expect(step(input, 450, LT, B) & (BUTTON_PRONE | BUTTON_CROUCH)).toBe(0);
+    expect(step(input, 16, LT) & (BUTTON_CROUCH | BUTTON_PRONE | BUTTON_DODGE)).toBe(0);
+    // Without the aim, B is the crouch as before (no dodge).
+    step(input, 16);
+    expect(step(input, 16, B) & BUTTON_DODGE).toBe(0);
+    expect(step(input, 16) & BUTTON_CROUCH).toBe(BUTTON_CROUCH);
+    // Crouched and aiming, B again: Dodge (a roll, in the sim), and the crouch stays on.
+    step(input, 16, LT);
+    const roll = step(input, 16, LT, B);
+    expect(roll & BUTTON_DODGE).toBe(BUTTON_DODGE);
+    expect(roll & BUTTON_CROUCH).toBe(BUTTON_CROUCH);
+    expect(step(input, 16, LT) & BUTTON_CROUCH).toBe(BUTTON_CROUCH);
     input.dispose();
   });
 
