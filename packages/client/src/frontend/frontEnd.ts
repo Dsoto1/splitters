@@ -166,7 +166,7 @@ import { joinParty, lastJoin, parseInvite } from '../game/party.ts';
 import { MODE_SHORT, modeIcon } from './modeIcons.ts';
 import { QUICK_MODES, loadQuickPrefs, pickQuickMap, quickSetup, saveQuickPrefs, type QuickMode } from './quickPlay.ts';
 import { storyScreen } from './storyScreen.ts';
-import { characterUnlocked, startingCharacters, unlockState } from '@tiletrigger/shared';
+import { characterUnlocked, startingCharacters, unlockState, vacantCollectionPlaces } from '@tiletrigger/shared';
 import { storyStageSetup } from '../campaign/storyMatch.ts';
 import { CAMPAIGN, hostLockReason, myStoryProgress, syncStoryProgress } from '../campaign/storyProgress.ts';
 import { setTutorialState, tutorialState } from '../game/tutorial.ts';
@@ -2670,6 +2670,12 @@ export class FrontEnd {
         design.addEventListener('click', () => this.hooks.openDesigner(this.look));
         tiles.append(design);
       }
+      // A place kept for a character the story unlocks (the Chrono Crew's 14th): an Unknown tile until then.
+      for (const _ of vacantCollectionPlaces(s.id, myStoryProgress().characters)) {
+        const unknown = el('div', { class: 'char-unknown', title: 'Unknown: joins the crew when the story is complete' }, el('b', { textContent: '?' }), el('span', { textContent: 'Unknown' }));
+        unknown.setAttribute('aria-label', 'Unknown crew member, locked');
+        tiles.append(unknown);
+      }
       const sec = el('section', { class: 'char-sec' }, el('h4', { class: 'char-sec-head' }, el('span', { textContent: s.label }), el('b', { textContent: String(s.looks.length) })), tiles);
       sec.dataset.section = s.id;
       sec.setAttribute('aria-label', s.label);
@@ -2691,6 +2697,7 @@ export class FrontEnd {
         }
         const design = sec.querySelector<HTMLElement>('.char-tile.new');
         if (design) design.hidden = !!q || this.charFavsOnly;
+        for (const u of sec.querySelectorAll<HTMLElement>('.char-unknown')) u.hidden = !!q || this.charFavsOnly;
         sec.hidden = n === 0 && (!!q || this.charFavsOnly);
         chips.querySelector<HTMLElement>(`.char-chip[data-section="${CSS.escape(sec.dataset.section!)}"]`)?.toggleAttribute('hidden', sec.hidden);
         shown += n;

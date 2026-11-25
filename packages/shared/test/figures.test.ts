@@ -13,6 +13,7 @@ import {
   migrateMapDocument,
   newScenarioEntities,
   validLookId,
+  vacantCollectionPlaces,
 } from '../src/index.ts';
 
 // Characters retired to MapMaker and the Figure that wears them (owner, 2026-11-25: "All replacements can be retired to
@@ -65,5 +66,14 @@ describe('the Figure (map format v53)', () => {
     const { doc } = migrateMapDocument(JSON.parse(JSON.stringify(v51)));
     expect((doc as { formatVersion: number }).formatVersion).toBe(MAP_FORMAT_VERSION);
     expect((doc as { entities: unknown[] }).entities).toEqual(v51.entities);
+  });
+});
+
+describe('the Chrono Crew\'s 14th place (owner, 2026-11-25)', () => {
+  it('waits for the Inquisitor: an Unknown place until the story unlocks him', () => {
+    expect(vacantCollectionPlaces('chrono', [])).toEqual(['core.bossinquisitor']);
+    expect(vacantCollectionPlaces('chrono', ['core.bossinquisitor'])).toEqual([]);
+    expect(vacantCollectionPlaces('space', [])).toEqual([]);
+    expect(CORE_LOOKS.filter((l) => l.collection === 'chrono').length + vacantCollectionPlaces('chrono', []).length).toBe(14);
   });
 });

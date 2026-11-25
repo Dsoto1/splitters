@@ -12,7 +12,7 @@ Owner's notes, 2026-11-24. A direction to build toward, not yet a plan: the owne
 ## The Chrono Crew is the player's team
 
 - The player uses the Chrono Crew through the whole storyline.
-- Today there are **14** (owner, 2026-11-25): **Clio Everwhen** and **Sarge Tobias Crane**, the team's #1 and #2 (first in Character Select's Chrono Crew section), then Blix Orrin (the alien recruit), Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell (the pilot), Lyra Vantis, Mags Petrov, Nova Kade, **Rocco Tickwell** (the K9, the owner's upload of 2026-11-25 afternoon: "the K9 is new chrono member"), Vesper Quill and Wren Halloway. Fuse Hollister left the crew for Machines.
+- Today there are **13**, with a 14th place kept (owner, 2026-11-25): **Clio Everwhen** and **Sarge Tobias Crane**, the team's #1 and #2 (first in Character Select's Chrono Crew section), then Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell (the pilot), Lyra Vantis, Mags Petrov, Nova Kade, **Rocco Tickwell** (the K9: "the K9 is new chrono member"), Vesper Quill and Wren Halloway. Fuse Hollister left the crew for Machines, and Blix Orrin (the alien recruit) for Outer Space. **The 14th place is the Inquisitor's**: Character Select shows it as an **Unknown** tile until the story unlocks him (a data hook, `COLLECTION_RESERVED_PLACES` in looks.ts; the unlock comes with the campaign's rules).
 - **Team management:** the player swaps team members out for characters they've unlocked.
 
 ## Bosses (owner, 2026-11-25)
@@ -25,7 +25,7 @@ The story's bosses, from the owner's Drive uploads of 2026-11-25 ("boss chrono t
 | The Unhour | `core.bossvoid` | boss void rift entity rigged | large | a thing from the rift between times; bleeds spirit |
 | Inquisitor Vesk Tockley | `core.bossinquisitor` | boss temporal inquisitor 15k | standard | the time police: hunts unlicensed travellers, a mid-story boss |
 
-**The crew's 14th (owner, 2026-11-25: "Maybe their 14th is unlocked. We have a boss that is humanish, maybe the story completes and he joins the crew as a good guy").** The K9 has since joined (14 on the roster, 2026-11-25 afternoon), so the Inquisitor's unlock would make **15**, one over the 14-a-side cap of a picked roster: an owner question (the lead's pick: he still joins at the story's end, and the player picks 14 of the 15). The humanish boss, Inquisitor Vesk Tockley (`core.bossinquisitor`, standard size), turns good when the story completes and joins the crew (its 15th since the K9), unlocked by finishing the campaign. Until the campaign's unlocks exist he stays NPC-only as above; the unlock then gives him a roster place in the Chrono Crew section, with a good-guy name and bio from the owner.
+**The crew's 14th (owner, 2026-11-25: "Maybe their 14th is unlocked. We have a boss that is humanish, maybe the story completes and he joins the crew as a good guy").** Owner's answer (2026-11-25, with the K9): Blix Orrin leaves for Outer Space, so the crew is 13 and the Inquisitor is its 14th. The humanish boss, Inquisitor Vesk Tockley (`core.bossinquisitor`, standard size), turns good when the story completes and joins the crew as its 14th, unlocked by finishing the campaign. Until the campaign's unlocks exist he stays NPC-only as above; the unlock then gives him a roster place in the Chrono Crew section, with a good-guy name and bio from the owner.
 
 ## Characters by sector (owner, 2026-11-25)
 

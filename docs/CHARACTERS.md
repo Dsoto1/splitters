@@ -115,7 +115,10 @@ Outer Space), the time crew of the owner's 2026-11-21/22 Drive batch, each with 
 owner 2026-11-22): Vesper Quill (the Alchemist), Nova Kade (Cyborg), Fuse Hollister (Demolitions), Dex Calloway
 (Gunslinger), Gears Okafor (Mechanic), Doc Seraphine Vale (Medic), Flicker (Phase-Shifter), Wren Halloway (Recon),
 Sarge Tobias Crane (Veteran), Mags Petrov (Quartermaster) and Lyra Vantis (Chrono Mage). Their group is Outer Space;
-the Time Traveler was not in the crew then. **2026-11-25 (owner):** Clio Everwhen (the Time Traveler) joins, and she and Sarge Tobias Crane are the team's #1 and #2, the first two tiles of the section (`sortAs` `01 …`, `02 …`); Fuse Hollister leaves for Machines; two new members, Blix Orrin (the alien recruit) and Juno Hartwell (the pilot): 13 in all. Later that day Rocco Tickwell (the K9, `core.crewk9`) joined: **14**. `characterSectionOf(look)` gives a look's section.
+the Time Traveler was not in the crew then. **2026-11-25 (owner):** Clio Everwhen (the Time Traveler) joins, and she and Sarge Tobias Crane are the team's #1 and #2, the first two tiles of the section (`sortAs` `01 …`, `02 …`); Fuse Hollister leaves for Machines; two new members, Blix Orrin (the alien recruit) and Juno Hartwell (the pilot): 13 in all. Later that day (owner) Rocco Tickwell (the K9, `core.crewk9`) joined and Blix Orrin moved to Outer Space: **13**, and the
+crew's **14th place is kept** for the Inquisitor, Vesk Tockley (`core.bossinquisitor`), whom the story unlocks: Character
+Select shows an **Unknown** tile there until his look is in the player's campaign progress (`COLLECTION_RESERVED_PLACES`,
+`vacantCollectionPlaces` in looks.ts; the unlock itself and his roster place come with the campaign's rules). `characterSectionOf(look)` gives a look's section.
 
 **Army and Agency.** Every character in Soldiers & Spies carries a sub-designator, `branch` (`CHARACTER_BRANCHES`):
 **Army** (the uniformed soldiers; the old Soldiers) or **Agency** (agents and spies; the old Agents & Spies: Customs
@@ -185,9 +188,9 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 | Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Grunt '68, Kenji, Pemberton, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry, and from 2026-11-25 Cpl. Tinwhistle, Pvt. Pete Plastic, and from the second batch Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund, Lien Vo |
 | Everyday Folk (`folk`) | Big Bogdan, Biker Gang Girl, Bill the Barbarian, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Rourke, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver (the plains huntress model since 2026-11-25), Cutter McCrae (2026-11-25), Umpire, Velvet Vance |
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Neon Guardian, Neon Shadow Ninja, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Astronaut Explorer, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
-| Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Blix Orrin, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell (the K9, 2026-11-25: 14), Vesper Quill, Wren Halloway (their group is Outer Space) |
+| Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell (the K9, 2026-11-25), Vesper Quill, Wren Halloway (their group is Outer Space); the 14th place an Unknown tile kept for the Inquisitor |
 | Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo (new model 2026-11-25), Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Santa, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw, Tetl Stonewarden |
-| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Kesi Tallgrass (was Lion in a Suit, 2026-11-25), Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too), El Zarpazo; new models 2026-11-25 for Boglurker, Croakley, Cyber Lion, Elephant Warrior, Gorilla G, Greyfang, Hyena Warrior, Juice |
+| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Big Bab, Biscuit, Boglurker, Brass Hare, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Rollo Splitworth (was Hyena Warrior), Kesi Tallgrass (was Lion in a Suit, 2026-11-25), Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shellback, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too), El Zarpazo; Ellis Velvetrope (was Elephant Warrior), Puddles Ironbill (was Juice); new models 2026-11-25 for Boglurker, Croakley, Cyber Lion, Gorilla G, Greyfang |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Giggles, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
@@ -1616,15 +1619,17 @@ portraits captured). Names of new characters are the lead's (the owner can renam
 
 - **Replacements: new model, id, name and place kept** (the download's label in each manifest's notes): Cyber Lion
   ("futuristic cyber lion 15k"), Croakley ("jungle commando croakley 15k": his new counterpart takes his spot), Elephant
-  Warrior ("bouncer elephant 15k"), Hyena Warrior ("bowling hyena 15k"; the `hyena` NPC role wears it too), Greyfang
-  ("wolf ronin rigged"), Gorilla G ("circus strongman gorilla 15k"), Juice ("duck mech fps rigged"), Boglurker
+  Warrior ("bouncer elephant 15k"; renamed **Ellis Velvetrope**, owner 2026-11-25), Hyena Warrior ("bowling hyena 15k";
+  renamed **Rollo Splitworth**; the `hyena` NPC role wears it too), Greyfang
+  ("wolf ronin rigged"), Gorilla G ("circus strongman gorilla 15k"), Juice ("duck mech fps rigged"; renamed **Puddles
+  Ironbill**), Boglurker
   ("boglurker game ready"; the `boglurker` NPC role wears it too). Sizes kept (Croakley small; Boglurker, the hyena and
   Gorilla G large).
 - **Lion in a Suit became Kesi Tallgrass** (`core.lionsuit`, "safari scout lioness 15k"; owner: "one becomes lioness
   safari"): the id and place kept, a new name, a her.
 - **New:** El Zarpazo (`core.whitetiger`, the white tiger luchador; Animalia); Tetl Stonewarden (`core.basaltguardian`,
   the Basalt Guardian; Legends, large, bleeds stone; Mesoamerica's: docs/STORY_CAMPAIGN.md, "Characters by sector");
-  Rocco Tickwell (`core.crewk9`, the K9; **the Chrono Crew's 14th**); and four for the Wars sector, all Soldiers & Spies
+  Rocco Tickwell (`core.crewk9`, the K9; Chrono Crew); and four for the Wars sector, all Soldiers & Spies
   (Army): Capt. Elias Harrowgate (`core.unionofficer`) and Col. Josiah Beaumont (`core.rebelcommander`) for the Civil
   War, Pfc. Danny Okerlund (`core.vietnamsoldier`) and Lien Vo (`core.vcscout`) for Vietnam.
 
@@ -1645,5 +1650,5 @@ make it solid). The game and MapMaker draw it with the same character library (`
 Croakley, Classic Elephant Warrior, Classic Hyena Warrior, Classic Greyfang, Classic Gorilla G, Classic Juice, Classic
 Boglurker. To retire another character the same way: copy its manifest to `<id>_classic` with `use: "figure"`, rename
 its built files and lock entries, and give the original id its new model. The older retirements in `RETIRED_LOOKS`
-(Big Bab, Brutus Hornbeck, Shellback…) are not figures (an owner question). A figure that fights (an NPC squad wearing a
-retired look) would need the NPC snapshot to carry a look: not built.
+(Big Bab, Brutus Hornbeck, Shellback…) are not figures, and no NPC squad wears a retired look (owner, 2026-11-25: Figures
+are for the owner's own retirements only).

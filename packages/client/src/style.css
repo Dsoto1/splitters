@@ -911,6 +911,9 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 .char-sec + .char-sec { margin-top: 4px; }
 .char-tile { position: relative; aspect-ratio: 1; padding: 0; overflow: hidden; border-radius: 3px; background: linear-gradient(160deg, #2a3a55, #121827 70%); border: 1px solid var(--line); text-transform: none; }
 /* The portraits are head and shoulders: closer in, so the face fills the tile above the name. */
+.char-unknown { position: relative; aspect-ratio: 1; border-radius: 3px; border: 1px dashed var(--line); background: linear-gradient(160deg, #1d2536, #0d111b 70%); display: grid; place-items: center; color: #6f7d95; cursor: default; }
+.char-unknown b { font-size: 2.6em; line-height: 1; }
+.char-unknown span { position: absolute; left: 0; right: 0; bottom: 6px; text-align: center; font-size: 0.8em; text-transform: uppercase; letter-spacing: 0.04em; }
 .char-tile img { width: 100%; height: 100%; object-fit: cover; display: block; transform: scale(1.18); transform-origin: 50% 28%; }
 /* Portraits stay hidden (a soft shimmer instead) until every one on the tab is ready, then fade in together. */
 .char-tile img { transition: opacity 0.25s ease; }
