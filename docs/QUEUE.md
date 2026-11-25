@@ -47,6 +47,7 @@ Everything else keeps its place below these.
 
 ## In flight
 - **Lead: the "splitters" session (owner, 2026-11-22).**
+- M · lead's helper · **Campaign framework** (The plan, step 3): `wip/campaign-1125`, checking on `check/campaign-1125` (docs/CAMPAIGN.md).
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)

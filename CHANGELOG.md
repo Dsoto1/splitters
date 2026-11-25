@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Story** heads the main menu (Story · Quick Play · Local · Online): the Operations Database, three placeholder sectors on today's maps, played one map at a time against bots and saved on your device and your account; a sector's later maps can't be hosted until you've won them in Story (joining is fine).
 - **Pip Quickfoot is a her**: a woman's body and arms.
 - **A new model for Elder Tomo** (same name, size and place in Character Select).
 - **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).
