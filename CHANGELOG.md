@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).
 - **Every projectile gun's shot leaves its barrel**, like the Blaster X-42's bolts: the Crossbow's arrows, the Nailgun's nails, the Hornet's stingers, the Flak's shards, the Singularity's vortex, the Heart Taser's slime, rockets, launcher grenades, discs, flares and the Swarm's rockets no longer appear from the middle of the screen.
 - **Colour vision.** Options → Accessibility → Colour vision gives the teams colours that stay apart with red-green or blue-yellow colour blindness, and every team now has a symbol (▲ ● ■ ✚ …) beside its colour in the kill feed, scoreboard, minimap and objectives. Signed in, the setting follows your account.
 - **Match Setup: one tab per map.** The categories are Modern, Historic, Future & Space, Weird and Custom (your own and community maps); every map is under exactly one, so the tabs' counts add up, and the row of sub-tags is gone. MapMaker's Map properties → Category is one pick (map format v51).
