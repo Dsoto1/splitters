@@ -163,7 +163,7 @@ import {
   MATCH_MIN_SECONDS,
   getLook as cardLook,
 } from '@tiletrigger/shared';
-import { LEAN, leanShift } from '@tiletrigger/shared';
+import { LEAN, PROJECTILE_VISUALS, leanShift } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
@@ -2767,6 +2767,11 @@ export class GameSession {
             // Your own misses already landed where your predicted round hit the level.
             if (!ev.gone && (ev.hit !== null || !mine)) this.view.landRound({ eye: from, to, victim: ev.hit, zone, strength });
             if (mine) this.hitFeedback([ev.hit], [zone], !!ev.ar);
+          } else if (ev.e === 'land') {
+            // A projectile with no blast landed (the Blaster X-42's bolt, a nail, an arrow): its impact.
+            const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
+            if (ev.hit === this.slot) this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+            this.view.projectileLand({ look: PROJECTILE_VISUALS[ev.v], from, to: { x: ev.to[0], y: ev.to[1], z: ev.to[2] }, victim: ev.hit, bounce: !!ev.b });
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
             // Punches alternate jab and cross; a kick is the legs' own motion.

@@ -12682,7 +12682,7 @@ const flashingFlow = (part) => async (browser) => {
 const FLASHING_PARTS = {
   flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
-  flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
+  flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status', 'bolts'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
   flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
 };
@@ -13223,6 +13223,20 @@ async function flashingScene(browser, scene, names) {
       look: aim([0, 0, -25.5], [0, 1.2, -29]),
       bots: [],
       fire: true,
+    },
+    {
+      // A no-splash projectile's impact (game/projectileLand.ts): the Blaster X-42's bolts landing on the wall 3.5 m
+      // off, each an orange energy splash and a scorch (with the setting on: an unlit, dimmer, slower puff).
+      name: 'bolts',
+      label: "the Blaster X-42's bolts landing on a wall 3.5 m off in the dark room (energy splashes and scorches)",
+      weapon: 'core.blaster_x42',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.2, -29]),
+      bots: [],
+      fire: true,
+      before: () => page.evaluate(() => (window.__landsBefore = window.__cs.view.landsDrawn)),
+      seen: () => page.evaluate(() => window.__cs.view.landsDrawn - window.__landsBefore),
+      sees: (_on, n) => n >= 5,
     },
     {
       // Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): two guns' flashes. With the setting on the pair
