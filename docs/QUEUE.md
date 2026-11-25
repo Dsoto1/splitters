@@ -31,6 +31,19 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 - Claims live in HANDOFF; the landing lock is the branch `landing-lock`, run by `tools/ci/train.mjs` (`--lock-status` says who holds it; CLAUDE.md, "Landing"). This file only lists.
 - **Landing (owner, 2026-11-16):** every finished branch runs its own check at once. Green ones wait under "Ready to land" and go in together in a train (CLAUDE.md, "Landing").
 
+## The plan (owner, 2026-11-25): one numbered order
+**Rule:** a new idea goes to the bottom of its list unless the owner says "now"; nothing moves unless the owner moves it.
+1. **Finish what's running:** sharper characters (`wip/chartex-1125`: KTX2 textures, 2048 px colour).
+2. **Planned features, in their existing order** (lists below keep their order):
+   - Lane A: bullet holes on breakable props; the weapon holds still off; combat rules for map makers; St. John's remaining steps (double door, outdoor details, chapel, gym); the daily fix batches.
+   - Lane B: doors that fit themselves; tunnel kit; breakable walls; dodge-step and combat roll; chat with mute; practice range; simple pickers for the Rules tab; the pause menu's Host tab as Match Setup; impact effects by material; ice surface.
+3. **Campaign framework, beside step 2** (one helper, no list moves): sector data, progress on the device and the profile, unlocks, a bare Operations Database, the menu as Story · Quick Play · Local · Online; on today's maps with placeholder sectors (docs/CAMPAIGN_GDD.md, docs/STORY_CAMPAIGN.md).
+4. **The campaign build-out IS the map work:** a map is reworked or rebuilt only when its sector is built (maps, bosses, local allies, unlocks, challenges, the expedition picker with the first sectors). No separate map-by-map pass.
+5. **Convergence maps** (one map each, the fault line) and campaign polish (briefings, boss intros).
+6. **The remaining maps** (outside the story): decided one by one once the whole story's maps are set, convergences included (owner, 2026-11-25).
+7. **4-player split screen and online couch co-op.**
+Everything else keeps its place below these.
+
 ## In flight
 - **Lead: the "splitters" session (owner, 2026-11-22).**
 
