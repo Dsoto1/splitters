@@ -23,8 +23,8 @@
 // - moves the rig's joints onto the character's (keeping the rig's joint
 //   orientations, so the clips' rotations mean the same thing) and rebinds the
 //   mesh to them, its weights carried over joint by joint;
-// - keeps the base colour only (1024 px JPEG), simplifies the mesh and adds the
-//   low-detail copy the game draws for distant characters.
+// - keeps the base colour (2048 px) and a normal map, both GPU-compressed (KTX2, Basis Universal: ktx2.mjs),
+//   simplifies the mesh and adds the low-detail copy the game draws for distant characters.
 //
 // An unrigged FBX download is rigged here first: the mesh is welded and
 // pre-simplified, the joints go where the manifest's `landmarks` place them
@@ -64,6 +64,7 @@ import { clipSet, writeClipSet } from './clip-set.mjs';
 import { meshyName } from './retarget.mjs';
 import { GREEN, HANDS_SHARE, HEAD_SHARE, bakeNormals, padCharts, cutKeeping, normalJpeg, rebake, seamAwareSimplify } from './meshy-mesh.mjs';
 import { writeLock } from './lockfile.mjs';
+import { texturesToKtx2 } from './ktx2.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const OUT = join(ROOT, 'packages/client/public/characters');
@@ -986,8 +987,14 @@ function faceParts(c, P, head) {
   return [{ inside, share: c.face.share, dense: true }];
 }
 
-/** The colour map a rebaked character is painted at (px). */
-const REBAKE_SIZE = 1024;
+/**
+ * The colour map a rebaked character is painted at (px): 2048, the size it ships at (COLOUR_SIZE), so it is resampled
+ * once (owner, 2026-11-25: painted at 1024 and then shrunk, faces read soft up close). Its charts are packed at the
+ * same 2-texel gutter, so at 2048 they also cover more of the map.
+ */
+const REBAKE_SIZE = 2048;
+/** A character's colour map (px), shipped as KTX2 (ktx2.mjs): at most the download's own map's size. */
+const COLOUR_SIZE = 2048;
 /** Its charts: grown while each triangle faces within this many degrees of the chart's first (meshy-mesh.mjs rebake). */
 const REBAKE_GROW = 60;
 /** How far its rays look for the download's surface (share of the model's size: the cut moves it far less). */
@@ -1059,9 +1066,18 @@ async function rebakeDownload(mesh, image, normalImage, target, metalRoughImage,
     const mr = await sharp(Buffer.from(metalRoughImage)).removeAlpha().raw().toBuffer({ resolveWithObject: true });
     const again = await rebake({ pos, idx: cut }, { P, I, UV }, mr, REBAKE_SIZE, 0.008, { grow: REBAKE_GROW, crease: -1, reach: REBAKE_REACH, dense });
     if (again.uv.length !== out.uv.length || again.uv.some((u, i) => Math.abs(u - out.uv[i]) > 1e-6)) throw new Error('metal-roughness rebake laid out different charts');
-    metalRough = Buffer.from(again.jpeg);
+    metalRough = Buffer.from(again.png);
   }
-  return { P: out.pos, N: out.nrm, UV: out.uv, I: out.idx, from: Uint32Array.from(out.from, (k) => first[k]), colour: out.jpeg, normal: png, metalRough };
+  return { P: out.pos, N: out.nrm, UV: out.uv, I: out.idx, from: Uint32Array.from(out.from, (k) => first[k]), colour: out.png, normal: png, metalRough };
+}
+
+/**
+ * A character's normal map texture at `size`: a JPEG for the first-person arms (as before), else lossless until
+ * texturesToKtx2 compresses it.
+ */
+async function normalTexture(doc, c, image, size, firstPerson) {
+  const data = firstPerson ? await normalJpeg(image, size) : await sharp(Buffer.from(image)).resize(size, size, { fit: 'inside', kernel: 'lanczos3' }).removeAlpha().png({ compressionLevel: 1 }).toBuffer();
+  return doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(data)).setMimeType(firstPerson ? 'image/jpeg' : 'image/png');
 }
 
 /** Every group of vertices at one position given the same skin: their weights summed per joint, the four largest kept. */
@@ -1215,16 +1231,22 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   const acc = (type, array) => doc.createAccessor().setType(type).setArray(array).setBuffer(buffer);
   // The download's own layout: its gutters filled before it is shrunk (padCharts; a rebake fills its own).
   const padded = (image) => (src.ownNormalMap ? Buffer.from(image) : padCharts(image, src.uv, src.indices));
-  const jpeg = await sharp(await recolor(await scrub(await padded(src.baseColor), c.scrubBlue), c.recolor)).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
-  const tex = doc.createTexture(`${c.id}_albedo`).setImage(new Uint8Array(jpeg)).setMimeType('image/jpeg');
+  const colour = await recolor(await scrub(await padded(src.baseColor), c.scrubBlue), c.recolor);
+  // (The 1024 px JPEG also guides the seam-aware cut, as it always has: the cut, and so the model, stay as they were.)
+  const jpeg = await sharp(colour).resize(1024, 1024).jpeg({ quality: 86 }).toBuffer();
+  // The body's colour map: COLOUR_SIZE (or the download's own size, if smaller), lossless here and KTX2 once written
+  // (texturesToKtx2 below). The first-person arms (unused by the game since the universal arms) keep the JPEG.
+  const size = Math.min(COLOUR_SIZE, 2 ** Math.floor(Math.log2((await sharp(colour).metadata()).width)));
+  const colourImage = firstPerson ? jpeg : await sharp(colour).resize(size, size, { kernel: 'lanczos3' }).png({ compressionLevel: 1 }).toBuffer();
+  const tex = doc.createTexture(`${c.id}_albedo`).setImage(new Uint8Array(colourImage)).setMimeType(firstPerson ? 'image/jpeg' : 'image/png');
   // The game leaves materials it doesn't recognise as they are (textureFor), so this one keeps its texture.
   const material = doc.createMaterial(`MI_Meshy_${c.id}`).setBaseColorTexture(tex).setMetallicFactor(c.metallic).setRoughnessFactor(c.roughness);
   // `finish.maps`: the download's metal-roughness map (G roughness, B metal) at half the colour map's size; the
   // factors are then the download's own (1), as glTF multiplies them in. Grinning Gus's and Dog Tag Doyle's black
   // chrome skulls came out matte white with one finish for the whole body.
   if (src.metalRough) {
-    const mr = await sharp(await padded(src.metalRough)).resize(512, 512).removeAlpha().jpeg({ quality: 85 }).toBuffer();
-    material.setMetallicRoughnessTexture(doc.createTexture(`${c.id}_metalrough`).setImage(new Uint8Array(mr)).setMimeType('image/jpeg')).setMetallicFactor(1).setRoughnessFactor(1);
+    const mr = await sharp(await padded(src.metalRough)).resize(512, 512).removeAlpha()[firstPerson ? 'jpeg' : 'png'](firstPerson ? { quality: 85 } : { compressionLevel: 1 }).toBuffer();
+    material.setMetallicRoughnessTexture(doc.createTexture(`${c.id}_metalrough`).setImage(new Uint8Array(mr)).setMimeType(firstPerson ? 'image/jpeg' : 'image/png')).setMetallicFactor(1).setRoughnessFactor(1);
   }
   const prim = doc
     .createPrimitive()
@@ -1278,7 +1300,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     // own texture layout, drawn as the download is (no TANGENT attribute: the texel's own derivatives). Baked again
     // into per-vertex frames it drew a pale wedge down Biker Gang Girl's nose where her face's charts meet mirrored;
     // with the download's map the build shades as the download does (agent scratchpad charfix2/swap-biker.jpg).
-    material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(await padCharts(src.normalMap, src.uv, src.indices), normalSize))).setMimeType('image/jpeg'));
+    material.setNormalTexture(await normalTexture(doc, c, await padCharts(src.normalMap, src.uv, src.indices), normalSize, firstPerson));
   } else if (normalSize) {
     const hiMap = src.normalMap ? await sharp(Buffer.from(src.normalMap)).removeAlpha().raw().toBuffer({ resolveWithObject: true }) : null;
     const low = { P: prim.getAttribute('POSITION').getArray(), N: prim.getAttribute('NORMAL').getArray(), UV: prim.getAttribute('TEXCOORD_0').getArray(), idx: prim.getIndices().getArray() };
@@ -1287,7 +1309,7 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
     // dark wedge; 2026-11-03).
     const { tangents, png } = await bakeNormals(low, high, { size: normalSize * 2, reach: HEIGHT * 0.03, hiMap, ...(src.ownNormalMap ? { hiGreen: GREEN } : {}) });
     prim.setAttribute('TANGENT', acc('VEC4', tangents));
-    material.setNormalTexture(doc.createTexture(`${c.id}_normal`).setImage(new Uint8Array(await normalJpeg(png, normalSize))).setMimeType('image/jpeg'));
+    material.setNormalTexture(await normalTexture(doc, c, png, normalSize, firstPerson));
   }
   const fullTris = triangles(doc);
   if (lod) addLowDetail(doc, c.lod, (l) => console.log(`  ${out} ${l}`));
@@ -1297,6 +1319,8 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
   // their full body (Hyena Warrior 1.5-1.8 of 2.1 m on CI; 2026-11-09, tools/content/lod-audit.mjs).
   await doc.transform(quantize({ quantizePosition: 14, quantizeNormal: 10, quantizeTexcoord: 12, quantizeWeight: 8, quantizationVolume: 'scene' }));
   for (const a of root.listAccessors()) if (a.listParents().every((p) => p.propertyType === 'Root')) a.dispose();
+  // The body's maps GPU-compressed (KTX2, Basis Universal, with mipmaps: ktx2.mjs).
+  if (!firstPerson) await texturesToKtx2(doc);
   root.getAsset().generator = 'tiletrigger prepare-meshy-characters';
   const glb = await io.writeBinary(doc);
   writeFileSync(join(OUT, out), glb);

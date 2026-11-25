@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Sharper characters up close.** Character colour maps are twice as detailed (2048 px) for 177 of the 209 characters, and every character's maps now stay compressed on the graphics card, so all of them together take about 40% less video memory than before; the game downloads a little more per character.
 - **Pip Quickfoot is a her**: a woman's body and arms.
 - **A new model for Elder Tomo** (same name, size and place in Character Select).
 - **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).

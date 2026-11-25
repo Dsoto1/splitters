@@ -16,6 +16,7 @@ import { NodeIO } from '@gltf-transform/core';
 import { ALL_EXTENSIONS } from '@gltf-transform/extensions';
 import { dequantize } from '@gltf-transform/functions';
 import sharp from 'sharp';
+import { readPicture } from './ktx2.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const CHARACTERS = join(ROOT, 'packages/client/public/characters');
@@ -36,9 +37,9 @@ const luma = (c) => 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
 async function pictures(doc) {
   const out = new Map();
   for (const t of doc.getRoot().listTextures()) {
-    const img = t.getImage();
+    const img = readPicture(t);
     if (!img) continue;
-    const { data, info } = await sharp(Buffer.from(img)).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
+    const { data, info } = await sharp(img).ensureAlpha().raw().toBuffer({ resolveWithObject: true });
     out.set(t, { data, w: info.width, h: info.height });
   }
   return out;

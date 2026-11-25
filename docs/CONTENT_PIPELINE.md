@@ -282,7 +282,7 @@ mesh level.
 
 | Asset | LOD0 triangles | Textures | Other |
 |---|---|---|---|
-| Character | ≤ 15k | 1 × 2048² atlas (base, ORM, normal) | Shared humanoid skeleton, ≤ 60 bones, 3 LODs + impostor |
+| Character | ≤ 15k | 1 × 2048² atlas (base, ORM, normal; KTX2: "GPU-compressed textures") | Shared humanoid skeleton, ≤ 60 bones, 3 LODs + impostor |
 | Weapon viewmodel | ≤ 8k | 1024² | Sockets: muzzle, hand_r, hand_l |
 | Weapon world model | ≤ 2k | shares the viewmodel atlas | |
 | Tile kit piece | ≤ 3k per piece | Theme trim sheet / atlas | Must sit inside the tile's cell bounds; doorways keep 3 × 3 m clearance |
@@ -301,6 +301,73 @@ mesh level.
 6. **Data:** `characters/<id>.json` (default bot profile, voice set, animation attitude, tags).
 7. **Readability:** the roster-wall tool (silhouette and lit views, equal size) and in-arena distance checks.
 8. **Originality gate 2 and approval:** recorded in the entry's `review` field.
+
+### GPU-compressed textures (characters, owner 2026-11-25)
+
+Characters looked soft up close: their colour maps were 1024 px JPEGs, and a rebaked one (`surface: rebake`) was
+painted at 1024 and shrunk again. The owner chose to go straight to GPU-compressed maps at 2048 px rather than an
+interim fix. Every character body built from its download now ships:
+
+- **Colour map at 2048 px** (`COLOUR_SIZE` in `prepare-meshy-characters.mjs`; the download's own size if smaller).
+  A download kept in its own texture layout gives its own map, resized once (padded, scrubbed and recoloured as
+  before). A rebaked one is painted at 2048 (`REBAKE_SIZE`), the size it ships at, so it is resampled once; its
+  charts are packed with the same 2-texel gutter, so they also cover more of the map. The 1024 px JPEG still guides
+  the seam-aware cut, so the meshes are the ones built before; a rebaked body's texture coordinates move with its
+  new charts, and its far copy (cut with texture seams weighed) is cut again.
+- **KTX2 with Basis Universal** (`KHR_texture_basisu`, required; `tools/content/ktx2.mjs`), mipmaps made ahead of time.
+  Encoded with KTX-Software's `ktx` 4.4.2 (Khronos, Apache-2.0): `KTX_BIN=<path>`, else `ktx` on the PATH, else the
+  pinned Linux release fetched once into `~/.cache/tiletrigger` and checked against its SHA-256. Only content builds
+  encode; CI and the game only read. Choices, measured on Talon Skycrest's maps (`KTX2_KINDS`):
+
+  | Map | Codec | Talon | Quality (against the lossless 2048 map) |
+  |---|---|---|---|
+  | colour 2048 | ETC1S (BasisLZ, `--clevel 4 --qlevel 255`) | 0.84 MB | 33.1 dB (the old 1024 JPEG, scaled up: 29.4 dB) |
+  | colour 2048, rejected | UASTC + RDO (λ 1.5-12) + Zstandard | 3.3-4.0 MB | 38-52 dB: Meshy's noisy paint barely compresses, 2-3x the budget for every character |
+  | normal (512, or 1024 with `fixes.normalSize`) | UASTC + RDO λ 4 + Zstandard 22 | 0.92 MB at 1024 | 0.5° mean error (ETC1S 6.1°, the old JPEG 4.7°) |
+  | metal-roughness 512 | ETC1S | | |
+
+  `--testrun` keeps the bytes the same for the same picture (no tool version or date), so a rebuild is reproducible.
+- **The first-person arms** (`<id>_fparms.glb`, unused by the game since the universal arms) keep their JPEGs.
+- **Characters without a download here** (the Meshy rig tasks, downloads no longer on the owner's Drive):
+  `node tools/content/ktx2-built.mjs` turns the built maps to KTX2 at their size (1024), for the memory.
+- Tools that read a built character's pictures go through `readPicture` (ktx2.mjs decodes KTX2 with `ktx extract`):
+  `arm-colours.mjs` (grip fit), `reface-built.mjs` (which encodes the normal map again).
+
+**In the game** (`packages/client/src/content/gltf.ts`) Babylon's glTF loader registers `KHR_texture_basisu` and its
+KTX2 decoder (`KhronosTextureContainer2`) transcodes each map in workers to what the GPU takes: BC7 on desktops, ASTC
+or ETC on phones, plain RGBA where none is supported (the texture still shows; only its memory is the old size). The
+decoder (`babylon.ktx2Decoder.js`, npm `babylonjs-ktx2decoder` of the same release as `@babylonjs/core`, 9.32.0) and
+its transcoders (`msc_basis_transcoder`, `uastc_*`, `zstddec`, from Babylon.js 9.32.0's
+`packages/tools/babylonServer/public`) are served from `packages/client/public/ktx2/` (Apache-2.0, licence beside them):
+Babylon's default is its CDN, and the game loads nothing from other hosts. When `@babylonjs/core` moves to a new
+release, copy that release's files in.
+
+**Memory and download** (`node tools/content/texture-memory.mjs`: maps as uploaded, mip chains included, KTX2 at
+1 byte a texel (BC7/ASTC), JPEG/PNG at 4):
+
+| | Characters | GPU per character, before → after | Download per character, before → after |
+|---|---|---|---|
+| Talon Skycrest (2048 colour, 1024 normal) | 1 | 11.2 → 7.0 MB (2048 uncompressed would be 28 MB) | 1.52 → 2.55 MB |
+| Colour at 2048 (rebuilt from the download) | 177 | 10.3 → 6.8 MB on average | 1.28 → 2.28 MB (largest 2.93) |
+| Colour kept at 1024 (no download here) | 32 | 8.1 → 2.0 MB | 1.06 → 1.29 MB |
+| All | 209 | 2,092 → 1,265 MB in all (10.0 → 6.1 each) | 261 → 444 MB in all (1.25 → 2.13 each) |
+
+So a match of 24 different characters holds about 145 MB of character maps instead of 240, at twice the colour
+resolution; the download is what grew (`characterBudgets.maxBytes` 1.8 → 3.2 MB in `content/models.json`). Pictures:
+Talon in Character Select and from 0.75 m to 15 m, before and after (the lead's scratchpad, `chartex/`).
+
+**How the 177 were rebuilt (2026-11-25).** Each from its download (the owner's Drive, the `characters` folder, by the
+lock's `src` name), with `prepare-meshy-characters.mjs`. 118 came out with the mesh shipped (the rebaked ones in new
+charts, so new texture coordinates and a recut far copy; the rest identical but for the maps). 58 came out with
+another mesh: built by an older pipeline, or changed since by the `*-built.mjs` tools (grafted hands, refits), and
+their grips, hands and skins were approved on the shipped mesh. Those keep the shipped mesh, and
+`COLOUR_FROM=<fresh builds> node tools/content/ktx2-built.mjs` swaps in the fresh build's 2048 colour map once it is the
+same picture in the same layout (32-41 dB over the texels the body covers; the gutters between charts are filled
+differently by the newer `padCharts`); their normal maps are the shipped ones, compressed. The 32 kept at 1024: the
+Meshy rig tasks (Ash Walker, Bonejack, Brannock, Brass Hare, Desert Ranger, Dust Trooper, Gorgle, King, Monk, Punkin,
+Skeleton, Teddy, Uncle Bao, Zombie Groaner), downloads not on the Drive under the lock's name (Bill, Crimson Operative,
+Galloway, Goblin, Grunt-68, Hector, Hollow Visitor, Lancer, Otter, Pirate, Ricochet, Rourke, Rusty Mech, Santa, T-350,
+Titan, Umpire) and Zhao (rebaked, with grafted hands: a rebuild needs `rehand-built.mjs` and a grip check).
 
 ### Environment kits and tiles
 
