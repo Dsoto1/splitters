@@ -33,7 +33,7 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 
 ## The plan (owner, 2026-11-25): one numbered order
 **Rule:** a new idea goes to the bottom of its list unless the owner says "now"; nothing moves unless the owner moves it.
-1. **Finish what's running:** sharper characters (`wip/chartex-1125`: KTX2 textures, 2048 px colour).
+1. ~~Finish what's running: sharper characters~~ landed 2026-11-25.
 2. **Planned features, in their existing order** (lists below keep their order):
    - Lane A: bullet holes on breakable props; the weapon holds still off; combat rules for map makers; St. John's remaining steps (double door, outdoor details, chapel, gym); the daily fix batches.
    - Lane B: doors that fit themselves; tunnel kit; breakable walls; dodge-step and combat roll; chat with mute; practice range; simple pickers for the Rules tab; the pause menu's Host tab as Match Setup; impact effects by material; ice surface.
@@ -50,8 +50,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/chartex-1125` · 0c3d3790 · 45679352904 (character colour maps 2048 px, KTX2/Basis; 177 at 2048, 32 at 1024 KTX2; touches every character GLB and content/meshy.lock.json: a character intake conflicts)
-- `wip/campaign-1125` · 4082d555 · 45672208356 (attempt 2: attempt 1 red only on the known `teams` flake) — Campaign framework, The plan step 3 (docs/CAMPAIGN.md)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -83,6 +81,7 @@ Everything else keeps its place below these.
 - S · B · Iron Coast B/C defence balance ("leave for now") and an eye-level menu card for Step Temple (owner, 2026-11-05) (found in the notes, 2026-11-18; owner "1": added without changing the order above).
 
 ## Bugs
+- S · A · **Fix batch 11-26: 11 characters removed entirely** (owner, 2026-11-25): Bill, Bill the Barbarian (`meshy_hector`), Big Bogdan (`meshy_titan`), Wealthy Otter (`meshy_otter`), The Hollow Visitor, Crimson Operative, Goblin, Rourke, Rusty Mech, Santa, Umpire: off the game (roster 208 → 197; RETIRED_LOOKS so saved picks map to a near look; files, provenance and locks cleaned). The goblin, otter-sniper and Strongman NPC roles take fitting looks from the owner's own characters (lead's pick, the owner can change). Also on that list, to bring to 2048 later: Galloway, Grunt-68, Lancer, Pirate, Ricochet, T-350 (no download found), the 14 Meshy-rigged ones (need a key or new rigged downloads), Zhao (hands refit).
 - S · A · **Next fix batch (`wip/fixes-20261126`):** St. Jasper's dorm bunks: the Bunk Bed with Footlocker has the chest on the wrong end: the bunk sits snug in the room's corner, the footlocker at its other (open) end (owner, 2026-11-25, "no rush"). Through MapMaker's piece/variant, not a one-off.
 - S · A · **Fix batch 11-26, crash report 1d50cff7** (owner's report, 0.10.0, St. Jasper's TDM, Chrome 158 macOS): `WrongDocumentError: The root document of this element is not valid for pointer lock` as an unhandled rejection. `game/session.ts` `lock`: when the raw-mouse request is refused, the plain retry `opts.canvas.requestPointerLock()` returns a promise nobody catches; Chrome refuses it when the canvas's page isn't active (a click as the tab or window lost focus, or the canvas leaving the page). Fix: catch the retry, don't retry on WrongDocumentError (the next click asks again), with a unit test; the game itself wasn't broken.
 - S · A · **Fix batch 11-26: cancel a throw by switching weapon** (owner, 2026-11-25): while a throwable is wound up (held, or cooking), switching weapon (number key, wheel, scroll, pad) cancels it: the throwable stays in the inventory, a cooked fuse is reset (pin back in), nothing leaves the hand. Today it's thrown anyway. Read docs/GUNPLAY_SPEC.md first; bots unchanged; host and client agree (no ghost throw online).
@@ -179,6 +178,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-25** train check/train-20261125-195359 (7bfc6c4, run 45689794932), landed by the splitters lead: sharper characters (`wip/chartex-1125`: KTX2 textures, 177 characters at 2048 px colour, the rest compressed at 1024; GPU memory for all characters 2.1 → 1.3 GB, character files 3.2 MB budget); the campaign framework (`wip/campaign-1125`: sector data, progress on the device and the profile, map locks with joining allowed, the Operations Database with the Unknown tile, the menu as Story · Quick Play · Local · Online; character locks built, off).
 - **2026-11-25** train check/train-20261125-145926 (9235ce6, run 45640114571), landed by the splitters lead: fix batch `wip/fixes-20261125`: every projectile gun's shot drawn leaving its barrel; Bottomless Mag pickup as rounds with ∞; Elder Tomo's new model; Pip Quickfoot is a her.
 - **2026-11-25** train check/train-20261125-052032 (e86dc6f, run 45552919898), landed by the splitters lead: the owner's characters of 2026-11-25 (`wip/chars-1125`): Clio and Sarge lead the Chrono Crew; Fuse Hollister to Machines; Blix Orrin and Juno Hartwell join the crew (13; the owner will upload the 14th); 13 more new characters; Pip, Anoobys and Thornweaver new models; Ignatius Slagg to Legends; three story bosses built and parked.
 - **2026-11-25** train check/train-20261125-042041 (5078c4e, run 45546156041), landed by the splitters lead: small features batch (`wip/small-1125`: Match Setup one tab per map, map format v51; Weapon Manager Explosion and Impact sound slots; Freeze Ray freeze blast); colour vision (`wip/colourblind-1124`, lane B); MapMaker at rest ≤15 frames/s and the ended Test match freed (`wip/editor-idle-1124`, lane B).
