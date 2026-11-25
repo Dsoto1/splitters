@@ -50,12 +50,9 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-<<<<<<< HEAD
-- `wip/chars-1125b` · 1b7bb5b1 · 45697137861 (the owner's 16 characters of 11-25 afternoon on the KTX2 pipeline; nine old models retired to MapMaker; MapMaker Figures, map format v53 with v52 kept for doors-fit)
-=======
 - `wip/tunnel-seamless-1125` · 9dbc9a6c · 45681475256 (seamless tunnel textures for turned and tilted blocks, the kit's joints on the lattice, a Stair Tunnel in every family; generated kit tiles and palette atlas: rerun `pnpm content:rebuild` on a conflict)
 - `wip/doors-fit-1125` · 745c40db · 45685307937 (doors that fit themselves, map format v52; touches `maps/test_coverage.json` like the tunnel kit: rerun the coverage pieces through MapMaker on a conflict)
->>>>>>> origin/main
+- `wip/chars-1125b` · 1b7bb5b1 · 45697137861 (the owner's 16 characters of 11-25 afternoon on the KTX2 pipeline; nine old models retired to MapMaker; MapMaker Figures, map format v53 with v52 kept for doors-fit)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
