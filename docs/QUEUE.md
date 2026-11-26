@@ -50,13 +50,12 @@ Everything else keeps its place below these.
 - **Lane A ("splitters", lead until 2026-11-26) only finishes what is running, in this landing order** (each touches the character tables, so one at a time, each merging main before its landing):
   1. ~~`wip/fixes-20261126`~~ landed 2026-11-26 (fix batch: dorm bunk, pointer-lock crash 1d50cff7, cancel a throw, X-42 and projectile impacts, 11 characters and the non-owned retired looks removed);
   2. ~~`wip/chars-1125b`~~ landed 2026-11-26 (the owner's 11-25 batch: replacements with the old models as MapMaker Figures (map format v53), El Zarpazo, Tetl Stonewarden, Rocco Tickwell (crew 14th place vacant until the Inquisitor), Civil War and Vietnam soldiers, renames, Blix to Space);
-  3. `wip/no-designer-1125` (the Character Designer and custom characters removed).
+  3. ~~`wip/no-designer-1125`~~ landed 2026-11-26 (the Character Designer and custom characters removed).
   If lane A runs out before landing them, lane B takes them over from their Ready-to-land lines and HANDOFF claims.
 - **Lane A keeps working while its week lasts (owner, 2026-11-26: ~10% left, "save and save often"):** one helper at a time on lane A's own list (step 2), pushing its wip branch at every milestone so lane B can pick it up mid-way from its HANDOFF claim: first the weapon holds still off, then bullet holes on breakable props.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/no-designer-1125` · ec375fbe · run 45743260431 (attempt 2: one re-run for the hostcontrols "Bots… Esc closes it" flake, which also hit check/breakable-walls-1125 and check/dodge-roll-1125): the Character Designer and custom characters removed, Linktifa with it.
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -181,6 +180,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-26** `wip/no-designer-1125` (green ec375fbe, run 45743260431; hostcontrols' Bots-window check passed on its one re-run), landed alone by the splitters lead: the Character Designer and custom characters removed (owner); saved designs play Cal; Linktifa gone; menu news line updated. Note: hostcontrols "Bots… opens the Bots window and Esc closes it" failed today on several branches (also breakable-walls, dodge-roll): a new flake to root-cause.
 - **2026-11-26** `wip/chars-1125b` (green db3b4d02, run 45732322277), landed alone by the splitters lead: the owner's 11-25 batch at 2048: replacements (Cyber Lion, Kesi Tallgrass, Croakley, Ellis Velvetrope, Rollo Splitworth, Greyfang, Gorilla G, Puddles Ironbill, Boglurker), new El Zarpazo, Tetl Stonewarden, Rocco Tickwell, Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund, Lien Vo; Blix Orrin to Space, the crew's 14th place "Unknown" until the Inquisitor; retired characters removed completely (Brutus Hornbeck too); MapMaker Figures with roster characters (map format v53).
 - **2026-11-26** `wip/fixes-20261126` (green af5d9611, run 45723372345), landed alone by the splitters lead: fix batch 11-26: dorm bunks snug in the corner with the footlocker at the open end; pointer-lock crash 1d50cff7; switching weapon cancels an aimed throw; impacts for every no-splash projectile (the X-42's orange splash, scorch and impact sound; calm under Reduce flashing); 11 characters and 18 non-owned retired looks removed (saved picks map to the owner's own looks); goblin → Goblina, otter sniper → Ottis Crema, Strongman → Ignatius Slagg.
 - **2026-11-25** `wip/doors-fit-1125` (green 67058d8d, run 45718330599; main merged by the lead's helper, coverage pieces re-placed through MapMaker), landed alone by the splitters lead: doors that fit themselves (lane B; map format v52): a placed door cuts a matching opening through both faces of its wall, whatever it's built from.
