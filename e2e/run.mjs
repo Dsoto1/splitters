@@ -16994,6 +16994,8 @@ async function hostcontrolsFlow(browser) {
     if (await page.evaluate(() => document.getElementById('pause').hidden)) {
       await page.keyboard.press('Escape');
       await page.waitForFunction(() => !document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
+      // That Esc may have let the mouse go (the browser's): the page ignores an Esc right after one (browserTookEscape).
+      await page.waitForFunction(() => performance.now() - (window.__unlockAt ?? -1e9) > 300, null, { timeout: T(5000) }).catch(() => {});
     }
     return page.evaluate(() => (document.getElementById('host-controls').open = true));
   };
@@ -17080,6 +17082,26 @@ async function hostcontrolsFlow(browser) {
   // Mouse users never need Esc: the Back button (top left) and the footer's key hints are buttons. From the Host
   // tab (Resume in its foot) Back resumes, as Esc does; from Settings it goes back to Match.
   const clicks = await page.evaluate(() => {
+    // The hostcontrols flake (2026-11-25/26): the lock Resume asks for below can be granted late, after the step
+    // "back to the pause menu" lets the mouse go, so the match is back in play; openPanel's Esc then let the mouse go
+    // (the browser's Esc) and the Bots window's Esc a moment later was taken for that same press (browserTookEscape's
+    // 250 ms) and ignored. Count the lock requests still under way and when the mouse was last let go, to wait on them.
+    const w = window;
+    w.__lockPending = 0;
+    w.__unlockAt = -1e9;
+    document.addEventListener('pointerlockchange', () => document.pointerLockElement || (w.__unlockAt = performance.now()));
+    const ask = Element.prototype.requestPointerLock;
+    Element.prototype.requestPointerLock = function (...a) {
+      const r = ask.apply(this, a);
+      if (r instanceof Promise) {
+        w.__lockPending++;
+        r.then(
+          () => w.__lockPending--,
+          () => w.__lockPending--,
+        );
+      }
+      return r;
+    };
     const open = () => [...document.querySelectorAll('#pause .pause-sec')].find((x) => !x.hidden)?.dataset.sec;
     document.getElementById('pause-hint-tabs').click();
     const next = open();
@@ -17102,9 +17124,12 @@ async function hostcontrolsFlow(browser) {
   check(clicks.next === 'host' && clicks.onHost.label === 'Resume' && clicks.onHost.foot && clicks.resumed.tab === 'host' && clicks.resumed.focus === 'hc-resume' && clicks.footGone, `the Host tab has its own foot, and Esc there resumes (${JSON.stringify({ onHost: clicks.onHost, resumed: clicks.resumed, footGone: clicks.footGone })})`);
   check(clicks.label === 'Back' && clicks.back === 'match' && clicks.held === 'settings' && clicks.after === 'match' && clicks.top === 'Resume', `the pause menu's Back button and footer hints work by click; a repeating Esc does nothing (${JSON.stringify(clicks)})`);
   // Resuming may have had the mouse (a headless page can): back to the pause menu for what follows.
-  await frames(page, 10);
+  // Wait for Resume's lock requests to be granted or refused first (a late grant would put the match back in play).
+  await page.waitForFunction(() => window.__lockPending === 0, null, { timeout: T(5000) }).catch(() => {});
   await page.evaluate(() => document.pointerLockElement && document.exitPointerLock());
   await page.waitForFunction(() => !document.pointerLockElement && !document.getElementById('pause').hidden, null, { timeout: T(5000) }).catch(() => {});
+  // A release a moment ago would make the next Esc count as the browser's (browserTookEscape): let 250 ms pass since.
+  await page.waitForFunction(() => performance.now() - window.__unlockAt > 300, null, { timeout: T(5000) }).catch(() => {});
   const fits = await page.evaluate(() => {
     const r = document.querySelector('#pause .pause-card').getBoundingClientRect();
     return r.top >= 0 && r.bottom <= innerHeight + 1 && r.right <= innerWidth + 1;
