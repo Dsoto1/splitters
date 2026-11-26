@@ -15033,16 +15033,19 @@ async function practicerangeFlow(browser) {
   const read = async () => {
     for (let k = 0; k < 6; k++) {
       await aim();
+      // The trigger held until the round is out (the host takes inputs at its own pace), then let go.
+      const mag = () => sim(page, (m, me) => me.weapons.get(me.current)?.mag ?? 0);
+      const before = await mag();
       await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
-      await frames(page, 3);
+      await until(async () => (await mag()) < before, T(10000));
       await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
-      const got = await page.waitForFunction(() => /^(Body|Head|Legs) · \d+ m · \d+ · \d+ hits? to down$/.test(document.getElementById('pickup-msg')?.textContent ?? ''), null, { timeout: T(4000) }).then(() => true, () => false);
+      const got = await page.waitForFunction(() => /^(Body|Head|Legs) · \d+ m · \d+ · \d+ hits? to down$/.test(document.getElementById('pickup-msg')?.textContent ?? ''), null, { timeout: T(6000) }).then(() => true, () => false);
       if (got) return page.textContent('#pickup-msg');
     }
     return page.textContent('#pickup-msg');
   };
   const text = await read();
-  check(/^(Body|Head|Legs) · (9|10|11) m · \d+ · \d+ hits? to down$/.test(text ?? ''), `a round into the 10 m target reads out the hit (${text})`);
+  check(/^(Body|Head|Legs) · 1[5-9] m · \d+ · \d+ hits? to down$/.test(text ?? ''), `a round into the 10 m target (about 17 m from the spawn behind the line) reads out the hit (${text})`);
   if (pics) await page.screenshot({ path: `${pics}/practice-hit.png` });
   await page.keyboard.press('Escape');
   await page.waitForFunction(() => !document.getElementById('pause').hidden, null, { timeout: T(10000) }).catch(() => {});
