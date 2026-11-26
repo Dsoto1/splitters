@@ -147,7 +147,7 @@ describe('character manifests', () => {
     const spec = buildSpec(roller);
     expect(spec.locomotion).toBe('roll');
     expect(spec.rigJoints.Bone_001).toBe('Hips');
-    expect(looksSource(list)).toMatch(/id: 'core\.rollerbot'.*locomotion: 'roll'/);
+    expect(looksSource(list)).toMatch(/w\('core\.rollerbot'.*locomotion: 'roll'/);
     expect(manifestProblems(roller, 'meshy_rollerbot.json')).toEqual([]);
     expect(manifestProblems({ ...roller, locomotion: 'hover' }, 'meshy_rollerbot.json').join('\n')).toMatch(/locomotion: roll/);
     const twice = { ...roller.source.joints, Bone_000: 'Hips' };
@@ -176,7 +176,7 @@ describe('character manifests', () => {
     expect(list.filter((m) => m.tier !== undefined && m.tier !== 'experimental').map((m) => m.id)).toEqual([]);
     for (const tier of TIERS) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json')).toEqual([]);
     for (const tier of ['beta', 'Experimental', '', null, true]) expect(manifestProblems({ ...good, tier }, 'meshy_cat.json').join('\n')).toMatch(/tier: core or experimental/);
-    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
+    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`w('${m.look}',`));
     expect(line({ ...good, tier: 'experimental' })).toMatch(/group: 'animals', tier: 'experimental'/);
     // Absent = core: an explicit core writes the same look as none.
     expect(line({ ...good, tier: 'core' })).toBe(line(good));
@@ -188,7 +188,7 @@ describe('character manifests', () => {
     expect(COLLECTIONS).toEqual(['chrono', 'playhouse']);
     expect(manifestProblems({ ...good, collection: 'chrono' }, 'meshy_cat.json')).toEqual([]);
     for (const collection of ['Chrono', 'crew', '', null, 1]) expect(manifestProblems({ ...good, collection }, 'meshy_cat.json').join('\n')).toMatch(/collection: a Character Select collection/);
-    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
+    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`w('${m.look}',`));
     expect(line({ ...good, collection: 'chrono' })).toMatch(/group: 'animals', collection: 'chrono'/);
     expect(line(good)).not.toMatch(/collection:/);
   });
@@ -203,7 +203,7 @@ describe('character manifests', () => {
     expect(manifestProblems({ ...v, variantOf: 'cat' }, 'meshy_cat_roman.json').join('\n')).toMatch(/variantOf: the base look/);
     expect(manifestProblems({ ...v, variantOf: v.look }, 'meshy_cat_roman.json').join('\n')).toMatch(/variantOf: the base look/);
     expect(manifestProblems({ ...base, variant: '' }, 'meshy_cat.json').join('\n')).toMatch(/variant: the look's label/);
-    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
+    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`w('${m.look}',`));
     expect(line(v)).toMatch(/variant: 'Roman', variantOf: 'core\.biscuit'/);
     expect(line(base)).toMatch(/variant: 'Aviator'/);
     expect(line(good)).not.toMatch(/variant/);
