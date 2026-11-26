@@ -468,9 +468,10 @@ export const STYLE_PACKS: readonly StylePack[] = [
     ),
     materials: ['core.cobblestones', 'core.road_setts', 'core.market_tiles', 'core.roof_tiles_red', 'core.timber_frame', 'core.wattle', 'core.packed_dirt', 'core.whitewash', 'core.oak_beam'],
     facades: ['timber_frame', 'village_plaster'],
-    gameplay: ['door:oak', 'door:portcullis', 'mover:portcullis', 'mover:drawbridge', 'block:wattle', 'block:planks', 'block:old_planks', 'boards', 'crate', 'barrel', 'button', 'ladder', 'light:brazier', 'light:wall', 'light:candle', 'water:water', 'zone', 'glass'],
+    gameplay: ['door:oak', 'door:arched', 'door:portcullis', 'mover:portcullis', 'mover:drawbridge', 'block:wattle', 'block:planks', 'block:old_planks', 'boards', 'crate', 'barrel', 'button', 'ladder', 'light:brazier', 'light:wall', 'light:candle', 'water:water', 'zone', 'glass'],
     gameplayNotes: {
       'door:oak': 'Oak door: an iron-bound plank door that swings open as anyone comes close (lock it for logic)',
+      'door:arched': 'Arched door: a round-headed oak double door; it cuts an arched doorway in the wall it goes in',
       'door:portcullis': 'Portcullis: the iron grille in the Town Gate passage (E at the gate, or a button and a rule)',
       'mover:portcullis': 'Portcullis gate: a grille block that a rule raises (Send mover)',
       'mover:drawbridge': 'Drawbridge over the stream or a moat',

@@ -45,6 +45,7 @@ import {
   mapLiquids,
   GLASS,
   DOOR,
+  doorHeight,
   ELECTRIC_FENCE,
   TRAP_ACTIVE,
   TRAP_ENABLED,
@@ -1691,6 +1692,7 @@ export class ScenarioVisuals {
     const style = e.style ?? 'sliding';
     if (style === 'saloon' || style === 'vault' || style === 'oak') return this.swingDoor(name, e, style);
     if (style === 'portcullis') return this.portcullis(name, e);
+    if (style === 'arched') return this.archedDoor(name, e);
     const root = new TransformNode(name, this.scene);
     const w = DOOR.width / 2;
     const blast = style === 'blast';
@@ -1744,6 +1746,59 @@ export class ScenarioVisuals {
         const c = Color3.FromHexString(b ? '#e0412f' : e.auto ? '#3fd26b' : '#f2c14e');
         lampMat.diffuseColor = c;
         lampMat.emissiveColor = c.scale(0.9);
+      },
+    };
+  }
+
+  /**
+   * The Arched door (v52, doors that fit themselves): a round-headed oak double door with iron straps, each leaf on its
+   * own post's hinges, its planks rising to the curve of its Arched doorway (content/tiles/edges.json `door_arched`:
+   * springing at 2.1 m, its crown at the door's height). The doorway frames it: the door has no frame of its own.
+   */
+  private archedDoor(name: string, e: Extract<MapEntity, { kind: 'door' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const oak = this.mat('archDoorOak', '#76502f');
+    const dark = this.mat('archDoorDark', '#4c321e');
+    const iron = this.mat('archDoorIron', '#34302e', { spec: 0.4 });
+    const r = DOOR.width / 2;
+    const top = doorHeight(e);
+    const spring = top - r;
+    const planks = 8;
+    const leafW = r - 0.03;
+    const hinges: { node: TransformNode; dir: number }[] = [];
+    for (const side of [-1, 1]) {
+      // Hinged at the post (x = side · r); the leaf reaches in to the middle.
+      const hinge = new TransformNode(`${name}_hinge${side}`, this.scene);
+      hinge.parent = root;
+      hinge.position.set(side * r, 0, 0);
+      for (let k = 0; k < planks; k++) {
+        const w = leafW / planks;
+        // Plank k's middle, from the post in; its top on the arch at its outer edge (never above the stone).
+        const from = 0.02 + k * w;
+        const outer = r - from;
+        const h = spring + Math.sqrt(Math.max(0, r * r - outer * outer)) - 0.03;
+        this.box(`${name}_plank${side}${k}`, hinge, [w - 0.015, h, 0.12], [-side * (from + w / 2), h / 2, 0], k % 2 ? oak : dark);
+      }
+      for (const y of [0.5, 1.65]) this.box(`${name}_strap${side}${y}`, hinge, [leafW * 0.85, 0.11, 0.15], [-side * (leafW * 0.85) / 2, y, 0], iron);
+      const ring = CreateCylinder(`${name}_ring${side}`, { diameter: 0.16, height: 0.04, tessellation: 10 }, this.scene);
+      ring.parent = hinge;
+      ring.rotation.x = Math.PI / 2;
+      ring.position.set(-side * (leafW - 0.22), 1.1, -0.1);
+      ring.material = iron;
+      hinges.push({ node: hinge, dir: -side });
+    }
+    const swing = Math.PI * 0.5;
+    const place = (open: number) => {
+      for (const h of hinges) h.node.rotation.y = h.dir * open * swing;
+    };
+    let shown = e.startOpen ? 1 : 0;
+    place(shown);
+    return {
+      root,
+      update: (a, _b, _now, dt) => {
+        const target = a / 100;
+        shown += Math.sign(target - shown) * Math.min(Math.abs(target - shown), dt * 3);
+        place(shown);
       },
     };
   }

@@ -152,6 +152,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // v50 -> v51: one category a map (`metadata.category`, map/categories.ts; owner, 2026-11-24: one tab per map) in
   // place of v50's `categories` pairs, which go: the pick is the lead's first assignment from them (categoryFromV50Tags).
   [50, categoryV51],
+  // v51 -> v52: doors that fit themselves: the door look `arched` (an Arched door), the wall style `door_arched` (its
+  // Arched doorway) and a free block's `doorways` (map/blockDoorways.ts). v51 data is valid as is. The bump is for the
+  // other direction: an older build refuses a v52 map outright instead of dropping a block's doorways without a word.
+  [51, (doc) => ({ ...doc })],
 ]);
 
 /** v50 -> v51: the `categories` pairs become one `category` (none when there were none). */

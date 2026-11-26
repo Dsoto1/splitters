@@ -151,21 +151,29 @@ export const DOOR = {
   autoCloseSeconds: 1.5,
 } as const;
 
+/** The Arched door's height (v52): up to its Arched doorway's crown (content/tiles/edges.json `door_arched`). */
+export const ARCHED_DOOR_HEIGHT = 3.6;
+
+/** How high a door's leaves stand: the Arched door's reach its arch's crown, every other look's DOOR.height. */
+export const doorHeight = (e: Pick<Extract<MapEntity, { kind: 'door' }>, 'style'>): number => (e.style === 'arched' ? ARCHED_DOOR_HEIGHT : DOOR.height);
+
 /** The two sliding leaves of a double door; `open` 0..1 slides each leaf into the wall beside the doorway. */
 export function doorLeaves(e: Extract<MapEntity, { kind: 'door' }>, open: number): [OBox, OBox] {
   const o = entityPos(e);
   const w = DOOR.width / 4;
-  const half = { x: w, y: DOOR.height / 2, z: DOOR.thickness / 2 };
+  const h = doorHeight(e);
+  const half = { x: w, y: h / 2, z: DOOR.thickness / 2 };
   const shift = open * (DOOR.width / 2);
   return [
-    { center: localToWorld(o, e.yaw, -w - shift, DOOR.height / 2, 0), half, yaw: e.yaw },
-    { center: localToWorld(o, e.yaw, w + shift, DOOR.height / 2, 0), half, yaw: e.yaw },
+    { center: localToWorld(o, e.yaw, -w - shift, h / 2, 0), half, yaw: e.yaw },
+    { center: localToWorld(o, e.yaw, w + shift, h / 2, 0), half, yaw: e.yaw },
   ];
 }
 
 /** The doorway volume; a door won't close on a player standing in it. */
 export function doorway(e: Extract<MapEntity, { kind: 'door' }>): OBox {
-  return { center: localToWorld(entityPos(e), e.yaw, 0, DOOR.height / 2, 0), half: { x: DOOR.width / 2, y: DOOR.height / 2, z: 0.6 }, yaw: e.yaw };
+  const h = doorHeight(e);
+  return { center: localToWorld(entityPos(e), e.yaw, 0, h / 2, 0), half: { x: DOOR.width / 2, y: h / 2, z: 0.6 }, yaw: e.yaw };
 }
 
 // ---------------------------------------------------------------- buttons
