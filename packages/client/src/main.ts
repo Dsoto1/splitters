@@ -993,6 +993,7 @@ class App {
       autoHost: !!o.autoHost,
       ...(o.greeting ? { greeting: o.greeting } : {}),
       mapPicker: this.mapPicker(m),
+      setupPanel: (p) => this.front!.pauseSetup(p),
       ...(o.rotation ? { rotation: o.rotation } : {}),
       ...(o.joinCode ? { joinCode: o.joinCode } : {}),
       // The vote's cards: a suite map's own picture, else the shipped one.
