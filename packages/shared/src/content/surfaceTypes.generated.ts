@@ -3,27 +3,28 @@
 import type { SurfaceTypeDefinition, SurfaceTypeId } from '../sim/surfaceTypes.ts';
 
 /** Every surface type id, in content/surface-types.json order. */
-export const SURFACE_TYPE_IDS = ['concrete', 'stone', 'rock', 'brick', 'plaster', 'wood', 'thin_wood', 'bark', 'foliage', 'metal', 'sheet_metal', 'glass', 'dirt', 'grass', 'sand', 'gravel', 'snow', 'water', 'flesh', 'fabric', 'plastic', 'armor', 'energy'] as const;
+export const SURFACE_TYPE_IDS = ['concrete', 'stone', 'rock', 'brick', 'plaster', 'wood', 'thin_wood', 'bark', 'foliage', 'metal', 'sheet_metal', 'glass', 'dirt', 'grass', 'sand', 'gravel', 'snow', 'ice', 'water', 'flesh', 'fabric', 'plastic', 'armor', 'energy'] as const;
 
 /** Each surface type: its ballistic class, its impact (decal, debris, sound family) and footstep family. */
 export const SURFACE_TYPE_LIST: readonly SurfaceTypeDefinition[] = [
-  { id: 'concrete', name: 'Concrete', ballistic: 'concrete', impact: { decal: 'hole', debris: ['dust', 'sparks'], sound: 'hard' }, footstep: 'hard' },
-  { id: 'stone', name: 'Stone (dressed)', ballistic: 'stone', impact: { decal: 'hole', debris: ['dust', 'sparks'], sound: 'hard' }, footstep: 'hard' },
-  { id: 'rock', name: 'Rock (boulders, cliffs)', ballistic: 'stone', impact: { decal: 'hole', debris: ['dust', 'chips', 'sparks'], sound: 'hard' }, footstep: 'hard' },
-  { id: 'brick', name: 'Brick', ballistic: 'brick', impact: { decal: 'hole', debris: ['dust', 'chips', 'sparks'], sound: 'hard' }, footstep: 'hard' },
+  { id: 'concrete', name: 'Concrete', ballistic: 'concrete', impact: { decal: 'hole', debris: ['dust', 'chips', 'sparks'], sound: 'hard' }, footstep: 'hard' },
+  { id: 'stone', name: 'Stone (dressed)', ballistic: 'stone', impact: { decal: 'hole', debris: ['dust', 'chips', 'sparks'], sound: 'hard' }, footstep: 'hard' },
+  { id: 'rock', name: 'Rock (boulders, cliffs)', ballistic: 'stone', impact: { decal: 'hole', debris: ['dust', 'chips', 'sparks'], sound: 'stone' }, footstep: 'hard' },
+  { id: 'brick', name: 'Brick', ballistic: 'brick', impact: { decal: 'hole', debris: ['dust', 'chips', 'sparks'], sound: 'stone' }, footstep: 'hard' },
   { id: 'plaster', name: 'Plaster and drywall', ballistic: 'drywall', impact: { decal: 'hole', debris: ['dust'], sound: 'hard' }, footstep: 'hard' },
   { id: 'wood', name: 'Wood', ballistic: 'wood', impact: { decal: 'hole', debris: ['dust', 'splinters'], sound: 'wood' }, footstep: 'wood' },
   { id: 'thin_wood', name: 'Thin wood (boards, crates)', ballistic: 'thin_wood', impact: { decal: 'hole', debris: ['dust', 'splinters'], sound: 'wood' }, footstep: 'wood' },
   { id: 'bark', name: 'Bark (trunks, stumps, logs)', ballistic: 'heavy_wood', impact: { decal: 'hole', debris: ['dust', 'splinters'], sound: 'wood' }, footstep: 'wood' },
   { id: 'foliage', name: 'Foliage (bushes, crowns)', ballistic: 'foliage', impact: { decal: 'none', debris: ['dust', 'leaves'], sound: 'soft' }, footstep: 'foliage' },
   { id: 'metal', name: 'Metal (heavy)', ballistic: 'metal', impact: { decal: 'hole', debris: ['dust', 'sparks'], sound: 'metal' }, footstep: 'metal' },
-  { id: 'sheet_metal', name: 'Sheet metal (containers, vehicles)', ballistic: 'thin_metal', impact: { decal: 'hole', debris: ['dust', 'sparks'], sound: 'metal' }, footstep: 'metal' },
+  { id: 'sheet_metal', name: 'Sheet metal (containers, vehicles)', ballistic: 'thin_metal', impact: { decal: 'hole', debris: ['dust', 'sparks'], sound: 'sheet' }, footstep: 'metal' },
   { id: 'glass', name: 'Glass', ballistic: 'glass', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'glass' }, footstep: 'hard' },
-  { id: 'dirt', name: 'Dirt and mud', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust'], sound: 'soft' }, footstep: 'dirt' },
-  { id: 'grass', name: 'Grass and moss', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust'], sound: 'soft' }, footstep: 'grass' },
-  { id: 'sand', name: 'Sand', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust'], sound: 'soft' }, footstep: 'sand' },
-  { id: 'gravel', name: 'Gravel', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'hard' }, footstep: 'gravel' },
-  { id: 'snow', name: 'Snow', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust'], sound: 'soft' }, footstep: 'snow' },
+  { id: 'dirt', name: 'Dirt and mud', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'soft' }, footstep: 'dirt' },
+  { id: 'grass', name: 'Grass and moss', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'soft' }, footstep: 'grass' },
+  { id: 'sand', name: 'Sand', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'soft' }, footstep: 'sand' },
+  { id: 'gravel', name: 'Gravel', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'stone' }, footstep: 'gravel' },
+  { id: 'snow', name: 'Snow', ballistic: 'soil', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'soft' }, footstep: 'snow' },
+  { id: 'ice', name: 'Ice', ballistic: 'stone', impact: { decal: 'hole', debris: ['dust', 'chips'], sound: 'ice' }, footstep: 'hard' },
   { id: 'water', name: 'Water', ballistic: 'water', impact: { decal: 'none', debris: [], sound: 'water' }, footstep: 'water' },
   { id: 'flesh', name: 'Flesh', ballistic: 'flesh', impact: { decal: 'none', debris: [], sound: 'none' } },
   { id: 'fabric', name: 'Fabric (canvas, carpet, tents)', ballistic: 'drywall', impact: { decal: 'hole', debris: ['dust'], sound: 'soft' }, footstep: 'soft' },

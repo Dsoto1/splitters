@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
-import { CORE_WEAPONS, SURFACE_TYPE_IDS, WEAPONS_BY_SLOT, entityMaterial, guessSurface, type MapDocument, type MapEntity, type WorldBox } from '@tiletrigger/shared';
+import { CORE_WEAPONS, SURFACE_TYPES, SURFACE_TYPE_IDS, materialSurface, WEAPONS_BY_SLOT, entityMaterial, guessSurface, type MapDocument, type MapEntity, type WorldBox } from '@tiletrigger/shared';
 import { arcFx, explosionFor, farFxSize, gameplayFx, impactSoundId, impactStyle, lastingFx, mappedEffects, mappedPacks, muzzleEffectFor, surfaceIndex, surfaceOfBox, weaponImpact } from '../src/game/fxMap.ts';
 import { portName } from '../src/game/godotVfx.ts';
 import { GameplayFxWatch, type WatchedPose } from '../src/game/gameplayFxWatch.ts';
@@ -66,11 +66,12 @@ describe('fx map (content/vfx.json map)', () => {
 
   it('draws every surface type, and unset surfaces as before (stone dust, metal sparks, wood dust)', () => {
     for (const t of SURFACE_TYPE_IDS) expect(impactStyle(t), t).toBeTruthy();
-    // What content/vfx.json map.impacts stone/metal/wood/dirt drew before the surface types.
-    expect(impactStyle('concrete')).toMatchObject({ sparks: 2, dust: '#a39d92', dustSize: 1, chips: 0, hole: true, accent: null });
+    // What content/vfx.json map.impacts stone/metal/wood/dirt drew before the surface types (concrete and dirt have
+    // thrown grit and clods since impact effects by material, 2026-11-26).
+    expect(impactStyle('concrete')).toMatchObject({ sparks: 2, dust: '#a39d92', dustSize: 1.2, chips: 2, hole: true, accent: null });
     expect(impactStyle('metal')).toMatchObject({ sparks: 8, dust: '#8e8a84', dustSize: 0.5, hole: true, accent: { pack: 'hit_fx', effect: 'vfx_strike_01' } });
     expect(impactStyle('wood')).toMatchObject({ sparks: 0, dust: '#8a6a45', dustSize: 0.9 });
-    expect(impactStyle('dirt')).toMatchObject({ sparks: 0, dust: '#7d6a52', dustSize: 1.4, chips: 0 });
+    expect(impactStyle('dirt')).toMatchObject({ sparks: 0, dust: '#7d6a52', dustSize: 1.4, chips: 3 });
   });
 
   it('picks wood effects and sound for a tree trunk, the same surface the server shoots (not stone dust)', () => {
@@ -89,9 +90,41 @@ describe('fx map (content/vfx.json map)', () => {
     expect(surfaceOfBox(box('b1'), index)).toBe('foliage');
     expect(impactStyle('foliage')).toMatchObject({ hole: false, sound: 'soft' });
     expect(surfaceOfBox(box('r1'), index)).toBe('rock');
-    expect(impactSoundId(impactStyle('rock').sound)).toBe('impact.world');
+    expect(impactSoundId(impactStyle('rock').sound)).toBe('impact.stone');
     expect(surfaceOfBox(box('c1'), index)).toBe('metal');
     expect(impactSoundId(impactStyle('metal').sound)).toBe('impact.metal');
+  });
+
+  it('gives each material its own sound set (impact effects by material, 2026-11-26)', () => {
+    const sounds = JSON.parse(readFileSync(new URL('../../../content/sounds.json', import.meta.url), 'utf8')).sounds as Record<string, { variants: unknown }>;
+    // Every type with a sound family plays a sound that ships.
+    for (const id of SURFACE_TYPE_IDS) {
+      const sound = impactSoundId(impactStyle(id).sound);
+      if (SURFACE_TYPES[id].impact.sound === 'none') expect(sound, id).toBeNull();
+      else expect(sounds[sound!], `${id}: ${sound}`).toBeTruthy();
+    }
+    const of = (id: (typeof SURFACE_TYPE_IDS)[number]) => impactSoundId(impactStyle(id).sound);
+    expect(of('concrete')).toBe('impact.world');
+    expect(of('brick')).toBe('impact.stone');
+    expect(of('gravel')).toBe('impact.stone');
+    expect(of('wood')).toBe('impact.wood');
+    expect(of('metal')).toBe('impact.metal');
+    expect(of('sheet_metal')).toBe('impact.sheet');
+    expect(of('dirt')).toBe('impact.soft');
+    expect(of('glass')).toBe('impact.glass');
+    expect(of('ice')).toBe('impact.ice');
+    // The families split from one sound carry a set of takes (no single repeated knock).
+    for (const s of ['impact.world', 'impact.stone', 'impact.wood', 'impact.metal', 'impact.sheet', 'impact.soft', 'impact.ice']) expect((sounds[s]!.variants as unknown[]).length, s).toBeGreaterThanOrEqual(2);
+  });
+
+  it('ice is its own surface: no sparks, shards and a frosty dust, the ice materials name it', () => {
+    const ice = impactStyle('ice');
+    expect(ice.sparks).toBe(0);
+    expect(ice.chips).toBeGreaterThan(0);
+    expect(ice.hole).toBe(true);
+    for (const m of ['core.lake_ice', 'core.pbr_ice', 'core.glacier_ice']) expect(materialSurface(m), m).toBe('ice');
+    // Debris matches what each type lists: sparks only where it lists sparks.
+    for (const id of SURFACE_TYPE_IDS) if (!SURFACE_TYPES[id].impact.debris.includes('sparks')) expect(impactStyle(id).sparks, id).toBe(0);
   });
 
   it('picks explosions by weapon, projectile, kind and air', () => {

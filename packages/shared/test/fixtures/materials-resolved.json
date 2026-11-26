@@ -1372,7 +1372,7 @@
     "accent": "#eef6fa",
     "scale": 6,
     "shine": 0.85,
-    "surface": "stone",
+    "surface": "ice",
     "ballistic": "soil"
    },
    "keys": [
@@ -1401,7 +1401,7 @@
     "accent": "#f2fbff",
     "scale": 3,
     "shine": 0.7,
-    "surface": "stone"
+    "surface": "ice"
    },
    "keys": [
     "id",
@@ -3548,7 +3548,7 @@
     "scale": 3,
     "shine": 0.8,
     "texture": "Ice002",
-    "surface": "stone",
+    "surface": "ice",
     "ballistic": "soil"
    },
    "keys": [

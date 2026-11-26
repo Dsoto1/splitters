@@ -22,8 +22,12 @@ export type SurfaceTypeId = (typeof SURFACE_TYPE_IDS)[number];
 export type ImpactDecal = 'hole' | 'none';
 /** What flies off a hit: dust puffs, splinters (wood), chips (stone, brick, glass grit), leaves, sparks. */
 export type ImpactDebris = 'dust' | 'splinters' | 'chips' | 'leaves' | 'sparks';
-/** The impact sound's family (client: impact.world, impact.wood, impact.metal, impact.soft, impact.glass, water.splash). */
-export type ImpactSound = 'hard' | 'wood' | 'metal' | 'soft' | 'glass' | 'water' | 'none';
+/**
+ * The impact sound's family (client game/fxMap.ts impactSoundId; content/sounds.json): hard (impact.world: concrete,
+ * dressed stone, plaster, plastic), stone (impact.stone: brick, rock, gravel), wood, metal (heavy plate, armour),
+ * sheet (impact.sheet: thin metal), soft (ground, foliage, fabric), glass, ice (impact.ice: a hard glassy knock), water.
+ */
+export type ImpactSound = 'hard' | 'stone' | 'wood' | 'metal' | 'sheet' | 'soft' | 'glass' | 'ice' | 'water' | 'none';
 /** Footstep family: the recorded steps played on it (client game/fxMap.ts footstepSoundId; content/sounds.json footstep.<family>). */
 export type FootstepFamily = 'hard' | 'wood' | 'metal' | 'grass' | 'dirt' | 'soft' | 'foliage' | 'sand' | 'gravel' | 'snow' | 'water';
 
