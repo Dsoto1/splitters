@@ -159,6 +159,7 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   // its variant picker. The base names its own variant's label (`variant`); each other look names the base (`variantOf`).
   need(m.variant === undefined || (typeof m.variant === 'string' && m.variant.length > 0 && m.variant.length <= 20), 'variant: the look\'s label on the variant picker (1–20 characters), or left out');
   need(m.variantOf === undefined || (typeof m.variantOf === 'string' && /^core\.[a-z0-9_]+$/.test(m.variantOf) && m.variantOf !== m.look && m.variant !== undefined && isPlayable(m)), 'variantOf: the base look (core.<name>) this is a variant of, with its own `variant` label');
+  need(m.npcOnly === undefined || (m.npcOnly === true && isPlayable(m) && m.variant === undefined && m.variantOf === undefined), 'npcOnly: true for a look only MapMaker places (figures, a map\'s own bots), off Character Select and automatic picks; never a variant');
   need(m.sortAs === undefined || (typeof m.sortAs === 'string' && m.sortAs.length > 0 && m.sortAs.length <= 24), 'sortAs: the name Character Select lists it as (1–24 characters), or left out');
   need(m.nameTheme === undefined || NAME_THEMES.includes(m.nameTheme), `nameTheme: the kind of creature, for its bots' names (${NAME_THEMES.join(', ')}); left out: its group's (soldiers: soldier)`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
@@ -349,7 +350,8 @@ export function readManifests({ ready = false } = {}) {
   for (const m of built.filter((x) => x.variantOf)) {
     const base = built.find((o) => o.look === m.variantOf);
     if (!base || base.variantOf || base.variant === undefined) problems.push(`${m.id}.json: variantOf ${m.variantOf} names no base look with a variant label of its own`);
-    else if (['group', 'collection', 'tier', 'body'].some((k) => base[k] !== m[k])) problems.push(`${m.id}.json: a variant keeps its base's group, collection, tier and body`);
+    // A variant may have a body of its own (owner, 2026-11-26: Dez's zombies, two of them women; Teddy's rag doll).
+    else if (['group', 'collection', 'tier'].some((k) => base[k] !== m[k])) problems.push(`${m.id}.json: a variant keeps its base's group, collection and tier`);
   }
   if (problems.length) throw new Error(`character manifests:\n  ${problems.join('\n  ')}`);
   return (ready ? built : list).sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id));
@@ -489,7 +491,7 @@ function lookLine(m) {
   // The common fields come from w() (looksSource): the menu's first script carries every look, so each line holds only
   // what is its own (the universal arms of its body are w()'s default).
   const plainWhole = whole === `whole: { arms: ${q(universalArms(m))} }`;
-  const parts = [...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), ...(plainWhole ? [] : [whole]), ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.collection ? [`collection: ${q(m.collection)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.variant ? [`variant: ${q(m.variant)}`] : []), ...(m.variantOf ? [`variantOf: ${q(m.variantOf)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
+  const parts = [...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), ...(plainWhole ? [] : [whole]), ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.collection ? [`collection: ${q(m.collection)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.variant ? [`variant: ${q(m.variant)}`] : []), ...(m.variantOf ? [`variantOf: ${q(m.variantOf)}`] : []), ...(m.npcOnly ? ['npcOnly: true'] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  w(${q(m.look)}, ${q(m.name)}, ${q(m.body)}, ${q(m.id)}${parts.length ? `, { ${parts.join(', ')} }` : ''}),`;
 }
 

@@ -32,6 +32,7 @@ import {
   lookBranch,
   lookGroup,
   validLookId,
+  playerLookId,
   DEFAULT_LOOK,
   randomFirstLook,
   DEFAULT_RULES,
@@ -549,7 +550,7 @@ export class FrontEnd {
     installTooltips();
     this.server = params.get('server') ?? storage('cs.server') ?? `ws://${location.hostname || 'localhost'}:7777`;
     // A new player with no saved pick gets a random pickable character, kept like any pick (browser tests keep the fixed default).
-    this.look = validLookId(params.get('look') ?? storage('cs.look') ?? (testMode() || navigator.webdriver ? DEFAULT_LOOK : randomFirstLook(Math.random())));
+    this.look = validLookId(playerLookId(params.get('look') ?? storage('cs.look') ?? (testMode() || navigator.webdriver ? DEFAULT_LOOK : randomFirstLook(Math.random()))));
     if (!params.get('look') && !storage('cs.look') && !testMode() && !navigator.webdriver) storage('cs.look', this.look);
     // A design from the Character Designer (removed 2026-11-25) plays the default (validLookId): keep that as the pick,
     // and drop the Designer's saved designs and their pictures, which nothing reads now.
@@ -625,7 +626,7 @@ export class FrontEnd {
 
   /** Make a look yours: kept in this browser and worn on the menu. */
   private useLook(look: string): void {
-    this.look = validLookId(look);
+    this.look = validLookId(playerLookId(look));
     storage('cs.look', this.look);
     this.scene.setLook(this.look);
   }
@@ -2573,7 +2574,8 @@ export class FrontEnd {
       // An experimental character sits under Experimental, not with its group (the same rule as an experimental map),
       // unless it is in a collection (the Chrono Crew), which lists its own whatever their tier (characterSectionOf).
       // A variant (the chimp's looks) is picked on its base's variant picker, not a tile of its own.
-      ...CORE_LOOKS.filter((l) => !l.variantOf).map((l) => ({ id: l.id, name: l.name, group: l.collection ?? (characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine')), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
+      // A MapMaker-only look (npcOnly) is no one's pick.
+      ...CORE_LOOKS.filter((l) => !l.variantOf && !l.npcOnly).map((l) => ({ id: l.id, name: l.name, group: l.collection ?? (characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine')), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
       ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
     ];
   }

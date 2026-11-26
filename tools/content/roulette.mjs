@@ -35,7 +35,7 @@ function lookIds(root) {
     if (!f.endsWith('.json')) continue;
     const c = readJson(root, `content/characters/${f}`);
     if (typeof c.look === 'string') ids.add(c.look);
-    if (typeof c.look === 'string' && c.tier === 'experimental') experimental.add(c.look);
+    if (typeof c.look === 'string' && (c.tier === 'experimental' || c.npcOnly)) experimental.add(c.look);
   }
   const retired = looks.match(/export const RETIRED_LOOKS[^=]*=\s*\{([\s\S]*?)\n\};/);
   const gone = new Set(retired ? [...retired[1].matchAll(/'(core\.[a-z0-9_]+)':/g)].map((m) => m[1]) : []);

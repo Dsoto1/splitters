@@ -25,7 +25,7 @@ export const CHARACTER_TIERS: readonly CharacterTier[] = ['core', 'experimental'
 export const CHARACTER_TIER_LABELS: Record<CharacterTier, string> = { core: 'Core', experimental: 'Experimental' };
 export const characterTier = (look: { tier?: CharacterTier | undefined }): CharacterTier => look.tier ?? 'core';
 /** The looks of a roster an automatic pick may draw (a bot's, a random character's, Roulette's): its core tier, in order. */
-export const pickableLooks = <T extends { tier?: CharacterTier | undefined; variantOf?: string | undefined }>(roster: readonly T[]): T[] => roster.filter((l) => characterTier(l) === 'core' && !l.variantOf);
+export const pickableLooks = <T extends { tier?: CharacterTier | undefined; variantOf?: string | undefined; npcOnly?: true | undefined }>(roster: readonly T[]): T[] => roster.filter((l) => characterTier(l) === 'core' && !l.variantOf && !l.npcOnly);
 /** A look's variants in picker order, the base first (empty for a look with none): the base's `variant` and each look naming it in `variantOf`. */
 export const lookVariants = <T extends { id: string; variant?: string | undefined; variantOf?: string | undefined }>(roster: readonly T[], id: string): T[] => {
   const baseId = roster.find((l) => l.id === id)?.variantOf ?? id;
@@ -99,6 +99,12 @@ export interface CharacterLook {
    */
   variant?: string;
   variantOf?: string;
+  /**
+   * MapMaker only (owner, 2026-11-26: "npc options in map maker and not playable as characters"): a look a map places
+   * (Figures, the map's own bots) but nobody picks: off Character Select, the bots' automatic picks, bot types and
+   * Roulette. A player's saved pick of one plays NPC_ONLY_PLAYS's look. `npcOnly` in its manifest.
+   */
+  npcOnly?: true;
   /** Character Select lists it as if it were named this (`sortAs` in its manifest; the owner's order): left out, its name. */
   sortAs?: string;
   /** Its tier (`tier` in its manifest; characterTier below): absent = core, as every character offered before the tiers. */
@@ -432,6 +438,15 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // older entries' comments name the look each led to before. (Retired looks of the owner's own models, Brutus Hornbeck
   // among them, stay. The modular presets have no files of their own: their entries are unchanged.)
 };
+
+/**
+ * MapMaker-only looks (`npcOnly`) and the look a player's saved pick of one plays (owner, 2026-11-26): a map still
+ * places them as figures and its own bots, but nobody picks one on Character Select.
+ */
+export const NPC_ONLY_PLAYS: Readonly<Record<string, string>> = {
+};
+/** The look a player wears for a pick: a MapMaker-only look plays NPC_ONLY_PLAYS's (validLookId does the rest). */
+export const playerLookId = (id: string): string => NPC_ONLY_PLAYS[id] ?? id;
 
 /**
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
