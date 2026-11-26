@@ -28,7 +28,7 @@ export async function openCharacterViewer(engine: AbstractEngine, canvas: HTMLCa
   const scene = new Scene(engine);
   scene.clearColor = new Color4(0.16, 0.18, 0.21, 1);
   const params = new URLSearchParams(location.search);
-  // `&looks=core.goblin,core.otter` shows just those looks (one row); `&creatures=0` hides the creature row.
+  // `&looks=core.grizzelda,core.baristaotter` shows just those looks (one row); `&creatures=0` hides the creature row.
   const only = params.get('looks')?.split(',');
   const specs: (CharacterSpec & { label: string })[] = only
     ? CORE_LOOKS.filter((l) => only.includes(l.id)).map((l) => ({ look: l.id, label: l.name }))

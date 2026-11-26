@@ -4488,6 +4488,7 @@ export class Match {
         const at = add(p.pos, scale(dir, Math.max(0, hitDist - 0.05)));
         if (victim && spec.retrievable) {
           // A spear: through them, then it drops at their feet for someone to pick up.
+          this.landEvent(p, at, victim);
           if (spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
           const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.2, z: at.z }, { x: 0, y: -1, z: 0 }, 4);
           p.pos = { x: at.x, y: down ? at.y + 0.2 - down.dist + 0.1 : victim.move.pos.y + 0.1, z: at.z };
@@ -4521,6 +4522,7 @@ export class Match {
           continue;
         }
         if (!victim && wall && spec.sticky) {
+          this.landEvent(p, at, null);
           p.pos = add(at, scale(wall.normal, 0.06));
           p.stuck = true;
           keep.push(p);
@@ -4538,6 +4540,7 @@ export class Match {
           // Reflect off the surface, losing speed; keep the fuse running.
           const n = wall.normal;
           const vn = p.vel.x * n.x + p.vel.y * n.y + p.vel.z * n.z;
+          this.landEvent(p, at, null, true);
           p.vel = scale({ x: p.vel.x - 2 * vn * n.x, y: p.vel.y - 2 * vn * n.y, z: p.vel.z - 2 * vn * n.z }, spec.bounce);
           p.pos = add(at, scale(n, 0.05));
           p.bounces = (p.bounces ?? 0) + 1;
@@ -4554,10 +4557,12 @@ export class Match {
           const n = Math.min(spec.heal, victim.maxHealth - victim.health);
           victim.health += n;
           if (owner) this.pendingEvents.push({ e: 'heal', s: owner.slot, t: victim.slot, n });
+          this.landEvent(p, at, victim);
           this.explode(p, at);
           continue;
         }
         if (victim && spec.disc) {
+          this.landEvent(p, at, victim);
           this.discHit(victim, p, dir);
           this.explode(p, at);
           continue;
@@ -4565,6 +4570,7 @@ export class Match {
         if (victim && spec.impactDamage) this.damage(victim, spec.impactDamage, owner ?? null, p.weapon);
         if (victim && spec.status) this.applyStatus(victim, spec.status, owner ?? null, p.weapon);
         if (!victim && wall && spec.impactDamage && !this.damageMountBody(wall.handle, spec.impactDamage, owner ?? null, 'blast', p.weapon)) this.scenario.damageBody(wall.handle, spec.impactDamage, p.owner);
+        this.landEvent(p, at, victim);
         this.explode(p, at);
         continue;
       }
@@ -4939,6 +4945,16 @@ export class Match {
       return true;
     }
     return false;
+  }
+
+  /**
+   * A projectile with no blast of its own landed at `at` (on `victim`, or a surface): the clients draw its impact
+   * (protocol `land`). Blasts, fields, cover and boxes are drawn as what they become instead.
+   */
+  private landEvent(p: Projectile, at: Vec3, victim: Combatant | null, bounce = false): void {
+    const spec = p.spec;
+    if (spec.splashRadius > 0 || spec.zone || spec.cover || spec.ammoBox || spec.cluster || spec.airstrike || spec.ignites) return;
+    this.pendingEvents.push({ e: 'land', s: p.owner, w: p.weapon, v: PROJECTILE_VISUALS.indexOf(spec.visual), from: tuple(p.pos), to: tuple(at), hit: victim?.slot ?? null, ...(bounce ? { b: 1 as const } : {}) });
   }
 
   private explode(p: Projectile, at: Vec3): void {

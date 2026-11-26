@@ -356,7 +356,7 @@
     "scale": 0.9,
     "melee": true,
     "damage": 0.6,
-    "look": "core.goblin"
+    "look": "core.grizzelda"
    },
    "profile": {
     "accuracy": 30,
@@ -391,7 +391,7 @@
     "weapon": "core.marksman",
     "speed": 0.85,
     "scale": 1,
-    "look": "core.otter"
+    "look": "core.baristaotter"
    },
    "profile": {
     "accuracy": 45,
@@ -595,7 +595,7 @@
     "weapon": "core.lmg",
     "speed": 0.66,
     "scale": 1.18,
-    "look": "core.bogdan"
+    "look": "core.magmajuggernaut"
    },
    "profile": {
     "accuracy": 30,

@@ -368,6 +368,13 @@ export type GameEvent =
     }
   /** A bullet that was in flight landed: on a player (`hit`), a surface, or nowhere (`gone`, out of range). */
   | { e: 'impact'; s: number; w: string; from: Tuple3; to: Tuple3; hit: number | null; z?: number; ar?: 1; pn?: Tuple3[]; gone?: 1 }
+  /**
+   * A projectile with no blast of its own landed (sim/match.ts landEvent): on a player (`hit`) or a surface, flying from
+   * `from` to `to`; `v` its look (PROJECTILE_VISUALS index), `b` a bounce it flies on from (a nail, a shard, a disc).
+   * Drawn as its impact (the Blaster X-42's energy splash and scorch, a nail's sparks, an arrow's splinters) with the
+   * weapon's Impact sound.
+   */
+  | { e: 'land'; s: number; w: string; v: number; from: Tuple3; to: Tuple3; hit: number | null; b?: 1 }
   /** Chain lightning: the points it jumped through, from the muzzle on. */
   /** Lightning through `pts` (from the first): a gun's chain, an electric fence (`s` -1), or an arc sentry's arc (`m`: its mount index). */
   | { e: 'arc'; s: number; pts: Tuple3[]; m?: number }

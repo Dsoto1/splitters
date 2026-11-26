@@ -76,6 +76,37 @@ export const pointerAsk = (): number => pointerEpoch;
 /** Whether a request for the mouse (its `pointerAsk`) still stands: the page hasn't let the mouse go since. */
 export const pointerWanted = (ask: number): boolean => ask === pointerEpoch;
 
+/** The canvas's pointer-lock call: the raw-mouse form, or the plain one (a promise in today's browsers, nothing in old ones). */
+type LockTarget = { requestPointerLock(o?: { unadjustedMovement?: boolean }): Promise<void> | void };
+
+/**
+ * Asks for the mouse on `canvas`: raw movement (no OS acceleration) where the browser has it; Safari and older ones
+ * refuse the option, so ask again plainly, unless the page has let the mouse go since (a window opened over the
+ * pause menu: a late lock would hide the menu under it, the hostcontrols flake), or the refusal was a
+ * WrongDocumentError (the canvas's page isn't active: a click as the tab or window lost focus, or the canvas left the
+ * page; a plain retry is refused the same way, and the next click asks again). The plain retry's own refusal is caught
+ * too: a failed lock is no error (crash report 1d50cff7, an unhandled WrongDocumentError).
+ */
+export function requestMouse(canvas: LockTarget): void {
+  const ask = pointerAsk();
+  let raw: Promise<void> | void;
+  try {
+    raw = canvas.requestPointerLock({ unadjustedMovement: true });
+  } catch {
+    return;
+  }
+  if (!(raw instanceof Promise)) return;
+  raw.catch((e: unknown) => {
+    if ((e as { name?: string } | null)?.name === 'WrongDocumentError' || !pointerWanted(ask)) return;
+    try {
+      const plain = canvas.requestPointerLock();
+      if (plain instanceof Promise) plain.catch(() => undefined);
+    } catch {
+      // An old browser that throws: the next click asks again.
+    }
+  });
+}
+
 /**
  * This Esc press isn't the page's to act on: the browser leaves fullscreen with it (fullscreen without
  * Keyboard Lock, e.g. Safari) or just did, the browser released the mouse with it a moment ago, or it is a

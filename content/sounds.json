@@ -1490,6 +1490,14 @@
         }
       ]
     },
+    "impact.energy": {
+      "synth": "arc",
+      "gain": 0.3,
+      "range": "mid",
+      "jitter": 0.14,
+      "label": "Impact: an energy bolt's short crackle (synthesised)",
+      "variants": 3
+    },
     "blood.splat": {
       "gain": 0.5,
       "range": "near",
