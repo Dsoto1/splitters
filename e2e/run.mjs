@@ -16601,7 +16601,7 @@ async function hostPairSeen(host, friend) {
 /**
  * Chat (docs/MULTIPLAYER_PROTOCOL.md section 29): on the flows' dedicated server, text chat (the box has the
  * keyboard; the word filter), quick messages (the menu's keys and the quick-chat wheel) and mute (a player's card,
- * remembered on the device); then a browser host relaying a friend's line and kicking them from their card.
+ * remembered on the device). Host game: chathost.
  */
 async function chatFlow(browser) {
   const errors = [];
@@ -16697,6 +16697,21 @@ async function chatFlow(browser) {
   await alice.context().close();
   await bob.context().close();
 
+  check(errors.length === 0, `chat: no page errors (${errors.join('; ')})`);
+}
+
+/** Chat in Host game (MULTIPLAYER_PROTOCOL.md section 29): the browser host relays a friend's line, and kicks them from their card. */
+async function chathostFlow(browser) {
+  const errors = [];
+  const shots = process.env.E2E_SHOTS;
+  const pic = (page, name) => (shots ? page.screenshot({ path: `${shots}/chat-${name}.png`, timeout: T(60000) }).catch((e) => console.log(`chat: no picture ${name}: ${e.message.split('\n')[0]}`)) : Promise.resolve());
+  const lines = (page) => page.evaluate(() => window.__cs.chatBox.lines().map((l) => l.text));
+  // (Asked by evaluate in a loop, once more at the end: a page drawing a frame every few seconds answers late.)
+  const sees = async (page, text, ms = T(90000)) => {
+    const has = () => page.evaluate((t) => !!window.__cs?.chatBox?.lines().some((l) => l.text.includes(t)), text).catch(() => false);
+    for (const end = Date.now() + ms; Date.now() < end; await sleep(250)) if (await has()) return true;
+    return has();
+  };
   // A browser host (Host game): it relays a friend's line, and kicks them from their card.
   const HUB_PORT = await pickPort('E2E_CHAT_HUB_PORT', 9084);
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
@@ -17631,7 +17646,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
