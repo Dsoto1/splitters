@@ -13872,7 +13872,7 @@ async function charactersFlow(browser, part = 0) {
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const misses = [];
-  for (const look of ['core.ranger', 'core.biscuit', 'core.grizzelda']) {
+  for (const look of ['core.dale', 'core.biscuit', 'core.grizzelda']) {
     for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
       const m = await page.evaluate(() => window.__grips.miss());
@@ -13883,7 +13883,7 @@ async function charactersFlow(browser, part = 0) {
   // Full-body first person (your own whole character from its eyes): the same palms on the same guns, looking ahead
   // and down at your feet.
   const bodyMisses = [];
-  for (const look of ['core.ranger', 'core.galloway']) {
+  for (const look of ['core.dale', 'core.galloway']) {
     for (const weapon of ['core.rifle', 'core.lmg', 'core.pistol']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'body'), [look, weapon]);
       for (const pitch of [0, -1.3]) {
@@ -13895,11 +13895,11 @@ async function charactersFlow(browser, part = 0) {
   }
   check(bodyMisses.length === 0, `full-body first person: palms on the gun's grip and handguard (${bodyMisses.join('; ') || 'all within 2 cm'})`);
   // Third person, strafing and backing up while firing: the hips turn toward the motion and the shoulders stay square
-  // to the aim (they used to wind about 140 degrees off it), the hands on the gun. A modular character and a whole
-  // body, both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
+  // to the aim (they used to wind about 140 degrees off it), the hands on the gun. Two whole bodies (Cal and
+  // the WWII soldier), both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
   // walk), and the rolling Baseball Robot, which has none (it glides on the rig's idle).
   const strafes = [];
-  for (const look of ['core.ranger', 'core.wwiisoldier']) {
+  for (const look of ['core.dale', 'core.wwiisoldier']) {
     await page.evaluate((l) => window.__grips.pose(l, 'core.rifle', 'third'), look);
     const shoulderYaw = () =>
       page.evaluate(() => {
@@ -14020,7 +14020,7 @@ async function drawnHands(page) {
   const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
   const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'none');
   const drawnMisses = [];
-  for (const look of ['core.dapper', 'core.biscuit', 'core.ranger', 'core.galloway']) {
+  for (const look of ['core.dapper', 'core.biscuit', 'core.dale', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
       for (const view of ['body', 'first', 'third']) {
         await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
@@ -14051,7 +14051,7 @@ async function drawnHands(page) {
   // in every view.
   const spearMisses = [];
   for (const view of ['first', 'body', 'third']) {
-    await page.evaluate(([v]) => window.__grips.pose('core.ranger', 'core.spear', v), [view]);
+    await page.evaluate(([v]) => window.__grips.pose('core.dale', 'core.spear', v), [view]);
     const d = await page.evaluate(() => window.__grips.drawn());
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
@@ -14062,7 +14062,7 @@ async function drawnHands(page) {
   const meleeMisses = [];
   for (const weapon of ['core.katana', 'core.scimitar', 'core.baseball_bat', 'core.battle_axe', 'core.spear']) {
     for (const view of ['first', 'body']) {
-      await page.evaluate(([w, v]) => window.__grips.pose('core.ranger', w, v), [weapon, view]);
+      await page.evaluate(([w, v]) => window.__grips.pose('core.abe', w, v), [weapon, view]);
       const [on, miss, d] = await page.evaluate(() => [window.__grips.handsOnScreen(), window.__grips.miss(), window.__grips.drawn()]);
       const inView = (h) => h && h.ahead > 0.1 && Math.abs(h.x) < 1 && Math.abs(h.y) < 1;
       if (!on || !inView(on.r) || !inView(on.l) || !miss || miss.r > 0.02 || miss.l > 0.02 || badHand(d, 0.05)) {

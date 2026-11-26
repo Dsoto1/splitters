@@ -163,6 +163,15 @@ export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_G
  * `collection` in a manifest; the checker's list (COLLECTIONS in character-manifests.mjs) matches this one.
  */
 export const CHARACTER_COLLECTIONS = [{ id: 'chrono', label: 'Chrono Crew', after: 'space' }] as const satisfies readonly { id: string; label: string; after: CharacterGroup }[];
+/**
+ * Places in a collection kept for a character the story unlocks (owner, 2026-11-25): until the look is unlocked
+ * (campaign progress `characters`), Character Select shows an "Unknown" tile in its place. The Chrono Crew's 14th is
+ * the Inquisitor, Vesk Tockley (`core.bossinquisitor`), who joins when the story completes (docs/STORY_CAMPAIGN.md). The
+ * unlock itself, and his roster place once unlocked, come with the campaign's rules.
+ */
+export const COLLECTION_RESERVED_PLACES: Readonly<Record<string, readonly string[]>> = { chrono: ['core.bossinquisitor'] };
+/** A collection's places still kept for a locked character: one "Unknown" tile each. */
+export const vacantCollectionPlaces = (collection: string, unlocked: readonly string[]): string[] => (COLLECTION_RESERVED_PLACES[collection] ?? []).filter((id) => !unlocked.includes(id));
 export type CharacterCollection = (typeof CHARACTER_COLLECTIONS)[number]['id'];
 export const isCharacterCollection = (x: unknown): x is CharacterCollection => CHARACTER_COLLECTIONS.some((c) => c.id === x);
 
@@ -273,7 +282,7 @@ const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms
  */
 export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-24 ("Let's just retire linktifa and sprout"): both off the roster (files, manifests and portraits kept;
-  // the Designer keeps Linktifa's modular body as its base: DESIGNER_BASE_LOOK). A saved pick plays Honest Abe (Legends)
+  // the Designer kept Linktifa's modular body as its base until it went, 2026-11-25). A saved pick plays Honest Abe (Legends)
   // and Lancer Mei (Everyday Folk), kept looks of the same group; every older retirement that led to either now leads
   // straight to the kept look, in one step.
   'core.ranger': 'core.abe',
@@ -380,11 +389,11 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
  * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
  */
-/** Linktifa's id: the modular base body (retired from play, kept drawable as the rig baseline: DESIGNER_BASE_LOOK). */
-const DESIGNER_BASE_ID = 'core.ranger';
 /** The sim's fixed default look: Cal, a kept, pickable look (owner, 2026-11-24: the default is never a retired look). */
 const DEFAULT_LOOK_ID = 'core.dale';
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set([DESIGNER_BASE_ID]);
+// (Linktifa, `core.ranger`, was kept drawable as the Character Designer's base body; with the Designer gone, 2026-11-25,
+// it is retired like any other: a saved pick plays Honest Abe. No retired look is kept drawable now.)
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set<string>();
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [
@@ -497,11 +506,8 @@ export const DEFAULT_LOOK = DEFAULT_LOOK_ID;
 /** A random pickable look for a new player with no saved pick (`roll` in [0, 1): Math.random(), or a fixed value). */
 export const randomFirstLook = (roll: number): string => PICKABLE_LOOKS[Math.min(PICKABLE_LOOKS.length - 1, Math.floor(roll * PICKABLE_LOOKS.length))]!.id;
 
-/**
- * The modular base body (Linktifa's parts), once the Character Designer's start (the Designer was removed 2026-11-25):
- * off the roster, kept drawable as the shared rig's baseline for the content tools (hitboxes, grips, sight sheets) and tests.
- */
-export const DESIGNER_BASE_LOOK: CharacterLook = ALL_LOOKS.find((l) => l.id === DESIGNER_BASE_ID)!;
+/** The shared parts of a male modular body (Linktifa's outfit): for tests and tools that build a part-made look. */
+export const MODULAR_PARTS_MALE: readonly string[] = ranger('m');
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {

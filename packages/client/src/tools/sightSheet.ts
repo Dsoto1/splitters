@@ -14,7 +14,7 @@ import { Ray } from '@babylonjs/core/Culling/ray';
 import { RenderingGroup } from '@babylonjs/core/Rendering/renderingGroup';
 import '@babylonjs/core/Culling/ray';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import { CORE_WEAPONS, PLAYER, armsLookFor, getWeapon, type MatchRules, type WeaponDefinition } from '@tiletrigger/shared';
+import { CORE_WEAPONS, DEFAULT_LOOK, PLAYER, armsLookFor, getWeapon, type MatchRules, type WeaponDefinition } from '@tiletrigger/shared';
 import { WEAPON_OPTICS, type OpticKindId } from '@tiletrigger/shared/optics';
 import { SIGHT_EXCLUDED, SIGHT_FITS } from '@tiletrigger/shared/sightFit';
 import { CharacterLibrary } from '../content/characters.ts';
@@ -295,7 +295,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
       if (state.arms) {
         armsRoot = new TransformNode('sight_arms', scene);
         armsRoot.parent = eye;
-        const ch = await characters.create({ look: armsLookFor(opts.look ?? 'core.ranger'), armsOnly: true }, 'sight_arms_ch');
+        const ch = await characters.create({ look: armsLookFor(opts.look ?? DEFAULT_LOOK), armsOnly: true }, 'sight_arms_ch');
         fitFirstPersonArms(ch, armsRoot);
         anim = new CharacterAnimator(scene, ch);
         anim.gripExternal(node, def.view.hold);

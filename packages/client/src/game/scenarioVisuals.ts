@@ -6,6 +6,7 @@ import { VertexData } from '@babylonjs/core/Meshes/mesh.vertexData';
 import type { InstancedMesh } from '@babylonjs/core/Meshes/instancedMesh';
 import '@babylonjs/core/Meshes/instancedMesh';
 import { perfOn } from './perfSwitches.ts';
+import type { CharacterLibrary, Clip } from '../content/characters.ts';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { CreateCylinder } from '@babylonjs/core/Meshes/Builders/cylinderBuilder';
@@ -62,6 +63,9 @@ import {
   fixtureGap,
   type WorldBox,
   type Vec3,
+  BODY_SIZES,
+  getLook,
+  type FigurePose,
 } from '@tiletrigger/shared';
 import { BT_COLORS, createBombsiteModel, createFlagBase, createFlagModel, createHillModel, createSectorModel, createTargetModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
@@ -89,7 +93,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline', 'sector', 'objective'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline', 'sector', 'objective', 'figure'];
 
 /**
  * Place an entity's visual root: at its position, turned to its facing.
@@ -109,6 +113,9 @@ export function placeScenarioNode(node: TransformNode, e: MapEntity): void {
     node.rotation.y = e.yaw;
   }
 }
+/** The clip each Figure pose plays, looped (FIGURE_POSES). */
+const FIGURE_POSE_CLIPS: Record<FigurePose, Clip> = { stand: 'idle', cheer: 'cheer', dance: 'dance', crouch: 'crouch_idle' };
+
 /** Scenario kinds whose visual never changes once built when it has no `update` (merged in the game: mergeStill). */
 const STILL_KINDS: ReadonlySet<string> = new Set(['ladder', 'pad', 'bombsite', 'rescue', 'zipline']);
 /** Static decorations are merged per square of this many metres. */
@@ -581,7 +588,45 @@ export class ScenarioVisuals {
         return this.portal(name, e);
       case 'zipline':
         return this.zipline(name, e);
+      case 'figure':
+        return this.figure(name, e);
     }
+  }
+
+  /**
+   * Where Figures' characters come from: the game view hands over its own library (the rig and shared files load once);
+   * MapMaker gets one of its own the first time a map has a figure.
+   */
+  characters: CharacterLibrary | null = null;
+  /** A figure's character arrived (MapMaker draws only when something changes: it asks for a frame). */
+  onFigureReady: (() => void) | null = null;
+
+  /**
+   * A Figure (FigureEntity): the roster character it wears, at the look's body size, playing its pose's clip over and over. The
+   * character arrives a moment after the map (its files load once per look); in MapMaker a small base ring shows where it
+   * stands until then and stays under it.
+   */
+  private figure(name: string, e: Extract<MapEntity, { kind: 'figure' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    if (this.opts.editor) {
+      const ring = CreateCylinder(`${name}_base`, { diameter: 0.9, height: 0.04, tessellation: 24 }, this.scene);
+      ring.parent = root;
+      ring.position.y = 0.02;
+      ring.material = this.mat('figureBase', '#c9a26b', { spec: 0.05 });
+    }
+    const look = getLook(e.look);
+    const clip = FIGURE_POSE_CLIPS[e.pose] ?? 'idle';
+    void (async () => {
+      const lib = this.characters ?? (this.characters = new (await import('../content/characters.ts')).CharacterLibrary(this.scene));
+      const inst = await lib.create({ look: look.id }, `${name}_body`);
+      if (root.isDisposed() || this.scene.isDisposed) return inst.dispose();
+      inst.root.parent = root;
+      inst.root.scaling.setAll(BODY_SIZES[look.size ?? 'standard'].scale);
+      (inst.clips.get(clip) ?? inst.clips.get('idle'))?.start(true);
+      root.onDisposeObservable.addOnce(() => inst.dispose());
+      this.onFigureReady?.();
+    })().catch(() => undefined);
+    return { root };
   }
 
   /**

@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CORE_LOOKS, DEFAULT_CLIP_SET, DESIGNER_BASE_LOOK, clipSetOf } from '../src/index.ts';
+import { CORE_LOOKS, DEFAULT_CLIP_SET, MODULAR_PARTS_MALE, clipSetOf, decodeLook, encodeLook } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { DEFAULT_CLIP_SET as TOOL_DEFAULT, readClipSets } from '../../../tools/content/character-manifests.mjs';
 
@@ -18,7 +18,7 @@ describe('clip sets', () => {
   });
 
   it('the offered looks: the modular ones and every walking whole body move with clips', () => {
-    expect(clipSetOf(DESIGNER_BASE_LOOK)).toBe(DEFAULT_CLIP_SET);
+    expect(clipSetOf(decodeLook(encodeLook({ body: 'male', parts: [...MODULAR_PARTS_MALE], hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50' }))!)).toBe(DEFAULT_CLIP_SET);
     expect(clipSetOf(CORE_LOOKS.find((l) => l.id === 'core.wwiisoldier')!)).toBe(DEFAULT_CLIP_SET);
     expect(clipSetOf(CORE_LOOKS.find((l) => l.id === 'core.rollerbot')!)).toBeNull();
     // An opted-out look says why in its manifest (clipsWhy); the rest have a set.

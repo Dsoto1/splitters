@@ -5,7 +5,9 @@ import {
   CLIP_SET_CLIPS,
   CORE_LOOKS,
   DEFAULT_LOOK,
-  DESIGNER_BASE_LOOK,
+  MODULAR_PARTS_MALE,
+  decodeLook,
+  encodeLook,
   EXPERIMENTAL_SECTION,
   PICKABLE_LOOKS,
   REPORT_ONLY_CHARACTER_GATES,
@@ -138,7 +140,7 @@ describe("characters' quality gates", () => {
   });
 
   it('a look built from the shared parts is judged on its clips, hit shape and portrait', () => {
-    const preset = DESIGNER_BASE_LOOK;
+    const preset = decodeLook(encodeLook({ body: 'male', parts: [...MODULAR_PARTS_MALE], hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50' }))!;
     expect(characterGates(preset, { clips: [...CLIP_SET_CLIPS], hitbox: true, portrait: true }).map((g) => g.id)).toEqual(['clips', 'hitbox', 'portrait']);
   });
 

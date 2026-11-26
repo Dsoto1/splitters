@@ -219,7 +219,7 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     // Commands the field with heavy ordnance.
     character('core.warlord', 'Newt Calloway', { aggression: 65, tacticalAwareness: 75, objectivePriority: 80, rangePreference: 50, tags: ['SUPPRESSOR', 'TACTICAL'], weaponPreferences: ['core.launcher', 'core.rockets', 'core.lmg'] }),
     // Hunts in packs and never lets a wounded target go.
-    character('core.hyena', 'Hyena Warrior', { aggression: 80, pursuitPersistence: 95, teamLoyalty: 80, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.shotgun', 'core.burst_rifle'] }),
+    character('core.hyena', 'Rollo Splitworth', { aggression: 80, pursuitPersistence: 95, teamLoyalty: 80, rangePreference: 35, tags: ['ARENA'], weaponPreferences: ['core.smg', 'core.shotgun', 'core.burst_rifle'] }),
     // Patient, unhurried, and somehow always in the right place.
     character('core.elder', 'Elder Tomo', { aggression: 30, accuracy: 80, selfPreservation: 75, tacticalAwareness: 85, rangePreference: 60, tags: ['TACTICAL'], weaponPreferences: ['core.marksman', 'core.revolver', 'core.burst_rifle'] }),
     // Curious about everything, armed with things that glow.

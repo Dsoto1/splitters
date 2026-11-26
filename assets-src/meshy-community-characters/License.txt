@@ -168,3 +168,9 @@ tools/content/prepare-meshy-characters.mjs (one manifest each in content/charact
 the textured downloads onto the game's skeleton and builds the shipped character files.
 The raw downloads (FBX, PNG) are not kept in the repo; content/meshy.lock.json
 checks the built files.
+
+Removed 2026-11-25: the owner's own models replaced these characters' models, and the community models below no longer
+ship (owner: only the owner's own retired models stay, as MapMaker figures): "Cyber Lion" (meshy_cyberlion), "Lion in
+Suit T Pose" (meshy_lionsuit), "T Pose Frog in Suspenders" (meshy_croakley), "Elephant Warrior" (meshy_elephantwarrior),
+"Gnoll warrior" (meshy_hyena), "Wolf T Pose" (meshy_greyfang), "Gorilla G Style T Pose" (meshy_gorillag), "gere com as
+imagens abaixo por favor" (Juice, meshy_boxduck), "A humanoid crocodile wearing a heavy" (Boglurker, meshy_toad).

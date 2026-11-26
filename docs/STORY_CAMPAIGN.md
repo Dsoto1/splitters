@@ -12,7 +12,7 @@ Owner's notes, 2026-11-24. A direction to build toward, not yet a plan: the owne
 ## The Chrono Crew is the player's team
 
 - The player uses the Chrono Crew through the whole storyline.
-- Today there are 13 (owner, 2026-11-25): **Clio Everwhen** and **Sarge Tobias Crane**, the team's #1 and #2 (first in Character Select's Chrono Crew section), then Blix Orrin (the alien recruit), Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell (the pilot), Lyra Vantis, Mags Petrov, Nova Kade, Vesper Quill and Wren Halloway. Fuse Hollister left the crew for Machines. The owner's plan is a team of **14** (2026-11-25: "two new ... bring the team to 14"; with Fuse out it is 13: one more to come, or Fuse stays; an owner question).
+- Today there are **13**, with a 14th place kept (owner, 2026-11-25): **Clio Everwhen** and **Sarge Tobias Crane**, the team's #1 and #2 (first in Character Select's Chrono Crew section), then Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell (the pilot), Lyra Vantis, Mags Petrov, Nova Kade, **Rocco Tickwell** (the K9: "the K9 is new chrono member"), Vesper Quill and Wren Halloway. Fuse Hollister left the crew for Machines, and Blix Orrin (the alien recruit) for Outer Space. **The 14th place is the Inquisitor's**: Character Select shows it as an **Unknown** tile until the story unlocks him (a data hook, `COLLECTION_RESERVED_PLACES` in looks.ts; the unlock comes with the campaign's rules).
 - **Team management:** the player swaps team members out for characters they've unlocked.
 
 ## Bosses (owner, 2026-11-25)
@@ -25,7 +25,18 @@ The story's bosses, from the owner's Drive uploads of 2026-11-25 ("boss chrono t
 | The Unhour | `core.bossvoid` | boss void rift entity rigged | large | a thing from the rift between times; bleeds spirit |
 | Inquisitor Vesk Tockley | `core.bossinquisitor` | boss temporal inquisitor 15k | standard | the time police: hunts unlicensed travellers, a mid-story boss |
 
-**The crew's 14th (owner, 2026-11-25: "Maybe their 14th is unlocked. We have a boss that is humanish, maybe the story completes and he joins the crew as a good guy").** The Chrono Crew stays at 13 on the roster (no 14th upload is coming). The humanish boss, Inquisitor Vesk Tockley (`core.bossinquisitor`, standard size), turns good when the story completes and joins the crew as its 14th, unlocked by finishing the campaign. Until the campaign's unlocks exist he stays NPC-only as above; the unlock then gives him a roster place in the Chrono Crew section, with a good-guy name and bio from the owner.
+**The crew's 14th (owner, 2026-11-25: "Maybe their 14th is unlocked. We have a boss that is humanish, maybe the story completes and he joins the crew as a good guy").** Owner's answer (2026-11-25, with the K9): Blix Orrin leaves for Outer Space, so the crew is 13 and the Inquisitor is its 14th. The humanish boss, Inquisitor Vesk Tockley (`core.bossinquisitor`, standard size), turns good when the story completes and joins the crew as its 14th, unlocked by finishing the campaign. Until the campaign's unlocks exist he stays NPC-only as above; the unlock then gives him a roster place in the Chrono Crew section, with a good-guy name and bio from the owner.
+
+## Characters by sector (owner, 2026-11-25)
+
+Until the campaign's sector data exists, the sectors' own characters are listed here (the campaign framework moves them
+into its data):
+- **Mesoamerica:** Balam Nightclaw, Talon Skycrest, the Sun Warrior and Aurelio Dawnmantle (the boss encounter; owner
+  2026-11-25), and **Tetl Stonewarden** (`core.basaltguardian`, the Basalt Guardian: "Basalt guardian is for
+  mesoamerica"), large, bleeds stone: a sector ally, an unlock or a guard on the boss map.
+- **Wars:** Civil War: Capt. Elias Harrowgate (`core.unionofficer`) and Col. Josiah Beaumont (`core.rebelcommander`);
+  Vietnam: Pfc. Danny Okerlund (`core.vietnamsoldier`) and Lien Vo (`core.vcscout`) (2026-11-25); WW2: WWII Infantry and
+  the Army soldiers already on the roster.
 
 ## Unlocking characters (ideas, any or all)
 
