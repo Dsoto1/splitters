@@ -11487,6 +11487,17 @@ async function coverageFlow(browser) {
     }).catch((e) => ({ error: String(e) }));
     check(bore.vault === null && bore.concrete === null && bore.top > 4.5 && bore.beside !== null && bore.beside < 25 && bore.sunk === null && Math.abs(bore.field + 0.15) < 0.02, `the buried tunnels: a shot passes through each mouth and passage, the hill is whole on top of them and solid beside them (${JSON.stringify(bore)})`);
     check(Math.abs(bore.hatch + 4) < 0.05 && bore.stairs === null && Math.abs(bore.chamber - 13.8) < 0.1 && Math.abs(bore.over + 0.15) < 0.02, `the tunnel kit's shaft, surface stairs and chamber: the hatch is open from the sky to the tunnel's floor, the stairs to the sky, the chamber 14 m wall to wall under a field left as it was (${JSON.stringify({ hatch: bore.hatch, stairs: bore.stairs, chamber: bore.chamber, over: bore.over })})`);
+    // Breakable walls (format v53; shared sim/breakWalls.ts): the room at (9, -7) has its north wall marked, explosives
+    // only (placed in MapMaker). Blasts by it break it (bots' grenades may have already): a shot at chest height beside
+    // its doorway then passes into the room, the wall's end beside the hole still stops one, and the client draws its
+    // remains (game/breakWallVisuals.ts).
+    const wall = await sim(page, (m) => {
+      for (let n = 0; n < 6; n++) m.scenario.splash({ x: 70, y: 1.2, z: -51.4 }, 4, 120, 30, null, m.physics);
+      const ray = (o) => m.physics.raycastWorld(o, { x: 0, y: 0, z: -1 }, 3);
+      return { hole: ray({ x: 70, y: 1.2, z: -50.5 }), end: ray({ x: 68.2, y: 1.2, z: -50.5 }) };
+    }).catch((e) => ({ error: String(e) }));
+    const rest = await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name.startsWith('map_breakwall_rest') && m.getTotalVertices() > 0), null, { timeout: T(15000) }).then(() => true, () => false);
+    check(wall.hole === null && typeof wall.end === 'number' && rest, `a breakable wall blown open: a shot passes its hole, its end still stops one, its remains are drawn (${JSON.stringify(wall)}, remains ${rest})`);
     // The Tank turns its own gun (content/guns.json `parts`, MountDef.turret): its model's turret and barrel are parts,
     // each with its own lower level of detail, and a manned cannon seat's aim turns the turret and pitches the barrel.
     // The match runs in a worker: the tank's place in it (`at`) and its entity index (its node's name) from there.

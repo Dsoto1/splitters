@@ -360,6 +360,30 @@ breakable glass blocks, back 4 s after they are shot out, and a bulletproof
 panel stands after the tank). The older *Window pane* destructible still works
 for maps that place panes by hand, and is drawn with the same glass.
 
+### Breakable walls (format v53; `sim/breakWalls.ts`)
+
+A piece's walls can be made breakable in MapMaker's inspector (owner, 2026-11-16, the destructible environment's
+step (b); built 2026-11-25): **Breakable walls** for the selected tiles and set pieces (every wall of them), or a tick
+beside one side in a single-cell tile's Walls rows; **Health** (300 unless set; a grenade does about 100 close by) and
+**Shots break it too** (off: explosives only: grenades, rockets, barrels). The map keeps it as a tile's (or a set piece
+placement's) `breakWalls: { sides?, health?, shots? }`.
+
+- A wall between two pieces is one wall: it breaks (both faces) if either side is marked. A piece with a facade and a
+  see-through side (bars, fences) never breaks; a validator warning says so. At most 64 sections a map play
+  (`MAX_BREAK_WALLS`); walls past it stay solid, with a warning.
+- Host-authoritative, like every breakable: a wall's section is a scenario body after the window panes
+  (`wallSectionIndex`), replicated as its health. Broken, it leaves a ragged hole through the wall at its foot (about
+  2.75 m high, the wall left 0.45-0.95 m at each end, the part over the hole in a 4 m wall, teeth round it: all
+  colliding) and some rubble on the floor (drawn only), worked out from the section's name so it is the same everywhere;
+  shots, sight and bodies pass the hole. Glass in it shatters with it and stays gone while it is. Back at the next round.
+- Drawn apart from the level (`game/breakWallVisuals.ts`): the standing walls as one set of meshes by style, the broken
+  ones' remains as another, both rebuilt on a break (a few draws whatever their number). Debris in the wall's own colour
+  flies out along the hole (no flash, nothing bright: Reduce flashing has nothing to calm), with the wall-break sound.
+- Bots keep treating a broken wall as a wall: it stays in the navmesh (routing through holes waits for the tiled
+  navmesh, BOTS.md); they see and shoot through the hole.
+- The coverage map has two: the north wall of the room at (9, -7), explosives only, and every wall of the shop room at
+  (14, 1), 200 health, shots too, its arched window's glass with them.
+
 ### The showpiece kit (set pieces part 3)
 
 Pieces made for MAP 21 and the Sandfall Colosseum (docs/SET_PIECES_PLAN.md, "As built: part 3"); any map can use them.

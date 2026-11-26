@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Breakable walls.** In MapMaker, mark a piece's walls (or one side, or every wall of a set piece) breakable, with their health and whether shots break them too (explosives only by default): in play a blast leaves a ragged hole you can shoot, see and walk through, back next round (map format v53).
 - **Sharper characters up close.** Character colour maps are twice as detailed (2048 px) for 177 of the 209 characters, and every character's maps now stay compressed on the graphics card, so all of them together take about 40% less video memory than before; the game downloads a little more per character.
 - **Story** heads the main menu (Story · Quick Play · Local · Online): the Operations Database, three placeholder sectors on today's maps, played one map at a time against bots and saved on your device and your account; a sector's later maps can't be hosted until you've won them in Story (joining is fine).
 - **Seamless tunnels and a Stair Tunnel.** Brick, stone and concrete now run on across tunnel pieces (vaults and arches, pieces turned east-west or back to front, curves and junctions) with no jump or stone band at the joints, and every tunnel family has a Stair Tunnel in MapMaker: down a level over two cells, with landings and room to stand on every step.
