@@ -515,6 +515,19 @@ export class SessionAudio {
         if (ev.s === me) this.hitSound([ev.hit], ev.z !== undefined ? [ev.z] : undefined, !!ev.ar);
         break;
       }
+      case 'land': {
+        // A projectile with no blast landed: on a body its thud, on a surface the surface's own sound (not for a
+        // glancing bounce); either way the weapon's own Impact sound (the Weapon Manager's Impact slot) over it.
+        const at = ev.hit === me ? undefined : tuple(ev.to);
+        if (ev.hit !== null) this.audio.play('impact.body', { at, gain: ev.hit === me ? 0.5 : 0.8 });
+        else if (!ev.b) {
+          const sound = this.worldImpact(tuple(ev.from), tuple(ev.to));
+          if (sound) this.audio.play(sound, { at: tuple(ev.to), gain: 0.8 });
+        }
+        const ownHit = impactSoundOf(ev.w);
+        if (ownHit) this.audio.play(ownHit, { at, gain: ev.b ? 0.5 : 1 });
+        break;
+      }
       case 'melee': {
         if (ev.u) {
           // Punch or kick: a swish, and a meaty thump when it lands (yours swished when you pressed the key).

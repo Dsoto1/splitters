@@ -3,6 +3,7 @@ import {
   buildZone,
   coreCatalog,
   deleteCommand,
+  fitDoor,
   FREE_MEASURE_KEYS,
   getItem,
   getProp,
@@ -18,6 +19,7 @@ import {
   SCENARIO_PALETTE,
   settledPropY,
   snapMeasurePoint,
+  snapDoorToBlockWall,
   snapsToDoorway,
   snapToDoorway,
   surfaceHit,
@@ -89,10 +91,14 @@ export class Placing {
       if (this.app.run(`Place ${def.displayName}`, { kind: 'addEntities', entities: [{ id, kind: 'mount', position: p, model: this.app.tool.model, yaw: this.app.propYaw, faction: null, respawnSeconds: null }] })) this.app.setSelection({ tiles: [], entities: [id] });
     } else if (this.app.tool.kind === 'scenario' && this.app.hoverPoint) {
       const { p, yaw } = this.scenarioSpot(this.app.tool.key)!;
-      const placed = newScenarioEntities(this.app.tool.key, p, yaw, this.app.doc);
+      let placed = newScenarioEntities(this.app.tool.key, p, yaw, this.app.doc);
       const entity = placed[placed.length - 1]!;
       const label = SCENARIO_PALETTE.find((x) => x.key === (this.app.tool as { key: string }).key)?.label ?? 'object';
-      if (this.app.run(`Place ${label}`, { kind: 'addEntities', entities: placed })) this.app.setSelection({ tiles: [], entities: [entity.id] });
+      // Doors that fit themselves: a door cuts the wall it goes in to its own doorway and hangs in the wall's middle.
+      const fit = entity.kind === 'door' ? fitDoor(this.app.doc, entity) : null;
+      if (fit) placed = placed.map((e) => (e.id === fit.door.id ? fit.door : e));
+      const add = { kind: 'addEntities' as const, entities: placed };
+      if (this.app.run(`Place ${label}`, fit?.commands.length ? { kind: 'batch', commands: [add, ...fit.commands] } : add)) this.app.setSelection({ tiles: [], entities: [entity.id] });
     } else if (this.app.tool.kind === 'npc' && this.app.hoverPoint) {
       const r = placeNpcCommand(this.app.doc, this.app.tool.key, this.placeSpot()!, this.app.scenarioYaw);
       if ('error' in r) return this.app.toast(r.error, true);
@@ -107,6 +113,9 @@ export class Placing {
     // hill went in at the level's height, under the hill); the rest go on the level being edited.
     const onGround = this.app.hoverOnTerrain && /^(spawn:|objective:|sector$|flag$|hill$|bombsite$|hostage$|rescue$)/.test(key);
     const y = onGround ? Math.round(this.app.hoverPoint.y * 100) / 100 : this.app.level * this.app.doc.classicStructure.levelHeight;
+    // A door over a wall of free blocks goes in that wall (doors that fit themselves); otherwise on a cell side.
+    const inBlocks = key === 'door' || key === 'door_locked' || key.startsWith('door:') ? snapDoorToBlockWall(this.app.doc, this.app.hoverPoint.x, y, this.app.hoverPoint.z) : null;
+    if (inBlocks) return { p: inBlocks.position, yaw: inBlocks.yaw };
     if (snapsToDoorway(key)) {
       const d = snapToDoorway(this.app.hoverPoint.x, this.app.hoverPoint.z, this.app.doc.classicStructure.cellSize);
       return { p: [d.x, y, d.z], yaw: d.yaw };

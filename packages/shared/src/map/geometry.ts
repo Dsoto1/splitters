@@ -13,6 +13,7 @@ import { borderBoxes, borderFloor, electricFenceBoxes, hasBorder } from './borde
 import { pathsExtent } from './paths.ts';
 import { CORNER_EDGE_STYLES, EDGE_SHAPES, FACADE_EDGE_STYLES, GLASS_EDGE_STYLES, STREET_EDGE_STYLES } from '../content/edgeStyles.generated.ts';
 import { edgeLattice, edgePaint, edgeSegments, edgeTrimBoxes, shapeOf, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
+import { blockDoorwayPieces, blockTakesDoorways, runPieceBox } from './blockDoorways.ts';
 export { edgePaint, edgeSegments, edgeTrimBoxes, type ResolvedEdge, type SideTrim } from './edgeShapes.ts';
 
 /**
@@ -691,7 +692,26 @@ export function blockBoxes(map: MapDocument, dynamic = false): WorldBox[] {
     if (e.kind !== 'block' || dyn.has(e.id) !== dynamic) continue;
     if (dynamic && e.startHidden) continue;
     const start = starts?.get(e.id);
-    out.push(start ? carriedBox(e, start) : blockBox(e));
+    if (!dynamic && e.doorways?.length && blockTakesDoorways(e)) out.push(...blockDoorwayBoxes(e));
+    else out.push(start ? carriedBox(e, start) : blockBox(e));
+  }
+  return out;
+}
+
+/** A static block with doorways (v52), as the pieces round its openings (map/blockDoorways.ts), each in its material. */
+function blockDoorwayBoxes(e: Extract<MapEntity, { kind: 'block' }>): WorldBox[] {
+  const surface = e.material ? { surface: { material: e.material, tint: e.tint } } : {};
+  return blockDoorwayPieces(e).solids.map((p) => ({ ...runPieceBox(e, p), kind: 'floor' as const, sourceId: e.id, ...surface }));
+}
+
+/** The frames, voussoirs and soffits of static blocks' doorways (drawn, never collide): in the theme's trim, as a tile's are. */
+function blockDoorwayTrim(map: MapDocument): WorldBox[] {
+  const out: WorldBox[] = [];
+  let dyn: Set<string> | null = null;
+  for (const e of map.entities) {
+    if (e.kind !== 'block' || !e.doorways?.length || !blockTakesDoorways(e)) continue;
+    if ((dyn ??= dynamicBlockIds(map)).has(e.id)) continue;
+    for (const p of blockDoorwayPieces(e).trim) out.push({ ...runPieceBox(e, p), kind: 'trim', sourceId: e.id, ...(p.surface ? { surface: p.surface } : {}) });
   }
   return out;
 }
@@ -804,7 +824,9 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
         const metal = edgePaint(style);
         // Glass in this window: its sash bars are the pane's (drawn with it, gone when it breaks: sim/glass.ts).
         const glazed = !!occ.placement.glass?.[edgeKey(occ.local, localSide(side, occ.placement.rotation))] && GLASS_STYLES.has(style);
-        for (const p of edgeTrimBoxes(style, half, levelHeight, outer, glazed ? 'without' : 'all')) {
+        // A facade frames the openings outside itself (facadeFrames): no second door frame under it.
+        const facade = occ.placement.options?.facade;
+        for (const p of edgeTrimBoxes(style, half, levelHeight, outer, glazed ? 'without' : 'all', { frames: !facade || facade === 'none' })) {
           const b = { ...sideTrimBox(side, cx, cz, half, baseY, p, id), ...tag };
           boxes.push(metal && !b.surface ? { ...b, paint: metal } : b);
         }
@@ -827,6 +849,7 @@ function buildBoxes(map: MapDocument, catalog: TileCatalog, decor: boolean): Wor
 
   if (decor) {
     boxes.push(...facadeFrames(map, cells));
+    boxes.push(...blockDoorwayTrim(map));
     boxes.push(...packFacadeBoxes(map, cells));
     // Trim on curved pieces (it never collides).
     for (const placement of map.classicStructure.tiles) {

@@ -2418,6 +2418,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       reloadSound: 'reload.ak',
       muzzleAt: [0, 0.04, 0.36],
       sound: 'fire.plasma.b',
+      impactSound: 'impact.energy',
     },
   },
   // design: A sidearm that never reloads: blue laser shots (20, five to a body, 0.53 s), instant, but every shot heats it; nine quick shots overheat it and it locks until it cools. Pace your trigger and it never runs dry.

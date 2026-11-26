@@ -1362,7 +1362,7 @@ function keepAsBuilt(c) {
   lock.files.push(...was);
 }
 
-// ONLY=meshy_goblin,meshy_toad rebuilds just those (the rest kept as built).
+// ONLY=meshy_pirate,meshy_toad rebuilds just those (the rest kept as built).
 const only = process.env.ONLY?.split(',').filter(Boolean);
 for (const id of only ?? []) if (!SPECS.some((c) => c.id === id)) throw new Error(`ONLY: no manifest content/characters/${id}.json`);
 // Downloads are found by name anywhere under the downloads dir.

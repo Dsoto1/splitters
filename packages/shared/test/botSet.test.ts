@@ -51,7 +51,7 @@ describe('bot sets: the data', () => {
     expect(validateBotSet({ entries: 'nope' })).toBeNull();
     expect(validateBotSet({})!.set).toEqual({ name: 'Custom bots', entries: [], fill: 'random' });
     // A set saved before a look was retired plays the look that replaced it (Capt. Nova: Spacewalker, 2026-11-06).
-    expect(validateBotSet({ entries: [{ name: 'Orion', look: 'core.nova' }] })!.set.entries).toEqual([{ name: 'Orion', look: 'core.astronaut' }]);
+    expect(validateBotSet({ entries: [{ name: 'Orion', look: 'core.nova' }] })!.set.entries).toEqual([{ name: 'Orion', look: 'core.crewpilot' }]);
   });
 
   it('round-trips through its text form (console, launcher, BOTSET)', () => {

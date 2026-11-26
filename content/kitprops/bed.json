@@ -256,9 +256,10 @@
       "id": "kit.bed.bunk_chest",
       "displayName": "Bunk Bed with Footlocker",
       "category": "Furniture",
-      "assetVersion": 1,
+      "assetVersion": 2,
       "notes": {
-        "1": "First version (St. John's dorm rooms; owner, 2026-11-21: \"one black chest with grey edging at the foot of each bunk\", a trunk about 0.8 x 0.42 x 0.42 m with silver-grey edging along the lid seam and corners and three chrome latches): the Bunk Bed with a footlocker 4 cm off its foot (the ladder end), one prop where a bunk and a trunk would be two, so a room gains no entity. Collides as the bunk's boxes and the trunk's box."
+        "1": "First version (St. John's dorm rooms; owner, 2026-11-21: \"one black chest with grey edging at the foot of each bunk\", a trunk about 0.8 x 0.42 x 0.42 m with silver-grey edging along the lid seam and corners and three chrome latches): the Bunk Bed with a footlocker 4 cm off its foot (the ladder end), one prop where a bunk and a trunk would be two, so a room gains no entity. Collides as the bunk's boxes and the trunk's box.",
+        "2": "Turned half round (owner, 2026-11-25: the chest was on the wrong end): the bunk's head at the prop's +z end, snug in the room's corner where the set pieces stand it, the footlocker at its other (open) end at −z, the ladder on the bunk's −x side facing the room. Same size and footprint; collision turned with it."
       },
       "size": [
         1.142,

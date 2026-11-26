@@ -71,6 +71,7 @@ import {
   type WeaponHold,
   type WorldBox,
   PROJECTILE_VISUALS,
+  type ProjectileVisual,
   STREAM_VISUALS,
   type ZoneSnapshot,
   FX_CLOAK,
@@ -138,6 +139,7 @@ import { ImpactVisuals } from './impactVisuals.ts';
 import { ThrowArc } from './throwArc.ts';
 import { createStarFlash, kickFlash } from './muzzleVisuals.ts';
 import { MuzzleFlashRig, loadMuzzleFlashes, muzzleEffectFor } from './muzzleFlash.ts';
+import { landStyle } from './projectileLand.ts';
 import { BLAST_FADE_IN, SAFE_MUZZLE, blastSize, blastStrength, ease, indicator, reduceFlashing } from './reduceFlashing.ts';
 import { bodyGlowColor, bodyGlowScale, easePhantom, phantomShown } from './powerupGlow.ts';
 import { addKick, kickAt, type HitKick } from './hitKick.ts';
@@ -1537,6 +1539,45 @@ export class GameView {
       this.accent(style.accent, wall.point, wall.normal);
     }
   }
+
+  /**
+   * A projectile with no blast of its own landed (protocol `land`; projectileLand.ts has each look's style): the Blaster
+   * X-42's energy splash and scorch, a nail's or arrow's mark as a round of its weight, a slime's splat; on a body its
+   * blood and hit puff. Calm under Reduce flashing (an unlit, dimmer, slower puff, fewer sparks). Returns what it drew
+   * (tests and the flicker check): 'surface', 'body' or null.
+   */
+  projectileLand(o: { look: ProjectileVisual | undefined; from: Vec3; to: Vec3; victim: number | null; bounce?: boolean }): 'surface' | 'body' | null {
+    const style = landStyle(o.look, reduceFlashing());
+    if (!style) return null;
+    this.landsDrawn++;
+    const d = { x: o.to.x - o.from.x, y: o.to.y - o.from.y, z: o.to.z - o.from.z };
+    const len = Math.hypot(d.x, d.y, d.z) || 1;
+    const dir = { x: d.x / len, y: d.y / len, z: d.z / len };
+    if (o.victim !== null) {
+      if (style.body.blood > 0) this.blood.hit(o.to, dir, style.body.blood, this.bloodKind(o.victim));
+      const g = style.body.glow;
+      if (g) this.impacts.puff(o.to, g.hex, g.size, g.life, g.rise, g.glow);
+      return 'body';
+    }
+    const surface = style.surface;
+    if ('round' in surface) {
+      // A bounce only glances: no hole, a smaller mark.
+      this.landRound({ eye: { x: o.to.x - dir.x * 0.6, y: o.to.y - dir.y * 0.6, z: o.to.z - dir.z * 0.6 }, to: { x: o.to.x + dir.x * 0.1, y: o.to.y + dir.y * 0.1, z: o.to.z + dir.z * 0.1 }, victim: null, zone: 0, strength: o.bounce ? surface.round * 0.5 : surface.round });
+      return 'surface';
+    }
+    // Its own: find the face it struck (a little either side of where it stopped), else splash where it is.
+    const eye = { x: o.to.x - dir.x * 0.6, y: o.to.y - dir.y * 0.6, z: o.to.z - dir.z * 0.6 };
+    const wall = this.impacts.surfaceHit(eye, { x: o.to.x + dir.x * 0.1, y: o.to.y + dir.y * 0.1, z: o.to.z + dir.z * 0.1 });
+    const at = wall?.point ?? o.to;
+    const n = wall?.normal ?? { x: -dir.x, y: -dir.y, z: -dir.z };
+    if (surface.sparks > 0 || (surface.scorch > 0 && wall && !o.bounce)) this.impacts.wallImpact(at, n, surface.scorch || 1, { sparks: surface.sparks, dust: null, dustSize: 0, hole: !!wall && !o.bounce && surface.scorch > 0 });
+    const g = surface.glow;
+    if (g) this.impacts.puff({ x: at.x + n.x * 0.06, y: at.y + n.y * 0.06, z: at.z + n.z * 0.06 }, g.hex, g.size, g.life, g.rise, g.glow);
+    return 'surface';
+  }
+
+  /** Projectile landings drawn (tests, the flicker check). */
+  landsDrawn = 0;
 
   /** The surface type a round from `from` landing at `to` struck in the level (null: nothing there, or a body). */
   surfaceStruck(from: Vec3, to: Vec3): Surface | null {

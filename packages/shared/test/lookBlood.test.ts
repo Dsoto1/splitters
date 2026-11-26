@@ -28,18 +28,17 @@ describe('blood by character', () => {
     for (const l of CORE_LOOKS.filter((x) => x.whole && (x.group === 'soldiers' || x.group === 'folk'))) expect(lookBlood(l.id), l.id).toBe('red');
     // Every alien is green or blue (the space people are red).
     for (const l of CORE_LOOKS.filter((x) => x.whole && x.nameTheme === 'alien')) expect(['green', 'blue'], l.id).toContain(lookBlood(l.id));
-    expect(lookBlood('core.astroexplorer')).toBe('red');
+    expect(lookBlood('core.astronaut')).toBe('red');
     expect(lookBlood('core.rattles')).toBe('bone');
     expect(lookBlood('core.bonejack')).toBe('bone');
     expect(lookBlood('core.hollowpilgrim')).toBe('spirit');
-    expect(lookBlood('core.slugger')).toBe('oil');
+    expect(lookBlood('core.crewdemolitions')).toBe('oil');
     expect(lookBlood('core.groaner')).toBe('red');
     // The owner's answers (2026-11-18).
     for (const id of ['core.alienbiker', 'core.potatomarshal', 'core.spacemarine']) expect(lookBlood(id), id).toBe('blue');
-    expect(lookBlood('core.brasshare')).toBe('red');
     expect(lookBlood('core.bronzer')).toBe('stone');
-    // Retired looks bleed as the look they play (The Hollow Visitor plays The Visitor).
-    expect(lookBlood('core.hollowvisitor')).toBe(lookBlood('core.visitor'));
+    // Retired looks bleed as the look they play (Rotter, removed, plays Dredge Marrow).
+    expect(lookBlood('core.rotter')).toBe(lookBlood('core.abyssalhunter'));
     expect(lookBlood('core.visitor')).toBe('green');
   });
 

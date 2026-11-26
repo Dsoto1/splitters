@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_jgvopy6gz5yooezw",
-      "revision": 64,
-      "contentHash": "sha256:6ec8e84ea5fdb789c0660bcecdd48c3baba5d77f8adf640899e06cdb5aa83033",
+      "versionId": "v_rtgobgc2b7mu54mh",
+      "revision": 65,
+      "contentHash": "sha256:8b4de1400e96b43c9e0cfb4bad9cca05544beb63616d45ed39b5c61ed21db01a",
       "schemaVersion": 53,
-      "releasedAt": "2026-11-25T23:48:11.260Z"
+      "releasedAt": "2026-11-26T00:54:44.386Z"
     },
     "testOnly": true,
     "category": "weird"
@@ -1490,6 +1490,37 @@
         "y": -10,
         "z": -1,
         "rotation": 0
+      },
+      {
+        "id": "tile_doorfit_a",
+        "tile": "core.room",
+        "x": -14,
+        "y": 18,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "walls": {
+            "material": "core.pbr_castle_stone",
+            "tint": null
+          }
+        },
+        "edges": {
+          "0,0,0:E": "door_arched"
+        }
+      },
+      {
+        "id": "tile_doorfit_b",
+        "tile": "core.room",
+        "x": -13,
+        "y": 18,
+        "z": 0,
+        "rotation": 0,
+        "surfaces": {
+          "walls": {
+            "material": "core.pbr_castle_stone",
+            "tint": null
+          }
+        }
       }
     ]
   },
@@ -5712,6 +5743,90 @@
       "kind": "pickup",
       "item": "core.powerup_bottomless",
       "respawnSeconds": null
+    },
+    {
+      "id": "block_doorfit_w",
+      "position": [
+        -111,
+        0,
+        132
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        4,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "doorways": [
+        {
+          "style": "door_arched",
+          "at": 3
+        }
+      ]
+    },
+    {
+      "id": "block_doorfit_e",
+      "position": [
+        -105,
+        0,
+        132
+      ],
+      "kind": "block",
+      "size": [
+        6,
+        4,
+        0.6
+      ],
+      "yaw": 0,
+      "material": "core.pbr_castle_stone",
+      "tint": null,
+      "behaviour": "solid",
+      "trigger": "step",
+      "delaySeconds": 0.8,
+      "respawnSeconds": 8,
+      "health": 120,
+      "doorways": [
+        {
+          "style": "door_arched",
+          "at": -3
+        }
+      ]
+    },
+    {
+      "id": "door_24o1vve1ao",
+      "position": [
+        -108,
+        0,
+        144
+      ],
+      "kind": "door",
+      "yaw": 1.5707963267948966,
+      "style": "arched",
+      "startOpen": false,
+      "locked": false,
+      "auto": true
+    },
+    {
+      "id": "door_vtihakx4ow",
+      "position": [
+        -108,
+        0,
+        132
+      ],
+      "kind": "door",
+      "yaw": 0,
+      "style": "arched",
+      "startOpen": false,
+      "locked": false,
+      "auto": true
     }
   ],
   "factions": [],

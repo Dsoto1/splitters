@@ -45,7 +45,8 @@
     "hold": { "style": "long", "grip": [0, -0.06, -0.17], "support": [0, -0.01, 0.2], "shoulder": [0, 0.02, -0.35] },
     "reloadSound": "reload.ak",
     "muzzleAt": [0, 0.04, 0.36],
-    "sound": "fire.plasma.b"
+    "sound": "fire.plasma.b",
+    "impactSound": "impact.energy"
   },
   "notes": {
     "design": "The Sci-fi set's automatic: bright orange bolts at 600 rpm, 21 each (five to a body, 0.4 s), fast (110 m/s) but not instant, so a moving target past 15 m needs a little lead; no splash and no drop. The Plasma Rifle lobs slower, splashing balls; the Laser Rifle burns without ammo.",
