@@ -46,7 +46,12 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 Everything else keeps its place below these.
 
 ## In flight
-- **Lead: the "splitters" session (owner, 2026-11-22).**
+- **Lead: lane B's splitters22 again (owner, 2026-11-26: "lane b will need to be primary, it has a lot of usage left"; lane A has about 12% of its week left).** Lane B runs the trains, keeps this file and HANDOFF, takes new work (the owner's next character batch with the chimp's 10 variants first, then step 2 of "The plan"; lane A's items too while lane A is low).
+- **Lane A ("splitters", lead until 2026-11-26) only finishes what is running, in this landing order** (each touches the character tables, so one at a time, each merging main before its landing):
+  1. `wip/fixes-20261126` (fix batch: dorm bunk, pointer-lock crash 1d50cff7, cancel a throw, X-42 and projectile impacts, 11 characters and the non-owned retired looks removed);
+  2. `wip/chars-1125b` (the owner's 11-25 batch: replacements with the old models as MapMaker Figures (map format v53), El Zarpazo, Tetl Stonewarden, Rocco Tickwell (crew 14th place vacant until the Inquisitor), Civil War and Vietnam soldiers, renames, Blix to Space);
+  3. `wip/no-designer-1125` (the Character Designer and custom characters removed).
+  If lane A runs out before landing them, lane B takes them over from their Ready-to-land lines and HANDOFF claims.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
