@@ -1,7 +1,7 @@
 import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { SURFACE_TYPES, type SurfaceTypeId, type Vec3, type WorldBox } from '@tiletrigger/shared';
-import { rayBoxLocalHit, type LocalHit } from './blockHoles.ts';
+import { BLOCK_HOLE_SLACK, rayBoxLocalHit, type LocalHit } from './blockHoles.ts';
 
 /**
  * Bullet holes on breakable props (crates, barrels, every solid prop on an 'Everything breaks' map; owner, 2026-11-24).
@@ -26,13 +26,18 @@ export interface PropHoleTarget {
   centre: Vec3;
   radius: number;
   surface: SurfaceTypeId | null;
+  /** Round (a drum, a barrel): its sides are found on the upright cylinder in its box, so holes sit on the curve. */
+  round: boolean;
 }
+
+/** Props whose boxes stand for an upright cylinder (by model name): drums, barrels, kegs, casks. */
+export const isRoundProp = (model: string): boolean => /drum|barrel|keg|cask/i.test(model);
 
 /**
  * The hole targets for a map's breakable props: `boxes` its breakable props' collision boxes (shared `propBoxes(doc,
  * true)`), `nodeOf` a prop's drawn root by placement ID (its lifts already applied), `surfaceOf` a placement's surface.
  */
-export function propHoleTargets(boxes: readonly WorldBox[], nodeOf: (id: string) => TransformNode | undefined, surfaceOf: (id: string) => SurfaceTypeId | null): PropHoleTarget[] {
+export function propHoleTargets(boxes: readonly WorldBox[], nodeOf: (id: string) => TransformNode | undefined, surfaceOf: (id: string) => SurfaceTypeId | null, roundOf: (id: string) => boolean = () => false): PropHoleTarget[] {
   const byId = new Map<string, WorldBox[]>();
   for (const b of boxes) {
     const list = byId.get(b.sourceId);
@@ -58,7 +63,7 @@ export function propHoleTargets(boxes: readonly WorldBox[], nodeOf: (id: string)
     });
     const c = { x: (lo[0]! + hi[0]!) / 2, y: (lo[1]! + hi[1]!) / 2, z: (lo[2]! + hi[2]!) / 2 };
     const centre = Vector3.TransformCoordinatesFromFloatsToRef(c.x, c.y, c.z, inv, new Vector3());
-    out.push({ node, boxes: parts, centre: { x: centre.x, y: centre.y, z: centre.z }, radius: Math.hypot(hi[0]! - c.x, hi[1]! - c.y, hi[2]! - c.z), surface: surfaceOf(id) });
+    out.push({ node, boxes: parts, centre: { x: centre.x, y: centre.y, z: centre.z }, radius: Math.hypot(hi[0]! - c.x, hi[1]! - c.y, hi[2]! - c.z), surface: surfaceOf(id), round: roundOf(id) });
   }
   return out;
 }
@@ -92,7 +97,9 @@ export function strikeProp(targets: readonly PropHoleTarget[], from: Vec3, to: V
     if (ex * ex + ey * ey + ez * ez > t.radius * t.radius) continue;
     for (const b of t.boxes) {
       b.rel.multiplyToRef(root, boxWorld);
-      const hit = rayBoxLocalHit(from, to, boxWorld, b.half);
+      let hit = rayBoxLocalHit(from, to, boxWorld, b.half);
+      // A drum's side: on the cylinder in its box (none where the round only clipped the box's corner).
+      if (hit && t.round && hit.normal.y === 0) hit = rayCylinderLocalHit(from, to, boxWorld, b.half);
       if (hit && (!best || hit.dist < best.hit.dist)) best = { t, hit, rel: b.rel };
     }
   }
@@ -104,6 +111,32 @@ export function strikeProp(targets: readonly PropHoleTarget[], from: Vec3, to: V
   const wp = Vector3.TransformCoordinates(point, world);
   const wn = Vector3.TransformNormal(normal, world).normalize();
   return { node: best.t.node, local: { dist: best.hit.dist, point, normal }, point: { x: wp.x, y: wp.y, z: wp.z }, normal: { x: wn.x, y: wn.y, z: wn.z }, surface: best.t.surface };
+}
+
+/**
+ * Where a round from `from` that stopped at `to` met the upright cylinder inscribed in a box (half sizes `half`; `world`
+ * its world matrix), in the box's frame: as rayBoxLocalHit, for a round prop's sides.
+ */
+export function rayCylinderLocalHit(from: Vec3, to: Vec3, world: Matrix, half: Vec3): LocalHit | null {
+  const len = Math.hypot(to.x - from.x, to.y - from.y, to.z - from.z);
+  if (len < 0.05) return null;
+  const inv = world.clone().invert();
+  const a = Vector3.TransformCoordinates(new Vector3(from.x, from.y, from.z), inv);
+  const d = Vector3.TransformCoordinates(new Vector3(to.x, to.y, to.z), inv).subtractInPlace(a);
+  const r = Math.min(half.x, half.z);
+  const qa = d.x * d.x + d.z * d.z;
+  if (qa < 1e-12) return null;
+  const qb = 2 * (a.x * d.x + a.z * d.z);
+  const qc = a.x * a.x + a.z * a.z - r * r;
+  const disc = qb * qb - 4 * qa * qc;
+  if (disc < 0) return null;
+  const t = (-qb - Math.sqrt(disc)) / (2 * qa);
+  if (t < 0) return null;
+  const point = a.add(d.scale(t));
+  if (Math.abs(point.y) > half.y) return null;
+  const dist = t * len;
+  if (Math.abs(dist - len) > BLOCK_HOLE_SLACK) return null;
+  return { dist, point, normal: new Vector3(point.x, 0, point.z).normalize() };
 }
 
 /**

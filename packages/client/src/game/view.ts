@@ -152,7 +152,7 @@ import { ScopeGlints } from './scopeGlint.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
-import { propHoleTargets, strikeProp, type PropHoleTarget } from './propHoles.ts';
+import { isRoundProp, propHoleTargets, strikeProp, type PropHoleTarget } from './propHoles.ts';
 import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceMap, surfaceOfFace, weaponImpact, type FxRef, type Surface, type SurfaceMap } from './fxMap.ts';
 import { buildPathMeshes, mergePathMeshes } from '../pathMeshes.ts';
 
@@ -929,6 +929,7 @@ export class GameView {
           return i === undefined ? undefined : this.props.get(i);
         },
         (id) => (model.get(id) ? propSurface(model.get(id)!) : null),
+        (id) => isRoundProp(model.get(id) ?? ''),
       );
     }
     this.scenario.build(doc.entities, doc);

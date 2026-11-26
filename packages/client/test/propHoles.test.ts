@@ -8,7 +8,7 @@ import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import '@babylonjs/core/Meshes/instancedMesh';
 import '@babylonjs/core/Meshes/thinInstanceMesh';
 import type { WorldBox } from '@tiletrigger/shared';
-import { HoleBook, PROP_HOLE_CAP, PROP_HOLED_MAX, holeLook, propHoleTargets, strikeProp } from '../src/game/propHoles.ts';
+import { HoleBook, PROP_HOLE_CAP, PROP_HOLED_MAX, holeLook, isRoundProp, propHoleTargets, strikeProp } from '../src/game/propHoles.ts';
 import { ImpactVisuals } from '../src/game/impactVisuals.ts';
 
 const engines: NullEngine[] = [];
@@ -167,5 +167,38 @@ describe('holes on breakable props (owner, 2026-11-24)', () => {
     expect(holeLook('metal').scale).toBeLessThan(1);
     expect(holeLook('stone').key).toBe('stone');
     expect(holeLook(null).key).toBe('plain');
+  });
+});
+
+/** The same round against the drum's box alone (as if it were square). */
+function rayBoxHits(targets: ReturnType<typeof propHoleTargets>, from: { x: number; y: number; z: number }, to: { x: number; y: number; z: number }): boolean {
+  return !!strikeProp(targets.map((t) => ({ ...t, round: false })), from, to);
+}
+
+describe('round props (drums, barrels): holes on the curve, not the box', () => {
+  it('finds a drum side on its cylinder, its normal pointing out from the axis', () => {
+    const s = scene();
+    const root = crate(s, 'prop_drum', 10, 0);
+    const box: WorldBox = { min: [9.67, 0, -0.33], max: [10.33, 0.95, 0.33], kind: 'prop', sourceId: 'd' };
+    const targets = propHoleTargets([box], () => root, () => 'metal', () => true);
+    // 0.2 m off its axis: the box face is at x 9.67, the cylinder further in.
+    const z = 0.2;
+    const onCurve = 10 - Math.sqrt(0.33 * 0.33 - z * z);
+    const hit = strikeProp(targets, { x: 0, y: 0.5, z }, { x: 9.67, y: 0.5, z });
+    expect(hit?.local.point.x).toBeCloseTo(onCurve - 10, 3);
+    expect(hit!.local.normal.z).toBeCloseTo(z / 0.33, 3);
+    // The top is still the box's (flat).
+    const top = strikeProp(targets, { x: 10.1, y: 3, z: 0 }, { x: 10.1, y: 0.95, z: 0 });
+    expect(top?.local.normal.y).toBe(1);
+    // A round that clipped the box's corner but not the drum: no hole.
+    // (Along x − z by the box's corner: the line passes 0.40 m from the axis, the drum is 0.33.)
+    expect(strikeProp(targets, { x: 7.72, y: 0.5, z: 1.72 }, { x: 9.72, y: 0.5, z: -0.28 })).toBeNull();
+    expect(rayBoxHits(targets, { x: 7.72, y: 0.5, z: 1.72 }, { x: 9.72, y: 0.5, z: -0.28 })).toBe(true);
+  });
+
+  it('knows drums and barrels by name', () => {
+    expect(isRoundProp('kit.drum.steel')).toBe(true);
+    expect(isRoundProp('prop.barrel_wood')).toBe(true);
+    expect(isRoundProp('kit.crate.framed')).toBe(false);
   });
 });
