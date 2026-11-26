@@ -106,7 +106,7 @@ Everything else keeps its place below these.
 - S · B · **Next character round (owner, 2026-11-26), after the 11-26 batch landed:**
   - **Kato Emberline takes Ashwalker's id and place** (owner: "Kato is Ashwalker's true replacement"); Shaka Mpande (the red-beret upload) stays as his own character with a new id. Name spelled Kato (owner: "Kato is fine").
   - **The made-up names stay** for the famous people (owner: "keep the made-up names"): Poor Richard, General Cherrytree, The Rough Rider, Prof. Quanta.
-  - **Pvt. Pete Plastic bleeds green**, and the Toys ranks and titled names (see the ranks line below).
+  - **Pvt. Pete Plastic bleeds green**, and the Toys ranks and titled names (the "Ranks and names that carry a title" line).
   - **Teddy:** the owner's replacement model, when it's on the Drive.
   - Fishy Fred's pistol support hand is about 16 cm off (grip-fit).
   - **The Hollow Pilgrim's glide stays as a movement style** (keep the code): the coming **snowman** glides like the baseball robot and the Hollow Pilgrim did.
