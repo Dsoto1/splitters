@@ -462,7 +462,13 @@ export class ImpactVisuals {
     if (key === 'plain') return base;
     let m = this.holeLookMats.get(key);
     if (!m) {
-      m = base.clone(`bulletHoleMat_${key}`);
+      // The same decal texture (a clone would copy the texture too, as a blank canvas), tinted.
+      m = new StandardMaterial(`bulletHoleMat_${key}`, this.scene);
+      m.diffuseTexture = base.diffuseTexture;
+      m.useAlphaFromDiffuseTexture = true;
+      m.specularColor = base.specularColor.clone();
+      m.zOffset = base.zOffset;
+      m.backFaceCulling = false;
       m.diffuseColor = new Color3(tint[0], tint[1], tint[2]);
       this.holeLookMats.set(key, m);
     }
