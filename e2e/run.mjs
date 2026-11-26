@@ -15264,6 +15264,16 @@ async function dodgerollFlow(browser) {
         const dir = a.kind === 2 ? a.yaw : a.yaw + Math.PI / 2;
         self.__dodgeHold = setInterval(() => (c.move = { ...c.move, pos: { ...a.pos }, velY: 0, grounded: true, dodge: a.ticks, ...(a.kind === 2 ? { roll: true, stance: 1 } : { roll: undefined, stance: undefined }), vx: Math.sin(dir) * speed, vz: Math.cos(dir) * speed }), 4);
       }, { slot, pos, yaw, kind, ticks });
+    // Your own body is drawn from the page's prediction, which runs on past a held tick: it is held there too, each
+    // frame before the page steps (at the tick asked for, plus the one the page steps it on).
+    const holdOwn = (kind, ticks) => page.evaluate(([k, t]) => {
+      const s = window.__cs;
+      if (window.__ownHold) s.view.scene.onBeforeRenderObservable.remove(window.__ownHold);
+      window.__ownHold = k ? s.view.scene.onBeforeRenderObservable.add(() => {
+        const st = s.local.state;
+        s.local.state = { ...st, grounded: true, dodge: t, ...(k === 2 ? { roll: true, stance: 1 } : { roll: undefined }), vx: k === 2 ? 0 : 7.8, vz: k === 2 ? 6 : 0 };
+      }) : null;
+    }, [kind, ticks]);
     const letGo = () => sim(page, () => clearInterval(self.__dodgeHold));
     const frames = [['a', 0.2], ['b', 0.4], ['c', 0.6], ['d', 0.8]];
     // Another body, 4 m off, side-on: a step to its right (toward the camera's left), then a roll across the view.
@@ -15288,6 +15298,7 @@ async function dodgerollFlow(browser) {
     for (const [kind, name, len] of [[1, 'step', 9], [2, 'roll', 33]]) {
       for (const [f, at] of frames) {
         await hold(me, { x: 0, y: 0, z: -12 }, 0, kind, Math.max(1, Math.round(at * len)));
+        await holdOwn(kind, Math.max(1, Math.round(at * len)));
         await sleep(700);
         await pic(page, `own-third-person-${name}-${f}`);
       }
@@ -15296,10 +15307,12 @@ async function dodgerollFlow(browser) {
     for (const [kind, name, len] of [[1, 'step', 9], [2, 'roll', 33]]) {
       for (const [f, at] of [['a', 0.3], ['b', 0.6]]) {
         await hold(me, { x: 0, y: 0, z: -12 }, 0, kind, Math.max(1, Math.round(at * len)));
+        await holdOwn(kind, Math.max(1, Math.round(at * len)));
         await sleep(700);
         await pic(page, `own-first-person-${name}-${f}`);
       }
     }
+    await holdOwn(0, 0);
     await letGo();
   }
   await sim(page, (m) => void (m.__latchStep && (m.step = m.__latchStep)));
