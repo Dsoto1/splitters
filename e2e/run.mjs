@@ -15243,6 +15243,7 @@ async function dodgerollFlow(browser) {
       const out = stepFn.call(this);
       const d = self.__dodge;
       if ((c.move.dodge ?? 0) > d.ticks) d.ticks = c.move.dodge;
+      if (d.ticks && !c.move.dodge && !d.end) d.end = { ...c.move.pos };
       d.stamina = Math.min(d.stamina, c.move.stamina ?? 1);
       if (c.move.roll) {
         d.roll = true;
@@ -15285,7 +15286,9 @@ async function dodgerollFlow(browser) {
   await drive(0, 0, 0);
   check(await meWait(page, (m, me) => !me.move.dodge && Math.hypot(me.move.vx ?? 0, me.move.vz ?? 0) < 0.05, null, 2), 'the step ends and its push fades');
   const step = await latched();
-  check(!step.roll && step.to.x - step.from.x > 1.4 && step.to.x - step.from.x < 3, `it went about 2 m the way you moved (${(step.to.x - step.from.x).toFixed(2)} m)`);
+  // (Where its burst ended: the push's fade and the walk after it come on top.)
+  const burst = step.end ? step.end.x - step.from.x : 0;
+  check(!step.roll && burst > 1 && burst < 2.2 && Math.abs(step.end.z - step.from.z) < 0.3, `its burst went the way you moved, right (${burst.toFixed(2)} m in 0.15 s)`);
   check(step.stamina <= 0.86, `it took its stamina (${step.stamina.toFixed(3)} at the least)`);
   const ownStep = await page.evaluate(() => window.__ownDodge);
   check(ownStep.ticks >= 8 && !ownStep.roll, `the step is predicted on the page (${ownStep.ticks} ticks)`);
@@ -15383,6 +15386,7 @@ async function dodgerollFlow(browser) {
         await holdOwn(kind, Math.max(1, Math.round(at * len)));
         await sleep(700);
         await pic(page, `own-third-person-${name}-${f}`);
+        if (process.env.DODGEROLL_DEBUG) console.log('own', name, f, await page.evaluate(() => { const s = window.__cs; const a = s.view.avatars.get(s.slot)?.anim; return JSON.stringify({ st: s.local.state.dodge, roll: s.local.state.roll, kind: a?.dodgeKind, tumble: a?.tumble, step: a?.stepTip, fp: !!a?.fp, tp: s.thirdPerson }); }));
       }
     }
     await page.keyboard.press('KeyH');
