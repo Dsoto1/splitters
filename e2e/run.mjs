@@ -15349,15 +15349,22 @@ async function dodgerollFlow(browser) {
         const dir = a.kind === 2 ? a.yaw : a.yaw + Math.PI / 2;
         self.__dodgeHold = setInterval(() => (c.move = { ...c.move, pos: { ...a.pos }, velY: 0, grounded: true, dodge: a.ticks, ...(a.kind === 2 ? { roll: true, stance: 1 } : { roll: undefined, stance: undefined }), vx: Math.sin(dir) * speed, vz: Math.cos(dir) * speed }), 4);
       }, { slot, pos, yaw, kind, ticks });
-    // Your own body is drawn from the page's prediction, which runs on past a held tick: it is held there too, each
-    // frame before the page steps (at the tick asked for, plus the one the page steps it on).
+    // Your own body is drawn from the page's prediction, which runs on past a held tick (a held server state is
+    // replayed with the inputs since): the pose your body is drawn from this frame is held at the tick asked for, and
+    // what the game itself gave it is kept (`__ownPose`) to show the path from prediction to body works.
     const holdOwn = (kind, ticks) => page.evaluate(([k, t]) => {
       const s = window.__cs;
-      if (window.__ownHold) s.view.scene.onBeforeRenderObservable.remove(window.__ownHold);
-      window.__ownHold = k ? s.view.scene.onBeforeRenderObservable.add(() => {
-        const st = s.local.state;
-        s.local.state = { ...st, grounded: true, dodge: t, ...(k === 2 ? { roll: true, stance: 1 } : { roll: undefined }), vx: k === 2 ? 0 : 7.8, vz: k === 2 ? 6 : 0 };
-      }) : null;
+      const v = s.view;
+      const update = (v.__updateAvatars ??= v.updateAvatars);
+      v.updateAvatars = !k ? update : function (poses, ...rest) {
+        const own = poses.find((p) => p.slot === s.slot);
+        if (own) {
+          window.__ownPose = { dodge: own.dodge, ticks: own.dodgeTicks };
+          own.dodge = k;
+          own.dodgeTicks = t;
+        }
+        return update.call(this, poses, ...rest);
+      };
     }, [kind, ticks]);
     const letGo = () => sim(page, () => clearInterval(self.__dodgeHold));
     const frames = [['a', 0.2], ['b', 0.4], ['c', 0.6], ['d', 0.8]];
@@ -15386,7 +15393,10 @@ async function dodgerollFlow(browser) {
         await holdOwn(kind, Math.max(1, Math.round(at * len)));
         await sleep(700);
         await pic(page, `own-third-person-${name}-${f}`);
-        if (process.env.DODGEROLL_DEBUG) console.log('own', name, f, await page.evaluate(() => { const s = window.__cs; const a = s.view.avatars.get(s.slot)?.anim; return JSON.stringify({ st: s.local.state.dodge, roll: s.local.state.roll, kind: a?.dodgeKind, tumble: a?.tumble, step: a?.stepTip, fp: !!a?.fp, tp: s.thirdPerson }); }));
+        if (f === 'a') {
+          const got = await page.evaluate(() => ({ pose: window.__ownPose, kind: window.__cs.view.avatars.get(window.__cs.slot)?.anim?.dodgeKind }));
+          check(got.kind === kind, `your own body is drawn in the ${name} (from the game's pose: ${JSON.stringify(got.pose)})`);
+        }
       }
     }
     await page.keyboard.press('KeyH');
