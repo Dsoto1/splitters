@@ -34,6 +34,8 @@ export interface BoardRow {
   who?: 'acct' | 'guest';
   /** In your party (they came with you, or by your invite link): marked beside the name. */
   party?: boolean;
+  /** Muted in chat on this device (chatMute.ts): marked beside the name. */
+  muted?: boolean;
   /** Team colour (or the player's own colour in free-for-all). */
   color: string;
   /** Their team's place in the match's order, for its symbol beside the colour (teamSymbols.ts); -1 or none: no team. */
@@ -443,7 +445,7 @@ export class ScoreBoard {
       if (f.ping) el.append(e.ping);
       this.rows.set(r.slot, e);
     }
-    const key = `${rank}|${r.ins ?? ''}|${r.em ?? ''}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.sym ?? -1}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}`;
+    const key = `${rank}|${r.ins ?? ''}|${r.em ?? ''}|${r.name}|${r.bot}|${r.who ?? ''}|${r.color}|${r.sym ?? -1}|${r.cls}|${r.k}|${r.d}|${r.obj}|${r.ping}|${r.pts ?? ''}|${r.squadLead ? 1 : 0}|${r.leader}|${r.dead}|${r.me}|${r.party ? 1 : 0}|${r.muted ? 1 : 0}`;
     if (key === e.key) return e;
     e.key = key;
     const set = (el: HTMLElement, text: string) => {
@@ -455,7 +457,8 @@ export class ScoreBoard {
     e.name.classList.toggle('acct', r.who === 'acct');
     e.name.classList.toggle('guest', r.who === 'guest');
     e.name.classList.toggle('party', !!r.party);
-    e.name.title = [r.party ? 'In your party' : '', r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : ''].filter(Boolean).join(' · ');
+    e.name.classList.toggle('muted', !!r.muted);
+    e.name.title = [r.party ? 'In your party' : '', r.muted ? 'Muted in chat (on this device)' : '', r.who === 'acct' ? 'Signed in: a verified account' : r.who === 'guest' ? 'Guest: not signed in, so the name is just what they typed' : ''].filter(Boolean).join(' · ');
     // Leaders' marks, else the team's symbol (Colour vision: teamSymbols.ts), else a dot.
     const sym = !r.leader && !r.squadLead && (r.sym ?? -1) >= 0 ? r.sym! : -1;
     if (sym >= 0) {

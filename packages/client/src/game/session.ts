@@ -10,6 +10,8 @@ import {
   DISC_POWER_LABELS,
   classesInPlay,
   QUICK_MESSAGES,
+  SAY_FOLLOW,
+  SAY_HOLD,
   ORDER_ACKS,
   ORDER_KINDS,
   ORDER_LABELS,
@@ -218,7 +220,7 @@ import { RouletteHud } from './rouletteHud.ts';
 import { AwardsHud } from './awardsHud.ts';
 import { CareerTally, matchResult } from './careerTally.ts';
 import { ProfileCard, type ProfileCardData } from './profileCard.ts';
-import { PlayerCardView, type PlayerCardSubject } from './playerCard.ts';
+import { PlayerCardView, type PlayerCardAction, type PlayerCardSubject } from './playerCard.ts';
 import { loadCard, sendVouch } from '../profile.ts';
 import { LobbyAdvertiser, builtHub, hubAddress, hubSetting } from './hub.ts';
 import { myRegion } from '../profile.ts';
@@ -230,6 +232,9 @@ import { CATEGORY_ACTIONS, hintKey } from './keyBindings.ts';
 
 import { TouchControls } from './touchControls.ts';
 import { CategoryWheel, WeaponWheel, wheelEntries } from './weaponWheel.ts';
+import { ChatBox } from './chatBox.ts';
+import { MuteList } from './chatMute.ts';
+
 import { WeaponRequest } from './weaponRequest.ts';
 import { CategoryPicks, WHEEL_CATEGORIES, type WheelCategory, byCategory, categoryKeyPick, categoryOrder } from './wheelCategories.ts';
 import { isTouchDevice } from '../touchDevice.ts';
@@ -264,6 +269,9 @@ import { VehicleCamera, rayBoxExit } from './vehicleCamera.ts';
 import { matchGoal } from './matchGoal.ts';
 import { TAB_SLOWING_TEXT, TabToll } from './tabToll.ts';
 import { KILL_CAM_SECONDS, SpectatorCam, followable, freeCamBounds, spectateRule, type CameraPose, type FreeBounds, type SpectateRule } from './spectatorCam.ts';
+
+/** The quick-chat wheel's last slice on touch: open the chat box to type a line. */
+const CHAT_WHEEL_TYPE = 99;
 
 /** The four move keys as a hint reads them ("WASD"). */
 const moveKeys = (): string => {
@@ -406,6 +414,18 @@ export class GameSession {
   private notedHeld = 0;
   /** Fireteams: the order wheel (hold B, hold a controller's d-pad up, or the Orders button on a phone). */
   private readonly orderWheel = new WeaponWheel(document.getElementById('hud')!, 'order-wheel');
+  /** The quick-chat wheel (the controller's d-pad up held; touch's Chat button): the quick messages on a ring. */
+  private readonly chatWheel = new WeaponWheel(document.getElementById('hud')!, 'chat-wheel');
+  /** Text chat and quick messages, bottom left (chatBox.ts); the box opens with Enter or the team chat key. */
+  private readonly chatBox = new ChatBox(document.getElementById('hud')!);
+  /** Players muted on this device (chatMute.ts): their chat and quick messages are not shown. */
+  private readonly mutes = new MuteList();
+  /** The host relays text chat (its welcome said `ch`). */
+  private chatHost = false;
+  /** Chat lines that came (shown or muted), for the tests. */
+  private chatHeard = 0;
+  /** The chat box opened with the mouse locked: losing the lock (Esc) closes it. */
+  private chatLocked = false;
   /** Fireteams' squad HUD: your squad's portraits, health and order; its minimap markers and colour (Part 2). */
   private readonly squadHud = new SquadHud(document.getElementById('hud')!, (look) => this.opts.portraitOf?.(look) ?? Promise.reject(new Error('no portraits')));
   /** Fireteams: you lead a squad now (its id), and its current order (the HUD's line); null: you lead none. */
@@ -974,6 +994,17 @@ export class GameSession {
     this.orderWheel.onPoint = (x, y) => this.input.aimWheel(x, y);
     this.orderWheel.onTouchPick = () => this.input.closeWheel(true);
     this.orderWheel.onTouchCancel = () => this.input.closeWheel(false);
+    this.chatWheel.onPoint = (x, y) => this.input.aimWheel(x, y);
+    this.chatWheel.onTouchPick = () => this.input.closeWheel(true);
+    this.chatWheel.onTouchCancel = () => this.input.closeWheel(false);
+    // Text chat: Enter (the last channel) or the team chat key (I); the box has the keyboard while it's open.
+    this.input.onAction.set('chat', () => this.openChat());
+    this.input.onAction.set('teamChat', () => this.openChat(true));
+    this.chatBox.onSend = (text, team) => this.opts.transport.sendChat?.(text, team);
+    this.chatBox.onOpen = (on) => {
+      this.input.setTyping(on);
+      this.chatLocked = on && this.input.locked;
+    };
     // Phones and tablets: on-screen controls instead of pointer lock (touchControls.ts).
     if (isTouchDevice()) {
       this.touch = new TouchControls(this.input, $('hud'), { pause: () => this.input.setTouchEngaged(false) });
@@ -2272,6 +2303,37 @@ export class GameSession {
     };
   }
 
+  /** The buttons on another person's card: Mute or Unmute their chat (this device), and Kick when you run the match. */
+  private cardActions(p: PlayerCardSubject): PlayerCardAction[] {
+    if (p.kind !== 'acct' && p.kind !== 'guest') return [];
+    const name = this.hud.rosterOf(p.slot)?.name;
+    if (!name) return [];
+    const muted = this.mutes.has(name);
+    const out: PlayerCardAction[] = [
+      {
+        id: 'plc-mute',
+        label: muted ? 'Unmute' : 'Mute chat',
+        title: muted ? `Show ${name}'s chat and quick messages again` : `Hide ${name}'s chat and quick messages (remembered on this device; they aren't told)`,
+        on: muted,
+        act: () => {
+          this.mutes.toggle(name);
+          this.drawPause(true);
+        },
+      },
+    ];
+    if (this.hostPanel.controlling)
+      out.push({
+        id: 'plc-kick',
+        label: 'Kick',
+        title: `Remove ${name} from the match (they may rejoin)`,
+        danger: true,
+        act: () => {
+          if (this.hostPanel.kick(p.slot)) this.playerCard?.close();
+        },
+      });
+    return out;
+  }
+
   exit(reason?: string, how?: 'lost' | 'rejected'): void {
     if (this.closed) return;
     this.closed = true;
@@ -2300,6 +2362,8 @@ export class GameSession {
     this.playerCard?.dispose();
     this.wheel.dispose();
     this.orderWheel.dispose();
+    this.chatWheel.dispose();
+    this.chatBox.dispose();
     this.touch?.dispose();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
@@ -2405,6 +2469,9 @@ export class GameSession {
         this.teamIds = teams?.map((t) => t.id) ?? null;
         this.hud.setTeams(teams);
         this.canSwitchTeam = msg.ts === 1 && (teams?.length ?? 0) > 1;
+        // Text chat when the host relays it; team modes have a team channel.
+        this.chatHost = msg.ch === 1 && !!this.opts.transport.sendChat;
+        this.chatBox.teams = (teams?.length ?? 0) > 1;
         this.hud.switchTeam.pending = -1;
         this.drawTeamButton();
         this.hud.setBoardMode(msg.rules.mode);
@@ -2456,6 +2523,9 @@ export class GameSession {
         }
         // Other players' cards: click a row on the pause menu's board or the end-of-match board (playerCard.ts).
         this.playerCard ??= new PlayerCardView(this.opts.portraitOf, loadCard);
+        // A person's card: Mute (this device), and Kick for whoever runs the match (the Players card's kick).
+        this.playerCard.actions = (p) => this.cardActions(p);
+        this.hud.isMuted = (name) => this.mutes.has(name);
         this.hud.onPlayerCard = (slot, row) => {
           const p = this.cardSubject(slot);
           const look = this.hud.rosterOf(slot)?.look;
@@ -2516,7 +2586,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally, scope: () => ({ scoped: this.scopedNow, zoom: this.zoomLevel, fov: this.fov, breath: { ...this.breath }, eyeBox: { ...this.eyeBox }, glints: this.view.glints.shown }), roster: () => this.lastRoster, opticPick: () => this.drawOpticPick(), captions: () => this.captions.debug(), captionsHud: this.captions };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally, scope: () => ({ scoped: this.scopedNow, zoom: this.zoomLevel, fov: this.fov, breath: { ...this.breath }, eyeBox: { ...this.eyeBox }, glints: this.view.glints.shown }), roster: () => this.lastRoster, opticPick: () => this.drawOpticPick(), captions: () => this.captions.debug(), captionsHud: this.captions, chatBox: this.chatBox, mutes: this.mutes, chatHeard: () => this.chatHeard };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -2904,9 +2974,10 @@ export class GameSession {
             this.view.clearCorpses();
             this.npcInfo.clear();
           } else if (ev.e === 'say') {
-            // Team modes: only your own team hears it.
+            // Team modes: only your own team hears it. In the chat log (not from someone you muted).
             const mine = this.hud.team(this.slot)?.id;
-            if (!ev.team || !mine || ev.team === mine) this.hud.say(ev.s, QUICK_MESSAGES[ev.m - 1] ?? '');
+            const text = QUICK_MESSAGES[ev.m - 1];
+            if (text && (!ev.team || !mine || ev.team === mine)) this.chatLine(ev.s, text, !!ev.team && !!mine, true);
           } else if (ev.e === 'squad') {
             this.squadEvent(ev);
           } else if (ev.e === 'ping') {
@@ -2992,6 +3063,10 @@ export class GameSession {
           this.hostPanel.setStatus(msg.error, true);
           this.hud.showMessage(msg.error, 3);
         } else if (msg.state) this.hostPanel.setStatus('');
+        break;
+      case 'chat':
+        this.chatHeard++;
+        this.chatLine(msg.s, msg.x, msg.tm === 1);
         break;
       case 'notice':
         this.hud.note(msg.text);
@@ -3606,6 +3681,46 @@ export class GameSession {
     if (closed && kind) input.queueSay(orderSay(kind));
   }
 
+  /**
+   * The quick-chat wheel, once a frame (the controller's d-pad up held, touch's Chat button): the quick messages on a
+   * ring (on touch, a last slice to type a line); let go on one and it goes with the next input, as from the menu.
+   */
+  private updateChatWheel(local: LocalPlayer): void {
+    const input = this.input;
+    // Esc with the mouse locked lets the lock go (the browser's): the box closes with it, and the pause menu opens.
+    if (this.chatBox.open && this.chatLocked && !input.locked) this.chatBox.close();
+    input.chatOn = this.rules?.emotes !== false && !!local && !this.chatBox.open;
+    if (input.wheelOpen && input.wheelKind === 'chat' && !input.chatOn) input.closeWheel(false);
+    const typeHere = this.chatHost && input.touchEngaged;
+    if (input.wheelOpen && input.wheelKind === 'chat') {
+      const entries = QUICK_MESSAGES.map((m, i) => ({ code: i + 1, name: m as string, ammo: i + 1 === SAY_FOLLOW || i + 1 === SAY_HOLD ? 'Orders bots too' : '', empty: false, held: false, weaponId: '' }));
+      if (typeHere) entries.push({ code: CHAT_WHEEL_TYPE, name: 'Type…', ammo: 'A line of text', empty: false, held: false, weaponId: '' });
+      this.chatWheel.show(entries);
+      this.chatWheel.aim(input.wheelAim.x, input.wheelAim.y);
+    }
+    const closed = input.takeChatClose();
+    if (closed === null && ((input.wheelOpen && input.wheelKind === 'chat') || !this.chatWheel.shown)) return;
+    const pick = this.chatWheel.hide();
+    if (!closed || !pick) return;
+    if (pick === CHAT_WHEEL_TYPE) this.openChat();
+    else input.queueSay(pick);
+  }
+
+  /** Open the chat box (`team`: on your team's channel), when the host relays chat and someone else is here. */
+  private openChat(team?: boolean): void {
+    if (!this.chatHost || this.closed) return;
+    const others = this.lastRoster?.some((p) => !p.bot && p.slot !== this.slot) ?? false;
+    if (!others) return this.hud.showMessage('Nobody else is here to chat with', 2);
+    this.input.msgMenu = false;
+    this.chatBox.show(team);
+  }
+
+  /** A line in the chat log: text chat (`quick`: a quick message) from `from` (-1: the host's answer), unless muted. */
+  private chatLine(from: number, text: string, team: boolean, quick = false): void {
+    if (from >= 0 && from !== this.slot && this.mutes.has(this.hud.rosterOf(from)?.name)) return;
+    this.chatBox.add({ from, name: from >= 0 ? this.hud.name(from) : '', color: from >= 0 ? this.hud.nameColor(from) : '', text, team, quick });
+  }
+
   /** Fireteams' news (the 'squad' event): leading a squad, its orders (the HUD's line), the bots' answers, a refusal. */
   private squadEvent(ev: Extract<GameEvent, { e: 'squad' }>): void {
     const mine = this.hud.team(this.slot)?.id;
@@ -3884,6 +3999,7 @@ export class GameSession {
       }
       this.updateWheel(local, building);
       this.updateOrderWheel(local);
+      this.updateChatWheel(local);
       this.touch?.update();
       const wheel = this.input.takeWheel();
       // Through a scope the wheel steps between its zoom levels instead of switching weapons.

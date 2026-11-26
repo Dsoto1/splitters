@@ -168,6 +168,13 @@ export class HostPanel {
     return !!this.state;
   }
 
+  /** Remove a person (the Players card's Kick; also a player's card): they may rejoin. Only someone in the match. */
+  kick(slot: number): boolean {
+    if (!this.controlling || !this.people.some((p) => p.slot === slot)) return false;
+    this.hooks.command({ c: 'kick', slot });
+    return true;
+  }
+
   setStatus(text: string, error = false): void {
     this.status.textContent = text;
     this.status.classList.toggle('error', error);

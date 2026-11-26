@@ -63,6 +63,7 @@ import {
   type ServerStats,
 } from '@tiletrigger/shared';
 import { AWAY, BotFiller, HostControl, Match, initNavigation, simProfile, validateNavigation } from '@tiletrigger/shared/match';
+import { CHAT_SYSTEM, ChatRelay, chatHears } from '@tiletrigger/shared/chat';
 import { answerDiscovery, lanAddresses } from './lan.ts';
 import { expandRotation, readRotationPresets, suiteLookup, suitePool } from './rotation.ts';
 import { readBotSetPresets, resolveBotSet } from './botSets.ts';
@@ -382,6 +383,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   let idleKickMinutes = opts.idleKickMinutes ?? AWAY.kickMinutes;
 
   const clients = new Set<Client>();
+  /** Text chat's gate (net/chat.ts): per sender limits, the word filter. */
+  const chat = new ChatRelay();
   const stats = new StatsWindow();
   let pendingEvents: GameEvent[] = [];
   const botSetPresets = readBotSetPresets(mapsDir);
@@ -478,6 +481,20 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     target.gone = true;
     send(target, { t: 'reject', reason });
     target.conn.close(4003, 'kicked');
+  };
+  /** The team a slot plays for (null: free-for-all, or out of play spectating). */
+  const teamOf = (slot: number | null) => (slot !== null && match.teams ? (match.slots[slot]?.faction ?? null) : null);
+  /**
+   * A line of text chat (docs/MULTIPLAYER_PROTOCOL.md section 29): through the gate (limits, filter), then to
+   * everyone, or to the sender's team; a refused line's reason goes back to the sender alone.
+   */
+  const relayChat = (from: Client, raw: string, toTeam: boolean) => {
+    const verdict = chat.say(from.slot!, raw);
+    if (!verdict.ok) return void (verdict.why && send(from, { t: 'chat', s: CHAT_SYSTEM, x: verdict.why }));
+    const team = teamOf(from.slot);
+    const tm = toTeam && !!team;
+    const data = JSON.stringify({ t: 'chat', s: from.slot!, x: verdict.text, ...(tm ? { tm: 1 } : {}) } satisfies ServerMessage);
+    for (const c of clients) if (c.slot !== null && chatHears(tm, team, teamOf(c.slot))) send(c, data);
   };
   /** Any admin's command (in-game, console, /host): run it and tell everyone what changed. Returns the error, or null. */
   const runCommand = (cmd: HostCommand, by: string): string | null => {
@@ -691,6 +708,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
           dedicated: true,
           spectate: 1,
           ts: 1,
+          ch: 1,
           ...(lan.length ? { lan } : {}),
         });
         broadcast({ t: 'roster', players: match.roster() });
@@ -729,6 +747,8 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
       } else if (msg.t === 'team' && client.slot !== null) {
         // Switch team at the next spawn (the match checks the teams stay even; a msg event tells the player).
         match.switchTeam(client.slot, msg.i);
+      } else if (msg.t === 'chat' && client.slot !== null) {
+        relayChat(client, msg.x, msg.tm === 1);
       } else if (msg.t === 'vote' && client.slot !== null) {
         // People vote (bots don't); a later vote replaces an earlier one.
         if (vote?.cast(client.slot, msg.i)) broadcast({ t: 'vote', v: vote.state(match.tick) });
@@ -744,6 +764,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
     conn.onClose(() => {
       clearTimeout(helloTimer);
       if (!clients.delete(client)) return;
+      if (client.slot !== null) chat.forget(client.slot);
       if (client.slot !== null && vote?.forget(client.slot)) broadcast({ t: 'vote', v: vote.state(match.tick) });
       if (client.slot !== null && !stopped) {
         // Dropped (not kicked): a bot plays their place, kept for them a while (their next connection takes it back).

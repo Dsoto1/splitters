@@ -40,6 +40,8 @@ export class TouchControls {
   private readonly wheelBtn: HTMLButtonElement;
   /** Fireteams: the order wheel's button (shown while you lead a squad). */
   private readonly ordersBtn: HTMLButtonElement;
+  /** Quick chat (the chat wheel; its last slice types a line when the host relays chat). */
+  private readonly chatBtn: HTMLButtonElement;
   private readonly watchBar: HTMLDivElement;
   /** The scorebar's tap target (proposal 6 in docs/MOBILE_AUDIT.md). */
   private readonly scoresBtn: HTMLButtonElement;
@@ -80,12 +82,14 @@ export class TouchControls {
     this.ordersBtn = btn('tc-orders', 'Orders', 'Squad orders (the order wheel)');
     this.ordersBtn.hidden = true;
     const pause = btn('tc-pause', 'II', 'Pause');
+    this.chatBtn = btn('tc-chat', 'Chat', 'Quick chat: a message for your team, or type a line');
+    this.chatBtn.hidden = true;
     // Over the scorebar (top middle): a tap shows the scoreboard, another hides it (Tab on a keyboard, held).
     this.scoresBtn = btn('tc-scores', '', 'Scores: tap to show or hide the scoreboard');
     // The action buttons in one cluster (scaled together from its bottom corner; left-handed puts it on the left).
     const cluster = div('tc-cluster');
     cluster.append(fire, this.aimBtn, melee, dodge, reload, use, thrw, this.wheelBtn, this.ordersBtn);
-    this.el.append(look, pad, cluster, pause, this.scoresBtn);
+    this.el.append(look, pad, cluster, pause, this.chatBtn, this.scoresBtn);
     // Watching (dead, or spectating): previous / next player, follow or free camera, and Join (spectators).
     this.watchBar = div('tc-watch');
     this.watchBar.hidden = true;
@@ -214,6 +218,13 @@ export class TouchControls {
       },
       up: () => undefined,
     });
+    track(this.chatBtn, {
+      down: () => {
+        if (this.input.wheelOpen) this.input.closeWheel(false);
+        else this.input.openWheel('touch', 'chat');
+      },
+      up: () => undefined,
+    });
     track(pause, { down: () => this.hooks.pause(), up: () => undefined });
     track(this.scoresBtn, { down: () => this.input.toggleScoreboard(), up: () => undefined });
 
@@ -333,6 +344,8 @@ export class TouchControls {
     this.wheelBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'weapon');
     if (this.ordersBtn.hidden === this.input.ordersOn) this.ordersBtn.hidden = !this.input.ordersOn;
     this.ordersBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'order');
+    if (this.chatBtn.hidden === this.input.chatOn) this.chatBtn.hidden = !this.input.chatOn;
+    this.chatBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'chat');
   }
 
   dispose(): void {

@@ -59,7 +59,13 @@ export type ClientMessage =
    * cancels a waiting switch) at the sender's next spawn. Hosts whose welcome said `ts` act on it; others ignore it.
    * The host answers with a `msg` event for the sender, and their private state's `tm` while the switch waits.
    */
-  | { t: 'team'; i?: number };
+  | { t: 'team'; i?: number }
+  /**
+   * A line of text chat (net/chat.ts; docs/MULTIPLAYER_PROTOCOL.md section 29): `tm` for the sender's team only.
+   * Hosts whose welcome said `ch` clean it, rate-limit it, mask the filter's words and pass it on as a `chat`
+   * message; others ignore it.
+   */
+  | { t: 'chat'; x: string; tm?: 1 };
 
 /** Bot skills and styles a host can switch to mid-match. */
 export const HOST_BOT_SKILLS = ['easy', 'normal', 'hard'] as const;
@@ -692,6 +698,8 @@ export type ServerMessage =
       spectate?: 1;
       /** The host lets players switch team mid-match (ClientMessage team); absent from older hosts. */
       ts?: 1;
+      /** The host relays text chat (ClientMessage chat → ServerMessage chat); absent from older hosts: no chat box. */
+      ch?: 1;
     }
   | { t: 'reject'; reason: string }
   | { t: 'roster'; players: RosterEntry[] }
@@ -769,6 +777,11 @@ export type ServerMessage =
       rl?: [number, number, number, number];
     }
   | { t: 'pong'; id: number; ct: number }
+  /**
+   * A line of text chat from player `s` (CHAT_SYSTEM, -1: the host's answer to the receiver's own refused line),
+   * cleaned and filtered by the host; `tm`: team chat, sent to the sender's team only. Older clients ignore it.
+   */
+  | { t: 'chat'; s: number; x: string; tm?: 1 }
   /** Online: each human's round trip for the scoreboard, as flat [slot, ms, slot, ms, …] (every couple of seconds). */
   | { t: 'pings'; p: number[] }
   /** The server is changing map (a scenario chain, or its host changed it): reconnect in a moment to play `map` (its display name). */

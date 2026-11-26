@@ -12,7 +12,8 @@
     "./gripFit": "./src/content/gripFit.generated.ts",
     "./sightFit": "./src/content/sightFit.generated.ts",
     "./optics": "./src/content/optics.generated.ts",
-    "./opticChoice": "./src/sim/opticChoice.ts"
+    "./opticChoice": "./src/sim/opticChoice.ts",
+    "./chat": "./src/net/chat.ts"
   },
   "scripts": {
     "typecheck": "tsc -p ."

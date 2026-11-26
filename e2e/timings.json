@@ -82,6 +82,8 @@
     "testrange": 150,
     "practicerange": 120,
     "captions": 220,
-    "crashreport": 40
+    "crashreport": 40,
+    "chat": 280,
+    "chathost": 200
   }
 }
