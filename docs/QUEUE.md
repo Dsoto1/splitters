@@ -118,6 +118,7 @@ Everything else keeps its place below these.
     - The skeleton's variants (owner): biker, Civil War, Vietnam, WW2, Desert Storm and the pirate skeleton, all one character.
     - **Chester Knuckleby** becomes another variant of Ziggy Bananas, no longer his own character (owner, 2026-11-26).
     - **The Stranger** (the 11-26 upload) joins Horrors & Creatures; **Warrior of the Skies** removed completely (owner, 2026-11-26).
+    - The **female viking** upload joins Legends beside the vikings; **Patchwork Polly** becomes an unlockable variant of Teddy (owner, 2026-11-26).
   - **Coming:** a space mercenary with variants (owner, 2026-11-26).
   - **The Hollow Pilgrim's glide stays as a movement style** (keep the code): the coming **snowman** glides like the baseball robot and the Hollow Pilgrim did.
   - **Vanguard's replacement is the dark hooded character** (the owner's upload; she): Vanguard's id and place kept, a fitting name if Vanguard's no longer fits; she **floats** like the baseball robot (legs still, no walk cycle). **The ghost character** (upload) floats the same way. Same glide/float style as the snowman.
