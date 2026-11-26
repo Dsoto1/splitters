@@ -1,5 +1,5 @@
 import { createNavMeshData, exportNavMesh, freeCompactHeightfield, freeContourSet, freeHeightfield, freePolyMesh, freePolyMeshDetail, getNavMeshPositionsAndIndices, importNavMesh, init as initRecast, NavMesh, NavMeshCreateParams, NavMeshQuery, QueryFilter } from 'recast-navigation';
-import { boxesToTriangles, type WorldBox } from '../map/geometry.ts';
+import { boxFootprint, boxesToTriangles, type WorldBox } from '../map/geometry.ts';
 import type { MapDocument } from '../map/schema.ts';
 import type { ValidationIssue } from '../map/validate.ts';
 import type { Vec3 } from '../math.ts';
@@ -13,7 +13,7 @@ import { simProfile } from '../sim/profile.ts';
 import { hypot } from '../math.ts';
 import { auditNavigation, edgesOf, polyShapes, reachSet, routeComponents, trapExits, type AuditOptions, type FallOptions } from './audit.ts';
 import { PARKOUR_AREA, parkourLinks, type HintJump, type ParkourLink } from './parkour.ts';
-import { generateSolo, LOW_AREA, type LowHeadroom, type SoloIntermediates } from './solo.ts';
+import { generateSolo, LOW_AREA, type LowHeadroom, type NavCarve, type SoloIntermediates } from './solo.ts';
 
 export { LOW_AREA } from './solo.ts';
 
@@ -54,6 +54,27 @@ const CELL_HEIGHT = 0.05;
  * the navigation audit); the CTF suite's scorecard was mixed (docs/BOTS.md, "Navmesh clearance").
  */
 const NAV_RADIUS_CELLS = 4;
+/**
+ * How far round an open door's leaf (WorldBox.navThrough) the navmesh is cut away (m): the body's radius and 0.2. The
+ * leaf is left out of the walls the navmesh keeps 0.8 m off, which would close the room it opens into, so before it
+ * was not on the navmesh at all and routes ran through it: bots following one walked into the leaf and stuck (owner,
+ * 2026-11-26, St. Jasper's). Cut out with this narrower margin, routes go round the leaf and through the doorway
+ * beside it (the passage's link along the doorway's middle stays clear: a slim door's leaf is 0.68 m off it).
+ */
+export const NAV_THROUGH_MARGIN = PLAYER.radius + 0.1;
+
+/** The navmesh cut out round open doors' leaves (NAV_THROUGH_MARGIN). */
+export function navThroughCarves(boxes: readonly WorldBox[]): NavCarve[] {
+  const m = NAV_THROUGH_MARGIN;
+  return boxes
+    .filter((b) => b.navThrough)
+    .map((b) => ({
+      points: boxFootprint({ ...b, min: [b.min[0] - m, b.min[1], b.min[2] - m], max: [b.max[0] + m, b.max[1], b.max[2] + m] }),
+      hmin: b.min[1] - 0.3,
+      hmax: b.max[1],
+    }));
+}
+
 /** Spacing of NavWorld.places(). */
 const PLACE_CELL = 7;
 /**
@@ -135,7 +156,7 @@ const FOUR = [
 ];
 
 /** What the navmesh is built with (Recast's settings, the clearance, low headroom), as text: part of a cached navmesh's key (sim/mapNav.ts navInputKey). */
-export const navSettingsKey = (): string => JSON.stringify([RECAST_CONFIG, LOW_HEADROOM, MAX_NODES, PLACE_CELL]);
+export const navSettingsKey = (): string => JSON.stringify([RECAST_CONFIG, LOW_HEADROOM, MAX_NODES, PLACE_CELL, NAV_THROUGH_MARGIN]);
 
 /** Recast's settings for the bots' navmesh (NavWorld.build). */
 const RECAST_CONFIG = {
@@ -234,8 +255,8 @@ export class NavWorld {
    * and its navmesh is the same as without).
    */
   static build(boxes: readonly WorldBox[], extra: { positions: Float32Array; indices: Uint32Array } | null = null, links: readonly { start: Vec3; end: Vec3; reach?: Vec3 }[] = [], snapped = false, drops: DropOptions | null = null): NavWorld {
-    // The ground round a built map is for players to stand on, not somewhere bots go; an open door's leaf is walked
-    // past, not kept off (WorldBox.navThrough).
+    // The ground round a built map is for players to stand on, not somewhere bots go; an open door's leaf is not kept
+    // off 0.8 m like a wall (WorldBox.navThrough), but cut out with a body's room round it (navThroughCarves).
     const box = boxesToTriangles(boxes.filter((b) => b.sourceId !== 'ground' && !b.navThrough));
     let positions = box.positions;
     let indices = box.indices;
@@ -252,7 +273,7 @@ export class NavWorld {
     // polygon mesh and makes only Detour's tile data again with them (the same polygons: no second voxelisation, which
     // took as long again as the first).
     const relink = !snapped && (links.length > 0 || !!drops);
-    const result = generateSolo(positions, indices, { ...RECAST_CONFIG, offMeshConnections: (snapped ? links : []).map(offMesh) }, relink, LOW_HEADROOM);
+    const result = generateSolo(positions, indices, { ...RECAST_CONFIG, offMeshConnections: (snapped ? links : []).map(offMesh) }, relink, LOW_HEADROOM, navThroughCarves(boxes));
     if (!result.success) throw new Error(`navmesh generation failed: ${result.error}`);
     const lowSpans = result.low;
     const inter = result.intermediates;
