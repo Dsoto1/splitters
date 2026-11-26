@@ -348,6 +348,8 @@ export interface FrontEndHooks {
   playTutorial(): void;
   /** Profile → Favourite loadout → Test weapons: the Training Range alone, offline, with your loadout (main.ts playRange). */
   playRange(): void;
+  /** Quick Play → Practice range: the Practice range alone, offline, no bots (main.ts playRange). */
+  playPractice(): void;
 }
 
 type ScreenId = 'home' | 'story' | 'play' | 'characters' | 'online' | 'options' | 'profile';
@@ -1180,6 +1182,9 @@ export class FrontEnd {
     close.addEventListener('click', () => this.closeQuickPlay());
     const tutorial = el('button', { type: 'button', class: 'qp-link', id: 'qp-tutorial', textContent: 'New here? Tutorial · 2 min' });
     tutorial.addEventListener('click', () => this.hooks.playTutorial());
+    // The Practice range (a training map: on no map list): every weapon on its racks, targets at marked distances, alone.
+    const practice = el('button', { type: 'button', class: 'qp-link', id: 'qp-practice', title: 'Every weapon on the racks, targets at marked distances, the scopes, slide and peek: alone, no bots, no score', textContent: 'Practice range' });
+    practice.addEventListener('click', () => this.hooks.playPractice());
     const custom = el('button', { type: 'button', class: 'qp-link', id: 'qp-setup', textContent: 'Choose map and rules…' });
     custom.addEventListener('click', () => {
       this.quickOpen = false;
@@ -1191,7 +1196,7 @@ export class FrontEnd {
       el('div', { class: 'qp-head' }, el('h3', { textContent: 'Quick Play' }), close),
       el('p', { class: 'qp-sub', textContent: 'Straight into a match against bots, on a map picked for you.' }),
       modes,
-      el('div', { class: 'qp-foot' }, tutorial, custom),
+      el('div', { class: 'qp-foot' }, tutorial, practice, custom),
     );
     // Arrows move between the choices.
     panel.addEventListener('keydown', (e) => {

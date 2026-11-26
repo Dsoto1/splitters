@@ -14992,6 +14992,68 @@ async function captionsFlow(browser) {
   }
 }
 
+/**
+ * The Practice range (owner, 2026-11-19; maps/practice_range.json, a training map): Quick Play's "Practice range" opens
+ * it alone (no bots, no scorebar or clock); a round into the 10 m silhouette reads out the hit (zone, distance, damage,
+ * hits to down) and knocks it down, and it stands again; the pause menu's Back goes to the menu. PRACTICE_PICS=<dir>:
+ * pictures (from the line, the 10 m target down).
+ */
+async function practicerangeFlow(browser) {
+  const pics = process.env.PRACTICE_PICS;
+  const context = await browser.newContext({ viewport: { width: 1280, height: 720 } });
+  const page = await context.newPage();
+  livePages.add(page);
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?test=1&name=Tester`);
+  await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+  await page.click('#nav-quick');
+  await page.waitForSelector('#qp-practice', { timeout: T(20000) });
+  await page.click('#qp-practice');
+  const inRange = await page.waitForFunction(() => window.__cs?.map === 'practice_range' && window.__cs.phase?.() === 'playing' && window.__cs.local?.alive, null, { timeout: T(120000) }).then(() => true, () => false);
+  const state = inRange ? await page.evaluate(() => {
+    const sb = document.getElementById('scorebar');
+    return { players: window.__cs.roster()?.length ?? -1, scorebar: !!sb && getComputedStyle(sb).display !== 'none' && sb.getBoundingClientRect().width > 0, time: window.__cs.rules().timeLimitSeconds };
+  }) : null;
+  check(inRange && state?.players === 1 && !state.scorebar && state.time === 0, `Quick Play's Practice range opens the range alone, no scorebar or clock (${JSON.stringify(state)})`);
+  if (!inRange) return void (await context.close());
+  await playWithoutMouse(page);
+  await page.evaluate(() => window.__give('core.pistol'));
+  await page.waitForFunction(() => window.__cs.view.viewWeapon === 'core.pistol', null, { timeout: T(30000) }).catch(() => {});
+  // The 10 m silhouette (x = -78, z = -9 from the firing line at x = -88), its chest.
+  const aim = () => page.evaluate(() => {
+    const p = window.__cs.local.state.pos;
+    const dx = -78 - p.x, dy = 1.2 - (p.y + 1.6), dz = -9 - p.z;
+    window.__cs.input.yaw = Math.atan2(dx, dz);
+    window.__cs.input.pitch = Math.atan2(dy, Math.hypot(dx, dz));
+  });
+  await aim();
+  await frames(page, 10);
+  if (pics) await page.screenshot({ path: `${pics}/practice-line.png` });
+  const read = async () => {
+    for (let k = 0; k < 6; k++) {
+      await aim();
+      await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+      await frames(page, 3);
+      await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+      const got = await page.waitForFunction(() => /^(Body|Head|Legs) · \d+ m · \d+ · \d+ hits? to down$/.test(document.getElementById('pickup-msg')?.textContent ?? ''), null, { timeout: T(4000) }).then(() => true, () => false);
+      if (got) return page.textContent('#pickup-msg');
+    }
+    return page.textContent('#pickup-msg');
+  };
+  const text = await read();
+  check(/^(Body|Head|Legs) · (9|10|11) m · \d+ · \d+ hits? to down$/.test(text ?? ''), `a round into the 10 m target reads out the hit (${text})`);
+  if (pics) await page.screenshot({ path: `${pics}/practice-hit.png` });
+  await page.keyboard.press('Escape');
+  await page.waitForFunction(() => !document.getElementById('pause').hidden, null, { timeout: T(10000) }).catch(() => {});
+  const exitLabel = await page.textContent('#exitmatch').catch(() => '');
+  await page.keyboard.press('Escape');
+  const back = await page.waitForFunction(() => !document.getElementById('menu').hidden, null, { timeout: T(20000) }).then(() => true, () => false);
+  check(exitLabel === 'Leave the range' && back, `Esc twice leaves the range for the menu (${exitLabel}, ${back})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+}
+
 async function testrangeFlow(browser) {
   const pics = process.env.TESTRANGE_PICS;
   const run = async (label, ctxOpts, tap) => {
@@ -17475,7 +17537,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

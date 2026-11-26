@@ -35,9 +35,13 @@ export const isRetiredMap = (id: string): boolean => RETIRED_MAPS.has(id);
  * Training maps (owner, 2026-11-24: "its just training and testing"): ours and kept up to date, but never offered as
  * a place to play a mode. No map list, category, featured list, vote, rotation, playlist, host map picker or online
  * listing offers them; Profile → Favourite loadout → Test weapons opens one alone, offline (main.ts `playRange`),
- * and the tutorial plays on it. MapMaker still opens and remixes them.
+ * and the tutorial plays on it; Quick Play → Practice range opens the Practice range the same way. MapMaker still opens and remixes them.
  */
-export const TRAINING_MAPS: ReadonlySet<string> = new Set(['training_range']);
+export const TRAINING_MAPS: ReadonlySet<string> = new Set([
+  'training_range',
+  // The Practice range (owner, 2026-11-19: "a quiet map to try every weapon"): Quick Play → Practice range opens it.
+  'practice_range',
+]);
 
 export const isTrainingMap = (id: string): boolean => TRAINING_MAPS.has(id);
 

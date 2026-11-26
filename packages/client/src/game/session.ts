@@ -353,6 +353,8 @@ export interface SessionOptions {
    * from the pause menu's top (Esc again, controller B) leaves, as the exit button does, back to the loadout.
    */
   range?: boolean;
+  /** The pause menu's Back label on a range (absent: Loadout; the Practice range from Quick Play: Menu). */
+  rangeBack?: string;
   /**
    * Your career (careerStats.ts, docs/PLAYER_PROFILES_PLAN.md): each match you play to the end is summed into it, and
    * your profile card shows under the scoreboard. main.ts leaves it out for MapMaker TEST and the tutorial.
@@ -1040,7 +1042,7 @@ export class GameSession {
         overlay: () => document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
         opened: () => this.drawPause(true),
         // MapMaker TEST: back from the top goes back to MapMaker.
-        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : opts.range ? { top: { label: 'Loadout', act: () => this.exit() } } : {}),
+        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : opts.range ? { top: { label: opts.rangeBack ?? 'Loadout', act: () => this.exit() } } : {}),
       },
       signal,
     );

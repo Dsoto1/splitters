@@ -388,6 +388,7 @@ class App {
         joinCode: (code, name) => ((this.storyRun = null), void this.joinCode(code, name)),
         playTutorial: () => ((this.storyRun = null), void this.playTutorial()),
         playRange: () => ((this.storyRun = null), void this.playRange()),
+        playPractice: () => ((this.storyRun = null), void this.playRange('practice_range')),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
     })();
@@ -590,20 +591,25 @@ class App {
    * favourite class's loadout when you have one (Classes on, so the class screen can swap it), every other gun on the
    * range's racks, your optic picks. The pause menu's Back (Esc again, controller B) and its exit go back to the
    * loadout. Nothing is recorded in your career.
+   * Quick Play → Practice range (owner, 2026-11-19: "a quiet map to try every weapon"): the same on the Practice range
+   * (`practice_range`, a training map), from and back to the menu.
    */
-  async playRange(): Promise<void> {
+  async playRange(id: 'training_range' | 'practice_range' = 'training_range'): Promise<void> {
     void loadMatchCode().catch(() => undefined);
     await this.init();
-    const map = await loadBuiltInMap('training_range').catch(() => null);
-    if (!map) return void this.showMenu("The Training Range didn't load");
+    const practice = id === 'practice_range';
+    const name = practice ? 'The Practice range' : 'The Training Range';
+    const map = await loadBuiltInMap(id).catch(() => null);
+    if (!map) return void this.showMenu(`${name} didn't load`);
     const rules: MatchRules = { ...rulesForMode(map, 'core.deathmatch'), timeLimitSeconds: 0, scoreLimit: 0, ...(myFavClass() ? { classes: true } : {}) };
-    const back = (reason?: string) => void this.showMenu(reason ?? '').then(() => this.front!.openLoadout());
+    const back = (reason?: string) => void this.showMenu(reason ?? '').then(() => (practice ? undefined : this.front!.openLoadout()));
     this.showMatchLoading(map, 'core.deathmatch');
     void this.withMatch((m) =>
       this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, ...(TEST ? { test: TEST } : {}) }), {
-        exitLabel: 'Back to loadout',
+        exitLabel: practice ? 'Leave the range' : 'Back to loadout',
         exitOnF5: false,
         range: true,
+        ...(practice ? { rangeBack: 'Menu' } : {}),
         onExit: (reason) => back(reason),
       }),
     );
@@ -1141,7 +1147,7 @@ else if (params.get('mode') === 'assets') {
   })();
 } else if (params.get('mode') === 'editor') void app.openEditor(editorResumeOnReload());
 else if (params.has('tutorial')) void app.playTutorial();
-else if (params.has('range')) void app.playRange();
+else if (params.has('range')) void app.playRange(params.get('range') === 'practice' ? 'practice_range' : 'training_range');
 else if (params.has('offline')) {
   const which = params.get('offline');
   // &classes=1 (or a number: the per-team class limit) plays with Classes; &weapons=chaos a weapon set (standard,

@@ -80,6 +80,7 @@
     "dodgeroll": 200,
     "weaponmanager": 45,
     "testrange": 150,
+    "practicerange": 120,
     "captions": 220,
     "crashreport": 40
   }
