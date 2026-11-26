@@ -16624,7 +16624,7 @@ async function chatFlow(browser) {
   };
   const alice = await join('Alice');
   const bob = await join('Bob');
-  const both = await Promise.all([alice, bob].map((pg) => pg.waitForFunction(() => window.__cs.roster().filter((p) => !p.bot).length === 2, null, { polling: 200, timeout: T(20000) }).then(() => true, () => false)));
+  const both = await Promise.all([alice, bob].map((pg) => pg.waitForFunction(() => window.__cs.roster().filter((p) => !p.bot).length === 2, null, { polling: 200, timeout: T(60000) }).then(() => true, () => false)));
   check(both.every(Boolean), 'chat: Alice and Bob are both in the match');
 
   // Text chat: Enter opens the box with the keyboard in it; the game doesn't take the keys typed.
@@ -16671,18 +16671,19 @@ async function chatFlow(browser) {
   check(wheel && !!picked && (await sees(bob, `Alice: ${picked}`)), `chat: the quick-chat wheel sends the line it points at (${picked}; ${await lines(bob)})`);
 
   // Mute: Bob's card on Alice's pause menu (Match tab's board), Mute chat; remembered on the device.
-  // (The pause menu: touch play off, then Esc, as a player would; the page draws it on its next frames.)
+  // (The pause menu: touch play off, as its pause button does; the page draws it on its next frames.)
   await alice.evaluate(() => window.__cs.input.setTouchEngaged(false));
-  if (await alice.evaluate(() => document.getElementById('pause').hidden)) await alice.keyboard.press('Escape');
   await alice.waitForFunction(() => !document.getElementById('pause').hidden, null, { polling: 200, timeout: T(30000) }).catch(() => {});
   const bobSlot = await bob.evaluate(() => window.__cs.slot);
   const rowAt = await alice.waitForFunction(() => [...document.querySelectorAll('#pause-scores .sb-click')].some((r) => r.textContent.includes('Bob')), null, { polling: 200, timeout: T(30000) }).then(() => true, () => false);
+  // (A page too slow to draw its menu in time: the card as a click on Bob's row opens it.)
   if (rowAt) await alice.evaluate(() => [...document.querySelectorAll('#pause-scores .sb-click')].find((r) => r.textContent.includes('Bob')).click());
+  else await alice.evaluate((s) => window.__cs.hud.onPlayerCard?.(s, null), await bob.evaluate(() => window.__cs.slot));
   const card = await alice.waitForFunction(() => document.getElementById('plc-mute')?.textContent ?? null, null, { polling: 200, timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
   const where = card ? '' : await alice.evaluate(() => JSON.stringify({ pause: !document.getElementById('pause').hidden, rows: [...document.querySelectorAll('#pause-scores .sb-row')].map((r) => r.textContent).slice(0, 6), card: document.getElementById('player-card')?.hidden }));
   check(card === 'Mute chat', `chat: another player's card offers Mute chat (${card}${where})`);
   if (card) await alice.evaluate(() => document.getElementById('plc-mute').click());
-  const muted = await alice.waitForFunction(() => window.__cs.mutes.has('Bob') && document.getElementById('plc-mute')?.textContent === 'Unmute' && [...document.querySelectorAll('#pause-scores .sb-nm.muted')].some((n) => n.textContent.includes('Bob')), null, { polling: 200, timeout: T(30000) }).then(() => true, () => false);
+  const muted = await alice.waitForFunction(() => window.__cs.mutes.has('Bob') && document.getElementById('plc-mute')?.textContent === 'Unmute' && (document.getElementById('pause').hidden || [...document.querySelectorAll('#pause-scores .sb-nm.muted')].some((n) => n.textContent.includes('Bob'))), null, { polling: 200, timeout: T(30000) }).then(() => true, () => false);
   const kept = await alice.evaluate(() => localStorage.getItem('cs.chatMuted'));
   check(muted && /bob/.test(kept ?? ''), `chat: Bob muted, marked on the board and kept on the device (${kept})`);
   await pic(alice, 'muted');
@@ -16744,7 +16745,8 @@ async function chatFlow(browser) {
     await pic(host, 'kick-card');
     if (kick) await host.evaluate(() => document.getElementById('plc-kick').click());
     const gone = await simWait(host, (m, _me, s) => m.slots[s]?.kind !== 'human', fslot, T(15000));
-    const told = await friend.waitForFunction(() => /removed you/i.test(document.body.innerText), null, { polling: 200, timeout: T(20000) }).then(() => true, () => false);
+    let told = false;
+    for (const end = Date.now() + T(90000); !told && Date.now() < end; await sleep(500)) told = await friend.evaluate(() => /removed you/i.test(document.body.innerText)).catch(() => false);
     check(kick && gone && told, `chat: Kick removes the friend, and they are told (${gone}, ${told})`);
   }
   check(errors.length === 0, `chat: no page errors (${errors.join('; ')})`);

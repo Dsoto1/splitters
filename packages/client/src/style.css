@@ -1950,7 +1950,7 @@ html.touch #weapon-wheel .ww-slice-tag kbd { display: none; }
 #chat:not(.open) .chat-line.gone { opacity: 0; }
 #chat.open { pointer-events: auto; }
 #chat.open #chat-log { overflow-y: auto; padding: 6px; background: rgba(6, 9, 16, 0.55); border-radius: 6px; }
-#chat.open .chat-line { background: none; padding: 1px 3px; }
+#chat.open .chat-line { background: none; padding: 1px 3px; transition: none; }
 #chat-bar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding: 6px; background: rgba(12, 16, 26, 0.92); border-left: 3px solid var(--success); border-radius: 4px; }
 #chat-bar[hidden] { display: none; }
 #chat-channel { min-height: 0; padding: 4px 10px; font: 700 12px var(--font-display); letter-spacing: 0.06em; text-transform: uppercase; }
