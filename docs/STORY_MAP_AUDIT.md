@@ -124,7 +124,7 @@ Each cluster plays 1 → 2 → 3; the 3rd is the boss or challenge map. A boss i
 | 7 | Suburbia, 1950s-80s | Atomic Court | Maple Court | Neon Galleria | Teddy (won at a fairground in 1987) |
 | 8 ★ | Lockdown (today) | Runway Nine | Midnight Keel | Cormorant Isle | Customs Agent Zhao as the warden ("nobody gets through") |
 | 9 | The Machines | Undergate Transit | Cinder Foundry | Iron Maw | Fuse Hollister, the crew's demolitions expert gone over to the Machines |
-| 10 | Frozen | Whiteout Station (Frostbite) | Coldwater Gulch | Frost Basin | Frost Viking |
+| 10 | Frozen | Whiteout Station (Frostbite) | Coldwater Gulch | Frost Basin | Frostmane (owner, 2026-11-26; Frost Viking removed) |
 | 11 ★ | Future City | Express Lobby | Neon Spire | Serene City | **Inquisitor Vesk Tockley** (parked boss): his cryo vault holds captured travellers |
 | 12 | Space | Halcyon Station | Fernwood Moon | Void Yard | **The Unhour** (parked boss): the void is its home |
 | Finale | End of the Line | new map | | | **Emperor Kronax** (parked boss) |
