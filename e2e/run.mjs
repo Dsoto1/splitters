@@ -6086,7 +6086,7 @@ async function offlineFlow(browser) {
   await openChars();
   const badged = (await page.$(`${tileOf('core.chimp')} .chosen-badge`)) !== null;
   const shownOn = await page.$$eval('#char-variants .char-variant.on', (bs) => bs.map((b) => b.dataset.look));
-  check(variantBtns.length === 10 && variantBtns[0].look === 'core.chimp' && variantBtns[0].on && variantBtns.every((b) => !b.locked) && roman.shown === 'core.chimp_roman' && choseRoman.look === 'core.chimp_roman' && badged && shownOn.join() === 'core.chimp_roman', `the chimp's variant picker: ten looks, all open, a click shows one, Choose takes it, the tile wears Chosen (${variantBtns.length}, ${roman.shown}, ${choseRoman.look}, ${badged}, ${shownOn})`);
+  check(variantBtns.length === 11 && variantBtns[0].look === 'core.chimp' && variantBtns[0].on && variantBtns.every((b) => !b.locked) && roman.shown === 'core.chimp_roman' && choseRoman.look === 'core.chimp_roman' && badged && shownOn.join() === 'core.chimp_roman', `the chimp's variant picker: eleven looks (Chester Knuckleby the eleventh, 2026-11-26), all open, a click shows one, Choose takes it, the tile wears Chosen (${variantBtns.length}, ${roman.shown}, ${choseRoman.look}, ${badged}, ${shownOn})`);
   await page.keyboard.press('Escape');
   await openChars();
   await page.dblclick(tileOf(mine));
