@@ -615,8 +615,9 @@ export class ScenarioVisuals {
   private target(name: string, e: Extract<MapEntity, { kind: 'target' }>): Visual {
     const root = new TransformNode(name, this.scene);
     const stand = this.mat('targetStand', '#3a3d42', { spec: 0.2 });
-    const white = this.mat('targetWhite', '#ebe5d6', { spec: 0.25 });
-    const amber = this.mat('targetAmber', '#e39a33', { spec: 0.25 });
+    // A little of their own light (steady), so a target's painted face reads in its own shade (the sun behind it).
+    const white = this.mat('targetWhite', '#ebe5d6', { spec: 0.25, emissive: 0.35 });
+    const amber = this.mat('targetAmber', '#e39a33', { spec: 0.25, emissive: 0.35 });
     const hinge = new TransformNode(`${name}_hinge`, this.scene);
     hinge.parent = root;
     const parts = TARGET_PARTS[e.style];

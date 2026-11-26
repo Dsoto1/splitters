@@ -807,8 +807,9 @@ export class Hud {
     if (html !== this.powerups.innerHTML) this.powerups.innerHTML = html;
   }
 
-  pickup(text: string, ms = 1200): void {
+  pickup(text: string, ms = 1200, readout = false): void {
     this.pickupMsg.textContent = text;
+    this.pickupMsg.classList.toggle('readout', readout);
     this.pickupMsg.classList.add('on');
     clearTimeout(this.pickupTimer);
     this.pickupTimer = window.setTimeout(() => this.pickupMsg.classList.remove('on'), ms);
@@ -816,7 +817,7 @@ export class Hud {
 
   /** Your hit on a Practice Target (the `thit` event), on the pickup line a little longer: what it was and what it did. */
   targetReadout(text: string): void {
-    this.pickup(text, 2600);
+    this.pickup(text, 2600, true);
   }
 
   /**

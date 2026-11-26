@@ -1159,6 +1159,9 @@ svg.tsym { display: inline-block; width: 0.72em; height: 0.72em; margin-right: 0
 #pickup-msg { position: absolute; left: 50%; top: 64%; transform: translateX(-50%); padding: 6px 14px 6px 12px; background: linear-gradient(90deg, rgba(18, 24, 39, 0.92), rgba(18, 24, 39, 0.7)); border-left: 3px solid var(--success); font: 600 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.06em; opacity: 0; transition: opacity 0.3s; }
 #pickup-msg::before { content: '+ '; color: var(--success); }
 #pickup-msg.on { opacity: 1; transition: none; }
+/* A Practice Target's report (hud.ts targetReadout): range amber, no "+". */
+#pickup-msg.readout { border-left-color: #ffc23d; }
+#pickup-msg.readout::before { content: none; }
 /* The scope's surround, reticle and shadow come in at once with the zoom and go out with --so (hud.ts setScope,
    scopeFeel.ts SCOPE_FADE): a fade, never a cut (leaving a scope by day would turn most of the screen from black to
    daylight at once). */
