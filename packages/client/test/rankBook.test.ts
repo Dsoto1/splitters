@@ -3,7 +3,7 @@ import type { RosterEntry, ScoreEntry } from '@tiletrigger/shared';
 import { RankBook, resetCarriedRanks } from '../src/game/rankBook.ts';
 import { rankGlow } from '../src/game/rankGlow.ts';
 
-const roster = (...e: Partial<RosterEntry>[]): Map<number, RosterEntry> => new Map(e.map((p, i) => [p.slot ?? i, { slot: i, name: `P${i}`, bot: true, look: 'core.scamp', team: null, ...p } as RosterEntry]));
+const roster = (...e: Partial<RosterEntry>[]): Map<number, RosterEntry> => new Map(e.map((p, i) => [p.slot ?? i, { slot: i, name: `P${i}`, bot: true, look: 'core.chimpanzee', team: null, ...p } as RosterEntry]));
 const none = () => null;
 
 describe('who ranks how (rankBook.ts)', () => {

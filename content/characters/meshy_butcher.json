@@ -10,28 +10,25 @@
   "nameTheme": "townsfolk",
   "bio": "Forty years behind the counter. Knows exactly where to cut.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-05 (\"Painter in a T Pose\", rigged and animated on Meshy: Mixamo joint names read as Meshy's, finger chains refitted by hands.mjs: `fixes.fingers: fit`, the grip audit scored its own finger weights worse, 7 against 6; clips not used). A butcher in a stained apron and rubber gloves (the download is named \"Painter\"; the owner reads it as a butcher). Display name a placeholder for the owner. Standard size. 223k triangles: rebaked. Licence recorded as owned (the intake's rule: no metadata says otherwise); the owner to confirm, and if it is a Meshy community model, switch to CC0 with its author and post URL. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). The Butcher's model until 2026-11-26 (a Meshy Community CC0 model \"Painter in a T Pose\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"fish butcher rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
-    "community": {
-      "model": "Painter in a T Pose"
-    },
-    "date": "2026-11-05",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Painter_in_a_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_fish_butcher_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 14000,
+    "triangles": 12000,
     "surface": "rebake",
     "headShare": 0.16,
+    "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true,
-    "fingers": "fit"
+    "feet": true
   }
 }

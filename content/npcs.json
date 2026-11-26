@@ -309,7 +309,7 @@
       "weapon": "core.sawed_off",
       "speed": 0.92,
       "scale": 1,
-      "look": "core.barnacle",
+      "look": "core.femalepirate",
       "bot": {
         "id": "core.npc_pirate",
         "displayName": "Pirate",

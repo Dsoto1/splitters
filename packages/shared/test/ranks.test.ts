@@ -17,6 +17,7 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
     for (const l of CORE_LOOKS) {
       const r = rankGroup(l.id);
       if (l.group === 'soldiers') expect(r).toBe(l.branch === 'agency' ? 'agency' : 'army');
+      else if (l.group === 'toys') expect(r).toBe('folk'); // the Toys row wears Folk's chevrons
       else if (l.group && groups.has(l.group)) expect(r).toBe(l.group);
     }
     expect(rankGroup('my.design')).toBe('folk');
@@ -58,9 +59,9 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
     expect(rankedName('Grimsby', 'horror', 4)).toBe('Ghast Grimsby');
     expect(rankedName('Flt. Lt. Ember', 'army', 2)).toBe('Pfc. Ember');
     expect(rankedName('Capt. Orion', 'space', 1)).toBe('Cadet Capt. Orion');
-    const s = shownRank('core.scamp', 'Scamp', 2);
+    const s = shownRank('core.chimpanzee', 'Chester Knuckleby', 2);
     expect(s.ins).toBe(`${s.group}2`);
-    expect(s.name).toBe(`${RANK_TITLES[s.group][1]} Scamp`);
+    expect(s.name).toBe(`${RANK_TITLES[s.group][1]} Chester Knuckleby`);
   });
 
   it('reads rank points from the wire only in range', () => {

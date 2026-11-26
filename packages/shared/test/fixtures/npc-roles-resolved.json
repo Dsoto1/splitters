@@ -560,7 +560,7 @@
     "weapon": "core.sawed_off",
     "speed": 0.92,
     "scale": 1,
-    "look": "core.barnacle"
+    "look": "core.femalepirate"
    },
    "profile": {
     "accuracy": 30,

@@ -570,7 +570,7 @@ async function editorFlow(browser) {
   // It is kept with the map (the draft store saves the whole document, as Save and Export do).
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
-  // Map properties → Bots → Bot characters: the eight bot types, all ticked; None, then Soldiers: the map keeps it (one undo step).
+  // Map properties → Bots → Bot characters: the nine bot types (Toys since 2026-11-26), all ticked; None, then Soldiers: the map keeps it (one undo step).
   await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
   const types = await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`));
@@ -578,7 +578,7 @@ async function editorFlow(browser) {
   await page.evaluate(() => document.getElementById('ed-cast-army').click());
   await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
   const cast = { types, doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]:checked')].map((b) => b.dataset.type)) };
-  check(types.length === 8 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: eight types, all ticked, then Soldiers only (${JSON.stringify(cast)})`);
+  check(types.length === 9 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: nine types (Toys since 2026-11-26), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
@@ -6002,7 +6002,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,toys,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -6073,6 +6073,21 @@ async function offlineFlow(browser) {
   await page.keyboard.press('Enter');
   const kbChose = await front();
   check(kbShown.shown === pickC && kbShown.look === pickA && kbChose.look === pickC, `keyboard: Enter on a portrait shows them, Enter again chooses (${kbShown.shown} / ${kbChose.look})`);
+  // The chimp's variants (owner, 2026-11-26): one tile; its picker shows each look, Choose takes the one shown, and the
+  // chimp's tile wears the Chosen badge for any of them. Unlocked for now (CHARACTER_LOCKS_ON off).
+  await openChars();
+  check((await page.$(tileOf('core.chimp_roman'))) === null && (await page.$(tileOf('core.chimp'))) !== null, 'the chimp is one tile (its variants have none of their own)');
+  await page.click(tileOf('core.chimp'));
+  const variantBtns = await page.$$eval('#char-variants .char-variant', (bs) => bs.map((b) => ({ look: b.dataset.look, on: b.classList.contains('on'), locked: b.classList.contains('locked') })));
+  await page.click('#char-variants .char-variant[data-look="core.chimp_roman"]');
+  const roman = await front();
+  await page.click('#char-choose');
+  const choseRoman = await front();
+  await openChars();
+  const badged = (await page.$(`${tileOf('core.chimp')} .chosen-badge`)) !== null;
+  const shownOn = await page.$$eval('#char-variants .char-variant.on', (bs) => bs.map((b) => b.dataset.look));
+  check(variantBtns.length === 10 && variantBtns[0].look === 'core.chimp' && variantBtns[0].on && variantBtns.every((b) => !b.locked) && roman.shown === 'core.chimp_roman' && choseRoman.look === 'core.chimp_roman' && badged && shownOn.join() === 'core.chimp_roman', `the chimp's variant picker: ten looks, all open, a click shows one, Choose takes it, the tile wears Chosen (${variantBtns.length}, ${roman.shown}, ${choseRoman.look}, ${badged}, ${shownOn})`);
+  await page.keyboard.press('Escape');
   await openChars();
   await page.dblclick(tileOf(mine));
   check((await front()).look === mine, 'a double-click on a portrait chooses them');
@@ -8825,9 +8840,9 @@ async function botCastFlow(browser) {
   await page.click('#nav-play');
   await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
-  // The eight bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
+  // The nine bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
   const offered = await page.evaluate(() => ({ types: [...document.querySelectorAll('#arcade-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`), ranks: document.getElementById('arcade-ranks')?.checked, names: document.getElementById('arcade-names')?.checked }));
-  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,animals:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the eight bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
+  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,animals:1,toys:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the nine bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
   // Unticking all but one keeps one (the last can't go); None, then Soldiers: Army only.
   await page.evaluate(() => document.getElementById('arcade-cast-none').click());
   await page.evaluate(() => document.getElementById('arcade-cast-army').click());
@@ -12467,7 +12482,7 @@ async function storyFlow(browser) {
   // The match's end reports a win: the map is won, once (a second win changes nothing).
   await page.evaluate(() => (window.__storyResult('win'), window.__storyResult('win')));
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.campaign')));
-  check(JSON.stringify(saved?.maps) === '["jade_empire/jungle_steps"]' && JSON.stringify(saved?.characters) === '["core.monkeyspirit"]', `a Story win completes the map once and unlocks its character (${JSON.stringify(saved)})`);
+  check(JSON.stringify(saved?.maps) === '["jade_empire/jungle_steps"]' && JSON.stringify(saved?.characters) === '["core.chimp_aztec"]', `a Story win completes the map once and unlocks its character (${JSON.stringify(saved)})`);
   await menu();
   await page.click('#nav-story');
   await page.click('#story-sector-jade_empire');
@@ -13901,7 +13916,7 @@ async function charactersFlow(browser, part = 0) {
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const misses = [];
-  for (const look of ['core.dale', 'core.biscuit', 'core.grizzelda']) {
+  for (const look of ['core.dale', 'core.shiba', 'core.grizzelda']) {
     for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
       const m = await page.evaluate(() => window.__grips.miss());
@@ -14049,7 +14064,7 @@ async function drawnHands(page) {
   const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
   const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'none');
   const drawnMisses = [];
-  for (const look of ['core.dapper', 'core.biscuit', 'core.dale', 'core.galloway']) {
+  for (const look of ['core.dapper', 'core.shiba', 'core.dale', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
       for (const view of ['body', 'first', 'third']) {
         await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
@@ -14088,10 +14103,12 @@ async function drawnHands(page) {
   // Long melee weapons in first person (game/meleeView.ts; owner, 2026-11-22: only the blade showed, the hands below
   // the frame): held by the grip with both hands, at rest both hand joints are on screen, both palms on their points
   // and the shooting hand drawn round the handle, arms only and full body.
+  // (Honest Abe until his new model, 2026-11-26: in full body his support hand sits at the frame's bottom edge, as The
+  // Dapper's, Cal's and Frost Viking's do; Sir Galloway, unchanged, stands in. Full-body framing for every body: HANDOFF, chars-1126.)
   const meleeMisses = [];
   for (const weapon of ['core.katana', 'core.scimitar', 'core.baseball_bat', 'core.battle_axe', 'core.spear']) {
     for (const view of ['first', 'body']) {
-      await page.evaluate(([w, v]) => window.__grips.pose('core.abe', w, v), [weapon, view]);
+      await page.evaluate(([w, v]) => window.__grips.pose('core.galloway', w, v), [weapon, view]);
       const [on, miss, d] = await page.evaluate(() => [window.__grips.handsOnScreen(), window.__grips.miss(), window.__grips.drawn()]);
       const inView = (h) => h && h.ahead > 0.1 && Math.abs(h.x) < 1 && Math.abs(h.y) < 1;
       if (!on || !inView(on.r) || !inView(on.l) || !miss || miss.r > 0.02 || miss.l > 0.02 || badHand(d, 0.05)) {

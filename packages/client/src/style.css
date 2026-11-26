@@ -942,6 +942,11 @@ html.touch .char-spin .spin-label kbd { display: none; }
 .char-info p { margin: 0 0 8px; color: var(--muted); font-size: 14px; max-width: 360px; }
 .char-info .tags { display: flex; gap: 6px; }
 .char-info .tags span { font: 700 10px var(--font-display); letter-spacing: 0.1em; text-transform: uppercase; padding: 2px 6px; border-radius: 2px; background: rgba(135, 101, 255, 0.2); color: #c7b8ff; }
+/* A character's variant looks (the chimp's): one button each, the one shown lit; a locked one dimmed. */
+.char-info .char-variants { display: flex; flex-wrap: wrap; gap: 4px; }
+.char-variant { padding: 3px 7px; font: 600 11px var(--font-display); color: var(--muted); background: rgba(255, 255, 255, 0.04); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 3px; cursor: pointer; }
+.char-variant.on { color: #fff; border-color: #8765ff; background: rgba(135, 101, 255, 0.25); }
+.char-variant.locked { opacity: 0.55; }
 /* Character Select: character stats as bars (frontEnd.ts statBars). */
 .char-stats { display: grid; gap: 3px; min-width: 210px; }
 .char-stats h4 { margin: 0 0 4px; font: 700 11px var(--font-display); letter-spacing: 0.14em; color: var(--muted); text-transform: uppercase; }

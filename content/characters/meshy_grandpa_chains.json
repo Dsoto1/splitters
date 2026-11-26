@@ -10,28 +10,25 @@
   "nameTheme": "townsfolk",
   "bio": "Slippers on, gold chain out, and a better aim than any of his grandchildren.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: old man, slippers, gold chain. Intake 2026-11-05 step 2b: its re-rigged download was built and not used (grip audit 0 before, 9 with its own fingers, 8 re-fitted); this build kept.",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Grandpa Chains's model until 2026-11-26 (a Meshy Community CC0 model \"Elderly Man with Outstretched arms\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"grandpa chains rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019d6583-4e6b-7f44-9d84-2463443e8cf9",
-    "community": {
-      "model": "Elderly Man with Outstretched arms"
-    },
-    "file": "^Meshy_AI_Elderly_Man_with_Outs_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_grandpa_chains_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
     "metallic": 0.1,
-    "roughness": 0.7
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
-    "feet": true,
-    "lean": {
-      "Spine01": 3,
-      "Spine": 4,
-      "neck": 4
-    }
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }

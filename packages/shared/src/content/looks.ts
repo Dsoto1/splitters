@@ -25,7 +25,13 @@ export const CHARACTER_TIERS: readonly CharacterTier[] = ['core', 'experimental'
 export const CHARACTER_TIER_LABELS: Record<CharacterTier, string> = { core: 'Core', experimental: 'Experimental' };
 export const characterTier = (look: { tier?: CharacterTier | undefined }): CharacterTier => look.tier ?? 'core';
 /** The looks of a roster an automatic pick may draw (a bot's, a random character's, Roulette's): its core tier, in order. */
-export const pickableLooks = <T extends { tier?: CharacterTier | undefined }>(roster: readonly T[]): T[] => roster.filter((l) => characterTier(l) === 'core');
+export const pickableLooks = <T extends { tier?: CharacterTier | undefined; variantOf?: string | undefined }>(roster: readonly T[]): T[] => roster.filter((l) => characterTier(l) === 'core' && !l.variantOf);
+/** A look's variants in picker order, the base first (empty for a look with none): the base's `variant` and each look naming it in `variantOf`. */
+export const lookVariants = <T extends { id: string; variant?: string | undefined; variantOf?: string | undefined }>(roster: readonly T[], id: string): T[] => {
+  const baseId = roster.find((l) => l.id === id)?.variantOf ?? id;
+  const base = roster.find((l) => l.id === baseId && l.variant !== undefined);
+  return base ? [base, ...roster.filter((l) => l.variantOf === baseId)] : [];
+};
 
 export interface CharacterLook {
   id: string;
@@ -86,6 +92,13 @@ export interface CharacterLook {
   branch?: CharacterBranch;
   /** A Character Select collection it is listed in instead of its group's section (CHARACTER_COLLECTIONS; `collection` in its manifest). */
   collection?: CharacterCollection;
+  /**
+   * Variant looks (owner, 2026-11-26: the chimp's): `variant` is this look's label on Character Select's variant picker;
+   * a look with `variantOf` is one of the base look's variants, off the roster's tiles (picked on the base's picker)
+   * and off automatic picks. `variant` and `variantOf` in its manifest.
+   */
+  variant?: string;
+  variantOf?: string;
   /** Character Select lists it as if it were named this (`sortAs` in its manifest; the owner's order): left out, its name. */
   sortAs?: string;
   /** Its tier (`tier` in its manifest; characterTier below): absent = core, as every character offered before the tiers. */
@@ -137,6 +150,8 @@ export const CHARACTER_GROUPS = [
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
   { id: 'animals', label: 'Animalia' },
+  // Owner, 2026-11-26: the toys get a row of their own (the Playhouse sector's local allies come from it).
+  { id: 'toys', label: 'Toys' },
   { id: 'machines', label: 'Machines' },
   { id: 'horror', label: 'Horrors & Creatures' },
 ] as const;
@@ -191,9 +206,22 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   ['core.undeadsoldier', 'core.zombiesoldier2', 'core.zombiesoldier1'], // Dog Tag Doyle, Grinning Gus, Zombie Soldier A
   ['core.groaner', 'core.shambler', 'core.fearsomeundead'], // Groaner, Shambler, Fearsome Undead
   ['core.rattles', 'core.bonesworth'], // Rattles, Count Bonesworth
-  ['core.mummybot', 'core.pharaoh'], // Mummy Bot, Pharaoh Mummy Warrior
+  ['core.mummybot', 'core.pharaoh', 'core.ankhmummy'], // Egypt: Mummy Bot, Pharaoh Mummy Warrior, Nebka the Unwrapped
   ['core.aldric', 'core.halvard'], // King Aldric, Old King Halvard
   ['core.imperialguard', 'core.mei'], // Imperial Guard, Lancer Mei
+  // Owner, 2026-11-26: like histories side by side within each row, and the well-known real people together in Legends
+  // in their time order.
+  ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'], // famous real people, by period
+  ['core.aztecjaguar', 'core.eagleclan', 'core.snakeshaman', 'core.goldenwarrior', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
+  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.celestialknight', 'core.frostvalkyrie'], // Medieval and the Crusades
+  ['core.dustycolt', 'core.outlawranger', 'core.prospector'], // the Wild West
+  ['core.ashwalker', 'core.zuluwarrior', 'core.ashtribal'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
+  ['core.galloway', 'core.brannock'], // knights: Sir Galloway, Ser Brannock
+  ['core.unionofficer', 'core.rebelcommander'], // the Civil War
+  ['core.wwiisoldier', 'core.paratrooper', 'core.germanpara'], // WW2
+  ['core.vietnamsoldier', 'core.grunt68', 'core.vcscout'], // Vietnam
+  ['core.officeworker', 'core.salaryman', 'core.karen', 'core.hoodieguy'], // the city's dead
+  ['core.toysoldier', 'core.greenarmy'], // toy soldiers
 ];
 
 function withNeighbours<T extends { id?: string }>(sorted: T[]): T[] {
@@ -341,6 +369,21 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
   // hands can't be fixed. (Removed entirely 2026-11-25; the otter NPC role is drawn as Ottis Crema.)
   'core.otter': 'core.baristaotter',
+  // Owner, 2026-11-26: removed completely; a saved pick plays a near look of the owner's own.
+  'core.biscuit': 'core.tuxedocat', // Biscuit -> Sterling Purrcival
+  'core.monkeyspirit': 'core.chimpanzee', // Kiko Banyan -> Chester Knuckleby
+  // Owner, 2026-11-26 (2): eleven more removed completely (the Hollow Pilgrim's glide stays: `locomotion: 'roll'`).
+  'core.purplehero': 'core.celestialknight', // The Purple Comet -> Ser Castor Brightmoor
+  'core.frostviking': 'core.frostvalkyrie', // Frost Viking -> Sigrun Frostmane
+  'core.scamp': 'core.chimpanzee', // Scamp -> Chester Knuckleby
+  'core.armoredsentinel': 'core.crewdemolitions', // Armored Sentinel -> Fuse Hollister
+  'core.steelguardian': 'core.crewdemolitions', // Steel Guardian -> Fuse Hollister
+  'core.botney': 'core.crewdemolitions', // Botney Mullz -> Fuse Hollister
+  'core.goblingunslinger': 'core.grizzelda', // Goblin Gunslinger -> Goblina
+  'core.sugarskull': 'core.frida', // Sugar Skull -> Freaky Frida
+  'core.maskedfigure': 'core.hoodieguy', // The Masked Figure -> Dez Kickley
+  'core.hollowpilgrim': 'core.ankhmummy', // The Hollow Pilgrim -> Nebka the Unwrapped
+  'core.barnacle': 'core.femalepirate', // Cap'n Rusty Barnacle -> Scarlet Brinewell
   'core.shade': 'core.crewphase',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.
@@ -376,7 +419,6 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // the owner's own (the seven already off the roster too, since the removal below). The goblin, otter and
   // strongman NPC roles are drawn as the owner's own Goblina, Ottis Crema and Ignatius Slagg (content/npcs.json).
   'core.bogdan': 'core.magmajuggernaut', // Big Bogdan -> Ignatius Slagg (the Strongman role's look too)
-  'core.rourke': 'core.outlawranger', // Rourke -> Cutter McCrae
   'core.saintnick': 'core.elder', // Santa -> Elder Tomo (white-bearded)
   'core.umpire': 'core.vintagepro', // Umpire -> Coffee Brown (the vintage ball player)
   // Owner, 2026-11-25 ("i dont want to support them and they are not my models"): every retired look whose model isn't

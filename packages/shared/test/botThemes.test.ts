@@ -101,9 +101,9 @@ describe('bot name themes: the lists', () => {
   });
 
   it('sorts what each character is called after', () => {
-    expect(lookTheme('core.scamp')).toBe('monkey');
+    expect(lookTheme('core.chimpanzee')).toBe('monkey');
     expect(lookTheme('core.bigbab')).toBe('monkey');
-    expect(lookTheme('core.barnacle')).toBe('pirate');
+    expect(lookTheme('core.femalepirate')).toBe('pirate');
     expect(lookTheme('core.knight')).toBe('knight');
     expect(lookTheme('core.grunt68')).toBe('soldier');
     expect(lookTheme('core.shambler')).toBe('undead');
@@ -117,17 +117,17 @@ describe('bot name themes: the lists', () => {
 describe('bot names: what a bot is called', () => {
   const none = () => false;
   it("a character's first bot takes the character's own name, the next its theme's", () => {
-    expect(botNameFor('core.scamp', none)).toBe('Scamp');
-    const taken = new Set(['scamp']);
-    expect(botNameFor('core.scamp', (n) => taken.has(n.toLowerCase()))).toBe(NAME_THEMES.find((t) => t.id === 'monkey')!.names[0]);
+    expect(botNameFor('core.chimpanzee', none)).toBe('Chester Knuckleby');
+    const taken = new Set(['chester knuckleby']);
+    expect(botNameFor('core.chimpanzee', (n) => taken.has(n.toLowerCase()))).toBe(NAME_THEMES.find((t) => t.id === 'monkey')!.names[0]);
     expect(botNameFor('core.grunt68', (n) => n === "Grunt '68")).toMatch(/^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. /);
   });
 
   it('falls back to the general list: a design of yours, a theme run out; then numbered', () => {
     const mine = encodeLook({ body: 'female', parts: ['peasant_torso_f', 'peasant_arms_f', 'peasant_legs_f', 'peasant_feet_f'], hair: [], colorways: [], skin: null, hairColor: null });
     expect(botNameFor(mine, () => false)).toBe(BOT_NAMES[0]);
-    const monkeys = new Set(['scamp', ...NAME_THEMES.find((t) => t.id === 'monkey')!.names.map((n) => n.toLowerCase())]);
-    expect(botNameFor('core.scamp', (n) => monkeys.has(n.toLowerCase()))).toBe(BOT_NAMES[0]);
+    const monkeys = new Set(['chester knuckleby', ...NAME_THEMES.find((t) => t.id === 'monkey')!.names.map((n) => n.toLowerCase())]);
+    expect(botNameFor('core.chimpanzee', (n) => monkeys.has(n.toLowerCase()))).toBe(BOT_NAMES[0]);
     const all = new Set(BOT_NAMES.map((n) => n.toLowerCase()));
     expect(botNameFor(mine, (n) => all.has(n.toLowerCase()))).toBe(`${BOT_NAMES[0]} 2`);
   });
@@ -146,8 +146,8 @@ describe('bot names: what a bot is called', () => {
       expect(c.name === own || !!theme?.names.includes(c.name), `${c.look}: ${c.name}`).toBe(true);
     }
     // The player called Scamp keeps it: the Scamp bot takes a monkey name.
-    const scamp = list.find((c) => c.look === 'core.scamp');
-    if (scamp) expect(scamp.name).not.toBe('Scamp');
+    const scamp = list.find((c) => c.look === 'core.chimpanzee');
+    if (scamp) expect(scamp.name).not.toBe('Chester Knuckleby');
   });
 
   it('Roulette: bots take general names (every life wears another look, so no name is after one)', () => {
@@ -224,14 +224,14 @@ describe('bot characters: soldiers only', () => {
     expect(validBotCast('soldiers')).toEqual([]);
     expect(castLooks(['nope']).length).toBe(PICKABLE_LOOKS.length);
     expect(castAllows(['soldiers'], 'core.grunt68')).toBe(true);
-    expect(castAllows(['soldiers'], 'core.scamp')).toBe(false);
+    expect(castAllows(['soldiers'], 'core.chimpanzee')).toBe(false);
     expect(castAllows(['monkey'], 'core.bigbab')).toBe(true);
-    expect(castAllows([], 'core.scamp')).toBe(true);
+    expect(castAllows([], 'core.chimpanzee')).toBe(true);
     expect(botCastLabel(undefined)).toBe('All characters');
     expect(botCastLabel(['soldiers'])).toBe('Soldiers & Spies');
     expect(botCastLabel(['army'])).toBe('Soldiers');
     expect(botCastLabel(['agency', 'animals'])).toBe('Spies + Animalia');
-    expect(botCastLabel(['army', 'agency', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'])).toBe('All characters');
+    expect(botCastLabel(['army', 'agency', 'folk', 'space', 'legends', 'animals', 'toys', 'machines', 'horror'])).toBe('All characters');
     // Bot types as tick-boxes: all ticked is all, Soldiers and Spies together are Soldiers & Spies.
     expect(botTypesOf(undefined)).toHaveLength(BOT_TYPES.length);
     expect(botTypesOf(['soldiers', 'cat'])).toEqual(['army', 'agency', 'animals']);
