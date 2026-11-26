@@ -126,6 +126,7 @@ Everything else keeps its place below these.
     - **Dez the zombie** is the one playable zombie, with four variants: Dez, the other new zombie man and the two new zombie women; Groaner, Fearsome Undead and Shambler are NPC-only in MapMaker (owner, 2026-11-26).
     - Replacements uploaded (owner, 2026-11-26): **Barnaby Bruin** (noble royal bear), **Octobuddy** (funky streetwear octopus), **Pink Mantis** (pink suit mantis); each keeps its id and place.
     - **Scary Larry** becomes a variant of **Freaky Frida** (owner, 2026-11-26).
+    - **The goblins combined** (owner, 2026-11-26): one goblin character, Gorgle (new model) the main look, Goblin Warlord, Goblina and Snikkit his variants.
   - **The Hollow Pilgrim's glide stays as a movement style** (keep the code): the coming **snowman** glides like the baseball robot and the Hollow Pilgrim did.
   - **Vanguard's replacement is the dark hooded character** (the owner's upload; she): Vanguard's id and place kept, a fitting name if Vanguard's no longer fits; she **floats** like the baseball robot (legs still, no walk cycle). **The ghost character** (upload) floats the same way. Same glide/float style as the snowman.
   - **T-Treefitty gets a replacement model plus several variants** (owner, 2026-11-26; uploads coming or on the Drive): id and place kept; the variants work like the chimp's (one character, a variant picker; variants unlocked by challenges later, shipped unlocked until the unlock rules exist).
