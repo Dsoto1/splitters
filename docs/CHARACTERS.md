@@ -1707,8 +1707,8 @@ label is in each manifest's notes.
   Brinewell; the campaign's allies, companion and reward that named one take a current look. The Hollow Pilgrim's
   glide stays in code as `locomotion: 'roll'` (the Baseball Robot's, and the coming snowman's). **Dredge Marrow** moves
   to Legends.
-- **Teddy:** the owner's replacement model is coming; swap it in when it's on the Drive (id, name, place kept). Not
-  there yet at 16:35 UTC on 2026-11-26 (the folder's only teddy is the 11-25 "Rigged Teddy Bear" he already wears).
+- **Teddy:** his model is the owner's replacement already (the 11-25 "Rigged Teddy Bear"; owner, 2026-11-26: it is
+  in the game as Teddy, nothing more to swap).
 - **Kato Emberline** (`core.ashwalker`, the ash-painted tribal look the id had: "ash tribal", its new model, with the
   old bio) and **Shaka Mpande** (`core.shaka`: "shaka mpande", a red-beret commander in a leopard sash). Built the
   other way round at first (Shaka on `core.ashwalker`, Kato on `core.ashtribal`); the owner, 2026-11-26: "Kato is

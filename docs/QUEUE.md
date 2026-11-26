@@ -107,7 +107,6 @@ Everything else keeps its place below these.
   - **Kato Emberline takes Ashwalker's id and place** (owner: "Kato is Ashwalker's true replacement"); Shaka Mpande (the red-beret upload) stays as his own character with a new id. Name spelled Kato (owner: "Kato is fine").
   - **The made-up names stay** for the famous people (owner: "keep the made-up names"): Poor Richard, General Cherrytree, The Rough Rider, Prof. Quanta.
   - **Pvt. Pete Plastic bleeds green**, and the Toys ranks and titled names (the "Ranks and names that carry a title" line).
-  - **Teddy:** the owner's replacement model, when it's on the Drive.
   - Fishy Fred's pistol support hand is about 16 cm off (grip-fit).
   - **The Hollow Pilgrim's glide stays as a movement style** (keep the code): the coming **snowman** glides like the baseball robot and the Hollow Pilgrim did.
   - **Vanguard's replacement is the dark hooded character** (the owner's upload; she): Vanguard's id and place kept, a fitting name if Vanguard's no longer fits; she **floats** like the baseball robot (legs still, no walk cycle). **The ghost character** (upload) floats the same way. Same glide/float style as the snowman.
