@@ -385,3 +385,16 @@ So: when the St. John's steps reach DeKoven's side (the entrance between DeKoven
 Q2; DeKoven's office look is already a later step), these buildings are brought closer to the photos in the same step:
 their stone, windows, doors, parapets and towers compared photo by photo, through MapMaker's kits (a piece a photo
 needs goes into MapMaker). Not a step of its own.
+
+## The skyway's dead end (owner, 2026-11-25 and 26)
+
+The skyway (the Carriageway's first-floor bridge room) dead-ends since step 10 walled its east side for the moved clock
+tower. Owner's ideas for the step that fixes the through-way: move the clock tower back out by half a tile (2026-11-25),
+and "we can always extend the back of the skyway out a bit since there is that hallway in front of the bathrooms to
+take advantage of too" (2026-11-26). Both go into the options shown with pictures before building, with the double door
+under the stair (7c) folded in.
+Owner, 2026-11-26: "i still want the tower moved out to give more detail too": both are done: the tower moves out half
+a tile (more of it shows), and the skyway's back is extended into the bathroom hallway.
+Owner, 2026-11-26: "we can probably also remove redundant doors, such as the one that opens under the skyway, since we
+already have the doors propped open" (in the same step), and "need to teach bot pathfinding to navigate around those
+too, seen a few get stuck" (QUEUE Bugs).
