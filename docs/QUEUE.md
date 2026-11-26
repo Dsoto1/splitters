@@ -108,7 +108,6 @@ Everything else keeps its place below these.
   - **Kato Emberline takes Ashwalker's id and place** (owner: "Kato is Ashwalker's true replacement"); Shaka Mpande (the red-beret upload) stays as his own character with a new id. Name spelled Kato (owner: "Kato is fine").
   - **The made-up names stay** for the famous people (owner: "keep the made-up names"): Poor Richard, General Cherrytree, The Rough Rider, Prof. Quanta.
   - **Pvt. Pete Plastic bleeds green**, and the Toys ranks and titled names (the "Ranks and names that carry a title" line).
-  - **Teddy:** the owner's replacement model, when it's on the Drive.
   - Fishy Fred's pistol support hand is about 16 cm off (grip-fit).
   - **Added (owner, 2026-11-26 evening):** "gorgle gets a replacement, count bonesworth (remove rattles), move groaner, fearsome undead, and shambler to npc options in map maker and not playable as characters since we have the 4 new zombies to play as and use in mapmaker scenarios. dogtag doyle, grinning gus, zombie soldier a, biker skeleton, all get replacements and should be combined as skeleton variants, we can put the pirate skeleton there too. Move cool hand rex to legends. anubis should be in horrors and creatures next to other egypt theme ones. punkin removed as the new scarecrow punkin is in."
     - Gorgle and Count Bonesworth get replacements (from the 11-26 evening uploads); Rattles removed.
