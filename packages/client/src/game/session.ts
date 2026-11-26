@@ -163,7 +163,7 @@ import {
   MATCH_MIN_SECONDS,
   getLook as cardLook,
 } from '@tiletrigger/shared';
-import { LEAN, leanShift, dodgeTicks } from '@tiletrigger/shared';
+import { LEAN, PROJECTILE_VISUALS, leanShift, dodgeTicks } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
@@ -179,7 +179,7 @@ import { CRASH_REACH, blastReach, blastShake, crashShake, rollScale, shotShake }
 import { blastRumble, fireRumble, hitRumble, rumble, vibrationSupported } from './rumble.ts';
 import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts';
 import { BULLET_SPEED } from './impactVisuals.ts';
-import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, pointerAsk, pointerWanted, releasePointer, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, releasePointer, requestMouse, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
@@ -998,12 +998,8 @@ export class GameSession {
         this.input.setTouchEngaged(true);
         return;
       }
-      // Raw mouse movement (no OS acceleration) where the browser has it; Safari and older ones refuse
-      // the option, so ask again plainly: unless the page has let the mouse go since (a window opened over the pause
-      // menu), when the refusal comes back late and a lock now would hide the menu under it (the hostcontrols flake).
-      const ask = pointerAsk();
-      const raw = (opts.canvas.requestPointerLock as (this: HTMLCanvasElement, o?: { unadjustedMovement?: boolean }) => Promise<void> | void).call(opts.canvas, { unadjustedMovement: true });
-      if (raw instanceof Promise) raw.catch(() => (pointerWanted(ask) ? opts.canvas.requestPointerLock() : undefined));
+      // Raw mouse movement where the browser has it, else plainly; a refusal is never an unhandled rejection (requestMouse).
+      requestMouse(opts.canvas);
     };
     this.takeMouse = lock;
     opts.canvas.addEventListener('click', lock, { signal });
@@ -2785,6 +2781,11 @@ export class GameSession {
             // Your own misses already landed where your predicted round hit the level.
             if (!ev.gone && (ev.hit !== null || !mine)) this.view.landRound({ eye: from, to, victim: ev.hit, zone, strength });
             if (mine) this.hitFeedback([ev.hit], [zone], !!ev.ar);
+          } else if (ev.e === 'land') {
+            // A projectile with no blast landed (the Blaster X-42's bolt, a nail, an arrow): its impact.
+            const from = { x: ev.from[0], y: ev.from[1], z: ev.from[2] };
+            if (ev.hit === this.slot) this.hurtFrom = { x: from.x, z: from.z, at: performance.now() };
+            this.view.projectileLand({ look: PROJECTILE_VISUALS[ev.v], from, to: { x: ev.to[0], y: ev.to[1], z: ev.to[2] }, victim: ev.hit, bounce: !!ev.b });
           } else if (ev.e === 'melee') {
             if (ev.s === this.slot && ev.hit !== null) this.hud.hit();
             // Punches alternate jab and cross; a kick is the legs' own motion.
@@ -3628,6 +3629,8 @@ export class GameSession {
   }
 
   private requestWeapon(slot: number): void {
+    // Switching weapon cancels a throw being aimed: it stays in the inventory, nothing leaves the hand.
+    this.input.cancelThrow();
     const current = this.local ? this.switchingFrom(this.local) : 0;
     if (slot !== current) this.lastWeapon = current;
     this.weaponAsk.ask(slot);

@@ -63,7 +63,7 @@ export const CREATURE_SPECS: Record<CreatureModel, CreatureSpec> = {
  * 2026-11-12: the uploaded zombies, not Quaternius' creature body, which had no ragdoll and fell flat like a box).
  * They shamble on the soldiers' rig and die as ragdolls, like players.
  */
-export const ZOMBIE_LOOKS = ['core.groaner', 'core.lurcher', 'core.rotter', 'core.shambler', 'core.zombiesoldier1', 'core.zombiesoldier2'] as const;
+export const ZOMBIE_LOOKS = ['core.groaner', 'core.lurcher', 'core.shambler', 'core.zombiesoldier1', 'core.zombiesoldier2'] as const;
 export const zombieLook = (id: number): string => ZOMBIE_LOOKS[id % ZOMBIE_LOOKS.length]!;
 
 export const isCreature = (role: string): role is CreatureKind => (CREATURE_ROLES as readonly string[]).includes(role);

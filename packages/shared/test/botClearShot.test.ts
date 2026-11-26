@@ -99,7 +99,7 @@ describe('bots shoot only along a clear line', () => {
     // 1.45 m: a standard eye (1.6) clears it, a small one (0.78 × 1.6 = 1.25) doesn't. The target's head shows over
     // it, so a small bot that took its eye for a standard one saw them and fired into the wall.
     // Before: 95 rounds, all 95 into the wall. Now (when written): 30 rounds, 25 hits.
-    const r = behindWall(1.45, { look: 'core.goblin' });
+    const r = behindWall(1.45, { look: 'core.grizzelda' });
     expect(r.short, JSON.stringify(r)).toBeLessThanOrEqual(Math.max(4, r.rounds * 0.25));
   }, 120_000);
 });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
-import { BRANCHES, COLLECTIONS, GROUPS } from '../../../tools/content/character-manifests.mjs';
+import { BRANCHES, COLLECTIONS, GROUPS, readManifests } from '../../../tools/content/character-manifests.mjs';
 
 describe("Character Select's groups", () => {
   it('every selectable look has exactly one valid group', () => {
@@ -101,8 +101,8 @@ describe("Character Select's groups", () => {
     ]);
     // Uncle Bao and the Rusty Mech are off the roster; a saved choice plays the nearest kept look.
     for (const id of ['core.unclebao', 'core.rustymech']) expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
-    expect(RETIRED_LOOKS['core.unclebao']).toBe('core.oldtimer');
-    expect(RETIRED_LOOKS['core.rustymech']).toBe('core.t350');
+    expect(RETIRED_LOOKS['core.unclebao']).toBe('core.elder');
+    expect(RETIRED_LOOKS['core.rustymech']).toBe('core.crewdemolitions');
   });
 
   it('the Gas Mask Engineer is gone (owner, 2026-11-21): a saved choice or bot set plays Grunt \'68', () => {
@@ -135,9 +135,36 @@ describe("Character Select's groups", () => {
     expect(getLook('core.magmajuggernaut').group).toBe('legends');
   });
 
-  it('Santa is in Legends (owner, 2026-11-22)', () => {
-    expect(getLook('core.saintnick').group).toBe('legends');
-    expect(lookBranch('core.saintnick')).toBeFalsy();
+  it("retired looks that aren't the owner's own models are gone entirely, and every removed one plays one of the owner's own (owner, 2026-11-25)", () => {
+    const manifests = readManifests() as { look?: string; source: { license: string } }[];
+    const byLook = new Map(manifests.filter((m) => m.look).map((m) => [m.look!, m]));
+    for (const [old] of Object.entries(RETIRED_LOOKS)) {
+      // A retired look still on disk is the owner's own model (a MapMaker Figure); the modular presets have no files.
+      const m = byLook.get(old);
+      if (m) expect(m.source.license, old).toBe('owned');
+    }
+    const removed = ['core.astroexplorer', 'core.neonninja', 'core.neonguardian', 'core.brasshare', 'core.bigbab', 'core.tortoise', 'core.giggles', 'core.rustwalker', 'core.slugger', 'core.vampire', 'core.dusttrooper', 'core.rotter', 'core.shade', 'core.tposesoldier1', 'core.tposesoldier2', 'core.panda', 'core.nova', 'core.unclebao', 'core.bill', 'core.hector', 'core.bogdan', 'core.otter', 'core.hollowvisitor', 'core.crimsonop', 'core.goblin', 'core.rourke', 'core.rustymech', 'core.saintnick', 'core.umpire'];
+    for (const old of removed) {
+      expect(byLook.has(old), old).toBe(false);
+      const now = RETIRED_LOOKS[old]!;
+      expect(byLook.get(now)?.source.license, `${old} plays ${now}`).toBe('owned');
+      expect(CORE_LOOKS.some((l) => l.id === now), `${old} plays ${now}`).toBe(true);
+      expect(validLookId(old)).toBe(now);
+    }
+  });
+
+  it('eleven characters are gone entirely (owner, 2026-11-25): a saved choice or bot set plays a near kept look', () => {
+    const gone = ['core.bill', 'core.hector', 'core.bogdan', 'core.otter', 'core.hollowvisitor', 'core.crimsonop', 'core.goblin', 'core.rourke', 'core.rustymech', 'core.saintnick', 'core.umpire'];
+    for (const id of gone) {
+      expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
+      expect(PICKABLE_LOOKS.some((l) => l.id === id), id).toBe(false);
+      const now = validLookId(id);
+      expect(now, id).not.toBe(id);
+      expect(CORE_LOOKS.some((l) => l.id === now), `${id} plays ${now}`).toBe(true);
+      expect(getLook(id).id, id).toBe(now);
+    }
+    expect(validLookId('core.saintnick')).toBe('core.elder');
+    expect(validLookId('core.bogdan')).toBe('core.magmajuggernaut');
   });
 
   it('Tinker Goblina and the Sunset Gunslinger are gone (owner, 2026-11-22): their models are Goblina\'s and Dusty Ranger\'s', () => {

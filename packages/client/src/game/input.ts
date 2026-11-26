@@ -485,6 +485,16 @@ export class InputState {
     }
   }
 
+  /**
+   * A weapon switch cancels a throw being aimed (G or the pad's LB held; owner, 2026-11-25): letting go then throws
+   * nothing, the throwable stays carried. The throw only ever leaves on the release (BUTTON_THROW for one tick), and
+   * its fuse starts as it leaves the hand, so nothing reaches the match: host and client agree, no ghost throw.
+   * A throw already let go (queued for the next tick) still goes.
+   */
+  cancelThrow(): void {
+    this.throwAiming = false;
+  }
+
   /** A tap action on the wheel's key. */
   private tap(a: string): void {
     if (a === 'scoreboard') this.scoreboardPinned = !this.scoreboardPinned;

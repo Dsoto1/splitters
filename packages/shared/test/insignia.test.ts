@@ -69,13 +69,8 @@ describe('Army bots go by rank', () => {
 });
 
 describe('Soldiers & Spies branches (owner, 2026-11-17)', () => {
-  it('makes the Operatives Agency; Santa, Agency until 2026-11-22, is in Legends now (owner) and wears its mark', () => {
-    const santa = CORE_LOOKS.find((l) => l.name === 'Santa')!;
-    expect(santa.group).toBe('legends');
-    expect(santa.branch).toBeUndefined();
-    expect(rankGroup(santa.id)).toBe('legends');
-    // Crimson Operative (held back for now, playing as Stealth Operative) is Agency too; the retired Operative preset's
-    // own entry (looks.ts) says so, though it plays as Grunt '68.
-    expect(WHOLE_BODY_LOOKS.find((l) => l.id === 'core.crimsonop')!.branch).toBe('agency');
+  it('makes the Operatives Agency (Santa, once Agency, and the Crimson Operative were removed, owner 2026-11-25)', () => {
+    expect(WHOLE_BODY_LOOKS.find((l) => l.id === 'core.stealthop')!.branch).toBe('agency');
+    expect(WHOLE_BODY_LOOKS.some((l) => l.id === 'core.crimsonop' || l.id === 'core.saintnick')).toBe(false);
   });
 });
