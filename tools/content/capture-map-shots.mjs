@@ -20,7 +20,7 @@
 // Run against a built client being served (pnpm build, then vite preview):
 //   pnpm --filter @tiletrigger/client exec vite preview --port 4799
 //   node tools/content/capture-map-shots.mjs http://localhost:4799 [map ids…]
-// SHOT_JOBS=2 captures maps in parallel; SHOT_MISSING=1 only maps without a picture; SHOT_CANDIDATES=<dir> also saves every rendered candidate there.
+// CHROMIUM=<path> launches that browser. SHOT_JOBS=2 captures maps in parallel; SHOT_MISSING=1 only maps without a picture; SHOT_CANDIDATES=<dir> also saves every rendered candidate there.
 // For pictures elsewhere (a review page; the shipped ones left alone): SHOT_OUT=<dir> (files <id><SHOT_SUFFIX>.jpg),
 // SHOT_QUALITY=80, SHOT_TEST=1 (the deterministic ?test=1 match), SHOT_RENDERED=1 (render only the best ray-scored
 // view: faster on a busy machine). The frame stays the card's (16:9, MapMaker's card frame).
@@ -311,7 +311,7 @@ function camera(v) {
   return { position: [v.eye.x, v.eye.y, v.eye.z].map(r), target: [v.eye.x + ahead[0] * 10, v.eye.y + ahead[1] * 10, v.eye.z + ahead[2] * 10].map(r) };
 }
 
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const browser = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const results = [];
 async function captureOne(id) {
   const map = JSON.parse(readFileSync(join(ROOT, 'maps', `${id}.json`), 'utf8'));
