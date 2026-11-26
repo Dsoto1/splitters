@@ -215,7 +215,7 @@ const RULES = [
   // Chat (MULTIPLAYER_PROTOCOL.md section 29): the chat box, mute and quick chat, online and in Host game.
   [/^packages\/client\/src\/game\/(chatBox|chatMute)\.ts$/, ['chat', 'chathost'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline', 'captions'], ['client']],
-  [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(hostPanel|hostSetup|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost'], ['client']],
   // Community maps (docs/COMMUNITY_MAPS.md): your map library (MapMaker's Open…, Match setup's Your maps), the hub's
   // picks and reports, the host's end-of-match report.

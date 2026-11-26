@@ -3,20 +3,20 @@
   "kind": "character",
   "use": "player",
   "order": 56,
-  "name": "Shaka Mpande",
+  "name": "Kato Emberline",
   "look": "core.ashwalker",
   "group": "folk",
   "blood": "red",
   "nameTheme": "barbarian",
-  "bio": "Red beret, leopard sash, and the last word in every argument.",
+  "bio": "Paints himself in the ash of the last arena he won.",
   "body": "male",
-  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Shaka Mpande's model until 2026-11-26 (a Meshy Community CC0 model \"a black tribal man wi\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"shaka mpande rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "notes": "Kato Emberline takes Ashwalker's id and place (owner, 2026-11-26: \"Kato is Ashwalker's true replacement\"; \"Kato is fine\"): the ash-painted look this id had before 2026-11-26, its new model. Built 2026-11-26 as core.ashtribal (meshy_ashtribal; retired to core.ashwalker, RETIRED_LOOKS), moved here the same day; the red-beret upload that had this id is Shaka Mpande (core.shaka). Drive intake of 2026-11-26 (\"ash tribal rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
     "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_shaka_mpande_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+    "file": "^Meshy_AI_ash_tribal_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
     "metallic": 0.1,

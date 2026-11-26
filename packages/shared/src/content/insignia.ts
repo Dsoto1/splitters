@@ -4,7 +4,7 @@
  * steps (ranks.ts gives the step and the title). Soldiers & Spies' Army wears its military rank: chevrons for the
  * enlisted steps (a rocker under for Pfc. and SSgt.), bars for the lieutenant and captain, stars for the major and
  * colonel. Every other group wears its own mark (Agency a ring round a dot, Horrors a skull, Outer Space a star,
- * Machines a gear, Legends a crown, Animalia a paw, Everyday Folk a plain chevron), its step told the same way for
+ * Machines a gear, Legends a crown, Animalia a paw, Everyday Folk a plain chevron, Toys a toy brick), its step told the same way for
  * all of them: steps 1-3 the bare mark, 4-6 the mark inside a ring, 7-9 inside a double ring, with no, one or two bars
  * under it for the second and third step of each.
  *
@@ -19,10 +19,10 @@ export const SOLDIER_RANKS = ['Pvt.', 'Pfc.', 'Cpl.', 'Sgt.', 'SSgt.', 'Lt.', 'C
 export type SoldierRank = (typeof SOLDIER_RANKS)[number];
 
 /** The rank groups: Soldiers & Spies split by branch, then Character Select's other groups (a design of yours: Folk). */
-export const RANK_GROUPS = ['army', 'agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk'] as const;
+export const RANK_GROUPS = ['army', 'agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk', 'toys'] as const;
 export type RankGroup = (typeof RANK_GROUPS)[number];
 /** The groups that wear their own mark with the step told by rings and bars (every one but the Army). */
-export const MARK_GROUPS = ['agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk'] as const;
+export const MARK_GROUPS = ['agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk', 'toys'] as const;
 export type MarkGroup = (typeof MARK_GROUPS)[number];
 
 const ARMY_IDS = ['pvt', 'pfc', 'cpl', 'sgt', 'ssgt', 'lt', 'capt', 'maj', 'col'] as const;
@@ -50,10 +50,12 @@ export const RANK_TITLES: Readonly<Record<RankGroup, readonly string[]>> = {
   legends: ['Squire', 'Knight', 'Champion', 'Baron', 'Earl', 'Duke', 'Prince', 'King', 'Emperor'],
   animals: ['Pup', 'Cub', 'Scout', 'Tracker', 'Hunter', 'Stalker', 'Prowler', 'Alpha', 'Apex'],
   folk: ['Rookie', 'Regular', 'Local', 'Pro', 'Ace', 'Star', 'Hero', 'Superstar', 'Icon'],
+  // The Toys row (owner, 2026-11-26: "do we accommodate when turning on ranks"): its own nine, the lead's.
+  toys: ['Wind-Up', 'Tin Toy', 'Plaything', 'Favourite', 'Best-Seller', 'Collectible', 'Keepsake', 'Heirloom', 'Toy of the Year'],
 };
 
 /** Each group's mark as named (labels, the docs). */
-export const MARK_NAMES: Readonly<Record<MarkGroup, string>> = { agency: 'Agency ring', horror: 'skull', space: 'star', machines: 'gear', legends: 'crown', animals: 'paw', folk: 'chevron' };
+export const MARK_NAMES: Readonly<Record<MarkGroup, string>> = { agency: 'Agency ring', horror: 'skull', space: 'star', machines: 'gear', legends: 'crown', animals: 'paw', folk: 'chevron', toys: 'toy brick' };
 
 /** Each badge's name (tooltips, screen readers): the rank's title. */
 export const INSIGNIA_LABELS: Readonly<Record<InsigniaId, string>> = /* @__PURE__ */ (() => Object.fromEntries([
@@ -63,6 +65,35 @@ export const INSIGNIA_LABELS: Readonly<Record<InsigniaId, string>> = /* @__PURE_
 
 /** Other ranks a character's own name may carry, as the rank they wear (a Flight Lieutenant ranks with a Captain). */
 const OTHER_RANKS: Readonly<Record<string, SoldierRank>> = { 'Flt. Lt.': 'Capt.' };
+
+/**
+ * Titles a name may start with that a rank title replaces when ranks are on (owner, 2026-11-26: names "dont duplicate
+ * and instead actually just rank up"): honorifics, offices and trades ("Det. Drake Montego", "Dr. Hugo Hue", "Sarge
+ * Tobias Crane", "Ser Godric Vale"), and every group's own rank titles ("Unit Alpha", "Captain Pell"). Longest first,
+ * so "Flt. Lt." and "Customs Agent" go before "Lt." and "Agent". Family words (Uncle, Granny, Grandpa) are names, not
+ * titles, and stay. Off, every name keeps its title.
+ */
+export const NAME_TITLES: readonly string[] = /* @__PURE__ */ (() => {
+  const own = [
+    'Flt. Lt.', 'Customs Agent', 'Old King', 'Sea Dog',
+    'Det.', 'Detective', 'Dr.', 'Doctor', 'Prof.', 'Professor', 'Insp.', 'Inspector', 'Officer', 'Agent', 'Inquisitor',
+    'Sarge', 'Sergeant', 'Corporal', 'Private', 'Lieutenant', 'Major', 'Colonel', 'General', 'Admiral', 'Commander', 'Captain', 'Cap\'n', 'Commodore', 'Marshal', 'Sheriff', 'Deputy', 'Judge',
+    'Emperor', 'Empress', 'King', 'Queen', 'Prince', 'Princess', 'Duke', 'Duchess', 'Count', 'Countess', 'Baron', 'Baroness', 'Earl', 'Lord', 'Lady', 'Sir', 'Dame', 'Ser', 'Squire', 'Knight',
+    'Emir', 'Sultan', 'Kaiser', 'Tsar', 'Pharaoh', 'Chief', 'Elder', 'Brother', 'Sister', 'Father', 'Mother', 'Abbot', 'Friar',
+    'Madame', 'Mme.', 'Mister', 'Mr.', 'Mrs.', 'Ms.', 'Miss', 'Coach', 'Chef',
+  ];
+  const ranks = Object.values(RANK_TITLES).flat();
+  return [...new Set([...own, ...ranks])].sort((a, b) => b.length - a.length);
+})();
+
+/**
+ * A name without the title it starts with, for a rank title to go in its place ("Det. Drake Montego" → "Drake
+ * Montego"; "Pvt. Pete Plastic" → "Pete Plastic"); a name that is only a title, or has none, as it is.
+ */
+export function nameWithoutTitle(name: string): string {
+  for (const t of NAME_TITLES) if (name.startsWith(`${t} `) && name.length > t.length + 1) return name.slice(t.length + 1);
+  return name;
+}
 
 /** The rank a name starts with ("Sgt. Dunmore" → "Sgt."; "Flt. Lt. Ember" → "Capt."), or null. */
 export function nameRank(name: string | undefined): SoldierRank | null {
@@ -86,8 +117,8 @@ export function nameWithoutRank(name: string, own = false): string {
 export function rankGroup(look: string | undefined): RankGroup {
   const g = lookGroup(look);
   if (g === 'soldiers') return lookBranch(look) === 'agency' ? 'agency' : 'army';
-  // The Toys row (owner, 2026-11-26) wears Folk's chevrons.
-  return g === 'toys' ? 'folk' : (g ?? 'folk');
+  // The Toys row (owner, 2026-11-26) has its own titles and mark.
+  return g ?? 'folk';
 }
 
 /** A group's badge for a step (1 to 9, clamped). */
@@ -206,6 +237,8 @@ const MARKS: Readonly<Record<MarkGroup, () => Badge>> = {
     fill: [ellipse(0, -0.38, 0.56, 0.46, 16), ellipse(-0.72, 0.12, 0.2, 0.27, 10), ellipse(-0.27, 0.5, 0.21, 0.28, 10), ellipse(0.27, 0.5, 0.21, 0.28, 10), ellipse(0.72, 0.12, 0.2, 0.27, 10)],
   }),
   folk: () => ({ fill: chevron(-0.3).map((p) => p.map(([x, y]) => [x, y + 0.05] as Pt)) }),
+  // A toy brick: the block and its two studs on top.
+  toys: () => ({ fill: [rect(-0.95, -0.62, 0.95, 0.3), rect(-0.7, 0.3, -0.2, 0.66), rect(0.2, 0.3, 0.7, 0.66)] }),
 };
 
 /** A group's badge for a step: the mark (in a ring from step 4, a double ring from 7) and its bars (none, one or two). */

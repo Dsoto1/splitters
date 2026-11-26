@@ -9262,13 +9262,13 @@ async function weaponsetsFlow(browser) {
   const heldCode = await sim(page, (m, me) => me.current);
   check(hud.n === 3 && hud.held === heldCode, `the HUD has the three weapons, the rifle in hand (${JSON.stringify(hud)})`);
 
-  // The pause menu's Host tab: the same choice, applied at once.
+  // The pause menu's Host tab (Match Setup's own Rules tab): the same choice, applied at once.
   await page.evaluate(() => (document.getElementById('host-controls').open = true));
-  await page.waitForSelector('#hc-weapons', { state: 'attached', timeout: T(10000) });
-  const tab = await page.evaluate(() => ({ value: document.querySelector('#hc-weapons .on')?.dataset.value, first: document.querySelector('#hc-weapons [data-value]')?.textContent, n: document.querySelectorAll('#hc-weapons [data-value]').length }));
+  await page.waitForSelector('#pause-setup #arcade-weapons', { state: 'attached', timeout: T(10000) });
+  const tab = await page.evaluate(() => ({ value: document.querySelector('#arcade-weapons .on')?.dataset.value, first: document.querySelector('#arcade-weapons [data-value]')?.textContent, n: document.querySelectorAll('#arcade-weapons [data-value]').length }));
   check(tab.value === 'map' && tab.first === 'Map (Military)' && tab.n === 7, `the Host tab offers the weapon set, on the map's default (${JSON.stringify(tab)})`);
   await page.evaluate(() => {
-    document.querySelector('#hc-weapons [data-value="scifi"]').click();
+    document.querySelector('#arcade-weapons [data-value="scifi"]').click();
     document.getElementById('hc-apply')?.click();
   });
   const swapped = await simWait(page, (m, _me, ids) => m.weaponSet?.id === 'scifi' && m.pickups.filter((p) => p.item.effect.kind === 'weapon').every((p) => ids.includes(p.item.effect.weapon)), SCIFI, T(10000));
@@ -9970,7 +9970,8 @@ async function arsenalFlow(browser) {
   await page.waitForFunction((ids) => ids.every(([id]) => window.__cs.view.pickupPartDrawn(id, '_gun')), fixed, { timeout: T(15000) }).catch(() => {});
   await page.evaluate(() => {
     document.getElementById('host-controls').open = true;
-    document.querySelector('#hc-mix [data-value="on"]')?.click();
+    // (Match Setup's own switch, in the Host tab's Rules.)
+    document.getElementById('arcade-mix')?.click();
     // It applies live: Apply now, in the Host tab's foot.
     document.getElementById('hc-apply')?.click();
   });
@@ -17127,18 +17128,35 @@ async function hostcontrolsFlow(browser) {
   });
   check(fits, 'the pause menu fits the window');
   await openPanel(page);
+  // The Host tab is Match Setup itself (owner, 2026-11-19, "a"): its four tabs with every setting (Spawn on teammates,
+  // Kill streaks…), each marked Now or At restart; the match's own cards (End match, the rotation) stay.
+  await page.waitForSelector('#pause-setup #setup-tabs', { state: 'attached', timeout: T(10000) });
+  if (process.env.E2E_SHOTS) {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    for (const t of ['match', 'bots', 'rules', 'presets']) {
+      await page.evaluate((x) => document.getElementById(`setup-tab-${x}`).click(), t);
+      await page.screenshot({ path: `${process.env.E2E_SHOTS}/hostcontrols-${t}.png` }).catch(() => {});
+    }
+    await page.evaluate(() => document.getElementById('setup-tab-match').click());
+    await page.setViewportSize({ width: 960, height: 540 });
+  }
+  const tabs = await page.evaluate(() => {
+    const tag = (id, box) => document.getElementById(id)?.closest(box)?.querySelector('.when-tag.live, .when-tag.restart')?.textContent;
+    return { tabs: [...document.querySelectorAll('#pause-setup .setup-tab span')].map((t) => t.textContent), once: document.querySelectorAll('#arcade-skill').length, squad: !!document.getElementById('arcade-squad'), streaks: !!document.getElementById('arcade-streaks'), skill: tag('arcade-skill', '.row'), score: tag('arcade-score', '.field'), spawn: tag('arcade-squad', '.row'), end: !!document.getElementById('hc-end'), rotation: !!document.getElementById('hc-rot-next') };
+  });
+  check(tabs.tabs.join() === 'Match setup,Bots & AI,Rules,Presets' && tabs.once === 1 && tabs.squad && tabs.streaks && tabs.skill === 'Now' && tabs.score === '⟳ At restart' && tabs.spawn === '⟳ At restart' && tabs.end && tabs.rotation, `the Host tab has Match Setup's tabs and every setting, marked Now or At restart, with the match's own cards (${JSON.stringify(tabs)})`);
   // What wins shows the score and time suggested for the players and bots, following the size being set.
-  const suggestedFor = () => page.evaluate(() => document.getElementById('hc-suggest')?.textContent ?? '');
+  const suggestedFor = () => page.evaluate(() => document.getElementById('setup-limits')?.textContent ?? '');
   const before = await suggestedFor();
   await page.evaluate(() => {
-    document.getElementById('hc-players-plus').click();
-    document.getElementById('hc-players-plus').click();
-    document.querySelector('#hc-skill [data-value="hard"]').click();
+    document.getElementById('arcade-bots-plus').click();
+    document.getElementById('arcade-bots-plus').click();
+    document.querySelector('#arcade-skill [data-value="hard"]').click();
   });
   const says = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, resume: !!document.getElementById('hc-resume') }));
   check(says.apply === 'Apply now' && says.changes === '+2 bots, hard bots' && says.resume, `Apply says what it will do, beside Resume (${JSON.stringify(says)})`);
   const after6 = await suggestedFor();
-  check(/^Suggested for 4 players: \d+ kills, \d+ min\./.test(before) && /^Suggested for 6 players: \d+ kills, \d+ min\./.test(after6), `the Host tab suggests a score and time for the size being set ("${before}" → "${after6}")`);
+  check(/Suggested for 4 players: \d+ kills, \d+ min\./.test(before) && /Suggested for 6 players: \d+ kills, \d+ min\./.test(after6), `the Host tab suggests a score and time for the size being set ("${before}" → "${after6}")`);
   await page.evaluate(() => document.getElementById('hc-apply').click());
   const six = await simWait(page, (m) => m.combatants().length === 6, null, T(5000));
   const feed = await page.evaluate(() => document.getElementById('feed').textContent);
@@ -17146,7 +17164,7 @@ async function hostcontrolsFlow(browser) {
   const hard = await sim(page, (m) => m.combatants().filter((c) => c.bot).every((c) => c.bot.difficulty.id === 'hard'));
   check(hard, 'bot skill changes live');
   // Bots…: the Bots window. Esc closes it (the pause menu's back); then name a bot, give it a look and a skill, Apply.
-  await page.evaluate(() => document.getElementById('hc-bots').click());
+  await page.evaluate(() => document.getElementById('arcade-botset').click());
   const opened = await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
   await page.keyboard.press('Escape');
   const escClosed = await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false);
@@ -17165,7 +17183,7 @@ async function hostcontrolsFlow(browser) {
     return !!document.pointerLockElement;
   });
   if (held) {
-    await page.evaluate(() => document.getElementById('hc-bots').click());
+    await page.evaluate(() => document.getElementById('arcade-botset').click());
     const openedHeld = await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) }).then(() => true, () => false);
     await page.keyboard.press('Escape');
     const closedHeld = await page.waitForFunction(() => !document.getElementById('bot-manager') && !document.pointerLockElement && !document.getElementById('pause').hidden, null, { timeout: T(5000) }).then(() => true, () => false);
@@ -17173,7 +17191,7 @@ async function hostcontrolsFlow(browser) {
   } else console.log('NOTE the headless page did not get the mouse: the held-mouse case of the Bots window is not checked here');
   // One level per Esc: the look picker over the Bots window closes first, the window stays.
   await openPanel(page);
-  await page.evaluate(() => document.getElementById('hc-bots').click());
+  await page.evaluate(() => document.getElementById('arcade-botset').click());
   await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
   await page.evaluate(() => {
     document.getElementById('bm-add').click();
@@ -17186,7 +17204,7 @@ async function hostcontrolsFlow(browser) {
   await page.evaluate(() => document.getElementById('bm-back').click());
   check(await page.waitForFunction(() => !document.getElementById('bot-manager'), null, { timeout: T(5000) }).then(() => true, () => false), "the Bots window's Back button closes it");
   await openPanel(page);
-  await page.evaluate(() => document.getElementById('hc-bots').click());
+  await page.evaluate(() => document.getElementById('arcade-botset').click());
   await page.waitForSelector('#bot-manager', { state: 'attached', timeout: T(5000) });
   // (Clicks by script: the pause menu may be hidden behind the pointer lock it never got here.)
   await page.evaluate(() => {
@@ -17202,48 +17220,37 @@ async function hostcontrolsFlow(browser) {
   });
   const row = await page.evaluate(() => ({ look: document.querySelector('#bm-look-0 .bm-look-name')?.textContent, portrait: !!document.querySelector('#bm-look-0 img'), sum: document.getElementById('bm-sum').textContent }));
   check(row.look === 'Iron Knight' && row.portrait && /1 bot/.test(row.sum), `the bot's look shows its portrait and the summary counts it (${JSON.stringify(row)})`);
+  // The window's choice is the setup's (Your bots: Now): Apply now sends it.
   await page.evaluate(() => document.getElementById('bm-apply').click());
+  const botsSaid = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent }));
+  check(botsSaid.apply === 'Apply now' && botsSaid.changes === 'your bots', `the named bot waits for Apply now (${JSON.stringify(botsSaid)})`);
+  await page.evaluate(() => document.getElementById('hc-apply').click());
   // Swapped in a bot at a time: the knight takes a random bot's place.
   const knight = await simWait(page, (m) => m.combatants().some((c) => c.kind === 'bot' && c.name === 'Sir Testalot' && c.look === 'core.knight' && c.bot.difficulty.id === 'easy') && m.combatants().length === 6, null, T(10000));
   check(knight, 'Apply brings the named bot into the match with its look and its own skill, the player count kept');
   await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
   const listed = await page.waitForFunction(() => /Sir Testalot/.test(document.getElementById('pause-scores')?.textContent ?? '') || /Sir Testalot/.test(document.getElementById('scoreboard')?.textContent ?? ''), null, { timeout: T(10000) }).then(() => true, () => false);
   await page.keyboard.press('Tab'); // and another hides it
-  const sum = await page.evaluate(() => document.getElementById('hc-bots-sum')?.textContent);
+  const sum = await page.evaluate(() => document.getElementById('arcade-botset-sum')?.textContent);
   check(listed && /1 bot \+ random/.test(sum ?? ''), `the scoreboard lists the bot, and the panel says the set (${sum})`);
-  // A rule that needs a restart is marked so, and Apply says it restarts: Apply & restart plays with it at once.
-  await page.evaluate(() => document.getElementById('hc-score-plus').click());
-  const asks = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, marked: !!document.getElementById('hc-score')?.closest('.field')?.querySelector('.when-tag.restart'), when: document.querySelector('#hc-when .seg-opt.on')?.dataset.value }));
-  check(asks.apply === 'Apply & restart' && asks.changes === 'score 16: the match restarts now' && asks.marked && asks.when === 'now', `a change that needs a restart is marked, and Apply says it restarts (${JSON.stringify(asks)})`);
+  // A rule that needs a restart is marked so, and the button says it restarts: Restart with these plays with it at once
+  // (the score: the match's own restart takes it, no reload).
+  const score = await page.evaluate(() => {
+    document.getElementById('arcade-score-plus').click();
+    return Number(document.getElementById('arcade-score').value);
+  });
+  const asks = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, marked: !!document.getElementById('arcade-score')?.closest('.field')?.querySelector('.when-tag.restart') }));
+  check(asks.apply === 'Restart with these' && asks.changes === `score ${score}: the match starts over with them` && asks.marked, `a change that needs a restart is marked, and the button says it restarts (${JSON.stringify({ score, ...asks })})`);
   await page.evaluate(() => document.getElementById('hc-apply').click());
-  // (A restart plays the rules waiting for it: the score limit changes only then.)
-  const applied = await simWait(page, (m) => m.rules.scoreLimit === 16, null, T(10000));
+  const applied = await simWait(page, (m, _me, n) => m.rules.scoreLimit === n, score, T(10000));
   const restartFeed = await page.waitForFunction(() => /restarted the match/.test(document.getElementById('feed').textContent ?? ''), null, { timeout: T(5000) }).then(() => true, () => false);
   const pendingNow = await page.evaluate(() => window.__cs.host()?.pending);
-  check(applied && restartFeed && !Object.keys(pendingNow ?? {}).length, `Apply & restart starts the match over with the new score limit (${JSON.stringify({ score: await sim(page, (m) => m.rules.scoreLimit), restartFeed, pending: pendingNow })})`);
+  const footNow = await page.evaluate(() => ({ disabled: document.getElementById('hc-apply').disabled, changes: document.getElementById('hc-changes').textContent }));
+  check(applied && restartFeed && !Object.keys(pendingNow ?? {}).length && footNow.disabled && footNow.changes === 'No changes', `Restart with these starts the match over with the new score limit (${JSON.stringify({ score: await sim(page, (m) => m.rules.scoreLimit), restartFeed, pending: pendingNow, foot: footNow })})`);
   // Its countdown first: End match ends a match in play. The match's own phase first: the page can still show the
   // phase from before the restart for a moment on a loaded machine, then its countdown.
   await simWait(page, (m) => m.phase === 'playing', null, T(30000));
   await page.waitForFunction(playing, null, { timeout: T(30000) }).catch(() => {});
-  // Save for next match (owner, 2026-11-06): the changed rule waits for the next match; this one carries on.
-  await sim(page, (m) => void (m.combatants().find((c) => c.kind === 'human').kills = 3));
-  await openPanel(page);
-  await page.evaluate(() => {
-    document.getElementById('hc-score-plus').click();
-    document.getElementById('hc-when-next').click();
-  });
-  const saving = await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, changes: document.getElementById('hc-changes').textContent, when: document.querySelector('#hc-when .seg-opt.on')?.dataset.value }));
-  check(saving.apply === 'Save for next match' && saving.changes === 'score 17 from the next match' && saving.when === 'next', `Next match: Apply becomes Save for next match, and the foot says when it applies (${JSON.stringify(saving)})`);
-  await page.evaluate(() => document.getElementById('hc-apply').click());
-  const saved = await page.waitForFunction(() => window.__cs.host()?.pending?.scoreLimit === 17, null, { timeout: T(10000) }).then(() => true, () => false);
-  const carriesOn = {
-    score: await sim(page, (m) => m.rules.scoreLimit),
-    kills: await sim(page, (m) => m.combatants().find((c) => c.kind === 'human').kills),
-    phase: await page.evaluate(() => window.__cs.phase()),
-    line: await page.evaluate(() => document.getElementById('hc-pending')?.textContent ?? ''),
-    foot: await page.evaluate(() => ({ apply: document.getElementById('hc-apply').textContent, disabled: document.getElementById('hc-apply').disabled, changes: document.getElementById('hc-changes').textContent })),
-  };
-  check(saved && carriesOn.score === 16 && carriesOn.kills === 3 && carriesOn.phase === 'playing' && /^Saved for the next match: score 17\./.test(carriesOn.line) && carriesOn.foot.disabled, `Save for next match keeps the rule for the next match and doesn't restart this one (${JSON.stringify(carriesOn)})`);
   // Ending or restarting everyone's match takes a second click.
   const once = await page.evaluate(() => {
     const b = document.getElementById('hc-end');
@@ -17254,10 +17261,10 @@ async function hostcontrolsFlow(browser) {
   await page.evaluate(() => document.getElementById('hc-end').click());
   const ended = await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   check(ended, 'End match goes to the scoreboard');
-  // After the scoreboard the next match starts by itself, with the rule saved for it; the HUD and the Host tab follow.
-  const nextOne = await page.waitForFunction(() => window.__cs.phase() !== 'intermission' && window.__cs.rules()?.scoreLimit === 17 && !Object.keys(window.__cs.host()?.pending ?? {}).length, null, { timeout: T(30000) }).then(() => true, () => false);
+  // After the scoreboard the next match starts by itself, with the score set; the HUD and the Host tab follow.
+  const nextOne = await page.waitForFunction((n) => window.__cs.phase() !== 'intermission' && window.__cs.rules()?.scoreLimit === n && !Object.keys(window.__cs.host()?.pending ?? {}).length, score, { timeout: T(30000) }).then(() => true, () => false);
   const nextScore = await sim(page, (m) => m.rules.scoreLimit);
-  check(nextOne && nextScore === 17, `the next match plays the saved score limit, and the page hears so (${JSON.stringify({ match: nextScore, page: await page.evaluate(() => window.__cs.rules()?.scoreLimit), pending: await page.evaluate(() => window.__cs.host()?.pending) })})`);
+  check(nextOne && nextScore === score, `the next match plays the score limit set, and the page hears so (${JSON.stringify({ match: nextScore, page: await page.evaluate(() => window.__cs.rules()?.scoreLimit), pending: await page.evaluate(() => window.__cs.host()?.pending) })})`);
   await page.waitForFunction(playing, null, { timeout: T(30000) }).catch(() => {});
   await endMatch(page);
   await page.waitForFunction(() => window.__cs.phase() === 'intermission', null, { timeout: T(5000) }).catch(() => {});
@@ -17267,7 +17274,7 @@ async function hostcontrolsFlow(browser) {
   });
   const restarted = await page.waitForFunction(() => window.__cs.phase() !== 'intermission', null, { timeout: T(5000) }).then(() => true, () => false);
   const keptScore = await sim(page, (m) => m.rules.scoreLimit);
-  check(restarted && keptScore === 17, `Restart match starts it over, the applied score limit kept (${keptScore})`);
+  check(restarted && keptScore === score, `Restart match starts it over, the applied score limit kept (${keptScore})`);
   await pickMap(page, 'atomic_court');
   // The picked map loads on demand (its own chunk), so the announcement can follow a moment later.
   await page.waitForFunction(() => /Changing map to/i.test(document.getElementById('message').textContent), null, { timeout: T(5000) }).catch(() => {});
@@ -17310,6 +17317,23 @@ async function hostcontrolsFlow(browser) {
       window.__notes = [];
       new MutationObserver(() => window.__notes.push(document.getElementById('feed').textContent)).observe(document.getElementById('feed'), { childList: true, subtree: true });
     });
+    // Restart with these, for a setting the match's own restart can't take (Kill streaks): a new match on this map with
+    // every setting. With a friend in, the first press asks; the friend comes along.
+    await openPanel(host);
+    await host.waitForSelector('#pause-setup #arcade-streaks', { state: 'attached', timeout: T(10000) });
+    const ask = await host.evaluate(() => {
+      document.getElementById('arcade-streaks').click();
+      const apply = document.getElementById('hc-apply');
+      const said = { label: apply.textContent, changes: document.getElementById('hc-changes').textContent };
+      apply.click();
+      return { ...said, armed: apply.textContent };
+    });
+    check(ask.label === 'Restart with these' && ask.changes === 'kill streaks off: the match starts over with them' && ask.armed === 'Click again to restart', `Restart with these says what it does, and asks first with a friend in (${JSON.stringify(ask)})`);
+    await host.evaluate(() => document.getElementById('hc-apply').click());
+    const fresh = await simWait(host, (m) => m.rules.killstreaks === false && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(90000));
+    const friendBack = await friend.waitForFunction(() => window.__cs?.map === 'phase0_arena' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
+    check(fresh && friendBack, `the match starts over with kill streaks off, and the friend comes along (${JSON.stringify({ fresh, friendBack })})`);
+    await host.waitForFunction(playing, null, { timeout: T(60000) }).catch(() => {});
     await openPanel(host);
     await pickMap(host, 'atomic_court');
     const together = await simWait(host, (m) => m.map.metadata.id === 'atomic_court' && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(90000));
