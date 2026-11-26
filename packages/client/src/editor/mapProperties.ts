@@ -470,7 +470,7 @@ export class MapProperties {
    */
   private categoriesSection(): HTMLElement {
     const doc = this.app.doc;
-    const r = chips('Category', 'ed-prop-category', MAP_CATEGORIES.filter((c) => c.id !== 'custom').map((c) => [c.id, c.label] as const), doc.metadata.category ?? DEFAULT_MAP_CATEGORY, (to: MapCategoryId) => {
+    const r = chips('Category', 'ed-prop-category', MAP_CATEGORIES.filter((c) => c.id !== 'custom').map((c) => [c.id as MapCategoryId, c.label] as const), doc.metadata.category ?? DEFAULT_MAP_CATEGORY, (to: MapCategoryId) => {
       const label = MAP_CATEGORIES.find((c) => c.id === to)?.label ?? to;
       this.app.run(`Category: ${label}`, { kind: 'setMetadata', before: { category: this.app.doc.metadata.category }, after: { category: to } });
     });
