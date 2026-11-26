@@ -380,7 +380,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
  * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
  */
-/** Linktifa's id: the Designer's base body (retired from play, kept drawable). */
+/** Linktifa's id: the modular base body (retired from play, kept drawable as the rig baseline: DESIGNER_BASE_LOOK). */
 const DESIGNER_BASE_ID = 'core.ranger';
 /** The sim's fixed default look: Cal, a kept, pickable look (owner, 2026-11-24: the default is never a retired look). */
 const DEFAULT_LOOK_ID = 'core.dale';
