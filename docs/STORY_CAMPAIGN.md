@@ -103,3 +103,4 @@ The owner's direction, condensed: "we have a considerable amount of maps and i w
 - **Retired characters are removed completely (owner, 2026-11-26),** the owner's own included ("i would prefer to use what we will have (over 200 characters)"): no "Classic" models kept for MapMaker; a retired id only maps to a current look so saved picks load. MapMaker's Figures use roster characters.
 - **A Toys group (owner, 2026-11-26):** Character Select gets a Toys row; Cpl. Tinwhistle and Pvt. Pete Plastic move into it, with the 11-26 batch's toys. The Playhouse's local allies come from it.
 - **Character Select order (owner, 2026-11-26):** like histories side by side within a row (Western, Mesoamerica, Medieval…), and the well-known real people (Lincoln, Washington, Franklin, Einstein, Teddy Roosevelt) in Legends, by period; Shaka stays with his period.
+- **Frozen sector boss (owner, 2026-11-26):** Frostmane (Frost Viking is removed).
