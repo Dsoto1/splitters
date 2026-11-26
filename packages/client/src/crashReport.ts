@@ -9,7 +9,7 @@ import { testMode } from './testMode.ts';
  *
  * Off in browser tests (?test=1) unless asked for with &crashpanel=1, so a test's own failures stay its own.
  */
-export type CrashScreen = 'menu' | 'game' | 'editor' | 'designer' | 'other';
+export type CrashScreen = 'menu' | 'game' | 'editor' | 'other';
 export type BreakKind = 'error' | 'rejection' | 'webgl' | 'freeze';
 export interface CrashContext {
   /** The last match's map (a suite map's ID or "custom") and mode: reported only while `screen` is 'game'. */

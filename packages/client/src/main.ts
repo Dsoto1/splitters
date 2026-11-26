@@ -16,7 +16,6 @@ import { createEngine, type RendererKind } from './engine.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
 import { FramePacer } from './game/framePacer.ts';
-import type { CharacterDesigner } from './designer/characterDesigner.ts';
 import { EXPERIMENTAL_GROUP, FrontEnd, PICK_GROUP, type ArcadeMap } from './frontend/frontEnd.ts';
 import { MenuScene } from './frontend/menuScene.ts';
 import { ModelThumbnails } from './frontend/modelThumbs.ts';
@@ -91,7 +90,7 @@ const mapVoteOn = (): boolean => {
 };
 const saveMapVote = (on: boolean): void => void storage('cs.mapVote', on ? '1' : '0');
 
-type Mode = 'menu' | 'editor' | 'game' | 'designer';
+type Mode = 'menu' | 'editor' | 'game';
 
 const wait = (ms: number) => new Promise<void>((r) => setTimeout(r, ms));
 /** `p`, or nothing after `ms`: waits that must never hold the app back for long. */
@@ -316,7 +315,7 @@ if (params.get('music') === '1' || (params.get('music') !== '0' && !navigator.we
       }),
   );
 }
-const MUSIC_SCENES: Record<Mode, MusicScene | null> = { menu: 'menu', designer: 'menu', editor: 'mapmaker', game: null };
+const MUSIC_SCENES: Record<Mode, MusicScene | null> = { menu: 'menu', editor: 'mapmaker', game: null };
 
 /** Top-level shell: one Babylon engine shared by the main menu, MapMaker and game sessions. */
 class App {
@@ -337,7 +336,6 @@ class App {
   }
   private editor?: EditorApp;
   private session?: GameSession;
-  private designer?: CharacterDesigner;
   private menuScene?: MenuScene;
   private portraits?: PortraitRenderer;
   front?: FrontEnd;
@@ -375,7 +373,6 @@ class App {
       setWeaponIconSource(new ModelThumbnails(this.engine));
       this.front = new FrontEnd($('menu'), maps, {
         openEditor: () => void this.openEditor(),
-        openDesigner: (look) => void this.openDesigner(look),
         playLocal: (map, rules, bots, skill, host, botSet, spectate, story) => {
           this.botSet = botSet ?? null;
           // A Story match (frontend Story screen): its win completes that map (campaign/storyProgress.ts).
@@ -412,7 +409,6 @@ class App {
     if (this.mode === 'menu') this.menuScene?.frame(dt);
     else if (this.mode === 'game') this.session?.frame();
     else if (this.mode === 'editor') this.editor?.frame(dt);
-    else if (this.mode === 'designer') this.designer?.frame(dt);
   }
 
   async showMenu(status = ''): Promise<void> {
@@ -477,19 +473,6 @@ class App {
       return;
     }
     if (token === this.matchRequest) f(m);
-  }
-
-  async openDesigner(look?: string): Promise<void> {
-    const [{ CharacterDesigner }] = await Promise.all([import('./designer/characterDesigner.ts'), this.init()]);
-    finishBoot();
-    $('menu').hidden = true;
-    this.mode = 'designer';
-    this.designer = new CharacterDesigner(this.engine, this.canvas, look ?? this.front!.look, (id) => {
-      this.designer?.dispose();
-      this.designer = undefined;
-      if (id) this.front!.useLook(id);
-      void this.showMenu();
-    }, this.portraits);
   }
 
   /** MapMaker; `resume` after a reload of the tab while it was open: the map that was being made (editorResume.ts). */
@@ -1157,7 +1140,6 @@ else if (params.get('mode') === 'assets') {
     await openEnvLab(engine, canvas, kind);
   })();
 } else if (params.get('mode') === 'editor') void app.openEditor(editorResumeOnReload());
-else if (params.get('mode') === 'designer') void app.openDesigner();
 else if (params.has('tutorial')) void app.playTutorial();
 else if (params.has('range')) void app.playRange();
 else if (params.has('offline')) {

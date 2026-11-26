@@ -124,7 +124,7 @@ export interface GripTune {
 /**
  * Character Select's groups, by what a character is (not how its look was built), in tab order. Every
  * built-in look names one: the presets below, the whole-body manifests (`group` in content/characters/*.json,
- * whose checker keeps the same list) and the NPC skins (NPC_ROLE_SPECS). Designs of yours go under Yours.
+ * whose checker keeps the same list) and the NPC skins (NPC_ROLE_SPECS).
  * The owner's Roster Board, 2026-11-14/15: Knights & Legends became Legends (`legends`), Creatures & Machines split
  * into Creatures and Machines, Animals renamed Animalia (`animals`), Undead & Horror renamed Horrors (`horror`); Outer
  * Space and Agents & Spies are new. The owner's pass of 2026-11-17: Creatures merged into Horrors as Horrors &
@@ -211,14 +211,15 @@ function withNeighbours<T extends { id?: string }>(sorted: T[]): T[] {
 /**
  * Character Select's sections for a roster whose entries say which section they sit in (`group`: a CHARACTER_GROUPS
  * id, EXPERIMENTAL_SECTION or MINE_SECTION): each group anyone is in (listed by name), then Experimental when there
- * is anyone in it, then Yours (always, in the order given: it holds "Design new"). An entry with `sortAs` sits where that
- * name would.
+ * is anyone in it, then Other (anyone with no group, in the order given) only when there is anyone in it: "Yours" and
+ * its "Design new" went with the Character Designer (2026-11-25). An entry with `sortAs` sits where that name would.
  */
 export function characterSections<T extends { id?: string; name: string; group: string; sortAs?: string }>(roster: readonly T[]): { id: string; label: string; looks: T[] }[] {
   const byName = (id: string) => withNeighbours(roster.filter((c) => c.group === id).sort((a, b) => (a.sortAs ?? a.name).localeCompare(b.sortAs ?? b.name)));
   const after = (g: string) => CHARACTER_COLLECTIONS.filter((c) => c.after === g).map((c) => ({ id: c.id as string, label: c.label as string, looks: byName(c.id) }));
   const groups = [...CHARACTER_GROUPS.flatMap((g) => [{ id: g.id as string, label: g.label as string, looks: byName(g.id) }, ...after(g.id)]), { id: EXPERIMENTAL_SECTION, label: CHARACTER_TIER_LABELS.experimental, looks: byName(EXPERIMENTAL_SECTION) }].filter((s) => s.looks.length);
-  return [...groups, { id: MINE_SECTION, label: 'Yours', looks: roster.filter((c) => c.group === MINE_SECTION) }];
+  const other = roster.filter((c) => c.group === MINE_SECTION);
+  return other.length ? [...groups, { id: MINE_SECTION, label: 'Other', looks: other }] : groups;
 }
 
 /**
@@ -263,10 +264,7 @@ export const GEAR_SLOTS: readonly GearSlot[] = ['hat', 'face', 'chest', 'back'];
 export const GEAR_SLOT_LABELS: Record<GearSlot, string> = { hat: 'Headwear', face: 'Face', chest: 'Chest', back: 'Back' };
 export const gearInfo = (id: string) => GEAR.find((g) => g.id === id);
 
-/** Dye swatches for the Designer (cloth and trim). */
-export const DYE_COLORS = ['#2f3a2a', '#5a6b3a', '#8a7a52', '#c8b88a', '#e8e4dc', '#9aa0a8', '#4a4f58', '#1e2126', '#2a3a5c', '#3d6ea8', '#7a2a2a', '#c0392b', '#d07a2a', '#6a3a7a', '#2a7a6a'] as const;
-
-/** Skin tones offered by the presets and the Character Designer. */
+/** Skin tones of the modular presets. */
 export const SKIN_TONES = ['#ffffff', '#f0d8c8', '#c89878', '#9a6a4e', '#6e4a38'] as const;
 
 const ranger = (s: 'm' | 'f', hood = true, pauldron = true): string[] => [
@@ -287,7 +285,7 @@ const peasant = (s: 'm' | 'f'): string[] => [`peasant_torso_${s}`, `peasant_arms
  */
 export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-24 ("Let's just retire linktifa and sprout"): both off the roster (files, manifests and portraits kept;
-  // the Designer keeps Linktifa's modular body as its base: DESIGNER_BASE_LOOK). A saved pick plays Honest Abe (Legends)
+  // the Designer kept Linktifa's modular body as its base until it went, 2026-11-25). A saved pick plays Honest Abe (Legends)
   // and Lancer Mei (Everyday Folk), kept looks of the same group; every older retirement that led to either now leads
   // straight to the kept look, in one step.
   'core.ranger': 'core.abe',
@@ -394,11 +392,11 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
  * Retired looks an NPC role is still drawn as (NPC_ROLE_SPECS `look`): off the roster, and a player's saved choice
  * of one plays its replacement (validLookId), but getLook still gives the look itself so the NPC keeps its model.
  */
-/** Linktifa's id: the Designer's base body (retired from play, kept drawable). */
-const DESIGNER_BASE_ID = 'core.ranger';
 /** The sim's fixed default look: Cal, a kept, pickable look (owner, 2026-11-24: the default is never a retired look). */
 const DEFAULT_LOOK_ID = 'core.dale';
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set([DESIGNER_BASE_ID]);
+// (Linktifa, `core.ranger`, was kept drawable as the Character Designer's base body; with the Designer gone, 2026-11-25,
+// it is retired like any other: a saved pick plays Honest Abe. No retired look is kept drawable now.)
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set<string>();
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [
@@ -481,8 +479,8 @@ const ALL_LOOKS: readonly CharacterLook[] = [
 
 /**
  * The clip set every look on the shared rig moves with unless it names another or opts out (`clips: false`):
- * content/clip-sets/shooter.json (tools/content/character-manifests.mjs keeps the same name). Looks made later,
- * Designer looks and characters rigged later get it without asking.
+ * content/clip-sets/shooter.json (tools/content/character-manifests.mjs keeps the same name). Looks made later
+ * and characters rigged later get it without asking.
  */
 export const DEFAULT_CLIP_SET = 'shooter';
 
@@ -511,8 +509,8 @@ export const DEFAULT_LOOK = DEFAULT_LOOK_ID;
 /** A random pickable look for a new player with no saved pick (`roll` in [0, 1): Math.random(), or a fixed value). */
 export const randomFirstLook = (roll: number): string => PICKABLE_LOOKS[Math.min(PICKABLE_LOOKS.length - 1, Math.floor(roll * PICKABLE_LOOKS.length))]!.id;
 
-/** The Designer's modular base body (Linktifa's parts): off the roster, but "Design new" and whole-body starts use it. */
-export const DESIGNER_BASE_LOOK: CharacterLook = ALL_LOOKS.find((l) => l.id === DESIGNER_BASE_ID)!;
+/** The shared parts of a male modular body (Linktifa's outfit): for tests and tools that build a part-made look. */
+export const MODULAR_PARTS_MALE: readonly string[] = ranger('m');
 
 /** One-line bios for the presets (character select). */
 export const LOOK_BIOS: Readonly<Record<string, string>> = {
@@ -535,7 +533,7 @@ export const LOOK_BIOS: Readonly<Record<string, string>> = {
   'core.sentinel': 'Holds the line because nobody has ever moved her off it.',
 };
 
-// ---------------------------------------------------------------- the part catalogue (Character Designer)
+// ---------------------------------------------------------------- the part catalogue (modular looks)
 
 export interface PartInfo {
   id: string;
@@ -565,7 +563,6 @@ export const CHARACTER_PARTS: readonly PartInfo[] = (['male', 'female'] as const
 );
 
 export const PART_SLOTS: readonly PartSlot[] = ['torso', 'arms', 'legs', 'feet', 'hood', 'pauldron'];
-export const PART_SLOT_LABELS = SLOT_LABEL;
 /** Slots a look must fill (arms are covered by a sportswear top). */
 export const REQUIRED_SLOTS: readonly PartSlot[] = ['torso', 'legs', 'feet'];
 
@@ -589,8 +586,6 @@ export const COLORWAYS: readonly { id: string; family: PartInfo['outfit']; body:
   { id: 'athlete_light_m', family: 'athlete', body: 'male', label: 'Light' },
   { id: 'athlete_light_f', family: 'athlete', body: 'female', label: 'Light' },
 ];
-
-export const HAIR_COLORS = ['#f0e0c0', '#d0a060', '#b08850', '#8a6a50', '#8a3a2a', '#5a4030', '#3a2a22', '#2a2422', '#9aa0a8'] as const;
 
 const partById = new Map(CHARACTER_PARTS.map((p) => [p.id, p]));
 export const partInfo = (id: string): PartInfo | undefined => partById.get(id);
@@ -626,7 +621,8 @@ export function lookProblems(l: Pick<CharacterLook, 'body' | 'parts' | 'hair' | 
 // ---------------------------------------------------------------- custom look IDs
 
 /**
- * Custom looks travel as a short ID (sent in hello, kept in the roster):
+ * Custom looks travel as a short ID. Players no longer make them (the Character Designer went, 2026-11-25; a saved
+ * one plays the default: validLookId); the client still builds them for its own uses (an NPC skin's first-person arms):
  * `c1-` + body (m/f) + part bitmask (4 hex) + hair bitmask (1 hex) +
  * colourway bitmask (1 hex) + skin (6 hex, or "------" for none) + hair colour
  * (6 hex or "------"), then "-s" (small) or "-l" (large) for a size other than standard. Bits follow CHARACTER_PARTS / HAIR_STYLES / COLORWAYS order.

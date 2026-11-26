@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { BODY_SIZES, DEFAULT_DEATHMATCH_RULES, PhysicsWorld, bodySizeOf, buildMapGeometry, decodeLook, emptyInput, encodeLook, getLook, initPhysics, stepMovement, type MoveState } from '../src/index.ts';
+import { MODULAR_PARTS_MALE, BODY_SIZES, DEFAULT_DEATHMATCH_RULES, PhysicsWorld, bodySizeOf, buildMapGeometry, decodeLook, emptyInput, encodeLook, getLook, initPhysics, stepMovement, type MoveState } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -9,7 +9,7 @@ const room = () => makeMap([{ id: 'room', tile: 'core.room', x: 0, y: 0, z: 0, r
 
 describe('character sizes', () => {
   it('custom looks carry their size in the ID; standard IDs are unchanged', () => {
-    const base = { ...getLook('core.ranger'), gear: [] };
+    const base = { body: 'male' as const, parts: [...MODULAR_PARTS_MALE], hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50', gear: [] as string[] };
     const small = encodeLook({ ...base, size: 'small' });
     expect(small.endsWith('-s')).toBe(true);
     expect(decodeLook(small)?.size).toBe('small');
@@ -20,15 +20,15 @@ describe('character sizes', () => {
     const back = decodeLook(kitted)!;
     expect([back.size, back.cloth, back.trim, back.gear]).toEqual(['large', '#2a3a5c', null, ['goggles', 'vest', 'pack']]);
     // The helmets appended to GEAR widen the gear mask past four hex digits; older IDs keep four.
-    // Linktifa without her hood (a hat doesn't fit over one).
-    const bare = { ...getLook('core.ranger'), parts: getLook('core.ranger').parts.filter((p) => !p.includes('hood')), hair: ['hair_buzzed', 'hair_beard'], cloth: '#2a3a5c', trim: '#3a2a22', gear: [] };
+    // The outfit without its hood (a hat doesn't fit over one).
+    const bare = { ...base, parts: base.parts.filter((p) => !p.includes('hood')), hair: ['hair_buzzed', 'hair_beard'], cloth: '#2a3a5c', trim: '#3a2a22', gear: [] };
     const helmeted = encodeLook({ ...bare, gear: ['mk2_helmet', 'shades'] });
     expect(helmeted).toMatch(/-g[0-9a-f]{5}$/);
     expect(decodeLook(helmeted)?.gear).toEqual(['shades', 'mk2_helmet']);
     expect(encodeLook({ ...bare, gear: ['helmet'] })).toMatch(/-g0004$/);
     expect(bodySizeOf('core.knight')).toBe('large');
     expect(bodySizeOf('core.bandit')).toBe('small');
-    expect(bodySizeOf('core.ranger')).toBe('standard');
+    expect(bodySizeOf('core.dale')).toBe('standard');
   });
 
   it('a small character walks under a 1.6 m ceiling that stops a standard one', () => {

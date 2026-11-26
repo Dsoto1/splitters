@@ -230,7 +230,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 
 ### Characters
 - 38 looks plus NPC looks.
-- Character Designer.
+- (The Character Designer was removed on 2026-11-25: over 200 characters to choose from; docs/CHARACTERS.md.)
 - Body-size setting.
 
 ### MapMaker
@@ -266,7 +266,7 @@ Portals appear only on pantry_raid and sandfall_colosseum.
 |---|---|
 | `?offline=<map>` | the only way into retired maps |
 | `?range` | Test weapons straight from the URL (the Training Range with your loadout) |
-| `?mode=editor`, `?mode=designer` | open MapMaker or the Character Designer directly |
+| `?mode=editor` | open MapMaker directly |
 | `?mode=assets`, `?mode=characters` | asset and character viewers |
 | `?mode=weapons` | weapon tuning: up to three weapons side by side (stat bars, recoil path, spread cones, damage and time to kill over distance, drop and holdover); `&w=core.smg,core.revolver&ballistics=advanced&hp=100`. Its Manage tab (`&view=manage`) is the owner's Weapon Manager (above) |
 | `?test=1`, `?god=1` | localhost only |

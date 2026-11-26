@@ -350,14 +350,14 @@ export async function measureCreature(spec) {
 
 /** Everything that gets shapes: { key, files, overrides, clipsFrom } for characters, { key, creature } for creatures. */
 export async function subjects() {
-  const { CORE_LOOKS, DESIGNER_BASE_LOOK } = await import('../../packages/shared/src/content/looks.ts');
+  const { CORE_LOOKS } = await import('../../packages/shared/src/content/looks.ts');
   const { CREATURE_SPECS } = await import('../../packages/shared/src/sim/creatures.ts');
   const out = [
     { key: 'base:male', files: ['rig'] },
     { key: 'base:female', files: ['mannequin_f'] },
     { key: 'base:zombie', files: ['rig'], clipsFrom: { stand: 'zombie_idle' } },
   ];
-  for (const l of [...CORE_LOOKS, DESIGNER_BASE_LOOK]) if (!l.whole) out.push({ key: l.id, files: [l.head, ...l.parts, ...l.hair].filter(Boolean) });
+  for (const l of CORE_LOOKS) if (!l.whole) out.push({ key: l.id, files: [l.head, ...l.parts, ...l.hair].filter(Boolean) });
   for (const m of readManifests()) {
     if (isQueued(m) || m.kind !== 'character' || !existsSync(join(CHARS, `${m.id}.glb`))) continue;
     out.push({ key: m.look, files: [m.id], overrides: m.hitbox });

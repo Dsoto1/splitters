@@ -6002,7 +6002,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -13692,34 +13692,37 @@ async function flashingScene(browser, scene, names) {
   await ctx.close();
 }
 
-async function designerFlow(browser) {
+/**
+ * First person, and a design saved by the Character Designer (removed 2026-11-25: owner, "we have over 200 to choose
+ * from now"): an old custom look loads as the default character on the menu and in a match, with no page errors; then
+ * your own body and arms in first person.
+ */
+async function firstpersonFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  // A design kept from before: the old Designer's list and the pick (a female peasant look with buns).
+  const design = 'c1-f03c020------------';
+  // (Seeded on every load, so the match below starts from it too.)
+  await page.addInitScript((id) => {
+    localStorage.setItem('cs.look', id);
+    localStorage.setItem('cs.customLooks', JSON.stringify([{ id, name: 'My design' }]));
+  }, design);
   await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(60000) });
+  const menu = await page.evaluate(() => ({ look: window.__front.look, name: window.__front.lookName(window.__front.look), kept: localStorage.getItem('cs.look'), designs: localStorage.getItem('cs.customLooks') }));
+  check(menu.look === 'core.dale' && menu.kept === 'core.dale' && menu.designs === null, `a design saved by the old Character Designer loads as the default character, kept as the pick; the old designs list is gone (${JSON.stringify(menu)})`);
   await page.click('#profile-badge');
   await page.click('#profile-change-character');
-  await page.click('.char-tile.new');
-  await page.waitForFunction(() => !!window.__designer, null, { timeout: T(30000) });
-  await page.click('#designer button:text-is("Female")');
-  await page.click('#designer .tab:text-is("Outfit")');
-  await page.selectOption('#designer .dz-row:has(label:text-is("Top")) select', 'peasant_torso_f');
-  await page.click('#designer .tab:text-is("Head")');
-  await page.click('#designer button:text-is("Buns")');
-  const id = await page.evaluate(() => window.__designer.lookId);
-  const problems = await page.evaluate(() => window.__designer.problems);
-  check(problems.length === 0 && id.startsWith('c1-f'), `designer builds a wearable custom look (${id} ${problems.join(', ')})`);
-  await page.click('#designer button:text-is("Save and use")');
-  await page.waitForFunction(() => !document.getElementById('menu').hidden);
-  const selected = await page.evaluate(() => window.__front.look);
-  check(selected === id, `the saved look is selected on the menu (${selected})`);
-  // Its portrait is drawn once when it's saved and kept in this browser (never drawn again on Character Select).
-  const kept = await until(() => page.evaluate((id) => /^data:image\//.test(JSON.parse(localStorage.getItem('cs.portraits') ?? '{}')[id] ?? ''), id), T(20000));
-  check(kept, 'saving a design keeps its portrait in the browser');
+  await page.waitForSelector('.char-tile[data-look]', { timeout: T(30000) });
+  const sel = await page.evaluate(() => ({ sections: [...document.querySelectorAll('.char-sec')].map((s) => s.dataset.section), design: !!document.querySelector('.char-tile.new, #hint-design, #hint-customise'), hints: [...document.querySelectorAll('.hintbar .hint-btn')].map((h) => h.textContent).join(' | ') }));
+  check(!sel.sections.includes('mine') && !sel.design && !/Design new|Customise/.test(sel.hints), `Character Select has no Yours, Design new or Customise (${JSON.stringify(sel)})`);
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  const inMatch = await page.evaluate(() => window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.look);
+  check(inMatch === 'core.dale', `in a match the old design plays the default character (${inMatch})`);
   await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).catch(() => {});
-  check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms of the custom look hold the weapon');
+  check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms hold the weapon');
   // First person is full body by default (Options → Display → First person); Arms only applies at once, and back.
   const fpBody = await page.waitForFunction(() => window.__cs.view.hasFirstPersonBody(), null, { timeout: T(20000) }).then(() => true, () => false);
   check(fpBody, 'full-body first person: your own character is drawn from its eyes');
@@ -13869,7 +13872,7 @@ async function charactersFlow(browser, part = 0) {
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const misses = [];
-  for (const look of ['core.ranger', 'core.biscuit', 'core.grizzelda']) {
+  for (const look of ['core.dale', 'core.biscuit', 'core.grizzelda']) {
     for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
       const m = await page.evaluate(() => window.__grips.miss());
@@ -13880,7 +13883,7 @@ async function charactersFlow(browser, part = 0) {
   // Full-body first person (your own whole character from its eyes): the same palms on the same guns, looking ahead
   // and down at your feet.
   const bodyMisses = [];
-  for (const look of ['core.ranger', 'core.galloway']) {
+  for (const look of ['core.dale', 'core.galloway']) {
     for (const weapon of ['core.rifle', 'core.lmg', 'core.pistol']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'body'), [look, weapon]);
       for (const pitch of [0, -1.3]) {
@@ -13892,11 +13895,11 @@ async function charactersFlow(browser, part = 0) {
   }
   check(bodyMisses.length === 0, `full-body first person: palms on the gun's grip and handguard (${bodyMisses.join('; ') || 'all within 2 cm'})`);
   // Third person, strafing and backing up while firing: the hips turn toward the motion and the shoulders stay square
-  // to the aim (they used to wind about 140 degrees off it), the hands on the gun. A modular character and a whole
-  // body, both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
+  // to the aim (they used to wind about 140 degrees off it), the hands on the gun. Two whole bodies (Cal and
+  // the WWII soldier), both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
   // walk), and the rolling Baseball Robot, which has none (it glides on the rig's idle).
   const strafes = [];
-  for (const look of ['core.ranger', 'core.wwiisoldier']) {
+  for (const look of ['core.dale', 'core.wwiisoldier']) {
     await page.evaluate((l) => window.__grips.pose(l, 'core.rifle', 'third'), look);
     const shoulderYaw = () =>
       page.evaluate(() => {
@@ -14017,7 +14020,7 @@ async function drawnHands(page) {
   const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
   const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'none');
   const drawnMisses = [];
-  for (const look of ['core.dapper', 'core.biscuit', 'core.ranger', 'core.galloway']) {
+  for (const look of ['core.dapper', 'core.biscuit', 'core.dale', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
       for (const view of ['body', 'first', 'third']) {
         await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
@@ -14048,7 +14051,7 @@ async function drawnHands(page) {
   // in every view.
   const spearMisses = [];
   for (const view of ['first', 'body', 'third']) {
-    await page.evaluate(([v]) => window.__grips.pose('core.ranger', 'core.spear', v), [view]);
+    await page.evaluate(([v]) => window.__grips.pose('core.dale', 'core.spear', v), [view]);
     const d = await page.evaluate(() => window.__grips.drawn());
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
@@ -14059,7 +14062,7 @@ async function drawnHands(page) {
   const meleeMisses = [];
   for (const weapon of ['core.katana', 'core.scimitar', 'core.baseball_bat', 'core.battle_axe', 'core.spear']) {
     for (const view of ['first', 'body']) {
-      await page.evaluate(([w, v]) => window.__grips.pose('core.ranger', w, v), [weapon, view]);
+      await page.evaluate(([w, v]) => window.__grips.pose('core.abe', w, v), [weapon, view]);
       const [on, miss, d] = await page.evaluate(() => [window.__grips.handsOnScreen(), window.__grips.miss(), window.__grips.drawn()]);
       const inView = (h) => h && h.ahead > 0.1 && Math.abs(h.x) < 1 && Math.abs(h.y) < 1;
       if (!on || !inView(on.r) || !inView(on.l) || !miss || miss.r > 0.02 || miss.l > 0.02 || badHand(d, 0.05)) {
@@ -17226,7 +17229,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

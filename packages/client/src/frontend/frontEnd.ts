@@ -147,7 +147,6 @@ import { hitboxOverlayAllowed, loadHitboxOverlay, saveHitboxOverlay } from '../g
 import { fetchGames, hubSetting, saveHub } from '../game/hub.ts';
 import { communityMapRow, communityPanel, reportButton } from './communityUi.ts';
 import type { AudioSystem } from '../audio/audio.ts';
-import { listCustomLooks } from '../designer/customLooks.ts';
 import { mapThumbs, thumbPair, type MapThumbs } from './mapThumbs.ts';
 import type { MapMeta } from '../mapIndex.ts';
 import { GLYPHS, botTypePicker, choice, field, fitChip, fitList, fold as foldEl, glyph, inert, infoTip, limitsText, numbered, numberedRow, optionSwitch, powerupSwitches, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
@@ -336,7 +335,6 @@ export type ArcadeSetup = MatchSetup;
 
 export interface FrontEndHooks {
   openEditor(): void;
-  openDesigner(look: string): void;
   /** `host`: online from the start (Match setup's Host online, the Host tab's Host online without its restart): listed in the game browser when there's a hub, and a join code. */
   /** `botSet`: the host's own bots (Bots → Edit bots…). `spectate`: join it watching (Match setup → Spectate). */
   /** `story`: a Story stage (sector or convergence id, map key): a win completes it. */
@@ -550,6 +548,15 @@ export class FrontEnd {
     // A new player with no saved pick gets a random pickable character, kept like any pick (browser tests keep the fixed default).
     this.look = validLookId(params.get('look') ?? storage('cs.look') ?? (testMode() || navigator.webdriver ? DEFAULT_LOOK : randomFirstLook(Math.random())));
     if (!params.get('look') && !storage('cs.look') && !testMode() && !navigator.webdriver) storage('cs.look', this.look);
+    // A design from the Character Designer (removed 2026-11-25) plays the default (validLookId): keep that as the pick,
+    // and drop the Designer's saved designs and their pictures, which nothing reads now.
+    if (!params.get('look') && storage('cs.look')?.startsWith('c1-')) storage('cs.look', this.look);
+    try {
+      localStorage.removeItem('cs.customLooks');
+      localStorage.removeItem('cs.portraits');
+    } catch {
+      // Storage unavailable: nothing was kept.
+    }
     // The setup used last (this version's or an older one's), if its map is still here.
     let raw: unknown = null;
     try {
@@ -567,7 +574,7 @@ export class FrontEnd {
     // The bottom bar: the news and the privacy page (main menu only; Profile links it too), then the
     // screen's key hints in groups (hints()). Sign-in and your profile are the Profile entry, top right.
     this.footer.append(
-      el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Sandgate, Team Deathmatch and the Character Designer.'),
+      el('div', { class: 'news' }, el('b', { textContent: 'News' }), 'Welcome to the Tile Trigger playtest. New: Story mode, over 200 characters and seven new power-ups.'),
       el('a', { class: 'footer-privacy', href: '/privacy/', target: '_blank', rel: 'noopener', textContent: 'Privacy' }),
       this.footerHints,
     );
@@ -593,7 +600,7 @@ export class FrontEnd {
 
   /** Portraits for all the looks, one at a time, only while the menu is showing (never during a match). */
   private async warmPortraits(): Promise<void> {
-    const ids = [...this.portraitLooks(), ...listCustomLooks().map((l) => l.id)];
+    const ids = this.portraitLooks();
     for (const id of ids) {
       while (this.root.hidden) await new Promise((r) => setTimeout(r, 2000));
       await this.portraits.get(id).catch(() => undefined);
@@ -613,21 +620,19 @@ export class FrontEnd {
     this.go(this.screen === 'characters' ? 'characters' : 'home');
   }
 
+  /** Make a look yours: kept in this browser and worn on the menu. */
+  private useLook(look: string): void {
+    this.look = validLookId(look);
+    storage('cs.look', this.look);
+    this.scene.setLook(this.look);
+  }
+
   /** Back from Test weapons: Profile, at its Favourite loadout, Test weapons focused (Enter or controller A goes again). */
   openLoadout(): void {
     this.go('profile');
     const btn = this.body.querySelector<HTMLButtonElement>('#profile-test-weapons');
     btn?.scrollIntoView({ block: 'center' });
     btn?.focus({ preventScroll: true });
-  }
-
-  /** After the designer saves a look, select it and return to character select. */
-  useLook(look: string): void {
-    this.look = validLookId(look);
-    storage('cs.look', this.look);
-    this.scene.setLook(this.look);
-    // A new design gets its picture now (kept in this browser), so the grid shows it rather than drawing it there.
-    void this.portraits.get(this.look).catch(() => undefined);
   }
 
   private go(screen: ScreenId): void {
@@ -703,8 +708,6 @@ export class FrontEnd {
       case 'characters':
         moves.push(cycle('Section'));
         acts = [
-          hintButton('hint-design', glyphs('D', 'X', 'x'), 'Design new', 'Design a new character (D, controller X)', () => this.hooks.openDesigner(this.look)),
-          hintButton('hint-customise', glyphs('C', 'Y', 'y'), 'Customise', 'Customise this character (C, controller Y)', () => this.hooks.openDesigner(this.previewed ?? this.look)),
           main('Choose', 'Choose the character shown (Enter, controller A)', () => this.select(this.previewed ?? this.look)),
         ];
         break;
@@ -916,7 +919,7 @@ export class FrontEnd {
     if (box) box.scrollTop += px;
   }
 
-  /** A controller in the menus: the d-pad moves, A presses, B goes back, LB / RB switch, X / Y design. */
+  /** A controller in the menus: the d-pad moves, A presses, B goes back, LB / RB switch. */
   private onPad(button: number): void {
     if (this.root.hidden) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
@@ -959,8 +962,6 @@ export class FrontEnd {
     if (button === PAD.lb || button === PAD.rb) return this.cycle(button === PAD.rb ? 1 : -1);
     if (this.screen === 'home' && button === PAD.y) return this.go('profile');
     if (this.screen === 'profile' && button === PAD.y) return this.go('characters');
-    if (this.screen === 'characters' && button === PAD.x) return this.hooks.openDesigner(this.look);
-    if (this.screen === 'characters' && button === PAD.y) return this.hooks.openDesigner(this.previewed ?? this.look);
     if (this.screen === 'play' && button === PAD.start) return this.start();
   }
 
@@ -1274,7 +1275,7 @@ export class FrontEnd {
   lookName(id: string): string {
     const npc = NPC_LOOKS.find((l) => l.id === id);
     if (npc) return npc.name;
-    return listCustomLooks().find((s) => s.id === id)?.name ?? getLook(id).name;
+    return getLook(id).name;
   }
 
   // ---------------------------------------------------------------- match setup (Play)
@@ -2558,18 +2559,17 @@ export class FrontEnd {
 
   // ---------------------------------------------------------------- character select
 
-  /** Everyone on Character Select: the built-in looks (roster order), the NPC skins offered to players, then your designs. */
+  /** Everyone on Character Select: the built-in looks (roster order) and the NPC skins offered to players. */
   private roster(): { id: string; name: string; group: string; sortAs?: string }[] {
     return [
       // An experimental character sits under Experimental, not with its group (the same rule as an experimental map),
       // unless it is in a collection (the Chrono Crew), which lists its own whatever their tier (characterSectionOf).
       ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: l.collection ?? (characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine')), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
       ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
-      ...listCustomLooks().map((s) => ({ id: s.id, name: s.name, group: 'mine' })),
     ];
   }
 
-  /** Character Select's sections, in CHARACTER_GROUPS order: each group anyone is in (listed by name), Experimental when anyone is, then Yours (your designs). */
+  /** Character Select's sections, in CHARACTER_GROUPS order: each group anyone is in (listed by name), then Experimental when anyone is. */
   private charSections(roster = this.roster()): { id: string; label: string; looks: { id: string; name: string }[] }[] {
     return characterSections(roster);
   }
@@ -2611,7 +2611,7 @@ export class FrontEnd {
     const grid = el('div', { class: 'char-grid loading' });
     const favs = new Set(loadCharFavs());
     // The shipped pictures appear together once they're all decoded (not face by face); a portrait drawn live
-    // here (a design of yours, a look new since the last capture) shimmers in its own tile until it's ready,
+    // here (a look new since the last capture) shimmers in its own tile until it's ready,
     // instead of holding back the whole grid.
     // Live ones start once the shipped ones are up: drawing one blocks the page (it reads the picture back from the
     // GPU), which held the whole grid back for seconds.
@@ -2665,11 +2665,6 @@ export class FrontEnd {
     };
     for (const s of sections) {
       const tiles = el('div', { class: 'char-sec-tiles' }, ...s.looks.map(makeTile));
-      if (s.id === 'mine') {
-        const design = el('button', { class: 'char-tile new', title: 'Design a new character' }, el('b', { textContent: '+' }), el('span', { textContent: 'Design new' }));
-        design.addEventListener('click', () => this.hooks.openDesigner(this.look));
-        tiles.append(design);
-      }
       // A place kept for a character the story unlocks (the Chrono Crew's 14th): an Unknown tile until then.
       for (const _ of vacantCollectionPlaces(s.id, myStoryProgress().characters)) {
         const unknown = el('div', { class: 'char-unknown', title: 'Unknown: joins the crew when the story is complete' }, el('b', { textContent: '?' }), el('span', { textContent: 'Unknown' }));
@@ -2695,8 +2690,6 @@ export class FrontEnd {
           t.hidden = !ok;
           if (ok) n++;
         }
-        const design = sec.querySelector<HTMLElement>('.char-tile.new');
-        if (design) design.hidden = !!q || this.charFavsOnly;
         for (const u of sec.querySelectorAll<HTMLElement>('.char-unknown')) u.hidden = !!q || this.charFavsOnly;
         sec.hidden = n === 0 && (!!q || this.charFavsOnly);
         chips.querySelector<HTMLElement>(`.char-chip[data-section="${CSS.escape(sec.dataset.section!)}"]`)?.toggleAttribute('hidden', sec.hidden);
@@ -2917,10 +2910,6 @@ export class FrontEnd {
     const chosen = id === this.look;
     const choose = el('button', { id: 'char-choose', class: 'primary', disabled: chosen, textContent: chosen ? 'Chosen' : `Choose ${name}`, title: chosen ? 'Your character now' : `Play as ${name} (Enter, controller A)` });
     choose.addEventListener('click', () => this.select(id));
-    const customise = el('button', { textContent: 'Customise' });
-    customise.addEventListener('click', () => this.hooks.openDesigner(id));
-    // Whole-body originals are one model: nothing to swap, so no Customise.
-    if (l.whole) customise.hidden = true;
     const role = npcLookRole(id);
     if (role) {
       // An NPC skin: their look only; you keep a player's body, health and loadout.
@@ -2934,16 +2923,16 @@ export class FrontEnd {
     info.replaceChildren(
       this.sheetToggle(),
       img,
-      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? 'Your own design.' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(lookBranch(id) ? [el('span', { textContent: CHARACTER_BRANCHES.find((b) => b.id === lookBranch(id))!.label })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
+      el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? '' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(lookBranch(id) ? [el('span', { textContent: CHARACTER_BRANCHES.find((b) => b.id === lookBranch(id))!.label })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
       ...(stats ? [stats] : []),
       loadout,
-      el('div', { class: 'char-actions' }, choose, customise),
+      el('div', { class: 'char-actions' }, choose),
     );
   }
 
   /**
    * A phone's details sheet (style.css: Character Select on a phone): its handle pulls it up or lets it down. Down, the
-   * sheet is a strip with the name and Choose; up, everything (stats, loadout, Customise).
+   * sheet is a strip with the name and Choose; up, everything (stats, loadout).
    */
   private sheetToggle(): HTMLElement {
     const b = el('button', { type: 'button', class: 'char-sheet-toggle', id: 'char-sheet-toggle', title: this.charSheet ? 'Hide the details' : 'Show the details' }, el('span', { textContent: this.charSheet ? '▾' : '▴' }));
@@ -3220,7 +3209,7 @@ export class FrontEnd {
     const change = el('button', { type: 'button', class: 'primary', id: 'profile-change-character', title: 'Open Character Select (C, controller Y)', textContent: 'Change character' });
     change.addEventListener('click', () => this.go('characters'));
     const group = lookGroup(this.look);
-    const kind = group ? CHARACTER_GROUP_LABELS[group] : listCustomLooks().some((l) => l.id === this.look) ? 'Your design' : '';
+    const kind = group ? CHARACTER_GROUP_LABELS[group] : '';
     const character = el('section', { class: 'prof-sec prof-char' }, img, el('div', { class: 'prof-char-text' }, kicker('Character'), el('h3', { textContent: this.lookName(this.look) }), ...(kind ? [el('span', { class: 'prof-tag', textContent: kind })] : []), change));
 
     // Region (the game browser lists games near you first).
@@ -3887,10 +3876,6 @@ export class FrontEnd {
     } else if ((this.screen === 'play' || this.screen === 'options' || this.screen === 'characters') && (isMenuKey('menuPrev', e.code) || isMenuKey('menuNext', e.code)) && !(this.screen !== 'characters' && e.target instanceof HTMLSelectElement) && !e.ctrlKey && !e.metaKey && !e.altKey) {
       // The menus' tab keys (Q / E by default; Options → Controls → Menus).
       this.cycle(isMenuKey('menuNext', e.code) ? 1 : -1);
-    } else if (this.screen === 'characters' && e.key === 'd') {
-      this.hooks.openDesigner(this.look);
-    } else if (this.screen === 'characters' && e.key === 'c') {
-      this.hooks.openDesigner(this.previewed ?? this.look);
     } else if (this.screen === 'characters' && (e.key === ',' || e.key === '.')) {
       this.scene.spin(0, e.key === '.' ? 5.2 : -5.2);
     } else if (this.screen === 'characters' && e.key === 'Enter' && this.previewed && !(e.target instanceof HTMLButtonElement)) {

@@ -162,6 +162,7 @@ import {
   MATCH_LIMITS,
   MATCH_MIN_SECONDS,
   getLook as cardLook,
+  DEFAULT_LOOK,
 } from '@tiletrigger/shared';
 import { LEAN, PROJECTILE_VISUALS, leanShift } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
@@ -504,7 +505,7 @@ export class GameSession {
   private testJackpot(): void {
     if (!this.map) return;
     this.rouletteHud ??= new RouletteHud(this.hud, this.input, this.map, () => this.rules, () => this.slot, this.opts.portraitOf);
-    this.rouletteHud.spawned(this.looks.get(this.slot) ?? 'core.ranger', 1);
+    this.rouletteHud.spawned(this.looks.get(this.slot) ?? DEFAULT_LOOK, 1);
   }
 
   /** A player plays another look from now (Random characters): their body, size, portrait and arms follow. */

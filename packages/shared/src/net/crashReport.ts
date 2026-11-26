@@ -17,6 +17,8 @@ export const CRASH_STACK_MAX = 4000;
 
 export const CRASH_KINDS = ['error', 'rejection', 'webgl', 'freeze'] as const;
 export type CrashKind = (typeof CRASH_KINDS)[number];
+// 'designer' (the Character Designer, removed 2026-11-25) stays accepted: an older build still in a browser's cache
+// sends it, and stored reports carry it.
 export const CRASH_SCREENS = ['menu', 'game', 'editor', 'designer', 'other'] as const;
 export type CrashScreen = (typeof CRASH_SCREENS)[number];
 const QUALITIES = ['low', 'medium', 'high'] as const;

@@ -78,7 +78,7 @@ const manifests = readdirSync(MANIFESTS)
   .filter((f) => f.endsWith('.json'))
   .map((f) => JSON.parse(readFileSync(join(MANIFESTS, f), 'utf8')))
   .filter((m) => m.status !== 'queued' && m.kind !== 'creature' && /player/.test(m.use ?? ''));
-const all = [{ id: 'core.ranger', look: 'core.ranger', name: 'Ranger (rig baseline)', rig: 'rig' }, ...manifests.map((m) => ({ id: m.id, look: m.look, name: m.name, rig: rigOf.get(m.id) ?? '?' }))];
+const all = [...manifests.map((m) => ({ id: m.id, look: m.look, name: m.name, rig: rigOf.get(m.id) ?? '?' }))];
 const wanted = only ? all.filter((c) => only.includes(c.id) || only.includes(c.look)) : all;
 if (!wanted.length) throw new Error('no characters matched');
 
