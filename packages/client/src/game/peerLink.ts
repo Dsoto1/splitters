@@ -498,6 +498,10 @@ export class PeerTransport implements Transport {
     this.send({ t: 'optics', op });
   }
 
+  sendChat(x: string, team: boolean): void {
+    this.send({ t: 'chat', x, ...(team ? { tm: 1 as const } : {}) });
+  }
+
   /** Admin login and commands: a dedicated host (Host Service) runs them for its admin; a browser host refuses them. */
   sendCommand(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void {
     if (msg.t === 'admin') rememberAdminToken(`code:${this.code}`, msg.token);

@@ -59,6 +59,9 @@ export function parseClientMessage(text: string): ClientMessage | null {
     case 'team':
       if (o.i === undefined) return { t: 'team' };
       return typeof o.i === 'number' && Number.isInteger(o.i) && o.i >= -1 && o.i < 8 ? { t: 'team', i: o.i } : null;
+    case 'chat':
+      // Shape only (at most a few hundred characters); the host's chat gate (net/chat.ts) cleans, limits and filters.
+      return typeof o.x === 'string' && o.x.length <= 500 ? { t: 'chat', x: o.x, ...(o.tm === 1 ? { tm: 1 as const } : {}) } : null;
     case 'standby':
       return typeof o.code === 'string' && /^[A-HJKMNP-Z2-9]{6}$/.test(o.code) ? { t: 'standby', code: o.code } : null;
     case 'ping':

@@ -528,6 +528,10 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'optics', op });
   }
 
+  sendChat(x: string, team: boolean): void {
+    this.toHost({ k: 'chat', x, ...(team ? { tm: 1 as const } : {}) });
+  }
+
   /** Between matches: open the vote on these maps (the page picked them from our suite). */
   openVote(options: VoteOption[]): void {
     this.toHost({ k: 'voteopen', options });
