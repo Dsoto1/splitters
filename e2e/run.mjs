@@ -6002,7 +6002,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,toys,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,pirates,animals,toys,holiday,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -10357,7 +10357,8 @@ async function zombiesFlow(browser) {
     for (const [id, a] of window.__cs.view.avatars) if (id >= 1000 || ids.has(id)) looks.push(JSON.parse(String(a.specKey)).look ?? 'none');
     return { looks, creatures: window.__cs.view.creatureCount('zombie') };
   });
-  const ZOMBIE = /^core\.(groaner|lurcher|rotter|shambler|zombiesoldier[12])$/;
+  // (Since 2026-11-26: the three MapMaker-only zombies and Dez's four, ZOMBIE_LOOKS.)
+  const ZOMBIE = /^core\.(groaner|shambler|fearsomeundead|hoodieguy|salaryman|officeworker|karen)$/;
   check(worn.looks.length > 0 && worn.looks.every((l) => ZOMBIE.test(l)) && worn.creatures === 0, `zombies wear the zombie characters (${[...new Set(worn.looks)].join(', ')}; ${worn.creatures} creature bodies)`);
   // Co-op: the scoreboard is one list of the squad.
   await page.keyboard.press('Tab'); // a tap shows the board (held, Tab is the weapon wheel)
