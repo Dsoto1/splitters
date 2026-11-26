@@ -1536,20 +1536,22 @@ export class GameView {
       this.accent(impactStyle('flesh').accent, o.to);
       return;
     }
-    // A round stopped by a pane (bulletproof glass, a pane about to break): a star crack and a few glints, no dust.
+    // A round stopped by a pane (bulletproof glass, a pane about to break): a star crack and a few pale shards, no dust.
     const pane = this.scenario.glass.strike(o.eye, o.to);
     if (pane) {
-      this.impacts.sparkBurst(pane.point, 3, 1.2);
+      this.impacts.glassChips(pane.point, pane.normal, 4);
       return;
     }
+    // Reduce flashing: a third of the sparks, smaller and shorter-lived, and no bright strike accent on metal.
+    const calm = reduceFlashing();
     // A block the scenario drives (a breakable target board, a mover's platform): its hole goes on the block (blockHoles.ts).
     const block = this.scenario.strikeBlock(o.eye, o.to);
     if (block) {
       const style = impactStyle(materialSurface(block.material ?? ''));
       const size = Math.min(1.6, 0.7 + o.strength * 0.4);
-      this.impacts.wallImpact(block.point, block.normal, size, { ...style, hole: false });
-      if (style.hole !== false) this.impacts.holeOn(block.body, block.local.point, block.local.normal, size);
-      this.accent(style.accent, block.point, block.normal);
+      this.impacts.wallImpact(block.point, block.normal, size, { ...style, hole: false, calm });
+      if (style.hole !== false) this.impacts.holeOn(block.body, block.local.point, block.local.normal, size, style.surface);
+      if (!calm || style.sparks === 0) this.accent(style.accent, block.point, block.normal);
       return;
     }
     // A breakable prop (a crate, a barrel, any solid prop on an 'Everything breaks' map): its hole goes on the prop.
@@ -1557,9 +1559,9 @@ export class GameView {
     if (prop) {
       const style = impactStyle(prop.surface ?? 'concrete');
       const size = Math.min(1.6, 0.7 + o.strength * 0.4);
-      this.impacts.wallImpact(prop.point, prop.normal, size, { ...style, hole: false });
+      this.impacts.wallImpact(prop.point, prop.normal, size, { ...style, hole: false, calm });
       if (style.hole !== false) this.impacts.holeOnProp(prop.node, prop.local.point, prop.local.normal, size, prop.surface);
-      this.accent(style.accent, prop.point, prop.normal);
+      if (!calm || style.sparks === 0) this.accent(style.accent, prop.point, prop.normal);
       return;
     }
     const wall = this.impacts.surfaceHit(o.eye, o.to);
@@ -1567,8 +1569,8 @@ export class GameView {
       // The surface type it hit (content/surface-types.json, the same one the server's ballistic class comes from;
       // drawn as content/vfx.json map.impacts says): metal sparks, bark and wood splinters, foliage leaves.
       const style = impactStyle(wall.surface ?? surfaceOfFace(wall.box, wall.normal, wall.point, this.surfaces));
-      this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4), style);
-      this.accent(style.accent, wall.point, wall.normal);
+      this.impacts.wallImpact(wall.point, wall.normal, Math.min(1.6, 0.7 + o.strength * 0.4), { ...style, calm });
+      if (!calm || style.sparks === 0) this.accent(style.accent, wall.point, wall.normal);
     }
   }
 

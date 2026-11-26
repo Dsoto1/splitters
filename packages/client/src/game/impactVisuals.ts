@@ -8,7 +8,7 @@ import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTexture';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import type { EffectsWorld, SurfaceTypeId, Vec3, WorldBox } from '@tiletrigger/shared';
+import { SURFACE_TYPES, type EffectsWorld, type SurfaceTypeId, type Vec3, type WorldBox } from '@tiletrigger/shared';
 import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { MeshPool } from './meshPool.ts';
 import { HoleBook, PROP_HOLE_CAP, PROP_HOLED_MAX, holeLook } from './propHoles.ts';
@@ -74,7 +74,52 @@ interface Spark {
   vel: Vector3;
   age: number;
   life: number;
+  /** Chips: how hard they fall (m/s²) and how fast the air slows them (per second): leaves flutter, grit drops. */
+  fall: number;
+  drag: number;
+  /** Chips: how fast they tumble (rad/s about x and z). */
+  spinX: number;
+  spinZ: number;
 }
+
+/** How a surface's chips are shaped and fly, by the debris its type lists (content/surface-types.json). */
+interface ChipKind {
+  /** Scale on each axis against the chip box (1 × 0.35 × 0.5). */
+  sx: number;
+  sy: number;
+  sz: number;
+  fall: number;
+  drag: number;
+  spin: number;
+  /** Throw speed against the default. */
+  speed: number;
+}
+const CHIP_KINDS: Record<'splinters' | 'leaves' | 'grit' | 'clods' | 'shards', ChipKind> = {
+  // Long thin slivers that spin fast.
+  splinters: { sx: 1.9, sy: 0.55, sz: 0.4, fall: 9.8, drag: 1.5, spin: 14, speed: 1.1 },
+  // Flat flakes that drift down slowly.
+  leaves: { sx: 1.3, sy: 0.25, sz: 1.4, fall: 3.2, drag: 3.5, spin: 5, speed: 0.8 },
+  // Chunky stone and brick grit that drops hard.
+  grit: { sx: 0.75, sy: 1.6, sz: 1.1, fall: 12, drag: 1, spin: 8, speed: 1 },
+  // Clods of earth, sand or snow thrown up and falling back.
+  clods: { sx: 0.8, sy: 1.8, sz: 1.2, fall: 11, drag: 1.2, spin: 4, speed: 0.75 },
+  // Thin bright slivers of glass or ice.
+  shards: { sx: 1.2, sy: 0.2, sz: 0.8, fall: 10, drag: 1.2, spin: 16, speed: 1.2 },
+};
+function chipKind(surface: SurfaceTypeId | undefined): ChipKind {
+  const t = surface ? SURFACE_TYPES[surface] : undefined;
+  if (!t) return CHIP_KINDS.grit;
+  const debris = t.impact.debris;
+  if (debris.includes('splinters')) return CHIP_KINDS.splinters;
+  if (debris.includes('leaves')) return CHIP_KINDS.leaves;
+  if (t.impact.sound === 'glass' || t.impact.sound === 'ice') return CHIP_KINDS.shards;
+  if (t.impact.sound === 'soft') return CHIP_KINDS.clods;
+  return CHIP_KINDS.grit;
+}
+/** Under Reduce flashing a hit throws a third of its sparks (at least one where it had any), smaller and shorter-lived. */
+export const calmSparks = (n: number): number => (n <= 0 ? 0 : Math.max(1, Math.round(n / 3)));
+const scratchA = new Vector3();
+const scratchB = new Vector3();
 
 interface Puff {
   mesh: Mesh;
@@ -118,6 +163,11 @@ export class ImpactVisuals {
   /** Holes made since the last upload (first and last index): sent to the GPU once a frame, not the whole buffer per hit. */
   private holeDirty: [number, number] | null = null;
   private readonly holeMatrices = new Float32Array(MAX_HOLES * 16);
+  /** Each level hole's tint (its surface's look, propHoles.ts holeLook): wood warm, metal bright, glass and ice frosted, soft ground dark. */
+  private readonly holeColors = new Float32Array(MAX_HOLES * 4).fill(1);
+  /** Spent spark and chip records, reused (automatic fire into a wall would otherwise make objects every round). */
+  private readonly sparkFree: Spark[] = [];
+  private readonly dustFree: Dust[] = [];
   /** Holes on blocks the scenario drives, by the block's body (holeOn); they go with the block's meshes. */
   private readonly blockHoles = new WeakMap<Mesh, { mesh: Mesh; buf: Float32Array; count: number; next: number }>();
   /** Holes on breakable props (propHoles.ts): which props have how many (a cap each, a budget of props), and their meshes. */
@@ -209,6 +259,7 @@ export class ImpactVisuals {
     this.holes.isPickable = false;
     this.holes.alwaysSelectAsActiveMesh = true;
     this.holes.thinInstanceSetBuffer('matrix', this.holeMatrices, 16, false);
+    this.holes.thinInstanceSetBuffer('color', this.holeColors, 4, false);
     this.holes.thinInstanceCount = 0;
   }
 
@@ -317,29 +368,45 @@ export class ImpactVisuals {
   /**
    * A round hitting a wall or floor: a hole that stays (not in foliage), sparks, chips and dust, as the surface type's
    * `style` says (content/vfx.json map.impacts and content/surface-types.json, game/fxMap.ts: metal throws sparks, wood
-   * and bark splinters, foliage leaves, each its own dust).
+   * and bark long splinters, foliage leaves that flutter, stone and brick grit, soil clods, glass and ice shards, each
+   * its own dust; the hole tinted and sized for the surface, propHoles.ts holeLook). `calm` (Reduce flashing) thins the
+   * sparks to a third, smaller and shorter-lived. No allocation per hit: records and meshes come from pools.
    */
-  wallImpact(point: Vec3, normal: Vec3, size = 1, style?: { sparks: number; dust: string | null; dustSize: number; chips?: number; chip?: string; hole?: boolean }): void {
-    const n = new Vector3(normal.x, normal.y, normal.z).normalize();
-    if (style?.hole !== false) this.hole(point, n, size);
-    for (let i = 0; i < (style?.sparks ?? 5) && this.sparks.length < MAX_SPARKS; i++) {
-      const v = n.scale(2 + Math.random() * 3).add(new Vector3((Math.random() - 0.5) * 4, Math.random() * 3, (Math.random() - 0.5) * 4));
+  wallImpact(point: Vec3, normal: Vec3, size = 1, style?: { surface?: SurfaceTypeId; sparks: number; dust: string | null; dustSize: number; chips?: number; chip?: string; hole?: boolean; calm?: boolean }): void {
+    const n = scratchA.set(normal.x, normal.y, normal.z).normalize();
+    if (style?.hole !== false) this.hole(point, n, size, style?.surface);
+    const calm = !!style?.calm;
+    const sparks = calm ? calmSparks(style?.sparks ?? 5) : (style?.sparks ?? 5);
+    for (let i = 0; i < sparks && this.sparks.length < MAX_SPARKS; i++) {
       const mesh = this.sparkPool.take();
-      mesh.scaling.setAll(0.025 + Math.random() * 0.02);
-      const pos = new Vector3(point.x, point.y, point.z).add(n.scale(0.03));
-      mesh.position.copyFrom(pos);
-      this.sparks.push({ mesh, pos, vel: v, age: 0, life: 0.18 + Math.random() * 0.15 });
+      mesh.scaling.setAll((0.025 + Math.random() * 0.02) * (calm ? 0.7 : 1));
+      const s = this.sparkRecord(mesh, point.x + n.x * 0.03, point.y + n.y * 0.03, point.z + n.z * 0.03, (calm ? 0.12 : 0.18) + Math.random() * (calm ? 0.08 : 0.15));
+      const k = 2 + Math.random() * 3;
+      s.vel.set(n.x * k + (Math.random() - 0.5) * 4, n.y * k + Math.random() * 3, n.z * k + (Math.random() - 0.5) * 4);
+      mesh.position.copyFrom(s.pos);
+      this.sparks.push(s);
     }
-    const chipColour = dustColour(style?.chip);
-    for (let i = 0; i < (style?.chips ?? 0) && this.chips.length < MAX_CHIPS; i++) {
-      const v = n.scale(1.5 + Math.random() * 2.5).add(new Vector3((Math.random() - 0.5) * 3, Math.random() * 2.5, (Math.random() - 0.5) * 3));
-      const mesh = this.chipPool.take();
-      mesh.scaling.setAll((0.035 + Math.random() * 0.035) * Math.min(1.4, size));
-      mesh.rotation.set(Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28);
-      (mesh.instancedBuffers.color as Color4).set(chipColour.r, chipColour.g, chipColour.b, 1);
-      const pos = new Vector3(point.x, point.y, point.z).add(n.scale(0.04));
-      mesh.position.copyFrom(pos);
-      this.chips.push({ mesh, pos, vel: v, age: 0, life: 0.45 + Math.random() * 0.35 });
+    const chips = style?.chips ?? 0;
+    if (chips > 0) {
+      const chipColour = dustColour(style?.chip);
+      const kind = chipKind(style?.surface);
+      for (let i = 0; i < chips && this.chips.length < MAX_CHIPS; i++) {
+        const mesh = this.chipPool.take();
+        const c = (0.035 + Math.random() * 0.035) * Math.min(1.4, size);
+        mesh.scaling.set(c * kind.sx, c * kind.sy, c * kind.sz);
+        mesh.rotation.set(Math.random() * 6.28, Math.random() * 6.28, Math.random() * 6.28);
+        (mesh.instancedBuffers.color as Color4).set(chipColour.r, chipColour.g, chipColour.b, 1);
+        const s = this.sparkRecord(mesh, point.x + n.x * 0.04, point.y + n.y * 0.04, point.z + n.z * 0.04, 0.45 + Math.random() * 0.35);
+        const k = (1.5 + Math.random() * 2.5) * kind.speed;
+        s.vel.set(n.x * k + (Math.random() - 0.5) * 3 * kind.speed, n.y * k + Math.random() * 2.5 * kind.speed, n.z * k + (Math.random() - 0.5) * 3 * kind.speed);
+        s.fall = kind.fall;
+        s.drag = kind.drag;
+        s.spinX = kind.spin * (0.6 + Math.random() * 0.8);
+        s.spinZ = kind.spin * 0.6 * (Math.random() - 0.5) * 2;
+        if (kind === CHIP_KINDS.leaves) s.life += 0.5;
+        mesh.position.copyFrom(s.pos);
+        this.chips.push(s);
+      }
     }
     if (style?.dust === null || this.dusts.length >= MAX_DUST) return;
     const dust = this.dustPool.take();
@@ -347,12 +414,43 @@ export class ImpactVisuals {
     dust.scaling.setAll(0.05);
     const c = dustColour(style?.dust);
     (dust.instancedBuffers.color as Color4).set(c.r, c.g, c.b, 1);
-    this.dusts.push({ mesh: dust, age: 0, life: 0.45, grow: 0.5 * size * (style?.dustSize ?? 1) });
+    const d = this.dustFree.pop() ?? { mesh: dust, age: 0, life: 0, grow: 0 };
+    d.mesh = dust;
+    d.age = 0;
+    d.life = 0.45;
+    d.grow = 0.5 * size * (style?.dustSize ?? 1);
+    this.dusts.push(d);
   }
 
-  /** A bullet hole that stays for the match (the oldest reused past MAX_HOLES). */
-  private hole(point: Vec3, n: Vector3, size: number): void {
-    holeMatrix(point, n, size).copyToArray(this.holeMatrices, this.holeNext * 16);
+  /** A spark or chip record from the free list (or a new one while the list fills), at x, y, z, still. */
+  private sparkRecord(mesh: InstancedMesh, x: number, y: number, z: number, life: number): Spark {
+    const s = this.sparkFree.pop() ?? { mesh, pos: new Vector3(), vel: new Vector3(), age: 0, life: 0, fall: 14, drag: 0, spinX: 0, spinZ: 0 };
+    s.mesh = mesh;
+    s.pos.set(x, y, z);
+    s.vel.set(0, 0, 0);
+    s.age = 0;
+    s.life = life;
+    s.fall = 14;
+    s.drag = 0;
+    s.spinX = 9;
+    s.spinZ = 6;
+    return s;
+  }
+
+  /** Bits of glass off a pane that stopped a round (bulletproof glass, a pane about to break): pale shards, no hot sparks. */
+  glassChips(point: Vec3, normal: Vec3, count = 4): void {
+    this.wallImpact(point, normal, 0.8, { surface: 'glass', sparks: 0, dust: null, dustSize: 0, chips: count, chip: '#e4f0f4', hole: false });
+  }
+
+  /** A bullet hole that stays for the match (the oldest reused past MAX_HOLES), tinted and sized for its surface. */
+  private hole(point: Vec3, n: Vector3, size: number, surface?: SurfaceTypeId): void {
+    const look = holeLook(surface);
+    holeMatrix(point, n, size * look.scale).copyToArray(this.holeMatrices, this.holeNext * 16);
+    const o = this.holeNext * 4;
+    this.holeColors[o] = look.tint[0];
+    this.holeColors[o + 1] = look.tint[1];
+    this.holeColors[o + 2] = look.tint[2];
+    this.holeColors[o + 3] = 1;
     this.holeDirty = this.holeDirty ? [Math.min(this.holeDirty[0], this.holeNext), Math.max(this.holeDirty[1], this.holeNext)] : [this.holeNext, this.holeNext];
     this.holeNext = (this.holeNext + 1) % MAX_HOLES;
     this.holeCount = Math.min(MAX_HOLES, this.holeCount + 1);
@@ -364,11 +462,12 @@ export class ImpactVisuals {
    * The holes are thin instances of a disc parented to the body, so they ride a mover and break away with the block;
    * up to MAX_BLOCK_HOLES a block (the oldest reused). Cleared when the block comes back (clearHolesOn).
    */
-  holeOn(body: Mesh, point: Vec3, normal: Vec3, size: number): void {
+  holeOn(body: Mesh, point: Vec3, normal: Vec3, size: number, surface?: SurfaceTypeId | null): void {
     let h = this.blockHoles.get(body);
+    const look = holeLook(surface);
     if (!h || h.mesh.isDisposed()) {
       const mesh = CreateDisc(`${body.name}_holes`, { radius: 0.05, tessellation: 10 }, this.scene);
-      mesh.material = this.holes.material;
+      mesh.material = this.holeMaterial(look.key, look.tint);
       mesh.isPickable = false;
       mesh.parent = body;
       const buf = new Float32Array(MAX_BLOCK_HOLES * 16);
@@ -378,7 +477,7 @@ export class ImpactVisuals {
       this.blockHoles.set(body, h);
     }
     const n = new Vector3(normal.x, normal.y, normal.z).normalize();
-    holeMatrix(point, n, size).copyToArray(h.buf, h.next * 16);
+    holeMatrix(point, n, size * look.scale).copyToArray(h.buf, h.next * 16);
     h.next = (h.next + 1) % MAX_BLOCK_HOLES;
     h.count = Math.min(MAX_BLOCK_HOLES, h.count + 1);
     h.mesh.thinInstanceCount = h.count;
@@ -478,12 +577,12 @@ export class ImpactVisuals {
   /** A spray of hot sparks from a point (a badly damaged vehicle shorting out, a crash). */
   sparkBurst(at: Vec3, count: number, speed = 3): void {
     for (let i = 0; i < count && this.sparks.length < MAX_SPARKS; i++) {
-      const vel = new Vector3((Math.random() - 0.5) * speed * 2, Math.random() * speed * 1.4, (Math.random() - 0.5) * speed * 2);
       const mesh = this.sparkPool.take();
       mesh.scaling.setAll(0.03 + Math.random() * 0.03);
-      const pos = new Vector3(at.x, at.y, at.z);
-      mesh.position.copyFrom(pos);
-      this.sparks.push({ mesh, pos, vel, age: 0, life: 0.25 + Math.random() * 0.3 });
+      const s = this.sparkRecord(mesh, at.x, at.y, at.z, 0.25 + Math.random() * 0.3);
+      s.vel.set((Math.random() - 0.5) * speed * 2, Math.random() * speed * 1.4, (Math.random() - 0.5) * speed * 2);
+      mesh.position.copyFrom(s.pos);
+      this.sparks.push(s);
     }
   }
 
@@ -534,10 +633,27 @@ export class ImpactVisuals {
     return this.holeCount;
   }
 
+  /** Sparks, chips and dust puffs alive now, and records waiting for reuse (tests, the perf probe). */
+  get live(): { sparks: number; chips: number; dust: number; spare: number } {
+    return { sparks: this.sparks.length, chips: this.chips.length, dust: this.dusts.length, spare: this.sparkFree.length };
+  }
+
+  /** The tint of the level hole made `back` holes ago (0: the newest), for tests. */
+  holeTint(back = 0): [number, number, number] {
+    const i = (((this.holeNext - 1 - back) % MAX_HOLES) + MAX_HOLES) % MAX_HOLES;
+    return [this.holeColors[i * 4]!, this.holeColors[i * 4 + 1]!, this.holeColors[i * 4 + 2]!];
+  }
+
+  /** The chips alive now: their scale (shape) and how they fall (tests). */
+  chipShapes(): { x: number; y: number; z: number; fall: number }[] {
+    return this.chips.map((c) => ({ x: c.mesh.scaling.x, y: c.mesh.scaling.y, z: c.mesh.scaling.z, fall: c.fall }));
+  }
+
   update(dt: number): void {
     if (this.holeDirty) {
       const [first, last] = this.holeDirty;
       this.holes.thinInstancePartialBufferUpdate('matrix', last - first + 1, first);
+      this.holes.thinInstancePartialBufferUpdate('color', last - first + 1, first);
       this.holeDirty = null;
     }
     this.bullets = this.bullets.filter((b) => {
@@ -553,27 +669,34 @@ export class ImpactVisuals {
       b.onArrive?.();
       return false;
     });
-    this.sparks = this.sparks.filter((s) => {
+    // Sparks and chips: moved in place, spent ones swapped out and their records kept for the next hit.
+    for (let i = this.sparks.length - 1; i >= 0; i--) {
+      const s = this.sparks[i]!;
       s.age += dt;
-      s.vel.y -= 14 * dt;
-      s.pos.addInPlace(s.vel.scale(dt));
+      s.vel.y -= s.fall * dt;
+      s.pos.addInPlace(s.vel.scaleToRef(dt, scratchB));
       s.mesh.position.copyFrom(s.pos);
-      if (s.age < s.life) return true;
+      if (s.age < s.life) continue;
       this.sparkPool.give(s.mesh);
-      return false;
-    });
-    this.chips = this.chips.filter((s) => {
+      this.sparks[i] = this.sparks[this.sparks.length - 1]!;
+      this.sparks.pop();
+      this.sparkFree.push(s);
+    }
+    for (let i = this.chips.length - 1; i >= 0; i--) {
+      const s = this.chips[i]!;
       s.age += dt;
-      s.vel.y -= 9.8 * dt;
-      s.vel.scaleInPlace(Math.max(0, 1 - 1.5 * dt));
-      s.pos.addInPlace(s.vel.scale(dt));
+      s.vel.y -= s.fall * dt;
+      s.vel.scaleInPlace(Math.max(0, 1 - s.drag * dt));
+      s.pos.addInPlace(s.vel.scaleToRef(dt, scratchB));
       s.mesh.position.copyFrom(s.pos);
-      s.mesh.rotation.x += 9 * dt;
-      s.mesh.rotation.z += 6 * dt;
-      if (s.age < s.life) return true;
+      s.mesh.rotation.x += s.spinX * dt;
+      s.mesh.rotation.z += s.spinZ * dt;
+      if (s.age < s.life) continue;
       this.chipPool.give(s.mesh);
-      return false;
-    });
+      this.chips[i] = this.chips[this.chips.length - 1]!;
+      this.chips.pop();
+      this.sparkFree.push(s);
+    }
     this.puffs = this.puffs.filter((p) => {
       p.age += dt;
       const f = p.age / p.life;
@@ -585,15 +708,18 @@ export class ImpactVisuals {
       this.puffPool.give(p.mesh);
       return false;
     });
-    this.dusts = this.dusts.filter((d) => {
+    for (let i = this.dusts.length - 1; i >= 0; i--) {
+      const d = this.dusts[i]!;
       d.age += dt;
       const f = d.age / d.life;
       d.mesh.scaling.setAll(0.05 + d.grow * f);
       (d.mesh.instancedBuffers.color as Color4).a = Math.max(0, 1 - f);
-      if (f < 1) return true;
+      if (f < 1) continue;
       this.dustPool.give(d.mesh);
-      return false;
-    });
+      this.dusts[i] = this.dusts[this.dusts.length - 1]!;
+      this.dusts.pop();
+      this.dustFree.push(d);
+    }
   }
 
   dispose(): void {

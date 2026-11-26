@@ -30,6 +30,8 @@ export type Surface = SurfaceTypeId;
  * grit) and their colour, whether it leaves a hole, the sound family, and an optional accent effect.
  */
 export interface ImpactStyle {
+  /** The surface type it is for: its hole's look (propHoles.ts holeLook) and how its chips are shaped (its `debris`). */
+  readonly surface: Surface;
   readonly sparks: number;
   readonly dust: string | null;
   readonly dustSize: number;
@@ -143,29 +145,34 @@ export function impactStyle(surface: Surface): ImpactStyle {
   const t = SURFACE_TYPES[surface] ?? SURFACE_TYPES[SURFACE_GUESS_FALLBACK];
   const s = impacts[t.id];
   const d = typeof s === 'object' ? s : {};
-  return { sparks: d.sparks ?? 0, dust: d.dust ?? null, dustSize: d.dustSize ?? 1, chips: d.chips ?? 0, chip: d.chip ?? '#808080', hole: t.impact.decal === 'hole', sound: t.impact.sound, accent: d.accent ?? null };
+  return { surface: t.id, sparks: d.sparks ?? 0, dust: d.dust ?? null, dustSize: d.dustSize ?? 1, chips: d.chips ?? 0, chip: d.chip ?? '#808080', hole: t.impact.decal === 'hole', sound: t.impact.sound, accent: d.accent ?? null };
 }
 
 /** The sound a round makes landing on a surface type's sound family (content/sounds.json), or none. */
-export function impactSoundId(sound: ImpactSound): 'impact.world' | 'impact.wood' | 'impact.metal' | 'impact.soft' | 'impact.glass' | 'water.splash' | null {
+export function impactSoundId(sound: ImpactSound): 'impact.world' | 'impact.stone' | 'impact.wood' | 'impact.metal' | 'impact.sheet' | 'impact.soft' | 'impact.glass' | 'impact.ice' | 'water.splash' | null {
   switch (sound) {
     case 'hard':
       return 'impact.world';
+    case 'stone':
+      return 'impact.stone';
     case 'wood':
       return 'impact.wood';
     case 'metal':
       return 'impact.metal';
+    case 'sheet':
+      return 'impact.sheet';
     case 'soft':
       return 'impact.soft';
     case 'glass':
       return 'impact.glass';
+    case 'ice':
+      return 'impact.ice';
     case 'water':
       return 'water.splash';
     default:
       return null;
   }
 }
-
 /** Beyond this many metres from the camera an impact's accent effect is skipped. */
 export const ACCENT_RANGE = (FX_MAP.impacts as { accentRange?: number }).accentRange ?? 45;
 

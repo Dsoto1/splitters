@@ -362,6 +362,13 @@
           "start": 0.0,
           "length": 0.35,
           "level": 0.0
+        },
+        {
+          "pack": "sonniss-gdc-2017",
+          "file": "explosions&impacts/Double Trouble Audio - Wood Impacts and Debris/Impacts Hard - Short Wobbly Tail 01.wav",
+          "start": 0.0,
+          "length": 0.29,
+          "level": -8.0
         }
       ]
     },
@@ -377,9 +384,29 @@
           "length": 0.324
         },
         {
+          "pack": "sonniss-gdc-2016",
+          "file": "Impact/sci-fi metal impact, steel bulkhead hit, low 01.wav",
+          "start": 0.08,
+          "length": 0.4,
+          "level": -2.0
+        }
+      ]
+    },
+    "impact.sheet": {
+      "gain": 0.21,
+      "range": "mid",
+      "jitter": 0.12,
+      "variants": [
+        {
           "pack": "sonniss-gdc-2026",
           "file": "SmartSoundFX - Impacts, Hits & Whooshes/IMPACT METAL Scratchy Short Punch_03.wav",
           "start": 0.221,
+          "length": 0.35
+        },
+        {
+          "pack": "sonniss-gdc-2026",
+          "file": "SmartSoundFX - Impacts, Hits & Whooshes/IMPACT METAL Short Slam_03.wav",
+          "start": 0.16,
           "length": 0.35,
           "level": 0.0
         }
@@ -396,6 +423,13 @@
           "start": 0.531,
           "length": 0.35,
           "punch": true
+        },
+        {
+          "pack": "sonniss-gdc-2019",
+          "file": "Matt Script - You Me & Debris/impact_gritty_grit_sandy_dirt_dig_shovel_shingle_roof_02.wav",
+          "start": 0.12,
+          "length": 0.35,
+          "level": -0.6
         }
       ]
     },
@@ -409,6 +443,48 @@
           "file": "PMSFX - Bullet Bys &Impacts/PM_BBI_Bullet_Impact_Glass_1.wav",
           "start": 0.156,
           "length": 0.4
+        }
+      ]
+    },
+    "impact.stone": {
+      "gain": 0.29,
+      "range": "mid",
+      "jitter": 0.12,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - Shattering Bricks/PM_SB_SOURCE_16 Impact brick rock dirt gravel single hit.wav",
+          "start": 0.0,
+          "length": 0.26,
+          "level": -0.7
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - Shattering Bricks/PM_SB_SOURCE_61 Impact brick rock dirt gravel single hit.wav",
+          "start": 0.0,
+          "length": 0.4,
+          "level": 0.0
+        }
+      ]
+    },
+    "impact.ice": {
+      "gain": 0.23,
+      "range": "mid",
+      "rate": 1.12,
+      "jitter": 0.1,
+      "variants": [
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "PMSFX - Bullet Bys &Impacts/PM_BBI_Bullet_Impact_Glass_1.wav",
+          "start": 0.15,
+          "length": 0.2
+        },
+        {
+          "pack": "sonniss-gdc-2020",
+          "file": "David Dumais Audio - Ice & Frost Magic 1/Magic_Spells_Impact_Ice13.wav",
+          "start": 0.32,
+          "length": 0.32,
+          "level": 0.0
         }
       ]
     },

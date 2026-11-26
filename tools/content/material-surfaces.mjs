@@ -23,7 +23,7 @@ export const RULES = [
   [['hieroglyph', 'carved', 'relief', 'slate', 'roof'], 'stone'],
   [['lighthouse'], 'plaster'],
   [['snow'], 'snow'],
-  [['ice', 'glacier'], 'stone'],
+  [['ice', 'glacier'], 'ice'],
   [['lava', 'frozen_rock', 'jungle_rock', 'pbr_rock', 'layered rock', 'mossy rock'], 'rock'],
   [['sandbag'], 'fabric'],
   [['sandstone'], 'stone'],
