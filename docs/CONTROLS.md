@@ -30,7 +30,7 @@ from it, and **Options → Controls** rebinds them.
 | | Last weapon | **X** (was a tap of Q) |
 | | Next / previous weapon | wheel down / up |
 | | Categories (Pistols … Melee & gadgets) | 1-8 |
-| Comms | Quick messages (fireteam lead: hold for orders) / ping / dance | B / T / N |
+| Comms | Quick messages (fireteam lead: hold for orders; then 1-9, 0, - and =) / ping / dance / chat / team chat | B / T / N / Enter / I |
 | Vehicles | Brake, climb, jump out of a plane / descend, duck / cockpit or chase camera | Space / C (held) / H |
 | Spectate | Follow or free camera / next / previous player | Space / → / ← (or clicks) |
 | | Free camera up / down / faster | E / Q · Left Ctrl / Shift (free camera only) |
@@ -57,7 +57,7 @@ from it, and **Options → Controls** rebinds them.
 | Use, get in or out (hold: resupply) | RB |
 | Throw (hold to aim) | LB |
 | Sprint | L3 |
-| Ping (Fireteams lead: hold for orders) | D-pad up |
+| Ping; held: the quick-chat wheel (Fireteams lead: the order wheel) | D-pad up |
 | Respawn / class screen | D-pad down |
 | Third person / vehicle camera | R3 |
 | **Pause menu** (Menu again, or B, resumes) | **Menu (Start)** |

@@ -6798,7 +6798,7 @@ async function mobileTouchLayout(browser) {
     const round = (b) => ({ x: (b.l + b.r) / 2, y: (b.t + b.b) / 2, r: (b.r - b.l) / 2 });
     const touching = (a, b) => Math.hypot(round(a).x - round(b).x, round(a).y - round(b).y) < round(a).r + round(b).r - 2;
     const clash = box.buttons.filter((a, i) => box.buttons.some((b, j) => j > i && touching(a, b))).map((b) => b.name);
-    const top = Math.min(...box.buttons.filter((b) => b.name !== 'II').map((b) => b.t));
+    const top = Math.min(...box.buttons.filter((b) => b.name !== 'II' && b.name !== 'Chat').map((b) => b.t));
     check(!!box.ammo && hit.length === 0 && clash.length === 0 && top >= 60, `${label} left-handed Large: the ammo panel over no button, no two buttons overlap, the cluster below the top bar (ammo hit ${hit.join(', ') || 'none'}, overlaps ${clash.join(', ') || 'none'}, cluster top ${Math.round(top)})`);
     await page.screenshot({ path: `${ARTIFACTS}/mobile-left-large-${w}x${h}.png` });
   }

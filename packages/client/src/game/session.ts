@@ -994,7 +994,7 @@ export class GameSession {
     this.chatWheel.onPoint = (x, y) => this.input.aimWheel(x, y);
     this.chatWheel.onTouchPick = () => this.input.closeWheel(true);
     this.chatWheel.onTouchCancel = () => this.input.closeWheel(false);
-    // Text chat: Enter (the last channel) or the team chat key (P); the box has the keyboard while it's open.
+    // Text chat: Enter (the last channel) or the team chat key (I); the box has the keyboard while it's open.
     this.input.onAction.set('chat', () => this.openChat());
     this.input.onAction.set('teamChat', () => this.openChat(true));
     this.chatBox.onSend = (text, team) => this.opts.transport.sendChat?.(text, team);

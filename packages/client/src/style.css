@@ -2061,7 +2061,7 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
 #touch-ui .tc-orders { --x: 230px; bottom: 136px; border-color: rgba(255, 179, 71, 0.7); }
 #touch-ui .tc-orders.on { background: rgba(255, 179, 71, 0.35); border-color: var(--orange); }
 #touch-ui .tc-orders[hidden] { display: none; }
-#touch-ui .tc-chat { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: 52px; height: 44px; border-radius: 8px; font-size: 11px; }
+#touch-ui .tc-chat { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: 52px; height: 44px; border-radius: 8px; font-size: 12px; }
 #touch-ui .tc-chat[hidden] { display: none; }
 #touch-ui .tc-pause { left: calc(8px + env(safe-area-inset-left)); top: 8px; width: 44px; height: 44px; border-radius: 8px; font-size: 15px; }
 /* Held upright: ask for landscape (the controls are laid out for it). */
