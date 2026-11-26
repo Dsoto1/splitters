@@ -72,7 +72,9 @@ describe("Character Select's groups", () => {
     const group = (name: string) => CORE_LOOKS.find((l) => l.name === name)?.group;
     expect(group('Steel Guardian')).toBe('machines');
     expect(group('Shadow Enforcer')).toBe('space');
-    for (const n of ['Teddy', 'The Hollow Pilgrim', 'Scary Larry']) expect(group(n), n).toBe('horror');
+    for (const n of ['The Hollow Pilgrim', 'Scary Larry']) expect(group(n), n).toBe('horror');
+    // Teddy moved again on 2026-11-26, to the Toys row (owner).
+    expect(group('Teddy')).toBe('toys');
   });
 
   it('Character Select keeps Spud Marshal with the astronauts; Astronaut Explorer is retired (2026-11-24)', () => {

@@ -47,7 +47,7 @@ describe('character manifests', () => {
     expect(armsOf({ id: 'meshy_x', body: 'female' })).toBe('ranger_arms_f');
     const cat = buildSpec(list.find((m) => m.id === 'meshy_scamp'));
     expect(cat.pack).toBe('meshy-community-characters');
-    expect(cat.community).toEqual({ model: 'T Pose Cat', date: '2026-03-11' });
+    expect(cat.community).toEqual({ model: 'T Pose Monkey', date: '2026-11-01' });
   });
 
   it('catch mistakes with a message saying what is wrong', () => {
@@ -126,7 +126,7 @@ describe('character manifests', () => {
     expect(manifestProblems({ ...good, clips: true }, 'meshy_scamp.json').join('\n')).toMatch(/clips: the clip set/);
     // The generated look: nothing for the default, the set's id, or false.
     const lines = looksSource([{ ...good, clips: false, clipsWhy: 'x' }, { ...good, id: 'meshy_scamp2', look: 'core.cat2', name: 'Cat 2', order: 999, clips: 'shooter' }, { ...good, id: 'meshy_scamp3', look: 'core.cat3', name: 'Cat 3', order: 1000 }]);
-    expect(lines).toMatch(/core\.biscuit',[^\n]*clips: false/);
+    expect(lines).toMatch(/core\.scamp',[^\n]*clips: false/);
     expect(lines).toMatch(/core\.cat2',[^\n]*clips: 'shooter'/);
     expect(lines).not.toMatch(/core\.cat3',[^\n]*clips:/);
   });
@@ -189,7 +189,7 @@ describe('character manifests', () => {
 
   it('carry a Character Select collection (the Chrono Crew): a known one reaches the generated look, anything else is a problem', () => {
     const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_scamp.json'), 'utf8'));
-    expect(COLLECTIONS).toEqual(['chrono', 'playhouse']);
+    expect(COLLECTIONS).toEqual(['chrono']);
     expect(manifestProblems({ ...good, collection: 'chrono' }, 'meshy_scamp.json')).toEqual([]);
     for (const collection of ['Chrono', 'crew', '', null, 1]) expect(manifestProblems({ ...good, collection }, 'meshy_scamp.json').join('\n')).toMatch(/collection: a Character Select collection/);
     const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`w('${m.look}',`));
@@ -208,7 +208,7 @@ describe('character manifests', () => {
     expect(manifestProblems({ ...v, variantOf: v.look }, 'meshy_scamp_roman.json').join('\n')).toMatch(/variantOf: the base look/);
     expect(manifestProblems({ ...base, variant: '' }, 'meshy_scamp.json').join('\n')).toMatch(/variant: the look's label/);
     const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`w('${m.look}',`));
-    expect(line(v)).toMatch(/variant: 'Roman', variantOf: 'core\.biscuit'/);
+    expect(line(v)).toMatch(/variant: 'Roman', variantOf: 'core\.scamp'/);
     expect(line(base)).toMatch(/variant: 'Aviator'/);
     expect(line(good)).not.toMatch(/variant/);
     // The shipped chimp: one base and nine variants, each keeping the base's group and size.
