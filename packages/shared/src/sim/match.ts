@@ -1,3 +1,4 @@
+import { cachedWallSections } from './breakWalls.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
 import { simProfile } from './profile.ts';
 import { BotBrain, type BotWorldView, type CombatantView, type InventoryView, type MountView, type NoiseView, type OrderGoal, type PickupView, type SeatView } from '../bots/brain.ts';
@@ -77,7 +78,7 @@ import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPP
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
 import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
-import { eyePoint, eyeScaleOf } from './moves.ts';
+import { eyePoint, eyeScaleOf, rollRaise, dodgeKindOf } from './moves.ts';
 import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
 import { thirdPersonAim, type RayQuery } from './thirdPerson.ts';
 import { getProp } from '../content/props.ts';
@@ -85,7 +86,7 @@ import { getEnvSpecies } from '../content/environment.ts';
 import { environmentShapes, type EnvWorldShape } from '../map/environment.ts';
 import { SURFACE_TYPES } from './surfaceTypes.ts';
 import { ZIP, leaveZipline, mapZiplines, oneHanded, ziplineLinks, type Zipline } from './zipline.ts';
-import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
+import { BUTTON_AUTO_RELOAD, BUTTON_THIRD_PERSON, BUTTON_STEER_LOOK, BUTTON_ALT, BUTTON_MELEE, BUTTON_JUMP, BUTTON_CROUCH, BUTTON_PRONE, BUTTON_SPRINT, EMOTE_DANCE, PING, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, BUTTON_RESPAWN, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_THROW, BUTTON_USE, BUTTON_DODGE, applyPads, mapLadders, mapPads, LUNAR_PAD_BOOST,
   padLandings, sanitizeInput, stepMovement, gravityAt, mapGravityZones, type GravityZone, type JumpPad, type Ladder, type MoveEnv, type MoveState, type PlayerInput } from './movement.ts';
 import { PhysicsWorld, type ChassisBody, type GroundHeight } from './physics.ts';
 import { newSuspension, stepSuspension, suspensionOf, suspensionSnapshot, type SuspensionSetup, type SuspensionState } from './suspension.ts';
@@ -1044,6 +1045,8 @@ export class Match {
       this.phaseEndTick = START_WAIT_SECONDS * TICK_RATE;
     }
     const match = this;
+    // Breakable walls are worked out from the geometry already built (sim/breakWalls.ts; the scenario's bodies read them).
+    cachedWallSections(map, this.geometry);
     this.scenario = new Scenario(map, this.physics, {
       get tick() {
         return match.tick;
@@ -2248,6 +2251,8 @@ export class Match {
       // A backlog drops old inputs, but not a class pick (or quick message) one of them carried.
       const say = dropped.reverse().find((i) => i.say)?.say;
       if (say && !c.queue[0]!.say) c.queue[0]!.say = say;
+      // Nor a press of Dodge (sent once per press): the oldest input kept takes it.
+      if (dropped.some((i) => i.buttons & BUTTON_DODGE)) c.queue[0]!.buttons |= BUTTON_DODGE;
     }
   }
 
@@ -3549,6 +3554,8 @@ export class Match {
       // Out of a sprint: the weapon comes up before it fires (spec §27, sprint-exit time), on the raise timer, so
       // everything that waits for a raise waits for this too, and client prediction replays it (prediction.ts).
       if (sprintEnded) c.raiseTicks = Math.max(c.raiseTicks, handlingOf(c).sprintExit);
+      // A combat roll holds the gun down for its time; it comes up after it as out of a sprint (sim/moves.ts rollRaise).
+      if (c.move.roll && !c.mount) c.raiseTicks = Math.max(c.raiseTicks, rollRaise(c.move, handlingOf(c).sprintExit));
       if (c.speedTicks > 0) c.speedTicks--;
       if (c.damageTicks > 0) c.damageTicks--;
       if (c.power.regen > 0 && c.alive && c.health < c.maxHealth) c.health = Math.min(c.maxHealth, c.health + REGEN_PER_TICK);
@@ -3603,7 +3610,7 @@ export class Match {
       }
       const frozen = c.frozenTicks > 0;
       const gp = gunplayOf(def);
-      stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun && !paired);
+      stepAds(c.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !gun && !paired && !(c.move.roll && !c.mount));
       // Firing interrupts a reload whenever a round is ready: a loaded shell, a tactical reload's chambered round.
       // A melee weapon loading its barrel always swings (the loads already in stay); its barrel fires once one is in.
       if (c.reload && !gun && c.fireCooldown === 0 && c.raiseTicks === 0) {
@@ -7850,6 +7857,7 @@ export class Match {
       if (c.emoteUntil && this.tick < c.emoteUntil) s.em = 1;
       if (c.move.sprint) s.sr = 1;
       if (c.move.slide && c.alive && !c.mount) s.sd = 1;
+      if (c.move.dodge && c.alive && !c.mount) s.dg = [dodgeKindOf(c.move), c.move.dodge];
       const lean = this.leanOf(c);
       if (lean) s.ln = lean;
       if (c.move.chute) s.ch = c.move.chute;
@@ -8170,7 +8178,8 @@ export class Match {
       ...((this.uavUntil.get(this.uavSide(c)) ?? 0) > this.tick ? { uv: Math.ceil((this.uavUntil.get(this.uavSide(c))! - this.tick) / TICK_RATE) } : {}),
       ...(c.move.stamina !== undefined || c.move.rest || c.move.winded ? { sta: [Math.round((c.move.stamina ?? 1) * 1000), c.move.rest ?? 0, c.move.winded ? 1 : 0] as [number, number, number] } : {}),
       // A slide under way and the stamina moves' cooldown, for prediction (sim/moves.ts).
-      ...(c.move.slide || c.move.moveCd ? { mv: [c.move.slide ?? 0, c.move.moveCd ?? 0] as [number, number] } : {}),
+      // A dodge-step or roll under way: [.., ticks into it, 1 a roll].
+      ...(c.move.slide || c.move.moveCd || c.move.dodge ? { mv: (c.move.dodge ? [c.move.slide ?? 0, c.move.moveCd ?? 0, c.move.dodge, c.move.roll ? 1 : 0] : [c.move.slide ?? 0, c.move.moveCd ?? 0]) as [number, number] | [number, number, number, number] } : {}),
       ...(this.classes?.privateState(c) ?? {}),
       ...(c.discPower ? { dp: [DISC_POWERS.indexOf(c.discPower.kind), c.discPower.shots] as [number, number] } : {}),
       ...(this.roulette ? { rp: this.roulette.privateState(c) } : {}),

@@ -34,6 +34,8 @@ Doors, buttons, destructibles, NPC encounters, objectives and WHEN → IF → DO
 
 ## 4. Character Designer
 
+> **Removed (owner, 2026-11-25):** "custom characters should be removed given we have over 200 to choose from now." The Character Designer and custom characters are gone (docs/CHARACTERS.md, "Character Designer (removed 2026-11-25)"); this section is the earlier plan, kept for the record.
+
 Built on CHARACTERS_BOTS_V2 §8 (modular production) and §7 (body families).
 
 | Layer | Player chooses |

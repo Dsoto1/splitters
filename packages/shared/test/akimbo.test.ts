@@ -831,8 +831,8 @@ describe('dual wielding in play', () => {
       expect(pub().dw).toBeUndefined();
       a.alive = true;
       expect(PROTOCOL_VERSION).toBe(5);
-      // (Version 3 since slide and peek added a slide bit and a lean byte; dual wielding itself changed no layout.)
-      expect(SNAPSHOT_BINARY_VERSION).toBe(3);
+      // (Version 3 since slide and peek added a slide bit and a lean byte, 4 since the dodge's two bytes; dual wielding itself changed no layout.)
+      expect(SNAPSHOT_BINARY_VERSION).toBe(4);
       match.destroy();
     });
 

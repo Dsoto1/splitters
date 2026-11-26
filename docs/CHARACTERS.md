@@ -66,8 +66,8 @@ A look (`packages/shared/src/content/looks.ts`) is made of:
 - colourways;
 - a skin tint and a hair tint, multiplied over the textures.
 
-The part-built presets (the originals) wear these outfits; the Designer
-offers every part, hairstyle and colourway, and a unit test keeps it that way:
+The part-built presets (the originals) wear these outfits; the part catalogue
+lists every part, hairstyle and colourway, and a unit test keeps it that way:
 
 | Preset | Made of |
 |---|---|
@@ -216,9 +216,9 @@ Where a group comes from: a part-built preset has `group` on its entry in
 copied into characters.generated.ts); an NPC skin gets it from
 `NPC_LOOK_GROUPS` in sim/npc.ts (creatures and the zombie → Horrors & Creatures,
 the Dummy (trooper) → Soldiers & Spies as Agency, the other soldier roles as Army). `lookGroup(id)` reads any of
-them; a design of yours has none and goes under **Yours**. The screen is one
+them. The screen is one
 grid that scrolls through the sections in that order (each group with anyone
-in it, its characters by name, then Yours with **Design new**), each under a
+in it, its characters by name), each under a
 compact header with its count. The jump strip above lights the section in
 view; a chip, or Q / E (LB / RB), scrolls to a section. Arrow keys and the
 d-pad cross from one section into the next.
@@ -357,29 +357,26 @@ Retired looks (`RETIRED_LOOKS`) bleed as the look they play; those still on disk
 **Stone dust** (`stone`) is bone dust's chips and cloud in grey (`#a6a39b`), for a statue. The **wisp** is white-grey:
 its own mist `#c4c6ca`, the pack's burst tinted `#a9adb3` at 0.22 of its size and 0.45 of its strength, eased in (softer than a white burst; owner, 2026-11-18).
 
-## Character Designer
+## Character Designer (removed 2026-11-25)
 
-Character Select → **Design new** (D / controller X), or **Customise** on a part-built look (or `?mode=designer`).
-Players choose:
-- a body;
-- one part per slot (top, arms, trousers, feet, hood, pauldrons);
-- hair and beard, with a hair colour;
-- colourways and a skin tone (swatches or any colour).
+The Character Designer (Character Select's **Design new** and **Customise**, `?mode=designer`) is gone, owner,
+2026-11-25: "i do think that custom characters should be removed given we have over 200 to choose from now." With
+the roster past 200 hand-made characters, a part-built look of your own added little and cost a screen, its code and its
+checks. Character Select has no **Yours** section, and nothing saves designs any more.
 
-A live preview idles, runs or dances, holding a weapon of the player's choice. Each
-change rebuilds it from the shared parts.
+A design saved before (a `c1-` ID in `cs.look`, in a saved setup or bot set, or sent by an older build in its hello)
+plays the default character, Cal (`DEFAULT_LOOK`), on the device and in every match: `validLookId` (sim/npc.ts) maps
+it, as it maps a retired look. The ID names no base character, and none of the modular presets a design could start
+from is pickable now. The menu keeps the mapped pick and drops the Designer's old `cs.customLooks` list and its kept
+pictures (`cs.portraits`). The accounts never stored designs (a profile has no look), so the hub has nothing to change.
+Crash reports still accept the `designer` screen from older builds (`CRASH_SCREENS`).
 
-How custom looks are stored:
-- **Saving:** looks are saved in the browser (up to 24) and listed under "Your characters" in the Character picker.
-- **ID format:** a look travels as a 22-character ID (`encodeLook`): `c1-`, the body, then bitmasks of parts, hair and colourways in catalogue order, then the two colours.
-- **Validation:** the server and every client decode the ID with the same `decodeLook`. Anything malformed or unwearable becomes the default look.
-- **Catalogue:** `CHARACTER_PARTS`, `HAIR_STYLES`, `COLORWAYS`, `SKIN_TONES` and `HAIR_COLORS` in `looks.ts`. A test keeps `CHARACTER_PARTS` equal to the shipped parts.
-
-Mixing rules (`lookProblems`; the designer shows them and won't save until they're met):
-- The athlete torso includes bare arms, so it doesn't take an `arms` part.
-- A look needs a top, trousers and feet, and arms unless the top is sportswear.
-- Low-rise trousers (female peasant) show the sportswear waistband above them.
-- Athlete feet are bare feet only (no shins), so they pair with athlete legs.
+Custom look IDs stay in the code as the client's own: an NPC skin's first-person arms are a part-built look
+(`armsLookFor`), and `encodeLook` / `decodeLook` with the part catalogue (`CHARACTER_PARTS`, `HAIR_STYLES`, `COLORWAYS`,
+`lookProblems`) draw them. Linktifa (`core.ranger`), kept drawable as the Designer's base body until then, went with it:
+`NPC_KEPT_LOOKS` is empty, a saved pick of Linktifa plays Honest Abe (`RETIRED_LOOKS`), and its measured hit shapes
+left `hitboxes.generated.ts`. Tests and tools that need a part-made body build one from `MODULAR_PARTS_MALE` (Linktifa's
+outfit parts); the grip checks that drew Linktifa draw Cal.
 
 ## Animation in game
 
@@ -1395,7 +1392,7 @@ character with every clip.
   downloads). For a community model, add it to the licence file's list
   (`assets-src/meshy-community-characters/License.txt`).
 - Run `pnpm content:check`, `pnpm typecheck`, `pnpm test:changed` and the
-  `characters` and `designer` e2e flows.
+  `characters` and `firstperson` e2e flows.
 - Capture its portrait (the **Capture portraits** workflow) once it's on `main`.
 
 ## Known gaps
@@ -1523,9 +1520,8 @@ each plays their own choice from their next life. It works with Character stats 
 
 ## Character sizes
 
-Every look is small, standard or large (`size` on the look; custom looks add
-`-s` / `-l` to their ID, and the Character Designer has a Size choice on the
-Body tab). Presets: Sprout (retired) was small, Bulwark is large, everyone else standard.
+Every look is small, standard or large (`size` on the look; a custom look ID
+adds `-s` / `-l`). Presets: Sprout (retired) was small, Bulwark is large, everyone else standard.
 
 | Size | Body (height, width, eyes) | Speed | Health |
 |---|---|---|---|
@@ -1539,7 +1535,7 @@ ceiling, a low window), and large ones are easier to hit and must crouch
 under openings a little over 2 m. A look's own `size` stat (Character stats) replaces its class's scale. Health pickups fill up to the size's
 health. The match setting **Character sizes: Matter / All equal**
 (`MatchRules.bodySizes`) makes everyone play and look standard.
-Character Select and the Character Designer draw each look at its size too (a small look at 1.40 m, a large one at
+Character Select draws each look at its size too (a small look at 1.40 m, a large one at
 2.12 m), as a match does.
 
 ## Portraits
@@ -1655,7 +1651,7 @@ portraits captured). Names of new characters are the lead's (the owner can renam
 "I would prefer to use what we will have (over 200 characters)": every retired character is removed completely, the
 owner's own included (manifest, model, arms, portrait, lock, provenance, grip fit). `RETIRED_LOOKS` is a mapping only
 (an old id → a current roster look) so saved picks, setups and maps that name one still load (Linktifa's modular body
-stays drawable as the Designer's base, `NPC_KEPT_LOOKS`). The nine models replaced on 2026-11-25 were not kept, and
+stayed drawable as the Designer's base, `NPC_KEPT_LOOKS`, until the Designer went on 2026-11-25). The nine models replaced on 2026-11-25 were not kept, and
 Brutus Hornbeck (`meshy_rhinojuggernaut`, plays as Gorilla G) went on 2026-11-26.
 
 MapMaker's **Figure** (NPCs tab, "Figures"; map format v53, `FigureEntity` in map/schema.ts) places a roster character

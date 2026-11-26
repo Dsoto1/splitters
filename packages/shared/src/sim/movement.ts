@@ -8,11 +8,11 @@ import { passageLinks } from './passages.ts';
 import { CHUTE_GLIDER, CHUTE_PARACHUTE, chuteVelY, chuteWish, wantsChute, type ChuteKind } from './parachute.ts';
 import { grabZipline, rideZipline, startRide, ziplineLinks, mapZiplines, type Zipline } from './zipline.ts';
 import { hypot } from '../math.ts';
-import { SLIDE, canStartMove, stepLean } from './moves.ts';
+import { SLIDE, canStartMove, stepLean, dodgeDirection, dodgeMove, dodgeTicks } from './moves.ts';
 
 // The buttons, the input and the quick messages live in inputs.ts (the menu reads them without the movement code).
-import { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, ALL_BUTTONS, type PlayerInput } from './inputs.ts';
-export { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, type PlayerInput };
+import { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, BUTTON_DODGE, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, ALL_BUTTONS, type PlayerInput } from './inputs.ts';
+export { BUTTON_JUMP, BUTTON_FIRE, BUTTON_RELOAD, BUTTON_ZOOM, BUTTON_USE, BUTTON_ALT, BUTTON_THROW, BUTTON_SPRINT, BUTTON_CROUCH, BUTTON_PRONE, ADS_SPEED, BUTTON_RESPAWN, BUTTON_MELEE, BUTTON_STEER_LOOK, BUTTON_THIRD_PERSON, BUTTON_AUTO_RELOAD, BUTTON_USE_HOLD, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, BUTTON_DODGE, QUICK_MESSAGES, SAY_FOLLOW, SAY_HOLD, PING, EMOTE_DANCE, type PlayerInput };
 
 export interface MoveState {
   /** Feet position. */
@@ -59,8 +59,14 @@ export interface MoveState {
    * (`vx`, `vz`), which the slide slows itself instead of the ground's quick decay.
    */
   slide?: number;
-  /** Ticks left before another stamina move (slide; later the dodge-step and roll) may start. */
+  /** Ticks left before another stamina move (slide, dodge-step, roll) may start. */
   moveCd?: number;
+  /**
+   * A dodge-step or combat roll under way (sim/moves.ts DODGE, ROLL): ticks since it started (absent when not), and
+   * `roll` for a roll. Its momentum is the push velocity (`vx`, `vz`), held for the move's time instead of decaying.
+   */
+  dodge?: number;
+  roll?: boolean;
   /** Leaning (peek): steps, -LEAN.steps (full left) .. LEAN.steps (full right); absent upright (sim/moves.ts). */
   lean?: number;
 }
@@ -228,6 +234,8 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   const baseSpeed = speedScale;
   // Stance: what you ask for, unless there's no room to stand (or crouch) up. Jumping gets you up first.
   let jumpPressed = (input.buttons & BUTTON_JUMP) !== 0;
+  // Mid-roll, jump does nothing (the roll runs its course).
+  if (state.dodge && state.roll) jumpPressed = false;
   const k = env.scale ?? 1;
   const g = (env.gravity ?? 1) * gravityAt(env.gravityZones, state.pos);
   const radius = PLAYER.radius * k;
@@ -277,6 +285,22 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     slide = 0;
     moveCd = Math.round(SLIDE.cooldown / dt);
   } else if (slideStart || slide) slide++;
+  // The dodge-step and combat roll (sim/moves.ts DODGE, ROLL): a press of Dodge on the ground, not prone or sliding. A
+  // roll when crouched or sprinting (it takes the crouch's height for its time), a dodge-step otherwise.
+  let dodge = state.dodge ?? 0;
+  let roll = !!state.roll;
+  let dodgeStart: 0 | 1 | 2 = 0;
+  if (!dodge && !slide && (input.buttons & BUTTON_DODGE) !== 0 && footing && was < 2) {
+    const kind = was === 1 || state.sprint ? 2 : 1;
+    if (canStartMove(dodgeMove(kind), stamina, winded, moveCd, env.stamina ?? 1)) dodgeStart = kind;
+  }
+  if (dodgeStart) {
+    dodge = 1;
+    roll = dodgeStart === 2;
+    stamina = quantize(Math.max(0, stamina - dodgeMove(dodgeStart).cost / (env.stamina ?? 1)));
+    if (stamina === 0) winded = true;
+  } else if (dodge) dodge++;
+  if (dodge && roll) stance = 1;
   // Aiming down the sights (or through a scope): no sprinting, and you walk at 75%.
   const aiming = (input.buttons & BUTTON_ZOOM) !== 0;
   const sprint = !aiming && (input.buttons & BUTTON_SPRINT) !== 0 && (input.buttons & BUTTON_FIRE) === 0 && input.forward > 0.3 && stance === 0 && !winded && stamina > 0;
@@ -284,7 +308,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
     stamina = quantize(Math.max(0, stamina - SLIDE.cost / (env.stamina ?? 1)));
     if (stamina === 0) winded = true;
   }
-  if (sprint || slide) {
+  if (sprint || slide || dodge) {
     // Quantised here (not just on output) so running dry is seen the same on server and client.
     if (sprint) stamina = quantize(Math.max(0, stamina - (SPRINT.drain / (env.stamina ?? 1)) * dt));
     rest = Math.round(SPRINT.rest / dt);
@@ -294,7 +318,7 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   if (winded && stamina >= SPRINT.restart) winded = false;
   speedScale *= STANCES[stance].speed * (sprint ? SPRINT.speed : (env.weaponMove ?? 1)) * (aiming ? ADS_SPEED : 1);
   // The lean (peek): on the ground, standing or crouched, not sprinting or sliding; never into a wall (sim/moves.ts).
-  const lean = stepLean(physics, state.pos, input.yaw, stance, state.lean ?? 0, input.buttons, footing && stance < 2 && !sprint && !slide, k);
+  const lean = stepLean(physics, state.pos, input.yaw, stance, state.lean ?? 0, input.buttons, footing && stance < 2 && !sprint && !slide && !dodge, k);
 
   // Horizontal wish velocity in the yaw frame (see viewDirection for axes).
   const sin = Math.sin(input.yaw);
@@ -325,6 +349,18 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   if (slide) {
     wx *= SLIDE.control;
     wz *= SLIDE.control;
+  }
+  // A dodge's burst replaces the push the way it goes; the legs only steer a little while it lasts.
+  const dodgeSpeed = dodge ? PLAYER.runSpeed * baseSpeed * dodgeMove(roll ? 2 : 1).speed * wet : 0;
+  if (dodgeStart) {
+    const d = dodgeDirection(input.forward, input.right, input.yaw, dodgeStart);
+    vx = d.x * dodgeSpeed;
+    vz = d.z * dodgeSpeed;
+  }
+  if (dodge) {
+    const c = dodgeMove(roll ? 2 : 1).control;
+    wx *= c;
+    wz *= c;
   }
   if (traction < 1 && state.grounded) {
     vx += wx * (1 - traction) * 0.07;
@@ -433,7 +469,23 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
       vz *= next / v;
     }
   }
-  const decay = slide ? 1 : grounded ? (traction < 1 ? 0.975 : 0.86) : chute ? CHUTE_PUSH_DECAY : AIR_PUSH_DECAY;
+  if (dodge) {
+    // The burst holds its speed for the move's time, then ends: early against a wall or off the ground. A step hands its
+    // momentum to the ground's usual fade; a roll keeps only what is over a crouch walk, as a slide does; off the ground
+    // (a jump out of a step, a ledge) only its `air` share goes on, so a dodge-jump carries no further than a sprint's.
+    const kind = roll ? 2 : 1;
+    const run = hypot(moved.feet.x - state.pos.x, moved.feet.z - state.pos.z);
+    const blocked = run < dodgeSpeed * dt * dodgeMove(kind).blocked;
+    if (dodge >= dodgeTicks(kind, dt) || blocked || !grounded) {
+      dodge = 0;
+      moveCd = Math.round(dodgeMove(kind).cooldown / dt);
+      const v = hypot(vx, vz);
+      const keep = blocked || v < 1e-6 ? 0 : !grounded ? dodgeMove(kind).air : roll ? Math.max(0, v - PLAYER.runSpeed * STANCES[1].speed * baseSpeed) / v : 1;
+      vx *= keep;
+      vz *= keep;
+    }
+  }
+  const decay = slide || dodge ? 1 : grounded ? (traction < 1 ? 0.975 : 0.86) : chute ? CHUTE_PUSH_DECAY : AIR_PUSH_DECAY;
   vx = Math.abs(vx * decay) < 0.02 ? 0 : quantize(vx * decay);
   vz = Math.abs(vz * decay) < 0.02 ? 0 : quantize(vz * decay);
   // Built field by field in the same order the optional ones always had (no temporary object per optional
@@ -457,6 +509,10 @@ export function stepMovement(physics: PhysicsWorld, collider: RAPIER.Collider, s
   if (drop && !grounded) out.drop = drop;
   if (slide) out.slide = slide;
   if (moveCd) out.moveCd = moveCd;
+  if (dodge) {
+    out.dodge = dodge;
+    if (roll) out.roll = true;
+  }
   if (lean) out.lean = lean;
   return out;
 }

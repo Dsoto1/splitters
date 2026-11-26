@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 53,
+  "formatVersion": 54,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_hlg4xdlmqmslm6nk",
-      "revision": 65,
-      "contentHash": "sha256:768e11c8f424e055d29464e457e58b74b093f645d47500cb39b5dd75c170f7e5",
-      "schemaVersion": 53,
-      "releasedAt": "2026-11-25T23:11:47.455Z"
+      "versionId": "v_z4wcwsgaaidll3kc",
+      "revision": 66,
+      "contentHash": "sha256:611e25957bafad5549b4887f9e79ee27cd526fa356443a39f0b2bdebf4052414",
+      "schemaVersion": 54,
+      "releasedAt": "2026-11-26T02:40:48.592Z"
     },
     "testOnly": true,
     "category": "weird"
@@ -428,6 +428,11 @@
           "0,0,0:E": "door",
           "0,0,0:S": "wide",
           "0,0,0:W": "arch"
+        },
+        "breakWalls": {
+          "sides": [
+            "0,0,0:N"
+          ]
         }
       },
       {
@@ -1125,6 +1130,10 @@
         "glass": {
           "0,0,0:N": "breakable",
           "0,0,0:E": "reinforced"
+        },
+        "breakWalls": {
+          "health": 200,
+          "shots": true
         }
       },
       {
@@ -5821,24 +5830,24 @@
     },
     {
       "id": "figure_olal5h8xi2",
-      "kind": "figure",
       "position": [
         75,
         0,
         12
       ],
+      "kind": "figure",
       "yaw": 2.356194490192345,
       "look": "core.dale",
       "pose": "stand"
     },
     {
       "id": "figure_chmqxvwvop",
-      "kind": "figure",
       "position": [
         73,
         0,
         12
       ],
+      "kind": "figure",
       "yaw": 2.356194490192345,
       "look": "core.crewk9",
       "pose": "dance"

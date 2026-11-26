@@ -1,6 +1,6 @@
 import { getProp, type PropDefinition } from '../content/props.ts';
 import { propMaterial } from './gunplay.ts';
-import { boxQuat, dynamicBlockIds, envHalfSize, isBreakableProp, type Rot } from '../map/geometry.ts';
+import { boxQuat, dynamicBlockIds, envHalfSize, isBreakableProp, type Rot, type WorldBox } from '../map/geometry.ts';
 import { placementShapes, type EnvWorldShape } from '../map/environment.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
@@ -10,6 +10,7 @@ import { PLAYER, TICK_RATE } from './constants.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
 import type { PhysicsWorld } from './physics.ts';
 import { GLASS, isGlassBlock, windowPanes, type GlassPane } from './glass.ts';
+import { boxObox, cachedWallSections, wallSectionIndex, type WallSection } from './breakWalls.ts';
 
 /**
  * Shapes and tuning for scenario entities, shared by the simulation, client
@@ -237,6 +238,13 @@ export interface Breakable {
   shootable?: boolean;
   /** A glass pane (sim/glass.ts): breakable glass shatters, reinforced glass only cracks. */
   glass?: GlassPane['kind'];
+  /** A breakable wall section (sim/breakWalls.ts): the scenario indices of the window panes that shatter with it. */
+  wall?: { glass: readonly number[] };
+}
+
+/** A breakable wall section as a breakable: explosives only unless it says shots; bots keep treating it as a wall (it stays in the navmesh). */
+export function wallBreakable(s: WallSection): Breakable {
+  return { box: s.bounds, parts: s.boxes.map(boxObox), health: s.edge.health, explosiveOnly: !s.edge.shots, blocksPaths: false, wall: { glass: s.glass } };
 }
 
 /** A glass pane as a breakable: bots path round it while it stands (a broken pane is an opening). */
@@ -451,6 +459,8 @@ export class ScenarioBodies {
   private readonly doors = new Map<number, [RAPIER.Collider, RAPIER.Collider]>();
   /** Each scenario body's colliders (one, or a breakable prop's `parts`). */
   private readonly solids = new Map<number, RAPIER.Collider[]>();
+  /** A breakable wall's remains (sim/breakWalls.ts): they collide once it is broken. */
+  private readonly remains = new Map<number, RAPIER.Collider[]>();
   private readonly byHandle = new Map<number, number>();
   private readonly doorOpen = new Map<number, number>();
 
@@ -486,6 +496,20 @@ export class ScenarioBodies {
       this.solids.set(i, [c]);
       this.byHandle.set(c.handle, i);
     });
+    // Breakable walls, after the panes (see wallSectionIndex): the wall while it stands, its remains once broken.
+    cachedWallSections(map).forEach((sec, k) => {
+      const i = wallSectionIndex(map, k);
+      const make = (b: WorldBox) => {
+        const o = boxObox(b);
+        const c = physics.createBox(o.center, o.half, o.yaw);
+        this.byHandle.set(c.handle, i);
+        return c;
+      };
+      this.solids.set(i, sec.boxes.map(make));
+      const rest = sec.remains.map(make);
+      for (const c of rest) physics.setBoxEnabled(c, false);
+      this.remains.set(i, rest);
+    });
     physics.commit();
   }
 
@@ -514,6 +538,7 @@ export class ScenarioBodies {
 
   setSolid(index: number, present: boolean): void {
     for (const c of this.solids.get(index) ?? []) this.physics.setBoxEnabled(c, present);
+    for (const c of this.remains.get(index) ?? []) this.physics.setBoxEnabled(c, !present);
   }
 
   commit(): void {

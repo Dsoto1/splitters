@@ -85,7 +85,6 @@ Shared components: `.panel`/`.panel-title`, `.tabs` with `.bumper` keys,
   - **Online** and **Options.**
 
   Your character stands on a lit plinth behind every screen (`menuScene.ts`).
-- **Character Designer** (`src/designer/`): Body / Head / Outfit / Colours tabs (Q/E), R randomises, a "Start from" portrait grid.
 - **HUD** (`src/game/hud.ts`):
   - top left: a rotating circular minimap (`minimap.ts`);
   - top centre: the scorebar (TDM team totals, or you vs the leader in Deathmatch);

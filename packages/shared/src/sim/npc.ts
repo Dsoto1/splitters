@@ -1,4 +1,4 @@
-import { CORE_LOOKS, RETIRED_LOOKS, encodeLook, getLook, type CharacterBranch, type CharacterGroup } from '../content/looks.ts';
+import { CORE_LOOKS, DEFAULT_LOOK, RETIRED_LOOKS, decodeLook, encodeLook, getLook, type CharacterBranch, type CharacterGroup } from '../content/looks.ts';
 import { CORE_BOT_PROFILES, type BotProfile } from '../bots/profile.ts';
 import { NPC_ROLE_BOTS, NPC_ROLE_SPECS } from '../content/npcRoles.generated.ts';
 import { NPC_ROLES, PLAYERS_FACTION } from '../map/mapKeys.ts';
@@ -164,8 +164,15 @@ export const NPC_LOOKS: readonly { id: string; name: string; role: NpcRole }[] =
 export const PLAYER_NPC_LOOKS = NPC_LOOKS.filter((l) => !(['trooper', 'gunner', 'heavy', 'sniper', 'zombie', 'cyclops', 'oculus', 'scolitex', 'imp', 'puglin'] as NpcRole[]).includes(l.role));
 /** Soldier NPC skins: a uniform colour per role so they read apart. */
 export const NPC_LOOK_COLORS: Partial<Record<NpcRole, string>> = { trooper: '#56703c', gunner: '#9a7440', heavy: '#474d58', sniper: '#3f5a36', zombie: '#5f6f55' };
-/** A look ID kept as is when valid (presets, custom looks, NPC skins), else the default. */
-export const validLookId = (id: string | undefined): string => (id && RETIRED_LOOKS[id] ? getLook(RETIRED_LOOKS[id]).id : npcLookRole(id) ? id! : getLook(id).id);
+/**
+ * A look ID a player or bot plays (presets and NPC skins kept as they are, a retired preset its replacement), else the
+ * default. A custom look (a `c1-` ID) saved from the Character Designer, removed 2026-11-25 (owner: "custom characters
+ * should be removed given we have over 200 to choose from now"), plays the default: its ID names no base character, and
+ * no modular preset it could have started from is pickable now. (Custom IDs stay drawable for the client's own uses:
+ * an NPC skin's first-person arms, armsLookFor.)
+ */
+export const validLookId = (id: string | undefined): string =>
+  id && RETIRED_LOOKS[id] ? getLook(RETIRED_LOOKS[id]).id : npcLookRole(id) ? id! : id && decodeLook(id) ? getLook(DEFAULT_LOOK).id : getLook(id).id;
 /**
  * Character Select's group for each NPC skin (what it is; CHARACTER_GROUPS). The ones not offered there
  * (gunner, heavy, …) have one too, so a saved choice of theirs still sorts. The Dummy (the trooper mannequin) sits in

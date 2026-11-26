@@ -6002,7 +6002,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,playhouse,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,playhouse,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -11584,6 +11584,17 @@ async function coverageFlow(browser) {
     }).catch((e) => ({ error: String(e) }));
     check(bore.vault === null && bore.concrete === null && bore.top > 4.5 && bore.beside !== null && bore.beside < 25 && bore.sunk === null && Math.abs(bore.field + 0.15) < 0.02, `the buried tunnels: a shot passes through each mouth and passage, the hill is whole on top of them and solid beside them (${JSON.stringify(bore)})`);
     check(Math.abs(bore.hatch + 4) < 0.05 && bore.stairs === null && Math.abs(bore.chamber - 13.8) < 0.1 && Math.abs(bore.over + 0.15) < 0.02, `the tunnel kit's shaft, surface stairs and chamber: the hatch is open from the sky to the tunnel's floor, the stairs to the sky, the chamber 14 m wall to wall under a field left as it was (${JSON.stringify({ hatch: bore.hatch, stairs: bore.stairs, chamber: bore.chamber, over: bore.over })})`);
+    // Breakable walls (format v53; shared sim/breakWalls.ts): the room at (9, -7) has its north wall marked, explosives
+    // only (placed in MapMaker). Blasts by it break it (bots' grenades may have already): a shot at chest height beside
+    // its doorway then passes into the room, the wall's end beside the hole still stops one, and the client draws its
+    // remains (game/breakWallVisuals.ts).
+    const wall = await sim(page, (m) => {
+      for (let n = 0; n < 6; n++) m.scenario.splash({ x: 70, y: 1.2, z: -51.4 }, 4, 120, 30, null, m.physics);
+      const ray = (o) => m.physics.raycastWorld(o, { x: 0, y: 0, z: -1 }, 3);
+      return { hole: ray({ x: 70, y: 1.2, z: -50.5 }), end: ray({ x: 68.2, y: 1.2, z: -50.5 }) };
+    }).catch((e) => ({ error: String(e) }));
+    const rest = await page.waitForFunction(() => window.__cs.view.scene.meshes.some((m) => m.name.startsWith('map_breakwall_rest') && m.getTotalVertices() > 0), null, { timeout: T(15000) }).then(() => true, () => false);
+    check(wall.hole === null && typeof wall.end === 'number' && rest, `a breakable wall blown open: a shot passes its hole, its end still stops one, its remains are drawn (${JSON.stringify(wall)}, remains ${rest})`);
     // The Tank turns its own gun (content/guns.json `parts`, MountDef.turret): its model's turret and barrel are parts,
     // each with its own lower level of detail, and a manned cannon seat's aim turns the turret and pitches the barrel.
     // The match runs in a worker: the tank's place in it (`at`) and its entity index (its node's name) from there.
@@ -13707,34 +13718,37 @@ async function flashingScene(browser, scene, names) {
   await ctx.close();
 }
 
-async function designerFlow(browser) {
+/**
+ * First person, and a design saved by the Character Designer (removed 2026-11-25: owner, "we have over 200 to choose
+ * from now"): an old custom look loads as the default character on the menu and in a match, with no page errors; then
+ * your own body and arms in first person.
+ */
+async function firstpersonFlow(browser) {
   const page = await (await browser.newContext({ viewport: { width: 1200, height: 760 } })).newPage();
   const errors = [];
   page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  // A design kept from before: the old Designer's list and the pick (a female peasant look with buns).
+  const design = 'c1-f03c020------------';
+  // (Seeded on every load, so the match below starts from it too.)
+  await page.addInitScript((id) => {
+    localStorage.setItem('cs.look', id);
+    localStorage.setItem('cs.customLooks', JSON.stringify([{ id, name: 'My design' }]));
+  }, design);
   await page.goto(CLIENT);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(60000) });
+  const menu = await page.evaluate(() => ({ look: window.__front.look, name: window.__front.lookName(window.__front.look), kept: localStorage.getItem('cs.look'), designs: localStorage.getItem('cs.customLooks') }));
+  check(menu.look === 'core.dale' && menu.kept === 'core.dale' && menu.designs === null, `a design saved by the old Character Designer loads as the default character, kept as the pick; the old designs list is gone (${JSON.stringify(menu)})`);
   await page.click('#profile-badge');
   await page.click('#profile-change-character');
-  await page.click('.char-tile.new');
-  await page.waitForFunction(() => !!window.__designer, null, { timeout: T(30000) });
-  await page.click('#designer button:text-is("Female")');
-  await page.click('#designer .tab:text-is("Outfit")');
-  await page.selectOption('#designer .dz-row:has(label:text-is("Top")) select', 'peasant_torso_f');
-  await page.click('#designer .tab:text-is("Head")');
-  await page.click('#designer button:text-is("Buns")');
-  const id = await page.evaluate(() => window.__designer.lookId);
-  const problems = await page.evaluate(() => window.__designer.problems);
-  check(problems.length === 0 && id.startsWith('c1-f'), `designer builds a wearable custom look (${id} ${problems.join(', ')})`);
-  await page.click('#designer button:text-is("Save and use")');
-  await page.waitForFunction(() => !document.getElementById('menu').hidden);
-  const selected = await page.evaluate(() => window.__front.look);
-  check(selected === id, `the saved look is selected on the menu (${selected})`);
-  // Its portrait is drawn once when it's saved and kept in this browser (never drawn again on Character Select).
-  const kept = await until(() => page.evaluate((id) => /^data:image\//.test(JSON.parse(localStorage.getItem('cs.portraits') ?? '{}')[id] ?? ''), id), T(20000));
-  check(kept, 'saving a design keeps its portrait in the browser');
+  await page.waitForSelector('.char-tile[data-look]', { timeout: T(30000) });
+  const sel = await page.evaluate(() => ({ sections: [...document.querySelectorAll('.char-sec')].map((s) => s.dataset.section), design: !!document.querySelector('.char-tile.new, #hint-design, #hint-customise'), hints: [...document.querySelectorAll('.hintbar .hint-btn')].map((h) => h.textContent).join(' | ') }));
+  check(!sel.sections.includes('mine') && !sel.design && !/Design new|Customise/.test(sel.hints), `Character Select has no Yours, Design new or Customise (${JSON.stringify(sel)})`);
   await page.goto(`${CLIENT}/?offline`);
   await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  const inMatch = await page.evaluate(() => window.__cs.roster()?.find((p) => p.slot === window.__cs.slot)?.look);
+  check(inMatch === 'core.dale', `in a match the old design plays the default character (${inMatch})`);
   await page.waitForFunction(() => window.__cs.view.hasFirstPersonArms(), null, { timeout: T(20000) }).catch(() => {});
-  check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms of the custom look hold the weapon');
+  check(await page.evaluate(() => window.__cs.view.hasFirstPersonArms()), 'first-person arms hold the weapon');
   // First person is full body by default (Options → Display → First person); Arms only applies at once, and back.
   const fpBody = await page.waitForFunction(() => window.__cs.view.hasFirstPersonBody(), null, { timeout: T(20000) }).then(() => true, () => false);
   check(fpBody, 'full-body first person: your own character is drawn from its eyes');
@@ -13884,7 +13898,7 @@ async function charactersFlow(browser, part = 0) {
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const misses = [];
-  for (const look of ['core.ranger', 'core.biscuit', 'core.grizzelda']) {
+  for (const look of ['core.dale', 'core.biscuit', 'core.grizzelda']) {
     for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
       const m = await page.evaluate(() => window.__grips.miss());
@@ -13895,7 +13909,7 @@ async function charactersFlow(browser, part = 0) {
   // Full-body first person (your own whole character from its eyes): the same palms on the same guns, looking ahead
   // and down at your feet.
   const bodyMisses = [];
-  for (const look of ['core.ranger', 'core.galloway']) {
+  for (const look of ['core.dale', 'core.galloway']) {
     for (const weapon of ['core.rifle', 'core.lmg', 'core.pistol']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'body'), [look, weapon]);
       for (const pitch of [0, -1.3]) {
@@ -13907,11 +13921,11 @@ async function charactersFlow(browser, part = 0) {
   }
   check(bodyMisses.length === 0, `full-body first person: palms on the gun's grip and handguard (${bodyMisses.join('; ') || 'all within 2 cm'})`);
   // Third person, strafing and backing up while firing: the hips turn toward the motion and the shoulders stay square
-  // to the aim (they used to wind about 140 degrees off it), the hands on the gun. A modular character and a whole
-  // body, both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
+  // to the aim (they used to wind about 140 degrees off it), the hands on the gun. Two whole bodies (Cal and
+  // the WWII soldier), both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
   // walk), and the rolling Baseball Robot, which has none (it glides on the rig's idle).
   const strafes = [];
-  for (const look of ['core.ranger', 'core.wwiisoldier']) {
+  for (const look of ['core.dale', 'core.wwiisoldier']) {
     await page.evaluate((l) => window.__grips.pose(l, 'core.rifle', 'third'), look);
     const shoulderYaw = () =>
       page.evaluate(() => {
@@ -14032,7 +14046,7 @@ async function drawnHands(page) {
   const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
   const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'none');
   const drawnMisses = [];
-  for (const look of ['core.dapper', 'core.biscuit', 'core.ranger', 'core.galloway']) {
+  for (const look of ['core.dapper', 'core.biscuit', 'core.dale', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
       for (const view of ['body', 'first', 'third']) {
         await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);
@@ -14063,7 +14077,7 @@ async function drawnHands(page) {
   // in every view.
   const spearMisses = [];
   for (const view of ['first', 'body', 'third']) {
-    await page.evaluate(([v]) => window.__grips.pose('core.ranger', 'core.spear', v), [view]);
+    await page.evaluate(([v]) => window.__grips.pose('core.dale', 'core.spear', v), [view]);
     const d = await page.evaluate(() => window.__grips.drawn());
     if (badHand(d, 0.05)) spearMisses.push(`${view}: ${fmtHand(d)}`);
   }
@@ -14074,7 +14088,7 @@ async function drawnHands(page) {
   const meleeMisses = [];
   for (const weapon of ['core.katana', 'core.scimitar', 'core.baseball_bat', 'core.battle_axe', 'core.spear']) {
     for (const view of ['first', 'body']) {
-      await page.evaluate(([w, v]) => window.__grips.pose('core.ranger', w, v), [weapon, view]);
+      await page.evaluate(([w, v]) => window.__grips.pose('core.abe', w, v), [weapon, view]);
       const [on, miss, d] = await page.evaluate(() => [window.__grips.handsOnScreen(), window.__grips.miss(), window.__grips.drawn()]);
       const inView = (h) => h && h.ahead > 0.1 && Math.abs(h.x) < 1 && Math.abs(h.y) < 1;
       if (!on || !inView(on.r) || !inView(on.l) || !miss || miss.r > 0.02 || miss.l > 0.02 || badHand(d, 0.05)) {
@@ -15209,6 +15223,241 @@ async function profilesFlow(browser) {
   check(errors.length === 0, `no page errors (${errors.join(' | ')})`);
   livePages.delete(page);
   await context.close();
+}
+
+/**
+ * The dodge-step and combat roll (docs/GUNPLAY_SPEC.md section 27): Dodge (V; sent once per press) steps the way you
+ * move, crouched or sprinting it rolls; predicted on the page, the gun down for a roll, another body drawn rolling.
+ * DODGEROLL_PICS=<dir>: frames of each, first and third person, on High at twice the pixels.
+ */
+async function dodgerollFlow(browser) {
+  const SPRINT = 128, CROUCH = 256, DODGE = 262144;
+  const picsDir = process.env.DODGEROLL_PICS;
+  const pics = !!picsDir;
+  const pic = async (page, name) => {
+    if (picsDir) await page.screenshot({ path: `${picsDir}/${name}.png` });
+  };
+  const errors = [];
+  const context = await browser.newContext({ viewport: pics ? { width: 640, height: 360 } : { width: 1280, height: 720 }, deviceScaleFactor: pics ? 2 : 1 });
+  if (pics) await context.addInitScript(() => localStorage.setItem('tiletrigger.graphics', 'high'));
+  const page = await context.newPage();
+  livePages.add(page);
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?offline=void_yard&test=1&god=1&bots=2&name=Tester`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 0 && window.__cs.phase() === 'playing' && !document.getElementById('view').classList.contains('veiled'), null, { timeout: T(90000) });
+  await playWithoutMouse(page);
+  await page.addStyleTag({ content: '#pause, #message { display: none !important; }' });
+  await simWait(page, (m) => m.combatants().some((c) => c.bot), null, T(30000));
+  // The bot does as the flow says (queue.fwd, queue.right, queue.btn, queue.once for one input, queue.yaw); nobody shoots.
+  const bot = await sim(page, (m) => {
+    const b = m.combatants().find((c) => c.bot);
+    const q = b.queue;
+    q.push = (...inputs) => Array.prototype.push.apply(q, inputs.map((i) => {
+      const once = q.once ?? 0;
+      q.once = 0;
+      return { ...i, forward: q.fwd ?? 0, right: q.right ?? 0, buttons: (q.btn ?? 0) | once, pitch: 0, ...(q.yaw !== undefined ? { yaw: q.yaw } : {}) };
+    }));
+    q.held = true;
+    return b.slot;
+  });
+  const me = await page.evaluate(() => window.__cs.slot);
+  const place = (slot, pos, yaw) => sim(page, (m, me, a) => {
+    const c = m.combatants().find((x) => x.slot === a.slot);
+    c.move = { pos: a.pos, velY: 0, grounded: true };
+    c.yaw = a.yaw;
+    if (c.bot) Object.assign(c.queue, { yaw: a.yaw, fwd: 0, right: 0, btn: 0, once: 0 });
+  }, { slot, pos, yaw });
+  const rested = (slot) => sim(page, (m, me, a) => {
+    const c = m.combatants().find((x) => x.slot === a);
+    c.move = { ...c.move, stamina: undefined, rest: 0, winded: false, moveCd: 0 };
+  }, slot);
+  const drive = (forward, right, buttons, once = 0) => page.evaluate(([f, r, b, o]) => (window.__autoInput = { forward: f, right: r, buttons: b, once: o }), [forward, right, buttons, once]);
+  const look = (yaw, pitch = 0) => page.evaluate(([y, p]) => Object.assign(window.__cs.input, { yaw: y, pitch: p }), [yaw, pitch]);
+  /**
+   * The match's longest dodge of `slot` (ticks), whether it was a roll, and the gun's raise seen during a roll, from now
+   * on: read after every step of the match (a step lasts 9 ticks, and a loaded runner's worker can run that many in one
+   * go, so a timer between steps could miss it).
+   */
+  const latch = (slot) => sim(page, (m, me, a) => {
+    const c = m.combatants().find((x) => x.slot === a);
+    self.__dodge = { ticks: 0, roll: false, raise: 0, stance: 0, stamina: 1, from: { ...c.move.pos } };
+    const stepFn = (m.__latchStep ??= m.step);
+    m.step = function () {
+      const out = stepFn.call(this);
+      const d = self.__dodge;
+      if ((c.move.dodge ?? 0) > d.ticks) d.ticks = c.move.dodge;
+      if (d.ticks && !c.move.dodge && !d.end) d.end = { ...c.move.pos };
+      d.stamina = Math.min(d.stamina, c.move.stamina ?? 1);
+      if (c.move.roll) {
+        d.roll = true;
+        d.raise = Math.max(d.raise, c.raiseTicks);
+        d.stance = Math.max(d.stance, c.move.stance ?? 0);
+      }
+      return out;
+    };
+  }, slot);
+  const latched = () => sim(page, (m, me) => ({ ...self.__dodge, to: { ...me.move.pos } }));
+  /** The page's own predicted dodge, its longest, from now on (read after every predicted tick, not every frame drawn). */
+  const ownLatch = () => page.evaluate(() => {
+    const local = window.__cs.local;
+    window.__ownDodge = { ticks: 0, roll: false };
+    const tickFn = (local.__latchTick ??= local.tick);
+    local.tick = function (...args) {
+      const out = tickFn.apply(this, args);
+      const st = this.state;
+      if ((st.dodge ?? 0) > window.__ownDodge.ticks) window.__ownDodge.ticks = st.dodge;
+      if (st.roll) window.__ownDodge.roll = true;
+      return out;
+    };
+  });
+  // An open stretch of the yard's floor, facing +z (the bot well out of the way).
+  await place(bot, { x: 14, y: 0, z: 14 }, 0);
+  await place(me, { x: 0, y: 0, z: -8 }, 0);
+  await look(0, -0.05);
+  await drive(0, 0, 0);
+  await meWait(page, (m, me) => me.move.grounded && Math.abs(me.move.pos.z + 8) < 0.1, null, 1);
+  await page.waitForFunction(() => window.__cs.local.state.grounded && Math.abs(window.__cs.local.state.pos.z + 8) < 0.1, null, { timeout: T(20000) }).catch(() => {});
+  // A dodge-step to the right (facing +z, the right is +x): about 2 m, on stamina, the gun up.
+  await rested(me);
+  await latch(me);
+  await ownLatch();
+  const before = await sim(page, (m, me) => JSON.stringify(me.move));
+  const ownBefore = await page.evaluate(() => JSON.stringify(window.__cs.local.state));
+  await drive(0, 1, 0, DODGE);
+  const stepped = await meWait(page, () => self.__dodge.ticks >= 8, null, 2);
+  check(stepped, `Dodge (once, moving right): a dodge-step in the match${stepped ? '' : ` (before: ${before}; page: ${ownBefore})`}`);
+  await drive(0, 0, 0);
+  check(await meWait(page, (m, me) => !me.move.dodge && Math.hypot(me.move.vx ?? 0, me.move.vz ?? 0) < 0.05, null, 2), 'the step ends and its push fades');
+  const step = await latched();
+  // (Where its burst ended: the push's fade and the walk after it come on top.)
+  const burst = step.end ? step.end.x - step.from.x : 0;
+  check(!step.roll && burst > 1 && burst < 2.2 && Math.abs(step.end.z - step.from.z) < 0.3, `its burst went the way you moved, right (${burst.toFixed(2)} m in 0.15 s)`);
+  check(step.stamina <= 0.86, `it took its stamina (${step.stamina.toFixed(3)} at the least)`);
+  const ownStep = await page.evaluate(() => window.__ownDodge);
+  check(ownStep.ticks >= 8 && !ownStep.roll, `the step is predicted on the page (${ownStep.ticks} ticks)`);
+  // A combat roll, from a crouch, forward: the gun down for it, crouched after it (crouch still on).
+  await place(me, { x: 0, y: 0, z: -10 }, 0);
+  await rested(me);
+  await drive(0, 0, CROUCH);
+  check(await meWait(page, (m, me) => me.move.stance === 1 && me.move.grounded, null, 2), 'crouched');
+  await latch(me);
+  await ownLatch();
+  await drive(1, 0, CROUCH, DODGE);
+  check(await meWait(page, () => self.__dodge.roll && self.__dodge.ticks >= 25, null, 2), 'crouched, Dodge: a combat roll in the match');
+  await drive(0, 0, CROUCH);
+  check(await meWait(page, (m, me) => !me.move.dodge, null, 2), 'the roll ends');
+  const roll = await latched();
+  check(roll.to.z - roll.from.z > 2.6 && roll.to.z - roll.from.z < 4.5, `it rolled about 3 m ahead (${(roll.to.z - roll.from.z).toFixed(2)} m)`);
+  check(roll.raise > 0 && roll.stance === 1, `the gun was down for it (raise ${roll.raise}), at crouch height`);
+  check(await meWait(page, (m, me) => me.move.stance === 1, null, 1), 'crouched again after it');
+  const ownRoll = await page.evaluate(() => window.__ownDodge);
+  check(ownRoll.roll && ownRoll.ticks >= 25, `the roll is predicted on the page (${ownRoll.ticks} ticks)`);
+  await drive(0, 0, 0);
+  // Another body (drawn from the snapshots) rolls: its drawn body turns over (the roll's tumble) and stands again.
+  await place(me, { x: 0, y: 0, z: -14 }, 0);
+  await place(bot, { x: -4, y: 0, z: -8 }, Math.PI / 2);
+  await look(0, -0.08);
+  await sleep(400);
+  await page.evaluate((s) => {
+    const v = window.__cs.view;
+    if (window.__tumbleWatch) v.scene.onAfterRenderObservable.remove(window.__tumbleWatch);
+    window.__tumble = 0;
+    window.__tumbleWatch = v.scene.onAfterRenderObservable.add(() => (window.__tumble = Math.max(window.__tumble, v.avatars.get(s)?.anim?.tumble ?? 0)));
+  }, bot);
+  // (The match waits at the roll's 12th tick until this page has drawn the body part way round, as slidepeek's slide.)
+  await sim(page, (m, me, a) => {
+    const c = m.combatants().find((x) => x.slot === a);
+    const stepFn = (m.__rollStep ??= m.step);
+    m.step = function () {
+      return (c.move.dodge ?? 0) >= 12 && c.move.roll ? [] : stepFn.call(this);
+    };
+  }, bot);
+  await rested(bot);
+  await sim(page, (m, me, a) => void Object.assign(m.combatants().find((c) => c.slot === a).queue, { fwd: 1, btn: 256, once: 0 }), bot);
+  await simWait(page, (m, me, a) => m.combatants().find((c) => c.slot === a).move.stance === 1, bot, T(10000));
+  await sim(page, (m, me, a) => void (m.combatants().find((c) => c.slot === a).queue.once = 262144), bot);
+  const drawnRoll = await page.waitForFunction(() => window.__tumble > 1, null, { timeout: T(20000), polling: 'raf' }).then(() => true, () => false);
+  await sim(page, (m) => void (m.step = m.__rollStep));
+  check(drawnRoll, `another body is drawn rolling (turned ${(await page.evaluate(() => window.__tumble)).toFixed(2)} rad)`);
+  await sim(page, (m, me, a) => void Object.assign(m.combatants().find((c) => c.slot === a).queue, { fwd: 0, btn: 0 }), bot);
+  check(await page.waitForFunction((s) => (window.__cs.view.avatars.get(s)?.anim?.tumble ?? 1) === 0, bot, { timeout: T(10000) }).then(() => true, () => false), 'and upright again after it');
+  // Pictures (DODGEROLL_PICS): frames held at points through a step and a roll (each is a fraction of a second; a
+  // picture on High at twice the pixels takes longer than that to draw in software).
+  if (pics) {
+    const hold = (slot, pos, yaw, kind, ticks) =>
+      sim(page, (m, me, a) => {
+        const c = m.combatants().find((x) => x.slot === a.slot);
+        clearInterval(self.__dodgeHold);
+        const speed = a.kind === 2 ? 6 : 7.8;
+        const dir = a.kind === 2 ? a.yaw : a.yaw + Math.PI / 2;
+        self.__dodgeHold = setInterval(() => (c.move = { ...c.move, pos: { ...a.pos }, velY: 0, grounded: true, dodge: a.ticks, ...(a.kind === 2 ? { roll: true, stance: 1 } : { roll: undefined, stance: undefined }), vx: Math.sin(dir) * speed, vz: Math.cos(dir) * speed }), 4);
+      }, { slot, pos, yaw, kind, ticks });
+    // Your own body is drawn from the page's prediction, which runs on past a held tick (a held server state is
+    // replayed with the inputs since): the pose your body is drawn from this frame is held at the tick asked for, and
+    // what the game itself gave it is kept (`__ownPose`) to show the path from prediction to body works.
+    const holdOwn = (kind, ticks) => page.evaluate(([k, t]) => {
+      const s = window.__cs;
+      const v = s.view;
+      const update = (v.__updateAvatars ??= v.updateAvatars);
+      v.updateAvatars = !k ? update : function (poses, ...rest) {
+        const own = poses.find((p) => p.slot === s.slot);
+        if (own) {
+          window.__ownPose = { dodge: own.dodge, ticks: own.dodgeTicks };
+          own.dodge = k;
+          own.dodgeTicks = t;
+        }
+        return update.call(this, poses, ...rest);
+      };
+    }, [kind, ticks]);
+    const letGo = () => sim(page, () => clearInterval(self.__dodgeHold));
+    const frames = [['a', 0.2], ['b', 0.4], ['c', 0.6], ['d', 0.8]];
+    // Another body, 4 m off, side-on: a step to its right (toward the camera's left), then a roll across the view.
+    await place(me, { x: -3, y: 0, z: -12.5 }, 0);
+    await look(0, -0.12);
+    for (const [kind, name, len] of [[1, 'step', 9], [2, 'roll', 33]]) {
+      for (const [f, at] of frames) {
+        const yaw = kind === 2 ? Math.PI / 2 : 0;
+        await hold(bot, { x: kind === 2 ? -4.5 : -3, y: 0, z: -8.5 }, yaw, kind, Math.max(1, Math.round(at * len)));
+        await page.waitForFunction(([s, k]) => (window.__cs.view.avatars.get(s)?.anim?.dodgeKind ?? 0) === k, [bot, kind], { timeout: T(20000), polling: 'raf' }).catch(() => {});
+        await sleep(600);
+        await pic(page, `bot-${name}-${f}`);
+      }
+      await letGo();
+    }
+    await place(bot, { x: 14, y: 0, z: 14 }, 0);
+    // Your own: third person from behind (a step right, a roll ahead), then first person.
+    await place(me, { x: 0, y: 0, z: -12 }, 0);
+    await look(0, -0.1);
+    await page.keyboard.press('KeyH');
+    await page.waitForFunction(() => window.__cs.view.avatars.get(window.__cs.slot)?.root.isEnabled(), null, { timeout: T(5000) }).catch(() => {});
+    for (const [kind, name, len] of [[1, 'step', 9], [2, 'roll', 33]]) {
+      for (const [f, at] of frames) {
+        await hold(me, { x: 0, y: 0, z: -12 }, 0, kind, Math.max(1, Math.round(at * len)));
+        await holdOwn(kind, Math.max(1, Math.round(at * len)));
+        await sleep(700);
+        await pic(page, `own-third-person-${name}-${f}`);
+        if (f === 'a') {
+          const got = await page.evaluate(() => ({ pose: window.__ownPose, kind: window.__cs.view.avatars.get(window.__cs.slot)?.anim?.dodgeKind }));
+          check(got.kind === kind, `your own body is drawn in the ${name} (from the game's pose: ${JSON.stringify(got.pose)})`);
+        }
+      }
+    }
+    await page.keyboard.press('KeyH');
+    for (const [kind, name, len] of [[1, 'step', 9], [2, 'roll', 33]]) {
+      for (const [f, at] of [['a', 0.3], ['b', 0.6]]) {
+        await hold(me, { x: 0, y: 0, z: -12 }, 0, kind, Math.max(1, Math.round(at * len)));
+        await holdOwn(kind, Math.max(1, Math.round(at * len)));
+        await sleep(700);
+        await pic(page, `own-first-person-${name}-${f}`);
+      }
+    }
+    await holdOwn(0, 0);
+    await letGo();
+  }
+  await sim(page, (m) => void (m.__latchStep && (m.step = m.__latchStep)));
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await context.close();
+  livePages.delete(page);
 }
 
 async function slidepeekFlow(browser) {
@@ -17241,7 +17490,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), designer: designerFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, crashreport: crashreportFlow, captions: captionsFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

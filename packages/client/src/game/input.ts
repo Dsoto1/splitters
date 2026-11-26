@@ -1,7 +1,7 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
 import { AimLatch, combatPrefs } from './combatPrefs.ts';
 import { CATEGORY_ACTIONS, bindAction, bindings as loadBindings, onBindingsChange, type Bindings } from './keyBindings.ts';
-import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT } from '@tiletrigger/shared';
+import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, BUTTON_DODGE } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -107,6 +107,8 @@ export class InputState {
   private jumpNext = false;
   private reloadQueued = false;
   private useQueued = false;
+  /** A press of Dodge (V; the pad's B while aiming; touch's Dodge) waiting for the next input: sent once, like Use. */
+  private dodgeQueued = false;
   private throwQueued = false;
   /** G is held: aiming a throw. */
   throwAiming = false;
@@ -387,6 +389,9 @@ export class InputState {
         return;
       case 'use':
         if (once) this.useQueued = true;
+        return;
+      case 'dodge':
+        if (once && foot) this.dodgeQueued = true;
         return;
       case 'respawn':
         if (once) this.respawnQueued = true;
@@ -764,8 +769,13 @@ export class InputState {
     if (pressed(PAD.x)) this.reloadQueued = true;
     if (pressed(PAD.rb)) this.useQueued = true;
     // B: a tap is crouch (a toggle, made when let go); held PAD_PRONE_MS on foot it is prone (a toggle); in a vehicle it
-    // is the duck at once.
-    if (this.inVehicle) {
+    // is the duck at once. Pressed while aiming (LT held or toggled, as the d-pad's lean) it is Dodge, at once: a dodge-step,
+    // or crouched a combat roll; that press never crouches.
+    const aimingForB = this.altTrigger || combatPrefs().aim === 'hold' ? p.zoom || this.active('aim') : this.aimShown;
+    if (!this.inVehicle && pressed(PAD.b) && aimingForB) {
+      this.dodgeQueued = true;
+      this.padBAt = 0;
+    } else if (this.inVehicle) {
       if (pressed(PAD.b)) this.crouchOn = !this.crouchOn;
       this.padBAt = 0;
     } else {
@@ -797,7 +807,7 @@ export class InputState {
     }
     // D-pad left / right: aiming (LT held, or the aim toggled on) they lean; otherwise the previous and next weapon.
     // (Held aim is read fresh: the last sample's answer is a frame old. A toggled aim is the latch.)
-    const aimingNow = this.altTrigger || combatPrefs().aim === 'hold' ? p.zoom || this.active('aim') : this.aimShown;
+    const aimingNow = aimingForB;
     const dpadSide = (d: { at: number; lean: boolean; aimed: boolean }, i: number): { lean: boolean; switched: boolean } => {
       let switched = false;
       if (pressed(i)) {
@@ -965,7 +975,7 @@ export class InputState {
     // button (it holds the fire action) pulls both triggers.
     if (this.pairTrigger && (this.altTap || (this.touchEngaged && this.virt.has('fire')))) buttons |= BUTTON_ALT;
     this.altTap = false;
-    // The second trigger (middle mouse or V: grenade launcher, alt fire…).
+    // The second trigger (middle mouse: grenade launcher, alt fire…).
     if (this.active('altFire')) buttons |= BUTTON_ALT;
     if (this.throwQueued) buttons |= BUTTON_THROW;
     // Quick melee (a side mouse button or Y: a punch or kick, or a swing of a melee weapon in hand).
@@ -979,6 +989,7 @@ export class InputState {
     if (this.inVehicle ? this.crouchOn || this.active('vehicleDown') : this.crouchOn) buttons |= BUTTON_CROUCH;
     if (this.proneOn) buttons |= BUTTON_PRONE;
     if (this.useQueued) buttons |= BUTTON_USE;
+    if (this.dodgeQueued) buttons |= BUTTON_DODGE;
     // The use key (F; or the pad's RB, or the touch Use button) still down: a hold to use (resupplying) goes on while it is.
     if (this.active('use') || this.pad.use) buttons |= BUTTON_USE_HOLD;
     // The lean keys (Q and E), held (both: upright).
@@ -990,6 +1001,7 @@ export class InputState {
     this.jumpNext = false;
     this.reloadQueued = false;
     this.useQueued = false;
+    this.dodgeQueued = false;
     this.throwQueued = false;
     const say = this.sayQueued;
     this.sayQueued = 0;

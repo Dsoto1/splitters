@@ -7,7 +7,7 @@ import { WEAPON_CATEGORY_LABELS } from '../sim/weapons.ts';
 import { isWeaponSetId } from '../sim/weaponSets.ts';
 import { getProp } from '../content/props.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
-import { buildOccupancy, isBuriedPassage, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type CellOccupant, type WorldBox } from './geometry.ts';
+import { MAX_BREAK_WALLS, breakWallEdges, buildOccupancy, isBuriedPassage, cellHasFloor, cellKey, cellSides, dynamicBlockIds, edgeSegments, edgeStoreys, propBoxes, resolveEdge, rotateSide, tallEdgeBlock, yawXZ, type CellOccupant, type WorldBox } from './geometry.ts';
 import { mapGroundBores } from './groundBore.ts';
 import { withPathsLaid } from './paths.ts';
 import { EDGE_STYLE_LABELS, SIDE_DIRS } from './tileOptions.ts';
@@ -467,6 +467,7 @@ function validateExpanded(map: MapDocument, stored: MapDocument, catalog: TileCa
   }
 
   issues.push(...glassIssues(map, catalog));
+  issues.push(...breakWallIssues(map, catalog));
   issues.push(...tallEdgeIssues(map, catalog));
   issues.push(...validateScenario(map));
   issues.push(...resourceBudgetIssues(map));
@@ -515,6 +516,18 @@ export function tallEdgeIssues(map: MapDocument, catalog: TileCatalog = coreCata
       const through = block.what === 'roof' ? `the roof over ${levelWord(block.level - 1)}` : `${levelWord(block.level)}'s floor`;
       out.push({ severity: 'warning', code: 'edge.tall', message: `tile ${occ.placement.id}: ${EDGE_STYLE_LABELS[style]} on its ${side} side (${levelWord(z)}) rises through ${through}; use a one-storey style there, or open the storey above`, targetId: occ.placement.id });
     }
+  }
+  return out;
+}
+
+/** Breakable walls that won't break (sim/breakWalls.ts): past the map's MAX_BREAK_WALLS, or on a piece with a facade. */
+export function breakWallIssues(map: MapDocument, catalog: TileCatalog = coreCatalog): ValidationIssue[] {
+  const out: ValidationIssue[] = [];
+  if (!map.classicStructure.tiles.some((t) => t.breakWalls)) return out;
+  const { over } = breakWallEdges(map, buildOccupancy(map, catalog).cells);
+  if (over) out.push({ severity: 'warning', code: 'breakwall.budget', message: `${over} breakable wall${over === 1 ? '' : 's'} past the map's ${MAX_BREAK_WALLS} stay solid: mark fewer walls breakable` });
+  for (const t of map.classicStructure.tiles) {
+    if (t.breakWalls && t.options?.facade && t.options.facade !== 'none') out.push({ severity: 'warning', code: 'breakwall.facade', message: `tile ${t.id} has breakable walls and a facade: a faced piece's walls stay solid`, targetId: t.id });
   }
   return out;
 }

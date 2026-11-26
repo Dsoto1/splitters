@@ -927,9 +927,6 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 .char-tile.previewing { border: 2px solid var(--cyan); box-shadow: 0 0 0 1px var(--cyan), 0 0 18px rgba(80, 220, 255, 0.35); }
 .char-tile .chosen-badge { position: absolute; top: 4px; right: 4px; padding: 1px 5px; border-radius: 2px; background: var(--orange); color: #141821; font: 700 9px var(--font-display); font-style: normal; letter-spacing: 0.1em; text-transform: uppercase; }
 .char-info .char-actions { display: flex; flex-direction: column; gap: 8px; }
-.char-tile.new { display: flex; flex-direction: column; align-items: center; justify-content: center; color: var(--cyan); border-style: dashed; }
-.char-tile.new b { font: 700 38px var(--font-display); line-height: 1; }
-.char-tile.new span { position: static; background: none; text-align: center; }
 /* Over the hero, right of the grid: drag to turn them round. */
 .char-spin { position: fixed; top: 12vh; bottom: 16vh; right: 0; left: calc(min(900px, 64vw) + 64px); cursor: grab; touch-action: none; display: flex; align-items: flex-end; justify-content: center; }
 .char-spin:active { cursor: grabbing; }
@@ -1233,34 +1230,6 @@ svg.tsym { display: inline-block; width: 0.72em; height: 0.72em; margin-right: 0
 #marker { position: absolute; transform: translate(-50%, -100%); color: var(--accent); font-weight: 700; text-shadow: 0 1px 3px #000; text-align: center; font-size: 12px; }
 #marker::before { content: '◆'; display: block; font-size: 20px; line-height: 20px; }
 
-/* Character Designer (reference board, screen 3) */
-#designer { position: fixed; inset: 0; pointer-events: none; font-size: 13px; z-index: 5; }
-#designer > * { pointer-events: auto; }
-#designer .dz-top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; gap: 22px; padding: 16px 28px; background: linear-gradient(180deg, rgba(8, 11, 19, 0.95), rgba(8, 11, 19, 0.6)); border-bottom: 1px solid var(--line); }
-#designer .dz-top h2 { margin: 0; font: italic 700 28px var(--font-display); text-transform: uppercase; }
-#designer .dz-top h2 em { color: var(--cyan); }
-#designer .dz-left, #designer .dz-right { position: absolute; top: 78px; bottom: 62px; width: min(330px, 30vw); overflow-y: auto; padding: 14px 16px 18px; }
-#designer .dz-left { left: 24px; }
-#designer .dz-right { right: 24px; }
-#designer h3 { margin: 14px 0 8px; font: 700 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.14em; color: var(--muted); }
-#designer h3:first-child { margin-top: 2px; }
-#designer .dz-tile { margin: 0 6px 6px 0; padding: 10px 14px; min-width: 74px; }
-#designer .dz-tile.on, #designer button.on { border-color: var(--cyan); background: rgba(0, 209, 255, 0.16); color: var(--text); box-shadow: inset 0 0 0 1px var(--cyan); }
-#designer .dz-row { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
-#designer .dz-row label { width: 84px; color: var(--muted); font: 600 12px var(--font-display); text-transform: uppercase; letter-spacing: 0.08em; }
-#designer .dz-row select { flex: 1; min-width: 0; }
-#designer .dz-right > input { width: 100%; }
-#designer .dz-swatches button { width: 28px; height: 28px; padding: 0; border-radius: 4px; }
-#designer .dz-swatches button:first-child { width: auto; padding: 0 10px; }
-#designer .dz-swatches input[type='color'] { width: 32px; height: 28px; padding: 0; border: none; background: none; }
-#designer .dz-looks { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
-#designer .dz-look { padding: 0; aspect-ratio: 1; overflow: hidden; background: linear-gradient(160deg, #2a3a55, #121827 70%); }
-#designer .dz-look img { width: 100%; height: 100%; object-fit: cover; display: block; }
-#designer .dz-problems { color: var(--orange); margin: 12px 0 0; }
-#designer .dz-actions { margin-top: 16px; }
-#designer .dz-actions .primary { flex: 1; padding: 11px; }
-#designer .dz-foot { position: absolute; left: 0; right: 0; bottom: 0; height: 50px; justify-content: center; background: rgba(8, 11, 19, 0.92); border-top: 1px solid var(--line); }
-#designer .dz-random { cursor: pointer; }
 .look-row { display: flex; gap: 6px; }
 .look-row select { flex: 1; min-width: 0; }
 .map-desc { margin: 0; color: var(--muted); font-size: 13px; }
@@ -2047,6 +2016,7 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
 #touch-ui .tc-reload { --x: 84px; bottom: 148px; }
 #touch-ui .tc-throw { --x: 14px; bottom: 146px; width: 50px; height: 50px; }
 #touch-ui .tc-use { --x: 204px; bottom: 50px; }
+#touch-ui .tc-dodge { --x: 270px; bottom: 64px; width: 52px; height: 52px; }
 #touch-ui .tc-wheel { --x: 158px; bottom: 160px; width: 68px; height: 68px; border-color: rgba(0, 209, 255, 0.6); font-size: 12px; letter-spacing: -0.02em; }
 /* ("Weapons" ran past the 64 px ring at 11 px; 12 px fits the 68 px one without letter spacing.) */
 /* The scorebar's tap target: invisible, over the scorebar; a tap shows the scoreboard, another hides it. */

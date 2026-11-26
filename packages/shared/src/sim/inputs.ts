@@ -52,8 +52,13 @@ export const BUTTON_USE_HOLD = 32768;
  */
 export const BUTTON_LEAN_LEFT = 65536;
 export const BUTTON_LEAN_RIGHT = 131072;
+/**
+ * Dodge (V; sent once per press, like Use): a quick dodge-step the way you are moving, or a combat roll when crouched or
+ * sprinting (sim/moves.ts DODGE, ROLL). Older hosts mask it off (nothing happens, as before).
+ */
+export const BUTTON_DODGE = 262144;
 /** Every button a host takes (sanitizeInput masks the rest off). */
-export const ALL_BUTTONS = BUTTON_LEAN_LEFT | BUTTON_LEAN_RIGHT | BUTTON_USE_HOLD | BUTTON_AUTO_RELOAD | BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
+export const ALL_BUTTONS = BUTTON_DODGE | BUTTON_LEAN_LEFT | BUTTON_LEAN_RIGHT | BUTTON_USE_HOLD | BUTTON_AUTO_RELOAD | BUTTON_THIRD_PERSON | BUTTON_STEER_LOOK | BUTTON_JUMP | BUTTON_FIRE | BUTTON_RELOAD | BUTTON_ZOOM | BUTTON_USE | BUTTON_ALT | BUTTON_THROW | BUTTON_SPRINT | BUTTON_CROUCH | BUTTON_PRONE | BUTTON_RESPAWN | BUTTON_MELEE;
 
 /** One tick of player intent. Humans and Player Bots produce exactly the same structure. */
 export interface PlayerInput {

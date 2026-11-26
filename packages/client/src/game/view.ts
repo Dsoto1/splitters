@@ -1,5 +1,6 @@
 // Ray's side effect (scene picking, camera.getForwardRay): Babylon's pointer handling can pick on any scene, and
 // only the MapMaker imported it before it loaded on demand.
+import { BreakWallVisuals } from './breakWallVisuals.ts';
 import { IndoorFill } from './indoorFill.ts';
 import '@babylonjs/core/Culling/ray';
 import type { PerfCounter } from '@babylonjs/core/Misc/perfCounter';
@@ -90,6 +91,9 @@ import {
   NPC_LOOK_PREFIX,
   type BloodKind,
   EffectsWorld,
+  buildMapDecor,
+  cachedWallSections,
+  type WallSection,
   debrisBurst,
   vehicleDebris,
   mapTerrainMesh,
@@ -117,6 +121,7 @@ import {
   indoorProps,
   TICK_RATE,
   materialSurface,
+  dodgeTicks,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
 import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
@@ -802,7 +807,15 @@ export class GameView {
     styler.terrainDrawStep = loadGraphicsQuality() === 'low' ? 2 : 1;
     // Soft paint borders are a second, see-through layer over the border cells: not on Low.
     styler.terrainBlend = loadGraphicsQuality() !== 'low';
-    styler.build(doc, boxes);
+    // Breakable walls (shared sim/breakWalls.ts) are drawn apart, so they can go (breakWallVisuals.ts).
+    const walls = cachedWallSections(doc, boxes);
+    styler.build(doc, boxes, 'map', walls.length ? (b) => b.breakWall !== undefined : undefined);
+    this.breakWalls?.dispose();
+    this.breakWalls = null;
+    if (walls.length) {
+      this.breakWalls = new BreakWallVisuals(this.scene, styler);
+      this.breakWalls.build(doc, [...boxes, ...buildMapDecor(doc)].filter((b) => b.breakWall === undefined));
+    }
     // The level's per-style meshes merged across styles over array textures (levelMerge.ts; WebGL2): the loading gate
     // (prewarm) waits for it, so its shader is built before play.
     const engine = this.scene.getEngine() as { isWebGPU?: boolean; webGLVersion?: number };
@@ -833,6 +846,7 @@ export class GameView {
     this.physics?.free();
     try {
       this.physics = new EffectsWorld(boxes, mapTerrainMesh(doc), environmentShapes(doc));
+      for (const w of walls) this.physics.addWallRemains(w.k, w.remains);
       // A blast that kills ten takes its ragdolls from the pool rather than allocating them mid-fight.
       this.physics.prewarm(RAGDOLL_PREWARM, RAGDOLL_PREWARM_BODIES);
     } catch {
@@ -2981,6 +2995,7 @@ export class GameView {
           stance: p.stance ?? 0,
           sprinting: !!p.sprinting,
           ...(p.sliding ? { sliding: true } : {}),
+          ...(p.dodge ? { dodge: p.dodge, dodgePhase: Math.min(1, (p.dodgeTicks ?? 0) / dodgeTicks(p.dodge, 1 / TICK_RATE)) } : {}),
           ...(p.lean ? { lean: p.lean } : {}),
           ...(sit ? { seated: true, legDrop: sit.legDrop, straddle: sit.straddle ?? 0, seatFacing: angleDelta(seatDrawnYaw(p.yaw, sit.yaw), sit.yaw) } : {}),
         });
@@ -3951,7 +3966,11 @@ export class GameView {
       const s = states.get(i);
       if (s) this.setPropShown(node, s[0] > 0);
     }
+    this.breakWalls?.apply(states, this.physics);
   }
+
+  /** Play's breakable walls (breakWallVisuals.ts), drawn apart from the level; null on a map without any. */
+  breakWalls: BreakWallVisuals | null = null;
 
   /** A breakable prop drawn or not: its node, and its copy in a prop batch (PropBatches.shown) when it changes. */
   private setPropShown(node: TransformNode, on: boolean): void {
@@ -4345,6 +4364,24 @@ export class GameView {
 
   private currentShake(): number {
     return shakeLeft(this.shakeAmount, performance.now() - this.shakeAt);
+  }
+
+  /**
+   * A breakable wall giving way (shared sim/breakWalls.ts): chunks in its colour along the hole, low and spread, and
+   * the wall's sound from the session. Nothing bright: Reduce flashing has nothing to calm (the chunks are the wall's
+   * colour, unlit by the blast).
+   */
+  wallBreak(wall: WallSection, color: string): void {
+    const b = wall.bounds;
+    const alongX = b.half.x >= b.half.z;
+    const span = Math.max(0.5, (alongX ? b.half.x : b.half.z) - 0.8);
+    const foot = b.center.y - b.half.y;
+    const n = Math.max(2, Math.min(5, Math.round(span)));
+    for (let k = 0; k < n; k++) {
+      const u = n === 1 ? 0 : -span + (2 * span * k) / (n - 1);
+      const at = { x: b.center.x + (alongX ? u : 0), y: foot + 1.2, z: b.center.z + (alongX ? 0 : u) };
+      this.debris(at, color, 0.6, 7, 1.1);
+    }
   }
 
   /** Chunks flying out of a broken crate, barrel or wall: real little bodies that bounce and settle (falls back to a canned arc without physics). */

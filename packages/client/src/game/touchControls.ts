@@ -24,6 +24,7 @@ const DEADZONE = 0.12;
  *   Aim         aim down the sights: held, or a tap to aim and another to stop (Aim: Hold / Toggle,
  *               combatPrefs.ts; Toggle by default on touch)
  *   Melee       a punch, kick or swing (Y)
+ *   Dodge       a dodge-step the way the pad points; crouched or sprinting, a combat roll (V)
  *   Reload, Use (E: vehicles, doors, pickups), Throw (hold to aim, let go), Weapons (the wheel), Orders
  *   (Fireteams' order wheel, while you lead a squad), pause
  *   scorebar    tap to show the scoreboard, tap again to hide it
@@ -71,6 +72,7 @@ export class TouchControls {
     const fire = btn('tc-fire', 'Fire', 'Fire (drag to aim)');
     this.aimBtn = btn('tc-aim', 'Aim', 'Aim down the sights');
     const melee = btn('tc-melee', 'Melee', 'Quick melee');
+    const dodge = btn('tc-dodge', 'Dodge', 'Dodge: a quick step; crouched or sprinting, a combat roll');
     const reload = btn('tc-reload', 'Reload', 'Reload');
     const use = btn('tc-use', 'Use', 'Use: vehicles, doors, pickups');
     const thrw = btn('tc-throw', 'Throw', 'Hold to aim a throw, let go to throw');
@@ -82,7 +84,7 @@ export class TouchControls {
     this.scoresBtn = btn('tc-scores', '', 'Scores: tap to show or hide the scoreboard');
     // The action buttons in one cluster (scaled together from its bottom corner; left-handed puts it on the left).
     const cluster = div('tc-cluster');
-    cluster.append(fire, this.aimBtn, melee, reload, use, thrw, this.wheelBtn, this.ordersBtn);
+    cluster.append(fire, this.aimBtn, melee, dodge, reload, use, thrw, this.wheelBtn, this.ordersBtn);
     this.el.append(look, pad, cluster, pause, this.scoresBtn);
     // Watching (dead, or spectating): previous / next player, follow or free camera, and Join (spectators).
     this.watchBar = div('tc-watch');
@@ -189,6 +191,7 @@ export class TouchControls {
         },
       });
     holdKey(melee, 'melee');
+    holdKey(dodge, 'dodge');
     holdKey(reload, 'reload');
     holdKey(use, 'use');
     holdKey(thrw, 'throw');

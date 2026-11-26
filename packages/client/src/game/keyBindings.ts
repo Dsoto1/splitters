@@ -58,6 +58,7 @@ export const BIND_ACTIONS: readonly BindAction[] = [
   { id: 'prone', label: 'Prone (toggle)', group: 'move', places: ['foot'], keys: ['KeyZ', ''] },
   { id: 'leanLeft', label: 'Lean left (peek; hold)', group: 'move', places: ['foot'], keys: ['KeyQ', ''] },
   { id: 'leanRight', label: 'Lean right (peek; hold)', group: 'move', places: ['foot'], keys: ['KeyE', ''] },
+  { id: 'dodge', label: 'Dodge · crouched or sprinting: combat roll', group: 'move', places: ['foot'], keys: ['KeyV', ''], note: 'Uses stamina. A quick step the way you move (back, with no direction).' },
   { id: 'thirdPerson', label: 'Third person', group: 'move', places: ['foot'], keys: ['KeyH', ''] },
   { id: 'lookLeft', label: 'Look left (touchpad, keyboard)', group: 'move', places: PLAY, keys: ['ArrowLeft', ''] },
   { id: 'lookRight', label: 'Look right', group: 'move', places: PLAY, keys: ['ArrowRight', ''] },
@@ -66,7 +67,7 @@ export const BIND_ACTIONS: readonly BindAction[] = [
   // Combat
   { id: 'fire', label: 'Fire', group: 'combat', places: PLAY, keys: ['Mouse0', 'AltLeft'] },
   { id: 'aim', label: 'Aim down sights / scope', group: 'combat', places: PLAY, keys: ['Mouse2', 'Backquote'], note: 'Hold or toggle: Accessibility → Aim.' },
-  { id: 'altFire', label: 'Second trigger (alt fire)', group: 'combat', places: PLAY, keys: ['Mouse1', 'KeyV'] },
+  { id: 'altFire', label: 'Second trigger (alt fire)', group: 'combat', places: PLAY, keys: ['Mouse1', ''], note: 'Its V went to Dodge (2026-11-25): a touchpad without a middle button can give it a key here.' },
   { id: 'melee', label: 'Quick melee', group: 'combat', places: ['foot'], keys: ['MouseSide', 'KeyY'], note: 'A punch; a kick on the move or after a punch.' },
   { id: 'reload', label: 'Reload', group: 'combat', places: PLAY, keys: ['KeyR', ''] },
   { id: 'throw', label: 'Throw grenade or mine (hold to aim)', group: 'combat', places: ['foot'], keys: ['KeyG', ''] },
@@ -363,7 +364,7 @@ export function keyFor(action: string, b: Bindings = bindings()): string {
 
 /** What a controller uses for an action (input.ts pollPad); an action not here has no button. */
 export const PAD_HINTS: Readonly<Record<string, string>> = {
-  use: 'RB', jump: 'A', vehicleUp: 'A', crouch: 'B', vehicleDown: 'B', reload: 'X', fire: 'RT', aim: 'LT', throw: 'LB', sprint: 'L3',
+  use: 'RB', jump: 'A', vehicleUp: 'A', crouch: 'B', vehicleDown: 'B', reload: 'X', fire: 'RT', aim: 'LT', throw: 'LB', sprint: 'L3', dodge: 'LT + B',
   nextWeapon: 'Y', thirdPerson: 'R3', vehicleCamera: 'R3', ping: 'D-pad up', respawn: 'D-pad down', specNext: 'RB', specPrev: 'LB', specCamera: 'Y',
 };
 

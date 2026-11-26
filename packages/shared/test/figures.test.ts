@@ -18,7 +18,7 @@ describe('the Figure\'s looks', () => {
   it('a retired id is a mapping only, to a roster look', () => {
     for (const [from, to] of Object.entries(RETIRED_LOOKS)) {
       expect(CORE_LOOKS.some((l) => l.id === from), from).toBe(false);
-      // (Linktifa stays drawable as the Designer's base: NPC_KEPT_LOOKS.)
+      // (A look an NPC role is still drawn as would stay drawable: NPC_KEPT_LOOKS, empty now.)
       if (!NPC_KEPT_LOOKS.has(from)) expect(getLook(from).id, from).toBe(getLook(to).id);
     }
     expect(getLook('core.rhinojuggernaut').id).toBe('core.gorillag');

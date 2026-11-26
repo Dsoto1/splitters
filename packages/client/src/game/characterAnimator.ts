@@ -55,6 +55,9 @@ export interface MotionState {
   sliding?: boolean;
   /** Leaning (peek), in steps (+ right; LEAN_STEPS full): the spine rolls out to that side, the legs stay. */
   lean?: number;
+  /** A dodge-step (1) or combat roll (2) under way (shared sim/moves.ts DODGE, ROLL), and how far into it (0..1). */
+  dodge?: 1 | 2;
+  dodgePhase?: number;
 }
 
 /** A full lean in steps (shared sim/moves.ts LEAN.steps). */
@@ -66,6 +69,16 @@ const LEAN_STEPS = 10;
 const LEAN_SPINE_ROLL = 0.65;
 /** Sliding: the whole body tipped back (rad, negative is back), over the feet. */
 const SLIDE_TIP = -0.42;
+/**
+ * The combat roll, drawn: the crouch pose turns a full turn about the body's middle (model m over the feet) toward the
+ * way it rolls, done by ROLL_DONE of the roll so a snapshot's lag never leaves it part way round. Not on your own body
+ * in first person (the camera stays level: session.ts).
+ */
+const ROLL_PIVOT = 0.55;
+const ROLL_DONE = 0.85;
+/** The dodge-step, drawn: the body leans into the step (rad) and hops a little (model m), most at its middle. */
+const STEP_LEAN = 0.16;
+const STEP_HOP = 0.05;
 
 /**
  * Your own whole body seen from its eyes (full-body first person): the view
@@ -844,7 +857,7 @@ export class CharacterAnimator {
     else if (s.airborne) want = 'jump_air';
     else if (this.rolls) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else if (proneClips) want = s.speed < 0.3 ? 'prone_idle' : 'prone_crawl';
-    else if (s.sliding) want = 'crouch_idle';
+    else if (s.sliding || s.dodge === 2) want = 'crouch_idle';
     else if (low) want = s.speed < 0.4 ? 'crouch_idle' : 'crouch_walk';
     else if (s.speed < (this.current === 'run' ? MOVE_STOP : MOVE_START)) want = this.armed || !this.ch.clips.has('idle') ? 'aim_idle' : 'idle';
     else want = 'run';
@@ -865,6 +878,14 @@ export class CharacterAnimator {
     const leanTarget = s.alive && !s.seated && !s.celebrate ? Math.max(-1, Math.min(1, (s.lean ?? 0) / LEAN_STEPS)) : 0;
     this.leanNow += (leanTarget - this.leanNow) * Math.min(1, dt * 16);
     if (Math.abs(this.leanNow - leanTarget) < 1e-3) this.leanNow = leanTarget;
+    // A dodge-step or roll: which way (captured as it starts, the body's frame) and how far round the roll is.
+    const dodging = s.dodge && !s.seated && !s.celebrate ? s.dodge : 0;
+    if (dodging && dodging !== this.dodgeKind) this.dodgeDir = s.speed > 0.3 ? s.moveAngle : dodging === 2 ? 0 : Math.PI;
+    this.dodgeKind = dodging;
+    const phase = Math.max(0, Math.min(1, s.dodgePhase ?? 0));
+    const smooth = (x: number) => x * x * (3 - 2 * x);
+    this.tumble = dodging === 2 && !this.fp ? Math.PI * 2 * smooth(Math.min(1, phase / ROLL_DONE)) : 0;
+    this.stepTip = dodging === 1 && !this.fp ? Math.sin(Math.PI * phase) : 0;
     // Into and out of a seat quickly (getting in is instant in the sim).
     const sitTarget = s.seated ? 1 : 0;
     if (s.seated && s.legDrop !== undefined) this.legDrop = s.legDrop;
@@ -1585,6 +1606,13 @@ export class CharacterAnimator {
   private slideTip = 0;
   private leanNow = 0;
   private appliedSlide = 0;
+  /** A dodge under way (MotionState.dodge), its way in the body's frame (rad, like moveAngle), the roll's turn so far (rad) and the step's lean (0..1). */
+  private dodgeKind = 0;
+  private dodgeDir = 0;
+  private tumble = 0;
+  private stepTip = 0;
+  private appliedTumble = 0;
+  private appliedStep = 0;
   private lying = false;
   /** 0..1: how far into the seated pose (MotionState.seated). */
   private sit = 0;
@@ -1603,10 +1631,12 @@ export class CharacterAnimator {
   private applied = 0;
 
   private applyProne(): void {
-    if (this.prone === this.applied && this.sit === this.appliedSit && this.slideTip === this.appliedSlide) return;
+    if (this.prone === this.applied && this.sit === this.appliedSit && this.slideTip === this.appliedSlide && this.tumble === this.appliedTumble && this.stepTip === this.appliedStep) return;
     this.applied = this.prone;
     this.appliedSit = this.sit;
     this.appliedSlide = this.slideTip;
+    this.appliedTumble = this.tumble;
+    this.appliedStep = this.stepTip;
     const root = this.ch.root;
     this.rootBase ??= root.position.clone();
     root.rotation.x = this.prone + this.slideTip;
@@ -1617,6 +1647,20 @@ export class CharacterAnimator {
     // Sliding, the hips drop toward the ground as the body tips back over the feet.
     const slid = this.slideTip / SLIDE_TIP;
     root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT) - drop - 0.12 * slid, this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone + this.slideTip));
+    // A roll turns the body about its middle toward the way it goes (a step leans it into the step and lifts it a
+    // little); the axis lies across that way: rolling ahead (+Z) turns about +X, which tips the top forward.
+    const turn = this.tumble + this.stepTip * STEP_LEAN;
+    if (turn) {
+      const axis = new Vector3(Math.cos(this.dodgeDir), 0, -Math.sin(this.dodgeDir));
+      const q = Quaternion.RotationAxis(axis, turn).multiply(Quaternion.FromEulerAngles(root.rotation.x, root.rotation.y, root.rotation.z));
+      if (root.rotationQuaternion) root.rotationQuaternion.copyFrom(q);
+      else root.rotationQuaternion = q;
+      // About the middle, not the feet: the pivot stays where it was.
+      const pivot = new Vector3(0, this.tumble ? ROLL_PIVOT : 0, 0);
+      const moved = pivot.subtract(pivot.applyRotationQuaternion(Quaternion.RotationAxis(axis, turn)));
+      root.position.addInPlace(moved);
+      root.position.y += this.stepTip * STEP_HOP;
+    } else if (root.rotationQuaternion) root.rotationQuaternion = null;
   }
 
   /** Bend the legs over the seat (after the clips); measures the hip height first, while it can (not lying down). */

@@ -81,6 +81,9 @@ import {
   fireModeCount,
   DESTRUCTIBLE_SPECS,
   glassAt,
+  cachedWallSections,
+  resolveSurface,
+  wallSectionAt,
   NPC_ROLES,
   NPC_ROLE_SPECS,
   isCreature,
@@ -162,8 +165,9 @@ import {
   MATCH_LIMITS,
   MATCH_MIN_SECONDS,
   getLook as cardLook,
+  DEFAULT_LOOK,
 } from '@tiletrigger/shared';
-import { LEAN, PROJECTILE_VISUALS, leanShift } from '@tiletrigger/shared';
+import { LEAN, PROJECTILE_VISUALS, leanShift, dodgeTicks } from '@tiletrigger/shared';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
@@ -270,6 +274,13 @@ const moveKeys = (): string => {
 const MULTI_KILL_MS = 4000;
 /** The view's roll at a full lean (rad, about 4°; Camera shake scales it: lean view in session.ts leanView). */
 const LEAN_VIEW_ROLL = 0.07;
+/**
+ * First person through a dodge-step or a combat roll (sim/moves.ts DODGE, ROLL): never a flip. The eye drops to the
+ * crouch's height for a roll (the stance's own eased drop) and the view banks at most this far toward a sideways step or
+ * roll, most at its middle (rad: about 2° and 3.5°), scaled by Camera shake like the lean's roll, none with reduce-motion.
+ */
+const DODGE_VIEW_ROLL = 0.035;
+const ROLL_VIEW_ROLL = 0.06;
 /** How long a board that has just joined the loading screen stays before the countdown (ms). */
 const LOADING_BOARD_HOLD_MS = 1600;
 /** A slow load puts the board on the loading screen this long after the files start coming in (ms), half way or not. */
@@ -504,7 +515,7 @@ export class GameSession {
   private testJackpot(): void {
     if (!this.map) return;
     this.rouletteHud ??= new RouletteHud(this.hud, this.input, this.map, () => this.rules, () => this.slot, this.opts.portraitOf);
-    this.rouletteHud.spawned(this.looks.get(this.slot) ?? 'core.ranger', 1);
+    this.rouletteHud.spawned(this.looks.get(this.slot) ?? DEFAULT_LOOK, 1);
   }
 
   /** A player plays another look from now (Random characters): their body, size, portrait and arms follow. */
@@ -826,7 +837,14 @@ export class GameSession {
     const stance = (local.state.stance ?? 0) as 0 | 1 | 2;
     const side = leanShift(lean, stance, STANCES[stance].eye, local.scale).side;
     const calm = rollScale();
-    const roll = -(lean / LEAN.steps) * LEAN_VIEW_ROLL * calm;
+    let roll = -(lean / LEAN.steps) * LEAN_VIEW_ROLL * calm;
+    // A dodge banks the view a little toward a sideways move (its push, across the view's right), most at its middle.
+    const d = local.alive && !this.seat ? local.state : null;
+    if (d?.dodge) {
+      const kind = d.roll ? 2 : 1;
+      const across = Math.max(-1, Math.min(1, ((d.vx ?? 0) * Math.cos(this.input.yaw) - (d.vz ?? 0) * Math.sin(this.input.yaw)) / Math.max(1, Math.hypot(d.vx ?? 0, d.vz ?? 0))));
+      roll -= across * Math.sin(Math.PI * Math.min(1, d.dodge / dodgeTicks(kind, TICK_DT))) * (kind === 2 ? ROLL_VIEW_ROLL : DODGE_VIEW_ROLL) * calm;
+    }
     const k = Math.min(1, dt * 18);
     this.leanSide += (side - this.leanSide) * k;
     this.leanRoll += (roll - this.leanRoll) * Math.min(1, dt * 10);
@@ -2416,6 +2434,8 @@ export class GameSession {
         this.hud.minimap.setMap(loaded.map);
         void this.opts.portrait?.then((src) => this.portraitLook === null && this.hud.setPortrait(src), () => undefined);
         const geometry = buildMapGeometry(loaded.map);
+        // Breakable walls from the geometry just built (sim/breakWalls.ts: the view, the prediction bodies and the effects read them).
+        cachedWallSections(loaded.map, geometry);
         this.map = loaded.map;
         this.hostPanel.setMap(loaded.map);
         this.view.buildMap(loaded.map, geometry);
@@ -2918,8 +2938,14 @@ export class GameSession {
             const e = this.map?.entities[ev.i];
             // Glass (window panes past the entities, glass blocks, Window panes): a shower of shards.
             const pane = this.view.scenario.glass.paneAt(ev.i) ?? (this.map ? glassAt(this.map, ev.i) : null);
+            const wall = !pane && this.map ? wallSectionAt(this.map, ev.i) : null;
             if (pane) {
               this.view.glassShards(pane.box, pane.tint ?? '#d4eef2');
+            } else if (wall && this.map) {
+              // A breakable wall (shared sim/breakWalls.ts): chunks in its own colour out of the hole, both ways.
+              const tile = this.map.classicStructure.tiles.find((t) => t.id === wall.boxes[0]?.sourceId);
+              const style = resolveSurface(this.map, tile, 'walls');
+              this.view.wallBreak(wall, style.tint ?? style.material.base);
             } else if (e?.kind === 'destructible') {
               const spec = DESTRUCTIBLE_SPECS[e.model];
               const h = spec.half;
@@ -3773,6 +3799,8 @@ export class GameSession {
         if (w?.magazine && ammo && ammo[0] <= Math.max(1, Math.floor(w.magazine * 0.25)) && ammo[1] > 0 && local.reloadTicks === 0) tips.trigger('reload', t);
         const enter = this.mounts?.enterable(local.state.pos);
         if (enter && enter.mount.def.kind === 'vehicle') tips.trigger('vehicle', t);
+        // Hurt and still standing: the dodge-step and roll (sim/moves.ts).
+        if (local.health < PLAYER.maxHealth * 0.7) tips.trigger('dodge', t);
         // A pickup a few metres ahead.
         this.coachPickups ??= (this.map?.entities ?? []).filter((e) => e.kind === 'pickup').map((e) => ({ x: e.position[0], z: e.position[2] }));
         const fx = Math.sin(this.input.yaw);
@@ -4129,7 +4157,7 @@ export class GameSession {
       const pairView = weapon && pairSpec ? { raise: akimboRaise(weapon, pairSpec) / TICK_RATE, reload: turn2 ? reloadDipAmount(local.reloadTicks2, local.reload2?.total ?? weapon.reloadTicks) : 0 } : null;
       // A thrown spear has left your hands (inHand: nothing to draw until it is picked up again).
       const thrownAway = !!weapon && inHand(weapon) && local.inventory.get(weaponCode(weapon))?.[0] === 0;
-      this.view.updateViewmodel(dt, { moving, raise: weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: thrownAway || zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
+      this.view.updateViewmodel(dt, { moving, raise: local.state.roll ? 1 : weapon && weapon.raiseTicks ? Math.min(1, local.raiseTicks / weapon.raiseTicks) : 0, reload: reloadFrac, hidden: thrownAway || zoomed || (this.thirdPerson && !ride) || this.rideView === 'chase', ads: this.adsAmount, speed: this.drawnSpeed, pair: pairView });
       // The scope's reticle (100 units to the shorter side's edge) with its holdover marks (spec §5) at this zoom.
       this.hud.setScope(zoomed, zoomed ? holdoverFor(weapon!, local.rules, Math.tan(fov / 2) * Math.min(1, innerWidth / Math.max(1, innerHeight))) : [], (zoomed && opticFor(weapon!)?.kind.reticle) || 'fine');
       // The HUD's aim dot only for a gun with neither sights nor an optic: irons aim with the front sight, a glass carries its own mark.
@@ -4237,7 +4265,7 @@ export class GameSession {
     // Your own character drawn where prediction has you (not the delayed server copy): in third person, and in
     // full-body first person (under the camera).
     const mine = local?.alive && !this.seat ? poses.find((p) => p.slot === this.slot) : undefined;
-    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, sliding: !!local.state.slide, lean: local.state.lean ?? 0, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0), pair: local.paired, pairDip: this.ownPairDip(local) });
+    if (mine && local) Object.assign(mine, { x: this.drawnPos.x, y: this.drawnPos.y, z: this.drawnPos.z, yaw: this.input.yaw, pitch: this.input.pitch, stance: local.state.stance ?? 0, grounded: local.state.grounded, weapon: local.held, chute: local.state.chute ?? 0, sprinting: !!local.state.sprint, sliding: !!local.state.slide, dodge: local.state.dodge ? (local.state.roll ? 2 : 1) : undefined, dodgeTicks: local.state.dodge, lean: local.state.lean ?? 0, zip: local.state.zip, zipSpeed: Math.abs(local.state.zv ?? 0), pair: local.paired, pairDip: this.ownPairDip(local) });
     // Drawn as others see you: on foot in third person, and in a seat in the chase view (ownBody.ts).
     const bodyDrawn = ownBodyDrawn({ alive: !!local?.alive, seated: !!this.seat, rideView: this.rideView, thirdPerson: this.thirdPerson, tpClose: this.tpClose });
     const self = bodyDrawn ? mine : undefined;

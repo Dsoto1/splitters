@@ -6,8 +6,8 @@ a filmic, calmer grade for the world (this page), and real surfaces on man-made 
 
 ## The grade (`applyWorldGrade`, game/graphicsSettings.ts)
 
-Matches and MapMaker draw through it; the main menu's lineup, Character Select's portraits and the
-Character Designer keep the brighter menu grade (`applyToneMapping`), and HTML (HUD, menus) never goes
+Matches and MapMaker draw through it; the main menu's lineup, Character Select's portraits
+keep the brighter menu grade (`applyToneMapping`), and HTML (HUD, menus) never goes
 through either.
 
 - **Tone mapping**: ACES (filmic) at exposure 1.05 (was 1.15) and contrast 1.15 (was 1.12): whites roll
