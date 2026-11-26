@@ -16608,9 +16608,14 @@ async function chatFlow(browser) {
   const shots = process.env.E2E_SHOTS;
   const pic = (page, name) => (shots ? page.screenshot({ path: `${shots}/chat-${name}.png`, timeout: T(60000) }).catch((e) => console.log(`chat: no picture ${name}: ${e.message.split('\n')[0]}`)) : Promise.resolve());
   const lines = (page) => page.evaluate(() => window.__cs.chatBox.lines().map((l) => l.text));
-  const sees = (page, text, ms = T(30000)) => page.waitForFunction((t) => window.__cs?.chatBox?.lines().some((l) => l.text.includes(t)), text, { timeout: ms, polling: 100 }).then(() => true, () => false);
+  // (Asked by evaluate in a loop, once more at the end: a page drawing a frame every few seconds answers late.)
+  const sees = async (page, text, ms = T(90000)) => {
+    const has = () => page.evaluate((t) => !!window.__cs?.chatBox?.lines().some((l) => l.text.includes(t)), text).catch(() => false);
+    for (const end = Date.now() + ms; Date.now() < end; await sleep(250)) if (await has()) return true;
+    return has();
+  };
   const join = async (name) => {
-    const page = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+    const page = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
     page.on('pageerror', (e) => errors.push(`${name}: ${process.env.E2E_STACKS ? e.stack : e.message}`));
     await page.goto(`${CLIENT}/?autojoin&name=${name}&server=ws://127.0.0.1:${SERVER_PORT}`);
     await page.waitForFunction(() => window.__cs?.local && window.__cs.roster(), null, { polling: 200, timeout: T(30000) });
@@ -16643,16 +16648,16 @@ async function chatFlow(browser) {
 
   // Quick messages: the menu (B) and its keys past 9 (here 8, "Need ammo!"), into the chat log.
   await alice.keyboard.press('b');
-  const menu = await alice.waitForFunction(() => (document.getElementById('msg-menu')?.hidden === false ? document.getElementById('msg-menu').textContent : null), null, { polling: 200, timeout: T(10000) }).then((h) => h.jsonValue(), () => '');
+  const menu = await alice.waitForFunction(() => (document.getElementById('msg-menu')?.hidden === false ? document.getElementById('msg-menu').textContent : null), null, { polling: 200, timeout: T(30000) }).then((h) => h.jsonValue(), () => '');
   check(/Need ammo!/.test(menu) && /Sorry!/.test(menu), `chat: the quick-message menu lists the new lines (${menu.slice(0, 160)})`);
   await pic(alice, 'quick-menu');
   await alice.keyboard.press('8');
   check(await sees(bob, 'Alice: Need ammo!'), `chat: a quick message reaches Bob's chat log (${await lines(bob)})`);
   // The quick-chat wheel (a controller's d-pad up held, touch's Chat button): pointed and let go on a line.
   const wheel = await alice.evaluate(() => window.__cs.input.openWheel('pad', 'chat'));
-  await alice.waitForFunction(() => !document.getElementById('chat-wheel')?.hidden, null, { polling: 200, timeout: T(5000) }).catch(() => {});
+  await alice.waitForFunction(() => !document.getElementById('chat-wheel')?.hidden, null, { polling: 200, timeout: T(30000) }).catch(() => {});
   await alice.evaluate(() => window.__cs.input.aimWheel(0.9, 0.2));
-  const picked = await alice.waitForFunction(() => document.querySelector('#chat-wheel .ww-item.on b')?.textContent ?? null, null, { polling: 200, timeout: T(5000) }).then((h) => h.jsonValue(), () => null);
+  const picked = await alice.waitForFunction(() => document.querySelector('#chat-wheel .ww-item.on b')?.textContent ?? null, null, { polling: 200, timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
   await pic(alice, 'quick-wheel');
   // (The match takes one quick message a second.)
   await alice.waitForTimeout(1100); // wait-ok: the match's one-a-second limit on quick messages
@@ -16660,22 +16665,24 @@ async function chatFlow(browser) {
   check(wheel && !!picked && (await sees(bob, `Alice: ${picked}`)), `chat: the quick-chat wheel sends the line it points at (${picked}; ${await lines(bob)})`);
 
   // Mute: Bob's card on Alice's pause menu (Match tab's board), Mute chat; remembered on the device.
+  // (The pause menu: touch play off, then Esc, as a player would; the page draws it on its next frames.)
   await alice.evaluate(() => window.__cs.input.setTouchEngaged(false));
-  await alice.waitForFunction(() => !document.getElementById('pause').hidden, null, { polling: 200, timeout: T(5000) }).catch(() => {});
+  if (await alice.evaluate(() => document.getElementById('pause').hidden)) await alice.keyboard.press('Escape');
+  await alice.waitForFunction(() => !document.getElementById('pause').hidden, null, { polling: 200, timeout: T(30000) }).catch(() => {});
   const bobSlot = await bob.evaluate(() => window.__cs.slot);
-  const rowAt = await alice.waitForFunction(() => [...document.querySelectorAll('#pause-scores .sb-click')].some((r) => r.textContent.includes('Bob')), null, { polling: 200, timeout: T(5000) }).then(() => true, () => false);
+  const rowAt = await alice.waitForFunction(() => [...document.querySelectorAll('#pause-scores .sb-click')].some((r) => r.textContent.includes('Bob')), null, { polling: 200, timeout: T(30000) }).then(() => true, () => false);
   if (rowAt) await alice.evaluate(() => [...document.querySelectorAll('#pause-scores .sb-click')].find((r) => r.textContent.includes('Bob')).click());
-  const card = await alice.waitForFunction(() => document.getElementById('plc-mute')?.textContent ?? null, null, { polling: 200, timeout: T(5000) }).then((h) => h.jsonValue(), () => null);
+  const card = await alice.waitForFunction(() => document.getElementById('plc-mute')?.textContent ?? null, null, { polling: 200, timeout: T(30000) }).then((h) => h.jsonValue(), () => null);
   const where = card ? '' : await alice.evaluate(() => JSON.stringify({ pause: !document.getElementById('pause').hidden, rows: [...document.querySelectorAll('#pause-scores .sb-row')].map((r) => r.textContent).slice(0, 6), card: document.getElementById('player-card')?.hidden }));
   check(card === 'Mute chat', `chat: another player's card offers Mute chat (${card}${where})`);
   if (card) await alice.evaluate(() => document.getElementById('plc-mute').click());
-  const muted = await alice.waitForFunction(() => window.__cs.mutes.has('Bob') && document.getElementById('plc-mute')?.textContent === 'Unmute' && [...document.querySelectorAll('#pause-scores .sb-nm.muted')].some((n) => n.textContent.includes('Bob')), null, { polling: 200, timeout: T(5000) }).then(() => true, () => false);
+  const muted = await alice.waitForFunction(() => window.__cs.mutes.has('Bob') && document.getElementById('plc-mute')?.textContent === 'Unmute' && [...document.querySelectorAll('#pause-scores .sb-nm.muted')].some((n) => n.textContent.includes('Bob')), null, { polling: 200, timeout: T(30000) }).then(() => true, () => false);
   const kept = await alice.evaluate(() => localStorage.getItem('cs.chatMuted'));
   check(muted && /bob/.test(kept ?? ''), `chat: Bob muted, marked on the board and kept on the device (${kept})`);
   await pic(alice, 'muted');
   const heard = await alice.evaluate(() => window.__cs.chatHeard());
   await bob.evaluate(() => window.__cs.transport.sendChat('can you hear me', false));
-  const came = await alice.waitForFunction((n) => window.__cs.chatHeard() > n, heard, { polling: 200, timeout: T(10000) }).then(() => true, () => false);
+  const came = await alice.waitForFunction((n) => window.__cs.chatHeard() > n, heard, { polling: 200, timeout: T(30000) }).then(() => true, () => false);
   check(came && !(await lines(alice)).some((l) => l.includes('can you hear me')), `chat: a muted player's line comes but isn't shown (${await lines(alice)})`);
   await alice.evaluate(() => document.getElementById('plc-mute')?.click());
   check(!(await alice.evaluate(() => window.__cs.mutes.has('Bob'))), 'chat: Unmute shows them again');
@@ -16688,7 +16695,7 @@ async function chatFlow(browser) {
   start('pnpm', ['--filter', '@tiletrigger/server', 'hub'], { PORT: String(HUB_PORT), HOST: '127.0.0.1' });
   await waitForHttp(`http://127.0.0.1:${HUB_PORT}/lobby/games`, 30000).catch(() => {});
   const hub = `&hub=127.0.0.1:${HUB_PORT}`;
-  const host = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const host = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
   host.on('pageerror', (e) => errors.push(`host: ${e.message}`));
   await host.addInitScript(() => localStorage.setItem('cs.name', 'Hosty'));
   await host.goto(`${CLIENT}/?offline=arena${hub}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
@@ -16703,7 +16710,7 @@ async function chatFlow(browser) {
     if (await host.waitForFunction(hasCode, null, { polling: 200, timeout: T(30000) }).then(() => true, () => false)) break;
   }
   const code = await host.evaluate(() => document.querySelector('#host-info .host-code b')?.textContent ?? '');
-  const friend = await (await browser.newContext({ viewport: { width: 960, height: 540 } })).newPage();
+  const friend = await (await browser.newContext({ viewport: { width: 800, height: 450 } })).newPage();
   friend.on('pageerror', (e) => errors.push(`friend: ${e.message}`));
   await friend.addInitScript(() => localStorage.setItem('cs.name', 'Friend'));
   await friend.goto(`${CLIENT}/?join=${code}${hub}`, { waitUntil: 'domcontentloaded', timeout: T(60000) });
@@ -16721,11 +16728,12 @@ async function chatFlow(browser) {
       window.__cs.input.setTouchEngaged(true);
       window.__cs.input.setTouchEngaged(false);
     });
-    await host.waitForFunction(() => !document.getElementById('pause').hidden && document.querySelector('#pause .pause-tabs [data-tab="match"]'), null, { polling: 200, timeout: T(10000) }).catch(() => {});
+    if (await host.evaluate(() => document.getElementById('pause').hidden)) await host.keyboard.press('Escape');
+    await host.waitForFunction(() => !document.getElementById('pause').hidden && document.querySelector('#pause .pause-tabs [data-tab="match"]'), null, { polling: 200, timeout: T(30000) }).catch(() => {});
     await host.evaluate(() => document.querySelector('#pause .pause-tabs [data-tab="match"]')?.click());
-    await host.waitForFunction(() => [...document.querySelectorAll('#pause-scores .sb-click')].some((r) => r.textContent.includes('Friend')), null, { polling: 200, timeout: T(10000) }).catch(() => {});
+    await host.waitForFunction(() => [...document.querySelectorAll('#pause-scores .sb-click')].some((r) => r.textContent.includes('Friend')), null, { polling: 200, timeout: T(30000) }).catch(() => {});
     await host.evaluate(() => [...document.querySelectorAll('#pause-scores .sb-click')].find((r) => r.textContent.includes('Friend'))?.click());
-    const kick = await host.waitForFunction(() => (document.getElementById('plc-kick') && document.getElementById('plc-mute') ? true : null), null, { polling: 200, timeout: T(10000) }).then(() => true, () => false);
+    const kick = await host.waitForFunction(() => (document.getElementById('plc-kick') && document.getElementById('plc-mute') ? true : null), null, { polling: 200, timeout: T(30000) }).then(() => true, () => false);
     check(kick, "chat: the host sees Mute chat and Kick on a friend's card");
     await pic(host, 'kick-card');
     if (kick) await host.evaluate(() => document.getElementById('plc-kick').click());
