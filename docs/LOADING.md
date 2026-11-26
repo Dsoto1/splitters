@@ -143,6 +143,11 @@ reached `map/track.ts` for `racePath`; `setIdRandom` (main.ts, test mode) reache
 already import those modules (and the idle prefetch brings them in while the menu is up). A module the menu reads is
 put in the menu's chunk whole, with everything it imports: keep what the menu needs in small modules of its own.
 
+**The Character Designer removed** (2026-11-25): it was already a dynamic import (its chunk, 12.2 kB raw, 4.9 kB gzip,
+is gone), so the menu's first JS lost only what the menu itself carried for it (the saved-designs list, Design new,
+Customise, Yours and the kept design pictures): 2790.0 to 2786.8 kB raw, 792.2 to 791.2 kB gzip (`index` 1038.8 to
+1035.6 kB raw, 340.8 to 339.8 kB gzip), the same budget.
+
 Measure a change: `pnpm build && node tools/ci/bundle-budget.mjs`, and
 `node tools/perf/first-load.mjs [dist …]` for times (it serves each build the
 way the hub does and alternates runs between them).
