@@ -134,7 +134,8 @@ describe('hitbox audit: shapes match each model (posed as the game draws it stan
   // (wider than the shoulders); a head sphere wide enough for them would cover the air round it.
   // Napsworth, the sleepy koala (2026-11-25): 58% inside, the rest its fur-fringed ears (a head and a half across) and
   // the baggy pyjama trousers and slippers round thin legs; shapes that wide would be hit in the air beside him.
-  const OWN_COVER = { 'core.inspector': 0.55, 'core.axolotl': 0.8, 'core.koala': 0.55 };
+  // Patchwork Polly, the rag doll (2026-11-26): 81% inside, the rest her two big yarn pigtails standing out from the head.
+  const OWN_COVER = { 'core.inspector': 0.55, 'core.axolotl': 0.8, 'core.koala': 0.55, 'core.ragdoll': 0.78 };
   it('every look and creature', { timeout: 240_000 }, async () => {
     const bad = [];
     const report = [];

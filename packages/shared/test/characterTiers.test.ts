@@ -36,7 +36,8 @@ const trial: CharacterLook = { id: 'core.trialbot', name: 'Trial Bot', body: 'ma
 const ROSTER: readonly CharacterLook[] = [trial, ...CORE_LOOKS];
 // The roster's own tiers (experimental characters of its own come and go: the ten of 2026-11-11 until 2026-11-12, the twelve
 // of 2026-11-13 until 2026-11-14, the twelve of 2026-11-14 the same day; the owner's batch of 2026-11-21/22 until 2026-11-24, when the owner moved them all up).
-const CORE_TIER = CORE_LOOKS.filter((l) => characterTier(l) === 'core');
+// The tier's automatic picks: a character's variant looks (the chimp's) are picked on its variant picker, never automatically.
+const CORE_TIER = CORE_LOOKS.filter((l) => characterTier(l) === 'core' && !l.variantOf);
 const EXPERIMENTAL = CORE_LOOKS.filter((l) => characterTier(l) === 'experimental');
 
 describe('character tiers', () => {
@@ -46,7 +47,7 @@ describe('character tiers', () => {
     expect(characterTier({})).toBe('core');
     expect(characterTier(trial)).toBe('experimental');
     // Every look is one tier or the other, and the automatic picks draw from the core ones alone.
-    expect(CORE_TIER.length + EXPERIMENTAL.length).toBe(CORE_LOOKS.length);
+    expect(CORE_TIER.length + EXPERIMENTAL.length + CORE_LOOKS.filter((l) => l.variantOf).length).toBe(CORE_LOOKS.length);
     expect(CORE_TIER.length).toBeGreaterThan(100);
     expect(PICKABLE_LOOKS).toEqual(CORE_TIER);
     // (The sim's fixed default is a kept look, never a retired one; a new player's first look is random.)
