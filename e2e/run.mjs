@@ -8258,6 +8258,22 @@ async function destructionChecks(browser) {
   });
   check(batched.crates === 8 && batched.batched === 8 && batched.breakable && batched.at?.drawn > 1, `intact, the framed crates are breakables drawn in a prop batch (${JSON.stringify(batched)})`);
   if (batched.breakable) {
+    // Bullet holes on a breakable prop (propHoles.ts; owner, 2026-11-24): three rounds stopping on the batched crate
+    // leave three holes under its root (the crate still a copy in its batch); broken, they go with it.
+    const holed = await page.evaluate(() => {
+      const view = window.__cs.view;
+      const node = view.props.get(window.__crateIndex);
+      const c = node.getAbsolutePosition();
+      const eye = { x: c.x - 4, y: c.y + 0.5, z: c.z + 0.1 };
+      // Where a round along +x first meets the crate (the view's own surface test), as the host's round would stop.
+      let to = null;
+      for (let d = 2; d < 4.5 && !to; d += 0.05) if (view.surfaceStruck(eye, { x: eye.x + d, y: eye.y, z: eye.z })) to = { x: eye.x + d, y: eye.y, z: eye.z };
+      if (!to) return { found: false };
+      for (let i = 0; i < 3; i++) view.landRound({ eye, to: { ...to, y: to.y + i * 0.08 }, victim: null, zone: 0, strength: 1 });
+      const mesh = node.getChildMeshes().find((m) => m.name.endsWith('_holes'));
+      return { found: true, holes: view.impacts.propHolesOn(node), instances: mesh?.thinInstanceCount ?? 0, underRoot: mesh?.parent === node, batched: view.propBatches.copyState(node).drawnHere };
+    });
+    check(holed.found && holed.holes === 3 && holed.instances === 3 && holed.underRoot && holed.batched, `rounds stopping on a breakable crate leave holes on the crate, the crate still batched (${JSON.stringify(holed)})`);
     await page.evaluate(() => window.__match.scenario.damageDestructible(window.__crate, 1e6, true, null));
     await page.waitForFunction(() => window.__cs.view.props.get(window.__crateIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
     const out = await page.evaluate(() => {
@@ -8265,8 +8281,9 @@ async function destructionChecks(browser) {
       const st = view.propBatches.copyState(view.props.get(window.__crateIndex));
       const mate = view.propBatches.copyState(view.props.get(window.__crateMate));
       const meshes = st.meshes.map((n) => view.scene.getMeshByName(n));
-      return { st, mate, kept: meshes.every((x) => x && !x.isDisposed()), was: window.__crateBatch.drawn, alive: window.__crate.alive, hidden: view.propBatches.stats().hidden };
+      return { st, mate, kept: meshes.every((x) => x && !x.isDisposed()), was: window.__crateBatch.drawn, alive: window.__crate.alive, hidden: view.propBatches.stats().hidden, holes: view.impacts.propHolesOn(view.props.get(window.__crateIndex)) };
     });
+    check(out.holes === 0, `broken, the crate's bullet holes go with it (${out.holes})`);
     check(!out.alive && !out.st.drawnHere && out.st.drawn === out.was - 1 && out.mate.drawnHere && out.kept && out.st.meshes.join() === batched.at.meshes.join(), `broken, the crate is gone from its batch and the batch still draws the others (${JSON.stringify(out)})`);
     // A new round (Scenario.reset, as the match runs it between rounds): back in its batch.
     await page.evaluate(() => window.__match.scenario.reset());

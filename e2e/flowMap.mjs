@@ -235,7 +235,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/scoreBoard\.ts$/, ['colourvision', 'teams', 'ctf', 'zombies', 'classes', 'hostcontrols', 'party', 'profiles'], ['client']],
   // Player profiles (docs/PLAYER_PROFILES_PLAN.md): cards, emblems, your career on Profile.
   [/^packages\/client\/src\/(careerStats|profile|game\/(playerCard|profileCard|emblemSvg|careerTally))\.ts$/, ['profiles', 'fireteams'], ['client']],
-  [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|blockHoles|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'testrange', ...FLASHING_FLOWS], ['client']],
+  [/^packages\/client\/src\/game\/(glassVisuals|waterVisuals|ragdoll|ragdollBudget|ragdollJoints|bloodVisuals|impactVisuals|blockHoles|propHoles|reflections|skyEffects)\.ts$/, ['physicsfx', 'setpieces', 'testrange', ...FLASHING_FLOWS], ['client']],
   // Where the first-person gun sits aiming down its sights (the sight fit).
   [/^packages\/client\/src\/game\/sightPose\.ts$/, ['arsenal', 'offline', 'weaponsets', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'visual'], ['client']],
   // The optics on the guns: their housings and glass, the reticles (steady: the flicker check).
