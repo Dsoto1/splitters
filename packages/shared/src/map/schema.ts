@@ -1274,7 +1274,10 @@ export const SetPieceDoorPart = DoorEntity.omit({ id: true }).extend({ style: z.
 export const SetPiecePart = z.discriminatedUnion('kind', [
   SetPieceTilePart,
   SetPieceBlockPart,
-  PropEntity.omit({ id: true }).extend({ when: PartWhen }),
+  // `mirrorModel`: the prop placed instead when the piece is mirrored (props mirror in position and facing, not in
+  // shape: a one-sided prop, the Classroom Bay's row of three desks, has a twin drawn the other way round). Only
+  // shipped pieces carry it (MapMaker's "Make set piece" makes none), so maps stay readable as they were.
+  PropEntity.omit({ id: true }).extend({ mirrorModel: ContentId.optional(), when: PartWhen }),
   SetPieceDoorPart,
   LadderEntity.omit({ id: true }).extend({ when: PartWhen }),
   LightEntity.omit({ id: true }).extend({ when: PartWhen }),

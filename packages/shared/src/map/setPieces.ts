@@ -510,6 +510,11 @@ function placeEntityPart(
     if (s) door.style = s as NonNullable<typeof door.style>;
     return door;
   }
+  if (part.kind === 'prop') {
+    // A one-sided prop mirrored is its twin (schema SetPiecePart, `mirrorModel`).
+    const { mirrorModel, ...rest } = part;
+    return { ...rest, ...(p.mirror && mirrorModel ? { model: mirrorModel } : {}), id, position, yaw } as MapEntity;
+  }
   return { ...part, id, position, yaw } as MapEntity;
 }
 

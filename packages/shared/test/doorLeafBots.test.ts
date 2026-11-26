@@ -139,10 +139,10 @@ describe('bots and propped-open doors', () => {
     }
   });
 
-  it("a classroom's front aisle: open where the leaf stands on the far jamb; shut to bodies and routes where it stands on the aisle's side", { timeout: 60_000 }, () => {
+  it("a classroom's front aisle: the row of desks by the door is a row of three, so bodies and routes get past the open leaf", { timeout: 60_000 }, () => {
     // The Classroom Bay's doors (x 2.3), leaves on the +x jamb: the north room's (x 3.2) beside the back corner, the
-    // south room's (turned half round: x 1.4, z 0.86 to 2.7) across the aisle along the hall wall, 0.66 m short of the
-    // desks (a body is 0.8 m across). The leaf was off the navmesh, so routes ran through it and bots stuck there.
+    // south room's (turned half round: x 1.4, z 0.86 to 2.7) across the aisle along the hall wall. With the hall-end desk
+    // of the row by the door left out (owner, 2026-11-26) a body (0.8 m) and a bot's route pass the leaf's end.
     const map = mapOf(0, 'wide', 'setpiece.classroom_bay');
     const geo = buildMapGeometry(map);
     const physics = new PhysicsWorld(geo, mapTerrainMesh(map));
@@ -152,12 +152,12 @@ describe('bots and propped-open doors', () => {
       return path ? Math.hypot(path.at(-1)!.x - b.x, path.at(-1)!.z - b.z) : Infinity;
     };
     expect(end({ x: 2.4, y: 0, z: 10.6 }, { x: -2.2, y: 0, z: 6.6 }), 'north: back to the front aisle').toBeLessThan(1.2);
-    expect(end({ x: 2.4, y: 0, z: -2.6 }, { x: -2.2, y: 0, z: 1.4 }), 'south: no route past the leaf').toBeGreaterThan(2);
-    // A body walking west along the aisle's desk side stops at the leaf's end.
+    expect(end({ x: 2.4, y: 0, z: -2.6 }, { x: -2.2, y: 0, z: 1.4 }), 'south: back to the front aisle, round the leaf').toBeLessThan(1.2);
+    // A body walking west along the aisle's desk side, from the back, gets past the leaf's end.
     const collider = physics.createPlayerCollider();
-    let s: MoveState = { pos: { x: 2.4, y: 0.02, z: 0.5 }, velY: 0, grounded: true };
+    let s: MoveState = { pos: { x: 2.4, y: 0.02, z: 0.45 }, velY: 0, grounded: true };
     for (let t = 0; t < TICK_RATE * 4; t++) s = stepMovement(physics, collider, s, { ...emptyInput(t), forward: 1, yaw: -Math.PI / 2 });
-    expect(s.pos.x, 'south: stopped at the leaf').toBeGreaterThan(0.9);
+    expect(s.pos.x, 'south: past the leaf').toBeLessThan(0);
     physics.removeCollider(collider);
     nav.destroy();
   });

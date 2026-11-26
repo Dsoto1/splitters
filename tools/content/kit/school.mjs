@@ -264,7 +264,8 @@ function schoolDesk(m, cx, size, look, tone, fine) {
   for (const sx of [-1, 1]) for (const sz of [-1, 1]) box(m, [cx + sx * (X - 0.03) - leg / 2, 0, sz * (Z - 0.03) - leg / 2], [cx + sx * (X - 0.03) + leg / 2, dh - t, sz * (Z - 0.03) + leg / 2], steel, ['ny', 'py']);
   if (fine) {
     // The book shelf (a steel tray) under the top, open to the front; a rail low across the back.
-    box(m, [cx - X + 0.04, dh - 0.16, -Z + 0.04], [cx + X - 0.04, dh - 0.14, Z - 0.05], scale3(steel, 0.8));
+    // (The tray starts behind the back plate, not in it: no coplanar faces of two shades.)
+    box(m, [cx - X + 0.04, dh - 0.16, -Z + 0.05], [cx + X - 0.04, dh - 0.14, Z - 0.05], scale3(steel, 0.8));
     box(m, [cx - X + 0.04, dh - 0.16, -Z + 0.035], [cx + X - 0.04, dh - t, -Z + 0.05], scale3(steel, 0.75), ['ny', 'py']);
     box(m, [cx - X + 0.03, 0.18, -Z + 0.02], [cx + X - 0.03, 0.2, -Z + 0.04], steel);
   }
@@ -274,7 +275,8 @@ function schoolDesk(m, cx, size, look, tone, fine) {
  * A row of four school desks, two each side of an aisle, a chair pushed in at each (one prop where there would be
  * eight: a map as played holds at most 4,096 entities). Its front is +z: the chairs stand there, the pupils face −z.
  * Settings `g`: `desk` (one desk's size), `aisle` (the gap in the middle, m), `gap` (between the two of a pair), `chair`
- * (the Chair's size), `chairG` (its generator settings), `tuck` (desk's middle to chair's), `chairs` (false: none).
+ * (the Chair's size), `chairG` (its generator settings), `tuck` (desk's middle to chair's), `chairs` (false: none),
+ * `omit` (a desk left out, 0 to 3 from −x: a row of three, its free end beside an open door's leaf).
  * `look`: `top`, `steel`, `chair` (the chairs' look), `jitter`, `grime`. Collides as the four desks' boxes.
  */
 export function schoolDesksMesh(seed, size, g, look, level) {
@@ -289,6 +291,7 @@ export function schoolDesksMesh(seed, size, g, look, level) {
   const tone = (c, k) => woodTone(c, r, look, seed + k);
   const boxes = [];
   for (const [i, x] of xs.entries()) {
+    if (i === g.omit) continue;
     const desk = new Mesh();
     if (level >= 2) box(desk, [-dw / 2, dh - 0.12, -dd / 2], [dw / 2, dh, dd / 2], hex(look.top), ['ny']);
     else schoolDesk(desk, 0, g.desk, look, tone, level === 0);
