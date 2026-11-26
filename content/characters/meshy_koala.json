@@ -11,7 +11,7 @@
   "bio": "Wakes for the fight, then straight back to sleep.",
   "body": "male",
   "size": "small",
-  "notes": "Drive intake of 2026-11-25 (\"sleepy koala 3d\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22).",
+  "notes": "Drive intake of 2026-11-25 (\"sleepy koala 3d\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22). Pistol hold (2026-11-26): the pistol's grip showed 3 cm through the shooting hand's palm, so it sits 5 cm further across into the fingers (`fixes.grip.gripPistol`, the support hand's point with it).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -24,6 +24,7 @@
     "roughness": 0.6
   },
   "fixes": {
+    "grip": { "gripPistol": [0.05, 0.011, -0.009], "supportPistol": [0.025, -0.004, -0.02] },
     "triangles": 12000,
     "surface": "rebake",
     "headShare": 0.16,

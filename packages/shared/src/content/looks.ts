@@ -81,8 +81,11 @@ export interface CharacterLook {
    * `hold`: where this body holds a long gun against everyone's hold, in metres at a 1.8 m body (`forward` along the
    * barrel, `down` square to it, `out` level toward the gun shoulder's side), for a build the shared hold puts the stock at the face of (Bandit: broad, with
    * his head low between high shoulders); `fixes.hold` in its manifest.
+   * `holdPistol`: where this body's shooting hand holds a pistol against where the clips put it, the same axes and
+   * units (`out` negative: in toward the body's middle), for a build too wide for its support hand to reach across to
+   * the gun (Puddles Ironbill's round mech); `fixes.holdPistol` in its manifest.
    */
-  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number }; grip?: GripTune };
+  whole?: { arms: string; skin?: string; cloth?: string; trim?: string; body?: false; hold?: { forward?: number; down?: number; out?: number }; holdPistol?: { forward?: number; down?: number; out?: number }; grip?: GripTune };
   /** What the character is (Character Select's tabs): set on every built-in look; a design of yours has none. */
   group?: CharacterGroup;
   /** Soldiers & Spies only: Army or Agency (CHARACTER_BRANCHES; `branch` in its manifest). */
