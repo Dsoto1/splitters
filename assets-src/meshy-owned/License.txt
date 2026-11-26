@@ -183,7 +183,7 @@ Provenance: Meshy, owned.
   - "biker girl rigged" (2026-11-26)  -> character meshy_bikergirl (look Biker Gang Girl), its new model
   - "fish butcher rigged" (2026-11-26)  -> character meshy_butcher (look The Butcher), its new model
   - "old timer rigged" (2026-11-26)  -> character meshy_oldtimer (look Old Timer), its new model
-  - "ash tribal rigged" (2026-11-26)  -> character meshy_ashwalker (look Kato Emberline, Ashwalker's replacement; built as meshy_ashtribal)
+  - "ash tribal rigged" (2026-11-26)  -> character meshy_kato (look Kato Emberline, Ashwalker's replacement; built as meshy_ashtribal, then meshy_ashwalker)
   - "Dark Hooded Entity 15k" (2026-11-26)  -> character meshy_vanguard (look The Veiled Vanguard), its new model
   - "Skinny T1000 Base Rigged" (2026-11-26)  -> character meshy_t350 (look T-TreeFitty), its new model
   - "Skinny T1000 Disco / Lifeguard / Tourist / Tutu / Suit Rigged" (2026-11-26)  -> characters meshy_t350_disco, meshy_t350_lifeguard, meshy_t350_tourist, meshy_t350_tutu, meshy_t350_suit (T-TreeFitty's variant looks)
@@ -227,3 +227,9 @@ Provenance: Meshy, owned.
   - "ts chimp disco operative rigged" (2026-11-25)  -> character meshy_chimp_disco (look Disco Operative Ziggy), variant "Disco Operative"
   - "ts chimp cyber commando rigged" (2026-11-25)  -> character meshy_chimp_cyber (look Cyber Commando Ziggy), variant "Cyber Commando"
   - "ts chimp scrapper rigged" (2026-11-25)  -> character meshy_chimp_scrapper (look Scrapper Ziggy), variant "Scrapper"
+- The owner's own models recorded as Meshy Community CC0 until the owner said so (owner, 2026-11-26):
+  - "dapper man rigged" (2026-11-01)  -> character meshy_dapper (look The Dapper)
+  - "Character output" (2026-11-01)  -> character meshy_rollerbot (look Baseball Robot)
+  - "crt robot remeshed" (2026-11-01)  -> character meshy_crtrobot (look CRT Robot)
+  - "rigged cheetah sloth" (2026-11-01)  -> character meshy_seetah (look Seetah J. Chloth)
+  - "Monumento del Estadista en T Pose" (2026-11-14)  -> character meshy_bronzer (look Bronzer)

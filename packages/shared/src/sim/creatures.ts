@@ -63,7 +63,9 @@ export const CREATURE_SPECS: Record<CreatureModel, CreatureSpec> = {
  * 2026-11-12: the uploaded zombies, not Quaternius' creature body, which had no ragdoll and fell flat like a box).
  * They shamble on the soldiers' rig and die as ragdolls, like players.
  */
-export const ZOMBIE_LOOKS = ['core.groaner', 'core.lurcher', 'core.shambler', 'core.zombiesoldier1', 'core.zombiesoldier2'] as const;
+// Owner, 2026-11-26 (evening): Lurcher removed and the zombie soldiers are skeletons now (Dog Tag Doyle's looks); Dez's four
+// and the three MapMaker-only zombies shamble instead.
+export const ZOMBIE_LOOKS = ['core.groaner', 'core.shambler', 'core.fearsomeundead', 'core.hoodieguy', 'core.salaryman', 'core.officeworker', 'core.karen'] as const;
 export const zombieLook = (id: number): string => ZOMBIE_LOOKS[id % ZOMBIE_LOOKS.length]!;
 
 export const isCreature = (role: string): role is CreatureKind => (CREATURE_ROLES as readonly string[]).includes(role);

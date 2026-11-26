@@ -30,5 +30,6 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true
-  }
+  },
+  "variant": "Teddy"
 }

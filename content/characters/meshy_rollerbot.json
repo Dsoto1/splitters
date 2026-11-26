@@ -11,13 +11,10 @@
   "bio": "Built to field grounders. Now he IS the grounder, and he brought a gun.",
   "body": "male",
   "locomotion": "roll",
-  "notes": "Drive batch of 2026-11-01 evening (\"Character output\": a baseball robot player on a ball, NO FEET: he rolls, owner). A rigged Meshy download whose joints are unnamed (Bone_000 ...): named onto Meshy's in source.joints (read off the joint tree: legs inside the ball). `locomotion: roll`: what the legs held (the ball) rides the pelvis, and the game glides him with no walk cycle, leaning into his motion and turns (CharacterAnimator). Name a placeholder from the Roster Board.",
+  "notes": "Drive batch of 2026-11-01 evening (\"Character output\": a baseball robot player on a ball, NO FEET: he rolls, owner). A rigged Meshy download whose joints are unnamed (Bone_000 ...): named onto Meshy's in source.joints (read off the joint tree: legs inside the ball). `locomotion: roll`: what the legs held (the ball) rides the pelvis, and the game glides him with no walk cycle, leaning into his motion and turns (CharacterAnimator). Name a placeholder from the Roster Board. Licence: Meshy, owned (owner, 2026-11-26: the owner's own model; recorded as Meshy Community CC0 until then).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Character output"
-    },
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
     "date": "2026-11-01",
     "url": null,
     "file": "^Meshy_AI_Character_output\\.glb$",

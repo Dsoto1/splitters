@@ -10,7 +10,7 @@
   "nameTheme": "soldier",
   "bio": "Reported for duty. Never stopped.",
   "body": "male",
-  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A skeleton paratrooper in an olive jacket and helmet, with a field pack and bone hands.",
+  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A skeleton paratrooper in an olive jacket and helmet, with a field pack and bone hands. A variant of Dog Tag Doyle since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Dog Tag Doyle's picker).",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -34,5 +34,7 @@
     "skin": {
       "tips": 0.3
     }
-  }
+  },
+  "variant": "Vietnam",
+  "variantOf": "core.undeadsoldier"
 }

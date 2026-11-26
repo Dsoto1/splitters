@@ -11,7 +11,7 @@
   "bio": "Stitched back together after every round. Smiles through all of it.",
   "body": "female",
   "size": "small",
-  "notes": "New 2026-11-26 (owner's 11-26 batch). Drive intake of 2026-11-26 (\"Rigged Rag Doll\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "notes": "New 2026-11-26 (owner's 11-26 batch). Drive intake of 2026-11-26 (\"Rigged Rag Doll\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22). A variant of Teddy since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Teddy's picker).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -38,5 +38,7 @@
         0.07
       ]
     }
-  }
+  },
+  "variant": "Rag Doll",
+  "variantOf": "core.teddy"
 }

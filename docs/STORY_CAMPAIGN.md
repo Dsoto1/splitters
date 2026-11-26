@@ -31,8 +31,8 @@ The story's bosses, from the owner's Drive uploads of 2026-11-25 ("boss chrono t
 
 Until the campaign's sector data exists, the sectors' own characters are listed here (the campaign framework moves them
 into its data):
-- **Mesoamerica:** Balam Nightclaw, Talon Skycrest, the Sun Warrior and Aurelio Dawnmantle (the boss encounter; owner
-  2026-11-25), and **Tetl Stonewarden** (`core.basaltguardian`, the Basalt Guardian: "Basalt guardian is for
+- **Mesoamerica:** Balam Nightclaw, Talon Skycrest and Aurelio Dawnmantle (the boss encounter; owner 2026-11-25; the
+  Sun Warrior, a community model, was removed 2026-11-26 and Tetl Stonewarden takes his place there: an owner question), and **Tetl Stonewarden** (`core.basaltguardian`, the Basalt Guardian: "Basalt guardian is for
   mesoamerica"), large, bleeds stone: a sector ally, an unlock or a guard on the boss map.
 - **Wars:** Civil War: Capt. Elias Harrowgate (`core.unionofficer`) and Col. Josiah Beaumont (`core.rebelcommander`);
   Vietnam: Pfc. Danny Okerlund (`core.vietnamsoldier`) and Lien Vo (`core.vcscout`) (2026-11-25); WW2: WWII Infantry and

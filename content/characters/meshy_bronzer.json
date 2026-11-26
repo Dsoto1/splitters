@@ -5,18 +5,15 @@
   "order": 151,
   "name": "Bronzer",
   "look": "core.bronzer",
-  "group": "legends",
+  "group": "folk",
   "blood": "stone",
   "nameTheme": "myth",
   "bio": "Stood on a plinth for a century, got bored, and stepped down. Bullets just polish him.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-14 (\"Monumento del Estadista en T Pose\", as Meshy names the download: a figure in a suit cast in bronze; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). A living bronze statue, not any real person. Name from the owner (2026-11-14: \"Bronzer\"); bio ours. Core: the owner approved it on 2026-11-14 (\"mark all twelve as finished\"). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-14: all of this Drive batch are Meshy Community CC0).",
+  "notes": "Drive intake of 2026-11-14 (\"Monumento del Estadista en T Pose\", as Meshy names the download: a figure in a suit cast in bronze; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). A living bronze statue, not any real person. Name from the owner (2026-11-14: \"Bronzer\"); bio ours. Core: the owner approved it on 2026-11-14 (\"mark all twelve as finished\"). Licence: Meshy Community, CC0 per the owner (owner, 2026-11-14: all of this Drive batch are Meshy Community CC0). Moved to folk (2026-11-26, owner). Licence: Meshy, owned (owner, 2026-11-26: the owner's own model; recorded as Meshy Community CC0 until then).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "Monumento del Estadista en T Pose"
-    },
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
     "date": "2026-11-14",
     "url": null,
     "file": "^Meshy_AI_Monumento_del_Estadista_en_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"

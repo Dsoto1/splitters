@@ -5,7 +5,7 @@
   "description": "The usual crowd by name, each in their own character, normal and hard mixed in. Random bots fill the rest.",
   "fill": "random",
   "entries": [
-    { "name": "Brassneck", "look": "core.grunt68", "skill": "hard" },
+    { "name": "Brassneck", "look": "core.vietnamsoldier", "skill": "hard" },
     { "name": "Mildred", "look": "core.mei" },
     { "name": "Captain Pell", "look": "core.femalepirate" },
     { "name": "Wick", "look": "core.mei", "skill": "hard" },
@@ -13,7 +13,7 @@
     { "name": "Spoke", "look": "core.dale" },
     { "name": "Gloam", "look": "core.dale", "skill": "hard" },
     { "name": "Tibbs", "look": "core.tuxedocat" },
-    { "name": "Ferro", "look": "core.grunt68" },
+    { "name": "Ferro", "look": "core.vietnamsoldier" },
     { "name": "Lady Ash", "look": "core.mei", "skill": "hard" },
     { "name": "Nub", "look": "core.grizzelda", "skill": "easy" },
     { "name": "Quill", "look": "core.abe" }

@@ -208,25 +208,18 @@ export const MINE_SECTION = 'mine';
  * works within one section, so its members share a group.
  */
 export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
-  ['core.frida', 'core.larry'], // Freaky Frida, Scary Larry
-  ['core.undeadsoldier', 'core.zombiesoldier2', 'core.zombiesoldier1'], // Dog Tag Doyle, Grinning Gus, Zombie Soldier A
-  ['core.groaner', 'core.shambler', 'core.fearsomeundead'], // Groaner, Shambler, Fearsome Undead
-  ['core.rattles', 'core.bonesworth'], // Rattles, Count Bonesworth
-  ['core.mummybot', 'core.pharaoh', 'core.ankhmummy'], // Egypt: Mummy Bot, Pharaoh Mummy Warrior, Nebka the Unwrapped
-  ['core.aldric', 'core.halvard'], // King Aldric, Old King Halvard
-  ['core.imperialguard', 'core.mei'], // Imperial Guard, Lancer Mei
+  ['core.anubis', 'core.pharaoh', 'core.ankhmummy'], // Egypt: Anoobys, Pharaoh Mummy Warrior, Nebka the Unwrapped
   // Owner, 2026-11-26: like histories side by side within each row, and the well-known real people together in Legends
   // in their time order.
   ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'], // famous real people, by period
-  ['core.aztecjaguar', 'core.eagleclan', 'core.snakeshaman', 'core.goldenwarrior', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
-  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.celestialknight', 'core.frostvalkyrie'], // Medieval and the Crusades
-  ['core.dustycolt', 'core.outlawranger', 'core.prospector'], // the Wild West
-  ['core.shaka', 'core.zuluwarrior', 'core.ashwalker'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
-  ['core.galloway', 'core.brannock'], // knights: Sir Galloway, Ser Brannock
+  ['core.aztecjaguar', 'core.eagleclan', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
+  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.ts2wizard', 'core.monk'], // Medieval and the Crusades (owner, 2026-11-26: Astor Moonvale and Brother Silencio with them)
+  ['core.abyssalhunter', 'core.celestialknight', 'core.magmajuggernaut', 'core.mystic'], // owner, 2026-11-26: Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine together
+  ['core.dustycolt', 'core.outlawranger', 'core.snakeshaman'], // the Wild West (owner, 2026-11-26: Silas Coilwhisper with them)
+  ['core.shaka', 'core.zuluwarrior', 'core.kato'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
   ['core.unionofficer', 'core.rebelcommander'], // the Civil War
-  ['core.wwiisoldier', 'core.paratrooper', 'core.germanpara'], // WW2
-  ['core.vietnamsoldier', 'core.grunt68', 'core.vcscout'], // Vietnam
-  ['core.officeworker', 'core.salaryman', 'core.karen', 'core.hoodieguy'], // the city's dead
+  ['core.paratrooper', 'core.germanpara'], // WW2
+  ['core.vietnamsoldier', 'core.vcscout'], // Vietnam
   ['core.toysoldier', 'core.greenarmy'], // toy soldiers
 ];
 
@@ -347,9 +340,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.striker': 'core.abe',
   'core.huntress': 'core.abe',
   'core.tracker': 'core.abe',
-  'core.bulwark': 'core.grunt68',
-  'core.commando': 'core.grunt68',
-  'core.operative': 'core.grunt68',
+  'core.bulwark': 'core.vietnamsoldier',
+  'core.commando': 'core.vietnamsoldier',
+  'core.operative': 'core.vietnamsoldier',
   'core.scout': 'core.mei',
   'core.pathfinder': 'core.mei',
   'core.wayfarer': 'core.mei',
@@ -360,7 +353,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.drifter': 'core.dale',
   'core.brawler': 'core.dale',
   'core.engineer': 'core.dale',
-  'core.warden': 'core.grunt68',
+  'core.warden': 'core.vietnamsoldier',
   'core.rustwalker': 'core.crewdemolitions',
   'core.slugger': 'core.crewdemolitions',
   'core.crimsonop': 'core.crewrecon',
@@ -390,9 +383,40 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.maskedfigure': 'core.hoodieguy', // The Masked Figure -> Dez Kickley
   'core.hollowpilgrim': 'core.ankhmummy', // The Hollow Pilgrim -> Nebka the Unwrapped
   'core.barnacle': 'core.femalepirate', // Cap'n Rusty Barnacle -> Scarlet Brinewell
-  // Owner, 2026-11-26 ("Kato is Ashwalker's true replacement"): Kato Emberline moved onto core.ashwalker the day he was
-  // built as core.ashtribal; Shaka Mpande, who had core.ashwalker for that day, is core.shaka.
-  'core.ashtribal': 'core.ashwalker', // Kato Emberline's first id -> Kato Emberline
+  // Owner, 2026-11-26 ("Kato is Ashwalker's true replacement"; evening: ids that read like the others): Kato Emberline
+  // is core.kato, and both ids he had that day play him; Shaka Mpande, who had core.ashwalker for a while, is core.shaka.
+  'core.ashtribal': 'core.kato', // Kato Emberline's first id -> Kato Emberline
+  'core.ashwalker': 'core.kato', // Ashwalker -> Kato Emberline, his own id since 2026-11-26 (evening; owner)
+  // Owner, 2026-11-26 (evening): removed completely; a saved pick plays a current look of the owner's own (no chains).
+  'core.rattles': 'core.undeadsoldier', // Rattles -> Dog Tag Doyle
+  'core.skywarrior': 'core.eagleace', // Warrior of the Skies -> Ace Featherstone
+  'core.goldenwarrior': 'core.sunpriest', // Sun Warrior -> Aurelio Dawnmantle
+  'core.aldric': 'core.lionheart', // King Aldric -> Ser Aldous Lionmane
+  'core.halvard': 'core.lionheart', // Old King Halvard -> Ser Aldous Lionmane
+  'core.vintagepro': 'core.afropi', // Coffee Brown -> Cleo Groovestone
+  'core.warriorsentinel': 'core.azuresentinel', // Warrior Sentinel -> Azure Sentinel
+  'core.steampunkwarrior': 'core.crewmechanic', // Steampunk Warrior -> Gears Okafor
+  'core.suitedman': 'core.radishman', // Mister Lanky -> Rad Rootley
+  'core.merrow': 'core.ts2wizard', // Merrow the Wise -> Astor Moonvale
+  'core.alienbiker': 'core.visitor', // Alien Biker -> The Visitor
+  'core.alienexplorer': 'core.visitor', // Reef Wanderer -> The Visitor
+  'core.alienencounter': 'core.visitor', // Alien Encounter -> The Visitor
+  'core.potatomarshal': 'core.spacemarine', // Spud Marshal -> Space Marine
+  'core.beaniealien': 'core.visitor', // Beanie Alien -> The Visitor
+  'core.shadowenforcer': 'core.spacemarine', // Shadow Enforcer -> Space Marine
+  'core.polysoldier': 'core.resolvesoldier', // Virtua Soldier -> Kenji
+  'core.tacticalsoldier': 'core.stealthop', // Tactical Soldier -> Stealth Operative
+  'core.stancesoldier': 'core.resolvesoldier', // Pemberton -> Kenji
+  'core.greensentinel': 'core.azuresentinel', // Sentinel in Green -> Azure Sentinel
+  'core.wwiisoldier': 'core.paratrooper', // WWII Infantry -> Sgt. Mickey Callahan
+  'core.zhao': 'core.stealthop', // Customs Agent Zhao -> Stealth Operative
+  'core.grunt68': 'core.vietnamsoldier', // Grunt '68 -> Pfc. Danny Okerlund
+  'core.desertranger': 'core.usgrunt', // Desert Ranger -> Pvt. Hank Dowling
+  'core.bugman': 'core.bikergirl', // Spike Scavenger -> Biker Gang Girl
+  'core.prospector': 'core.outlawranger', // The Prospector -> Cutter McCrae
+  'core.racer': 'core.dale', // The Racer -> Cal
+  'core.sophisticate': 'core.afropi', // Velvet Vance -> Cleo Groovestone
+  'core.steamrider': 'core.bikergirl', // Rosa Rivets -> Biker Gang Girl
   'core.shade': 'core.crewphase',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.
@@ -400,7 +424,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.tposesoldier2': 'core.greenarmy', // Briggs
   // Owner, 2026-11-05: Bill off the roster (files and manifests kept). Hyena Warrior (Gnoll) and Snikkit (Goblin
   // Mischief) stay; their hands get the palm-orientation fix first.
-  'core.bill': 'core.vintagepro',
+  'core.bill': 'core.afropi',
   // Owner, 2026-11-06 ("Retire bamboo, add the new turtle"): Bamboo off the roster (files, manifest and portrait
   // kept); saved choices and bot sets play the tortoise, the animal that came in with it.
   'core.panda': 'core.zencapybara',
@@ -413,7 +437,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.rustymech': 'core.crewdemolitions',
   // Owner, 2026-11-21 ("remove gas mask engineer character from game"): removed, files and all (its model, first-person
   // arms and portrait); saved choices and bot sets play Grunt '68, a kept Army soldier.
-  'core.gasmaskengineer': 'core.grunt68',
+  'core.gasmaskengineer': 'core.vietnamsoldier',
   // Owner, 2026-11-22: two of the 2026-11-21/22 intake became the models of characters already on the roster, and their
   // own entries went (models, arms, portraits and manifests): Tinker Goblina's GoblinaRigged model is Goblina's now,
   // the Sunset Gunslinger's model Dusty Ranger's. Saved choices and bot sets play the look that kept the model.
@@ -429,7 +453,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // strongman NPC roles are drawn as the owner's own Goblina, Ottis Crema and Ignatius Slagg (content/npcs.json).
   'core.bogdan': 'core.magmajuggernaut', // Big Bogdan -> Ignatius Slagg (the Strongman role's look too)
   'core.saintnick': 'core.elder', // Santa -> Elder Tomo (white-bearded)
-  'core.umpire': 'core.vintagepro', // Umpire -> Coffee Brown (the vintage ball player)
+  'core.umpire': 'core.afropi', // Umpire -> Coffee Brown (the vintage ball player)
   // Owner, 2026-11-25 ("i dont want to support them and they are not my models"): every retired look whose model isn't
   // the owner's own (Meshy, owned) removed entirely, files and all (manifests, models, arms, portraits, grips, locks and
   // provenance): Astronaut Explorer, Neon Shadow Ninja, Neon Guardian, Brass Hare, Big Bab, Shellback, Giggles, Ivory
@@ -444,6 +468,11 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
  * places them as figures and its own bots, but nobody picks one on Character Select.
  */
 export const NPC_ONLY_PLAYS: Readonly<Record<string, string>> = {
+  'core.groaner': 'core.hoodieguy', // Groaner -> Dez Kickley
+  'core.shambler': 'core.hoodieguy', // Shambler -> Dez Kickley
+  'core.fearsomeundead': 'core.hoodieguy', // Fearsome Undead -> Dez Kickley
+  'core.galloway': 'core.templar', // Sir Galloway -> Ser Godric Vale
+  'core.brannock': 'core.lionheart', // Ser Brannock -> Ser Aldous Lionmane
 };
 /** The look a player wears for a pick: a MapMaker-only look plays NPC_ONLY_PLAYS's (validLookId does the rest). */
 export const playerLookId = (id: string): string => NPC_ONLY_PLAYS[id] ?? id;

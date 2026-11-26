@@ -10,7 +10,7 @@
   "nameTheme": "spooky",
   "bio": "Lives under the stairs of every map. Comes out for the scoreboard.",
   "body": "male",
-  "notes": "The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"scary larry rigged\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A grinning man in a cap, tactical vest and camouflage shorts. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
+  "notes": "The owner's own Meshy model, made and rigged in Meshy (Drive folder, 2026-11-01: \"scary larry rigged\", the All Animations GLB; its two clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. A grinning man in a cap, tactical vest and camouflage shorts. Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned. A variant of Freaky Frida since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Freaky Frida's picker).",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner)",
@@ -28,5 +28,7 @@
   "fixes": {
     "triangles": 11000,
     "feet": true
-  }
+  },
+  "variant": "Larry",
+  "variantOf": "core.frida"
 }

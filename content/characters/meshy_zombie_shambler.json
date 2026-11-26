@@ -10,7 +10,7 @@
   "nameTheme": "undead",
   "bio": "Still wearing the shirt from his last day at the office. Still looking for the exit.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: zombie.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: zombie. MapMaker only since 2026-11-26 (owner: \"npc options in map maker and not playable as characters\"; `npcOnly`): placed as a figure or a map's own bot, off Character Select, automatic picks, bot types and Roulette.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -31,5 +31,6 @@
     "grip": {
       "curlR": 1.6
     }
-  }
+  },
+  "npcOnly": true
 }

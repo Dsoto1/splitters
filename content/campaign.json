@@ -13,9 +13,9 @@
         { "map": "vinefall_sanctum", "unlock": "core.snakeshaman", "mode": "core.tdm", "picked": 8, "allies": 2, "enemies": 12 },
         { "map": "step_temple", "unlock": "core.eagleclan", "mode": "core.tdm", "picked": 10, "allies": 4, "enemies": 14, "waves": 1 }
       ],
-      "boss": { "character": "core.aztecjaguar", "companions": ["core.eagleclan", "core.goldenwarrior", "core.sunpriest"] },
-      "rewards": ["core.aztecjaguar", "core.goldenwarrior", "core.sunpriest"],
-      "expedition": { "crew": 10, "allies": ["core.goldenwarrior", "core.basaltguardian", "core.snakeshaman", "core.skywarrior"] }
+      "boss": { "character": "core.aztecjaguar", "companions": ["core.eagleclan", "core.sunpriest", "core.basaltguardian"] },
+      "rewards": ["core.aztecjaguar", "core.sunpriest", "core.basaltguardian"],
+      "expedition": { "crew": 10, "allies": ["core.basaltguardian", "core.snakeshaman", "core.eagleace", "core.eagleclan"] }
     },
     {
       "id": "lockdown",
@@ -23,15 +23,15 @@
       "provisional": true,
       "classification": "modern",
       "period": "Today",
-      "description": "An airport, a ship and an island prison, all closed at once, and a customs agent who lets nobody through.",
+      "description": "An airport, a ship and an island prison, all closed at once, and a sentinel who lets nobody through.",
       "maps": [
-        { "map": "runway_nine", "unlock": "core.tacticalsoldier" },
+        { "map": "runway_nine", "unlock": "core.usgrunt" },
         { "map": "iron_tide", "unlock": "core.stealthop", "mode": "core.deathmatch", "enemies": 9 },
-        { "map": "ironhold_prison", "unlock": "core.stancesoldier" }
+        { "map": "ironhold_prison", "unlock": "core.resolvesoldier" }
       ],
-      "boss": { "character": "core.zhao", "companions": ["core.imperialguard", "core.resolvesoldier"] },
-      "rewards": ["core.zhao"],
-      "expedition": { "crew": 10, "allies": ["core.ember", "core.desertranger", "core.greensentinel", "core.azuresentinel"] }
+      "boss": { "character": "core.azuresentinel", "companions": ["core.imperialguard", "core.ember"] },
+      "rewards": ["core.azuresentinel"],
+      "expedition": { "crew": 10, "allies": ["core.ember", "core.paratrooper", "core.vietnamsoldier", "core.germanpara"] }
     },
     {
       "id": "neon_tomorrow",
@@ -41,13 +41,13 @@
       "period": "Future city",
       "description": "Glass towers, neon streets and an orbital station, policed by the time police's own inquisitor.",
       "maps": [
-        { "map": "express_lobby", "unlock": "core.alienexplorer" },
+        { "map": "express_lobby", "unlock": "core.visitor" },
         { "map": "neon_spire", "unlock": "core.ricochet" },
         { "map": "halcyon_station", "unlock": "core.cyberlion", "mode": "core.tdm", "picked": 8, "enemies": 10 }
       ],
-      "boss": { "character": "core.bossinquisitor", "companions": ["core.shadowenforcer", "core.crtrobot"] },
-      "rewards": ["core.shadowenforcer"],
-      "expedition": { "crew": 9, "allies": ["core.medicautomaton", "core.emeraldrobot", "core.starvoyager", "core.spacemarine"] }
+      "boss": { "character": "core.bossinquisitor", "companions": ["core.spacemarine", "core.crtrobot"] },
+      "rewards": ["core.spacemarine"],
+      "expedition": { "crew": 9, "allies": ["core.medicautomaton", "core.emeraldrobot", "core.astronaut", "core.spacemarine"] }
     }
   ],
   "convergences": [

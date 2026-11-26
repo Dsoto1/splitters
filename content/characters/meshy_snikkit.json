@@ -11,7 +11,7 @@
   "bio": "All teeth, ears and loincloth. Giggles when he reloads, which is somehow worse.",
   "body": "male",
   "size": "small",
-  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not the shipped Goblin (meshy_goblin, rags and boots): a bare goblin in a loincloth. Replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Goblin Mischief\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from T Pose Goblin. Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner.",
+  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not the shipped Goblin (meshy_goblin, rags and boots): a bare goblin in a loincloth. Replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Goblin Mischief\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from T Pose Goblin. Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner. A variant of Goblina since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Goblina's picker).",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
@@ -33,7 +33,14 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true,
-    "hands": { "scale": 0.75 },
-    "grip": { "curlR": 0.7, "curlL": 0.3 }
-  }
+    "hands": {
+      "scale": 0.75
+    },
+    "grip": {
+      "curlR": 0.7,
+      "curlL": 0.3
+    }
+  },
+  "variant": "Snikkit",
+  "variantOf": "core.grizzelda"
 }

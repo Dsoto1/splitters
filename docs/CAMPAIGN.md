@@ -33,9 +33,9 @@ The checks: ids unique across sectors and convergences, one or more maps a secto
 
 | Sector | Kind | Maps (unlocks) | Boss encounter | Repaired unlocks |
 |---|---|---|---|---|
-| The Jade Empire | Historical, Mesoamerica | Cradle of Idols (Ziggy Bananas's Aztec look; Kiko Banyan until 2026-11-26), Vinefall Sanctum (Silas Coilwhisper), Step Temple (Talon Skycrest) | Balam Nightclaw with Talon Skycrest, the Sun Warrior and Aurelio (owner, 2026-11-25) | Balam, Sun Warrior, Aurelio |
-| Lockdown | Modern, today | Runway Nine (Tactical Soldier), Midnight Keel (Stealth Operative), Cormorant Isle (Pemberton) | Customs Agent Zhao with Imperial Guard and Kenji | Zhao |
-| Neon Tomorrow | Future city | Express Lobby (Reef Wanderer), Neon Spire (Ricochet), Halcyon Station (Cyber Lion) | Inquisitor Vesk Tockley (NPC-only) with Shadow Enforcer and Steel Guardian | Shadow Enforcer |
+| The Jade Empire | Historical, Mesoamerica | Cradle of Idols (Ziggy Bananas's Aztec look; Kiko Banyan until 2026-11-26), Vinefall Sanctum (Silas Coilwhisper), Step Temple (Talon Skycrest) | Balam Nightclaw with Talon Skycrest, Aurelio and Tetl Stonewarden (owner, 2026-11-25; the Sun Warrior was removed 2026-11-26, a community model: Tetl takes his place, an owner question) | Balam, Aurelio, Tetl |
+| Lockdown | Modern, today | Runway Nine (Pvt. Hank Dowling), Midnight Keel (Stealth Operative), Cormorant Isle (Kenji) | Azure Sentinel with Imperial Guard and Flt. Lt. Ember (Customs Agent Zhao, Tactical Soldier and Pemberton were removed 2026-11-26) | Azure Sentinel |
+| Neon Tomorrow | Future city | Express Lobby (The Visitor), Neon Spire (Ricochet), Halcyon Station (Cyber Lion) | Inquisitor Vesk Tockley (NPC-only) with Space Marine and CRT Robot (Reef Wanderer and Shadow Enforcer removed 2026-11-26) | Space Marine |
 
 Convergence: **The Cold Cells** (Lockdown × Neon Tomorrow), on Glasswork Office as a stand-in until its own map exists; unlocks Steel Guardian. Halcyon Station stands in for the Future City's third map (Serene City went to Community, owner 2026-11-25). The maps' modes and sizes are examples of the per-map match (Cradle of Idols 6 v 6, Step Temple 10 + 4 allies v 14 with a wave, Midnight Keel a Deathmatch).
 

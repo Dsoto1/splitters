@@ -10,7 +10,7 @@
   "nameTheme": "undead",
   "bio": "Sailed off the edge of the map and came back lighter.",
   "body": "male",
-  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Bonejack's model until 2026-11-26 (a Meshy Community CC0 model \"The object is a reali\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"rigged bonejack\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Bonejack's model until 2026-11-26 (a Meshy Community CC0 model \"The object is a reali\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"rigged bonejack\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22). A variant of Dog Tag Doyle since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Dog Tag Doyle's picker).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -30,5 +30,7 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true
-  }
+  },
+  "variant": "Pirate",
+  "variantOf": "core.undeadsoldier"
 }

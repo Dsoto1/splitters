@@ -12,7 +12,7 @@
   "bio": "Opened the ammo crate before anyone found the key.",
   "body": "male",
   "size": "small",
-  "notes": "Drive intake of 2026-11-22, third batch (\"chimpanzee 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\").",
+  "notes": "Drive intake of 2026-11-22, third batch (\"chimpanzee 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner looks it over. Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner made it on their Meshy account (owner, 2026-11-22: \"all the characters I added yesterday and today are my own Meshy creations\"). A variant of Ziggy Bananas since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Ziggy Bananas's picker).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -31,5 +31,7 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true
-  }
+  },
+  "variant": "Chester",
+  "variantOf": "core.chimp"
 }

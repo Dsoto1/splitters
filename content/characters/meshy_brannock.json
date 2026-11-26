@@ -10,7 +10,7 @@
   "nameTheme": "knight",
   "bio": "Swore an oath to defend the realm. The realm is now a deathmatch arena; the oath still holds.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: knight.",
+  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: knight. MapMaker only since 2026-11-26 (owner: \"npc options in map maker and not playable as characters\"; `npcOnly`): placed as a figure or a map's own bot, off Character Select, automatic picks, bot types and Roulette.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -32,5 +32,6 @@
   "fixes": {
     "triangles": 11000,
     "feet": true
-  }
+  },
+  "npcOnly": true
 }

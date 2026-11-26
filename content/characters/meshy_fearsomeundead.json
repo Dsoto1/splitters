@@ -10,7 +10,7 @@
   "nameTheme": "undead",
   "bio": "Dug himself out for one more round. He plans to stay for several.",
   "body": "male",
-  "notes": "Drive, 2026-11-02 (\"Fearsome Undead\", rigged; the owner's download \"Meshy_AI_Fearsome_Undead_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Hands: wide claws already bent in the download (mitten); curl 1 (measured 0.64 and 0.88: the support hand stayed splayed). Grip audit 0. Name a placeholder.",
+  "notes": "Drive, 2026-11-02 (\"Fearsome Undead\", rigged; the owner's download \"Meshy_AI_Fearsome_Undead_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Hands: wide claws already bent in the download (mitten); curl 1 (measured 0.64 and 0.88: the support hand stayed splayed). Grip audit 0. Name a placeholder. MapMaker only since 2026-11-26 (owner: \"npc options in map maker and not playable as characters\"; `npcOnly`): placed as a figure or a map's own bot, off Character Select, automatic picks, bot types and Roulette.",
   "source": {
     "license": "CC0",
     "author": "Meshy community (author not recorded; CC0 per the owner)",
@@ -35,5 +35,6 @@
     "hands": {
       "curl": 1.0
     }
-  }
+  },
+  "npcOnly": true
 }

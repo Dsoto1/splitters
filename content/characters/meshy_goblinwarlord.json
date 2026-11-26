@@ -11,7 +11,7 @@
   "bio": "Rules the warren by fear, spite and a very large knife.",
   "body": "male",
   "size": "small",
-  "notes": "Drive intake of 2026-11-05 (\"Goblin Warlord villain\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; its own finger joints and weights kept (`fixes.fingers` default, intake step 2a: the grip audit scored them better than or level with the re-fit); its clips not used)). A green goblin in spiked leather armour and a tattered cloak hung with skulls (the owner's \"fantasy\": Knights & Legends). Small, as every goblin is (owner, 2026-11-05: \"make every goblin character small\"; it was standard at first, a warlord). Not Snikkit (Goblin Mischief replaces Snikkit). Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
+  "notes": "Drive intake of 2026-11-05 (\"Goblin Warlord villain\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; its own finger joints and weights kept (`fixes.fingers` default, intake step 2a: the grip audit scored them better than or level with the re-fit); its clips not used)). A green goblin in spiked leather armour and a tattered cloak hung with skulls (the owner's \"fantasy\": Knights & Legends). Small, as every goblin is (owner, 2026-11-05: \"make every goblin character small\"; it was standard at first, a warlord). Not Snikkit (Goblin Mischief replaces Snikkit). Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md). A variant of Goblina since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Goblina's picker).",
   "source": {
     "license": "CC0",
     "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
@@ -33,6 +33,16 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true,
-    "hands": { "together": 1, "r": { "scale": 0.75 }, "l": { "scale": 0.85 } }
-  }
+    "hands": {
+      "together": 1,
+      "r": {
+        "scale": 0.75
+      },
+      "l": {
+        "scale": 0.85
+      }
+    }
+  },
+  "variant": "Warlord",
+  "variantOf": "core.grizzelda"
 }
