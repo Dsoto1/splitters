@@ -36,6 +36,7 @@ import {
   randomFirstLook,
   DEFAULT_RULES,
   GAME_MODES,
+  playableModes,
   raceTrack,
   MODE_LABELS,
   isTeamMode,
@@ -2543,12 +2544,12 @@ export class FrontEnd {
   /**
    * Match Setup's own tabs (Match setup, Bots & AI, Rules, Presets) for the match being played, in the pause menu's
    * Host tab (owner, 2026-11-19, "a"): `setup` the match as it plays, on its map (fixed: Change map moves it); every
-   * change goes to `onChange`, and `live` names the controls that apply now (the rest say At restart). Null when
-   * Match Setup doesn't list the map (MapMaker's Test). `set` draws another setup; `close` ends it.
+   * change goes to `onChange`, and `live` names the controls that apply now (the rest say At restart). `set` draws
+   * another setup; `close` ends it.
    */
-  pauseSetup(o: { setup: MatchSetup; map: MapDocument; max: number; live: readonly string[]; onChange: (s: MatchSetup) => void }): { root: HTMLElement; set(s: MatchSetup): void; close(): void } | null {
-    const found = this.maps.find((m) => m.key === o.setup.map || m.metadata.id === o.setup.map);
-    if (!found) return null;
+  pauseSetup(o: { setup: MatchSetup; map: MapDocument; max: number; live: readonly string[]; onChange: (s: MatchSetup) => void }): { root: HTMLElement; set(s: MatchSetup): void; close(): void } {
+    // A map the list doesn't offer (a retired one, by ?offline=): drawn from the match's own copy.
+    const found = this.maps.find((m) => m.key === o.setup.map || m.metadata.id === o.setup.map) ?? { key: o.setup.map, metadata: o.map.metadata, load: () => Promise.resolve(o.map), blurb: '', modes: playableModes(o.map), bots: Math.max(0, o.setup.bots) };
     // The menu's own setup goes (the same ids): the menu draws it again when it's back.
     this.body.replaceChildren();
     const root = el('div', { class: 'setup pause-setup', id: 'pause-setup' });
