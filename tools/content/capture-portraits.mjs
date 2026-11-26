@@ -7,7 +7,7 @@
 //
 // Run against a built client being served (the "Capture portraits" workflow does all of this):
 //   pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4799
-//   node tools/content/capture-portraits.mjs http://localhost:4799 [look ids…]
+//   node tools/content/capture-portraits.mjs http://localhost:4799 [look ids…]   (CHROMIUM=<path>: that browser build)
 import { createHash } from 'node:crypto';
 import { mkdirSync, readFileSync, readdirSync, rmSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
@@ -27,7 +27,7 @@ const SIZE = 192;
 const fileOf = (look) => `${look.replace(/[^A-Za-z0-9_.-]/g, '_')}.webp`;
 
 mkdirSync(OUT, { recursive: true });
-const browser = await chromium.launch({ args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
+const browser = await chromium.launch({ ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}), args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'] });
 const page = await browser.newPage({ viewport: { width: 1280, height: 720 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));

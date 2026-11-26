@@ -10,24 +10,24 @@
   "nameTheme": "townsfolk",
   "bio": "Came in to fix the vending machine. Has been winning ever since.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: an everyday guy.",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Cal's model until 2026-11-26 (a Meshy Community CC0 model \"t pose\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"cal rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019e5197-9688-7ed6-b96e-65ce11181dfa",
-    "community": {
-      "model": "t pose"
-    },
-    "file": "^Meshy_AI_t_pose_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_cal_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.7
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
-    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
   }
 }

@@ -1,0 +1,42 @@
+{
+  "id": "meshy_ragdoll",
+  "kind": "character",
+  "use": "player",
+  "order": 239,
+  "name": "Patchwork Polly",
+  "look": "core.ragdoll",
+  "group": "toys",
+  "blood": "spirit",
+  "nameTheme": "spooky",
+  "bio": "Stitched back together after every round. Smiles through all of it.",
+  "body": "female",
+  "size": "small",
+  "notes": "New 2026-11-26 (owner's 11-26 batch). Drive intake of 2026-11-26 (\"Rigged Rag Doll\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
+    "url": null,
+    "file": "^Meshy_AI_Rigged__Rag_Doll_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true,
+    "grip": {
+      "supportLong": [
+        0.017,
+        0.018,
+        0.07
+      ]
+    }
+  }
+}

@@ -10,23 +10,21 @@
   "nameTheme": "townsfolk",
   "bio": "Fixes the generator mid-firefight. Bills you for the overtime.",
   "body": "male",
-  "notes": "Drive batch of 2026-11-01 evening (\"Engineer in Orange Suit\", rigged, 167k triangles). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Name from the owner.",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Orange Suit Engineer's model until 2026-11-26 (a Meshy Community CC0 model \"Engineer in Orange Suit\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"orange engineer rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Engineer in Orange Suit"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Engineer_in_Orange_Su_All_Animations\\.glb$"
+    "file": "^Meshy_AI_orange_engineer_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.05,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 16000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,

@@ -64,7 +64,7 @@ describe('Army bots go by rank', () => {
     expect(nameRank(botNameFor('core.tacticalsoldier', none))).not.toBeNull();
     expect(botNameFor('core.ember', none)).toBe('Flt. Lt. Ember');
     expect(botNameFor('core.stealthop', none)).toBe('Stealth Operative');
-    expect(botNameFor('core.scamp', none)).toBe('Scamp');
+    expect(botNameFor('core.chimpanzee', none)).toBe('Chester Knuckleby');
   });
 });
 

@@ -10,23 +10,25 @@
   "nameTheme": "soldier",
   "bio": "Rated for every spill on the map. Mostly the ones he causes.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: hazmat suit. Intake 2026-11-05 step 2b: its re-rigged download was built and not used (grip audit 0 before, 4 with its own fingers, 6 re-fitted); this build kept.",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Hazmat Joe's model until 2026-11-26 (a Meshy Community CC0 model \"Hazmat T Pose\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"hazmat joe rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/Hazmat-TPose-019fb676-c586-71cd-ba94-77e8fc3b1c36",
-    "community": {
-      "model": "Hazmat T Pose"
-    },
-    "file": "^Meshy_AI_Hazmat_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_hazmat_joe_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.05,
-    "roughness": 0.55
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
   }
 }

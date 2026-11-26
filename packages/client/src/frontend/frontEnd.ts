@@ -10,6 +10,7 @@ import {
   EXPERIMENTAL_SECTION,
   characterSections,
   characterTier,
+  lookVariants,
   botCastLabel,
   botSetLabel,
   getWeaponSet,
@@ -2571,7 +2572,8 @@ export class FrontEnd {
     return [
       // An experimental character sits under Experimental, not with its group (the same rule as an experimental map),
       // unless it is in a collection (the Chrono Crew), which lists its own whatever their tier (characterSectionOf).
-      ...CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, group: l.collection ?? (characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine')), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
+      // A variant (the chimp's looks) is picked on its base's variant picker, not a tile of its own.
+      ...CORE_LOOKS.filter((l) => !l.variantOf).map((l) => ({ id: l.id, name: l.name, group: l.collection ?? (characterTier(l) === 'experimental' ? EXPERIMENTAL_SECTION : (lookGroup(l.id) ?? 'mine')), ...(l.sortAs ? { sortAs: l.sortAs } : {}) })),
       ...PLAYER_NPC_LOOKS.map((l) => ({ id: l.id, name: l.name, group: lookGroup(l.id) ?? 'mine' })),
     ];
   }
@@ -2588,6 +2590,9 @@ export class FrontEnd {
   private characters(): HTMLElement {
     const sections = this.charSections();
     const selected = this.previewed ?? this.look;
+    // The tile a variant look stands under: its base's.
+    const tileOf = (id: string) => lookVariants(CORE_LOOKS, id)[0]?.id ?? id;
+    const mine = tileOf(this.look);
 
     // Q / E (LB / RB) at the ends of the strip: buttons too.
     const bumper = (dir: 1 | -1) => {
@@ -2626,9 +2631,9 @@ export class FrontEnd {
     const live: (() => void)[] = [];
     const makeTile = (c: { id: string; name: string }): HTMLElement => {
       const img = el('img', { alt: c.name });
-      const tile = el('button', { class: `char-tile${c.id === this.look ? ' on' : ''}${c.id === selected ? ' previewing' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
+      const tile = el('button', { class: `char-tile${c.id === mine ? ' on' : ''}${c.id === tileOf(selected) ? ' previewing' : ''}`, title: c.name }, img, el('span', { textContent: c.name }));
       // Your current character wears a badge; the one shown (previewed) is outlined.
-      if (c.id === this.look) tile.append(el('em', { class: 'chosen-badge', textContent: 'Chosen' }));
+      if (c.id === mine) tile.append(el('em', { class: 'chosen-badge', textContent: 'Chosen' }));
       // A favourite's star (a span: buttons can't hold buttons), shown on hover, focus, a touch screen, or when kept.
       const fav = favs.has(c.id);
       const star = el('span', { class: `char-fav${fav ? ' on' : ''}`, role: 'button', tabIndex: -1, title: fav ? 'Favourite: tap to drop' : 'Keep as a favourite', textContent: fav ? '★' : '☆' });
@@ -2739,7 +2744,7 @@ export class FrontEnd {
     // Open on your character (or the one shown): their section scrolled to, unless they're in the first view.
     this.charSection = null;
     requestAnimationFrame(() => {
-      const t = grid.querySelector<HTMLElement>(`.char-tile[data-look="${CSS.escape(selected)}"]`);
+      const t = grid.querySelector<HTMLElement>(`.char-tile[data-look="${CSS.escape(tileOf(selected))}"]`);
       if (t && t.offsetTop + t.offsetHeight > grid.clientHeight) grid.scrollTop = (t.closest<HTMLElement>('.char-sec')?.offsetTop ?? 0);
       this.markSection(this.sectionInView(grid));
     });
@@ -2927,10 +2932,30 @@ export class FrontEnd {
     }
     const bot = CHARACTER_PROFILES[id];
     const style = bot ? botStyleLine(bot) : '';
+    // A character with variant looks (the chimp): its picker, each look shown on a click and chosen with Choose. Each
+    // variant is its own unlock (shared campaign/unlocks.ts), off for now behind CHARACTER_LOCKS_ON, so all are open.
+    const variants = lookVariants(CORE_LOOKS, id);
+    const unlocks = variants.length ? unlockState(startingCharacters(CORE_LOOKS), myStoryProgress()) : null;
+    const picker = variants.length
+      ? el(
+          'div',
+          { class: 'char-variants', id: 'char-variants', role: 'group' },
+          ...variants.map((v) => {
+            const open = characterUnlocked(v.id, unlocks!);
+            const b = el('button', { type: 'button', class: `char-variant${v.id === id ? ' on' : ''}${open ? '' : ' locked'}`, title: open ? `${v.variant}: ${v.name}` : `${v.variant}: locked (unlock it in Story or by playing)`, textContent: open ? v.variant! : `🔒 ${v.variant}` });
+            b.dataset.look = v.id;
+            b.setAttribute('aria-pressed', String(v.id === id));
+            b.addEventListener('click', () => this.preview(v.id));
+            return b;
+          }),
+        )
+      : null;
+    picker?.setAttribute('aria-label', 'Variants');
     info.replaceChildren(
       this.sheetToggle(),
       img,
       el('div', { class: 'who' }, el('h3', { textContent: name }), el('p', { textContent: LOOK_BIOS[id] ?? '' }), ...(style ? [el('p', { class: 'bot-style', textContent: style })] : []), el('div', { class: 'tags' }, ...(lookGroup(id) ? [el('span', { textContent: CHARACTER_GROUP_LABELS[lookGroup(id)!] })] : []), ...(lookBranch(id) ? [el('span', { textContent: CHARACTER_BRANCHES.find((b) => b.id === lookBranch(id))!.label })] : []), ...(l.whole ? [el('span', { textContent: 'Original' })] : [el('span', { textContent: l.body === 'male' ? 'Male' : 'Female' }), el('span', { textContent: outfits })]))),
+      ...(picker ? [picker] : []),
       ...(stats ? [stats] : []),
       loadout,
       el('div', { class: 'char-actions' }, choose),
@@ -2963,7 +2988,8 @@ export class FrontEnd {
     this.charSheet = true;
     this.body.querySelector('.char-info')?.classList.add('sheet-open');
     this.scene.setLook(id);
-    for (const t of this.body.querySelectorAll<HTMLElement>('.char-tile[data-look]')) t.classList.toggle('previewing', t.dataset.look === id);
+    const tile = lookVariants(CORE_LOOKS, id)[0]?.id ?? id;
+    for (const t of this.body.querySelectorAll<HTMLElement>('.char-tile[data-look]')) t.classList.toggle('previewing', t.dataset.look === tile);
     const info = this.body.querySelector('.char-info');
     if (info) this.fillInfo(info as HTMLElement, id);
   }

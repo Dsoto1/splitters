@@ -207,7 +207,7 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 | Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Star Voyager, Starfarer, Steampunk Warrior, The Visitor, Blix Orrin (from the Chrono Crew, 2026-11-25) |
 | Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell (the K9, 2026-11-25), Vesper Quill, Wren Halloway (their group is Outer Space); the 14th place an Unknown tile kept for the Inquisitor |
 | Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo (new model 2026-11-25), Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw, Tetl Stonewarden |
-| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Biscuit, Boglurker, Croakley, Cyber Lion, Ellis Velvetrope (was Elephant Warrior), Fishy Fred, Gorilla G, Greyfang, Rollo Splitworth (was Hyena Warrior), Kesi Tallgrass (was Lion in a Suit), Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too), El Zarpazo, Puddles Ironbill (was Juice); new models 2026-11-25 for Boglurker, Croakley, Cyber Lion, Gorilla G, Greyfang |
+| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Boglurker, Croakley, Cyber Lion, Ellis Velvetrope (was Elephant Warrior), Fishy Fred, Gorilla G, Greyfang, Rollo Splitworth (was Hyena Warrior), Kesi Tallgrass (was Lion in a Suit), Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too), El Zarpazo, Puddles Ironbill (was Juice); new models 2026-11-25 for Boglurker, Croakley, Cyber Lion, Gorilla G, Greyfang |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
@@ -1659,3 +1659,62 @@ standing on the map in a pose (Standing, Cheering, Dancing, Crouching), empty-ha
 and set dressing. The inspector's Character list is the roster by group. Looks only: no collision and no part in play
 (stand it on a block or a prop to make it solid). The game and MapMaker draw it with the same character library
 (`ScenarioVisuals.figure`). No NPC squad wears a chosen look.
+
+## Characters of 2026-11-26 (owner)
+
+The owner's Drive uploads of 2026-11-25 evening to 2026-11-26 03:00 UTC (rigged and animated Meshy downloads, Mixamo
+joint names; Meshy, owned), built as the 11-25 batches were (11k triangles, the 2048 KTX2 colour pipeline; grips from
+the auto-fit; portraits captured). Names of new characters are the lead's (the owner can rename any); the download's
+label is in each manifest's notes.
+
+- **Replacements: new model, id, name and place kept:** Bonejack, Shaka Mpande (`core.ashwalker`: "shaka mpande"),
+  Honest Abe, Cal, Teddy, Cap'n Rusty Barnacle ("pirate remeshed 15k"), Brother Silencio, Sgt. Mackie ("officer
+  mackie"), Orange Suit Engineer, Chef Basile ("french chef"), The Butcher ("fish butcher"), Grandpa Chains, Biker Gang
+  Girl, Old Timer and Hazmat Joe. The models they replaced no longer ship.
+- **Rourke is back** (`core.rourke`, removed 2026-11-25): the owner's own model ("bum rourke"), his old id, name and
+  place; `RETIRED_LOOKS` no longer maps him.
+- **New:** see `content/characters/` (orders 224–253) and docs/STORY_CAMPAIGN.md, "Characters by sector".
+- **Toys** (`toys`, a group of its own after Animalia, owner 2026-11-26; the Playhouse sector's local allies come from
+  it): Cpl. Tinwhistle and Pvt. Pete Plastic (from Soldiers & Spies), Teddy (from Horrors & Creatures, his new model),
+  and the batch's wind-up robot (Tik Winderly), brick man (Bricksby), cymbal monkey (Clangers), jack-in-the-box (Jolly
+  Springjack) and rag doll (Patchwork Polly). Bots ticked for Toys wear them (`BOT_TYPES`), Roulette's group fallback
+  is the Bubble Blaster, and the rank mark is Folk's chevron. The radish man is a lanky cartoon man, not a toy: Everyday
+  Folk. The office worker, hoodie guy, "Karen" and salaryman downloads are zombies: Horrors & Creatures.
+- **Like histories side by side (owner, 2026-11-26):** `CHARACTER_NEIGHBOURS` keeps each row's periods together: the
+  famous real people in Legends in time order (General Cherrytree, Poor Richard, Honest Abe, The Rough Rider, Prof.
+  Quanta), Mesoamerica, the Crusades and the knights (Sigrun Frostmane with them); the Wild West and Southern Africa in
+  Everyday Folk; the Civil War, WW2 and Vietnam in Soldiers & Spies; Egypt and the city's dead in Horrors.
+- **Fishy Fred** takes the scuba fish ("bass diver 3d"; id, name and place kept, no longer small) and **Puddles
+  Ironbill** the tennis duck ("petite scrappy tennis duck 15k"; renamed **Puddles Backspin**, small): both the owner's
+  own (2026-11-26). **Biscuit** and **Kiko Banyan** are removed (a saved pick plays Sterling Purrcival and Chester
+  Knuckleby); Kiko's place as the Jungle Steps unlock in content/campaign.json goes to Ziggy's Aztec look.
+- **Removed completely (owner, 2026-11-26 (2)):** The Purple Comet, Frost Viking (the Frozen sector's boss is
+  Frostmane), Scamp, Armored Sentinel, Steel Guardian, Botney Mullz, Goblin Gunslinger, Sugar Skull, The Masked Figure,
+  The Hollow Pilgrim and Cap'n Rusty Barnacle (the 11-26 pirate model with him; four new pirates are coming). Each plays
+  a near look of the owner's own in `RETIRED_LOOKS` (Frost Viking Sigrun Frostmane, Scamp Chester Knuckleby, the
+  Barnacle Scarlet Brinewell, the three machines Fuse Hollister, and so on); the pirate NPC role wears Scarlet
+  Brinewell; the campaign's allies, companion and reward that named one take a current look. The Hollow Pilgrim's
+  glide stays in code as `locomotion: 'roll'` (the Baseball Robot's, and the coming snowman's). **Dredge Marrow** moves
+  to Legends.
+- **Teddy:** the owner's replacement model is coming; swap it in when it's on the Drive (id, name, place kept).
+- **Shaka Mpande** (`core.ashwalker`) takes the download named after him ("shaka mpande": a red-beret commander in a
+  leopard sash); the ash-painted tribal look the id had ("ash tribal", its new model) is a new character, Kato
+  Emberline (`core.ashtribal`), with the old bio. To confirm with the owner.
+
+### Variants: the chimp (owner, 2026-11-26)
+
+"A chimp character with 10 variants, unlocked through challenges." One character, **Ziggy Bananas** (`core.chimp`), with
+ten looks, one per era: Aviator (the base), Egyptian, Aztec, Roman, Cowboy, Ninja, Vietnam Soldier, Disco Operative,
+Cyber Commando and Scrapper. Each look is its own manifest and model:
+- the base names its own label (`variant`); every other look names the base (`variantOf: "core.chimp"`) and its label,
+  and keeps the base's group, collection, tier and body (the checker holds this);
+- Character Select shows one tile (the base's); its details panel has the **variant picker**, a button per look: a
+  click shows that look, Choose takes it, and the tile wears Chosen for any of them (`lookVariants` in looks.ts);
+- a variant is never an automatic pick (random, bots' rotation, Roulette: `pickableLooks`), but any list of the
+  roster (the bot manager, MapMaker's Figures) can name one;
+- **locks:** each look is its own unlock through `characterUnlocked` (shared campaign/unlocks.ts), so with
+  `CHARACTER_LOCKS_ON` off (now) all ten are open; once the unlock-by-play rules exist, each variant's challenge unlocks
+  its look id (a locked one shows dimmed with a lock on the picker). The eras match the sectors (docs/CAMPAIGN_GDD.md):
+  Egyptian the Sunken Dynasty, Aztec the Jade Empire, Roman the Iron Republic, Cowboy the Last Frontier, Vietnam
+  Soldier and Aviator the Wars, Disco Operative Urban Breakdown, Cyber Commando Neon Tomorrow, Scrapper After the End,
+  Ninja open.
