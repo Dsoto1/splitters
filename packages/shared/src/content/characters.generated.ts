@@ -206,7 +206,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   w('core.brickman', 'Bricksby', 'male', 'meshy_brickman', { group: 'machines', collection: 'playhouse', nameTheme: 'robot' }),
   w('core.cymbalmonkey', 'Clangers', 'male', 'meshy_cymbalmonkey', { size: 'small', group: 'animals', collection: 'playhouse', nameTheme: 'monkey' }),
   w('core.jackinthebox', 'Jolly Springjack', 'male', 'meshy_jackinthebox', { group: 'horror', collection: 'playhouse', nameTheme: 'spooky' }),
-  w('core.ragdoll', 'Patchwork Polly', 'female', 'meshy_ragdoll', { size: 'small', group: 'horror', collection: 'playhouse', nameTheme: 'spooky' }),
+  w('core.ragdoll', 'Patchwork Polly', 'female', 'meshy_ragdoll', { size: 'small', whole: { arms: 'ranger_arms_f', grip: { supportLong: [0.017, 0.018, 0.07] } }, group: 'horror', collection: 'playhouse', nameTheme: 'spooky' }),
   w('core.officeworker', 'Marla Quarterly', 'female', 'meshy_officeworker', { group: 'horror', nameTheme: 'undead' }),
   w('core.hoodieguy', 'Dez Kickley', 'male', 'meshy_hoodieguy', { group: 'horror', nameTheme: 'undead' }),
   w('core.karen', 'Linda Refundsworth', 'female', 'meshy_karen', { group: 'horror', nameTheme: 'undead' }),
