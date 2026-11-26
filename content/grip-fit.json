@@ -8141,11 +8141,6 @@
      0.005,
      0.008
     ],
-    "supportLong": [
-     0.017,
-     0.018,
-     0
-    ],
     "gripPistol": [
      0.023,
      -0.014,
@@ -8157,7 +8152,9 @@
      0.066
     ]
    },
-   "keep": [],
+   "keep": [
+    "supportLong"
+   ],
    "audit": {
     "long": {
      "pick": "auto",
