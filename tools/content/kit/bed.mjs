@@ -40,8 +40,20 @@ function leaning(m, x0, x1, y0, y1, zb, bt, tt, colour) {
  * panel), `runner` (hex: a runner across the double bed's blanket), `jitter`, `grime`.
  */
 export function bedMesh(seed, size, g, look, level) {
-  if (g.style === 'bunk' && g.chest) return bunkChestMesh(seed, size, g, look, level);
+  if (g.style === 'bunk' && g.chest) return halfTurn(bunkChestMesh(seed, size, g, look, level));
   return g.style === 'bunk' ? bunkMesh(seed, size, g, look, level) : doubleMesh(seed, size, g, look, level);
+}
+
+/** A mesh turned half round about y (x and z negated, collision boxes too): the same shape from the other end. */
+function halfTurn(m) {
+  for (let i = 0; i < m.P.length; i += 3) {
+    m.P[i] = -m.P[i];
+    m.P[i + 2] = -m.P[i + 2];
+    m.N[i] = -m.N[i];
+    m.N[i + 2] = -m.N[i + 2];
+  }
+  if (m.boxes) m.boxes = m.boxes.map((b) => [-b[3], b[1], -b[5], -b[0], b[4], -b[2]]);
+  return m;
 }
 
 /**
@@ -50,7 +62,9 @@ export function bedMesh(seed, size, g, look, level) {
  * `chestGap` (m between the bunk's foot and the trunk). The bunk is the plain bunk (`size` less the trunk and the gap
  * along z) at the −z end; the trunk stands on the floor centred on x at +z, its back to the ladder. `look.chest`,
  * `look.edge`, `look.latch`: the trunk's body, its edging along the lid seam and corners, its three latches. Collides as
- * the bunk's boxes and the trunk's.
+ * the bunk's boxes and the trunk's. Built so, then turned half round (`halfTurn`, asset version 2; owner 2026-11-25):
+ * the prop's +z end is the bunk's head, the end that goes snug into a room's corner, and the footlocker stands at its
+ * −z (open) end, the ladder on the bunk's −x side.
  */
 function bunkChestMesh(seed, size, g, look, level) {
   const [w, h, d] = size;

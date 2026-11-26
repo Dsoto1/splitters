@@ -39,9 +39,6 @@ const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   // Wide heads and long snouts (Boglurker's crocodile, a frog) filled the frame edge to edge.
   'core.boglurker': { aim: [0, 0.02, 0], zoom: 1.45 },
   'core.croakley': { zoom: 1.4 },
-  // The tortoise's head is small against its shell: wider, so the shell's dome frames it (any size: a portrait body is
-  // built at 1.8 m, so Shellback's move from large to standard, 2026-11-06, left the picture as it was).
-  'core.tortoise': { zoom: 1.25 },
   // Cool Hands Rex's long snout and shades ran off the frame; Fishy Fred's face sits low on the front of the fish, its
   // tail curled up over its back: wider, the aim down onto the face.
   'core.trex': { zoom: 1.15 },
@@ -50,14 +47,10 @@ const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   'core.galloway': { from: [0.26, -0.2, 1], zoom: 0.9 },
   // Grizzelda's hat brim hid her face from above: from below, the aim down onto her face.
   'core.grizzelda': { from: [0.2, -0.35, 1], aim: [0, -0.08, 0.03], zoom: 1.1 },
-  // Lancer Mei's and Shade's tall helmet and hood put the face at the bottom: aim down onto it, a little closer.
+  // Lancer Mei's tall helmet puts the face at the bottom: aim down onto it, a little closer.
   'core.mei': { aim: [0, -0.1, 0], zoom: 0.85 },
-  'core.shade': { aim: [0, -0.08, 0], zoom: 0.9 },
-  // Rattles and Rotter hold their heads tilted to one side: wider, the aim onto the face.
+  // Rattles holds its head tilted to one side: wider, the aim onto the face.
   'core.rattles': { aim: [-0.05, 0, 0], zoom: 1.25 },
-  'core.rotter': { from: [0.8, 0, 1], aim: [0.12, -0.04, 0], zoom: 1.3 },
-  // Saint Nick's tall hat (rebuilt finer, 2026-11-01) put his face at the bottom.
-  'core.saintnick': { aim: [0, -0.12, 0], zoom: 1.1 },
 };
 
 /** Creatures framed on the top share of their body instead of whole (owner, 2026-11-03: "zoom in on the imp thumbnail"). */

@@ -14,19 +14,20 @@ describe('character manifests', () => {
   });
 
   it('turn into what the prepare tool builds', () => {
-    // A model from the owner's Drive is Meshy Community CC0 unless the owner says they made it (2026-11-06): the Goblin
-    // was recorded as owned until the audit of that day, the Alien Biker until the owner said it was community too
-    // (the same day). Only a model the owner made, or one we generate through the Meshy API, is owned.
-    const goblin = buildSpec(list.find((m) => m.id === 'meshy_goblin'));
-    expect(goblin.pack).toBe('meshy-community-characters');
-    expect(goblin.community).toEqual({ model: 'Goblin', date: '2026-10-26' });
+    // A model from the owner's Drive is Meshy Community CC0 unless the owner says they made it (2026-11-06): the Alien
+    // Biker was recorded as owned until the owner said it was community too (the same day). Only a model the owner made,
+    // or one we generate through the Meshy API, is owned. (The Goblin, this test's first example, was removed 2026-11-25:
+    // the Pirate, another textured FBX rigged here from its landmarks, stands in.)
+    const pirate = buildSpec(list.find((m) => m.id === 'meshy_pirate'));
+    expect(pirate.pack).toBe('meshy-community-characters');
+    expect(pirate.community).toEqual({ model: 'T Pose Pirate', date: '2026-07-14' });
     const biker = list.find((m) => m.id === 'meshy_alienbiker');
     expect(buildSpec(biker).pack).toBe('meshy-community-characters');
     expect(buildSpec(biker).community).toEqual({ model: 'stylized alien biker', date: '2026-11-01' });
     expect(buildSpec({ ...biker, source: { license: 'owned', author: 'the owner', date: '2026-11-01', url: null, file: biker.source.file } }).pack).toBe('meshy-owned');
-    expect(goblin.file.test('Meshy_AI_Goblin_1026113732_texture.fbx')).toBe(true);
-    expect(goblin.joints.LeftHandTip).toEqual([0.258, 0.317, 0.2]);
-    expect(goblin.joints.head_end).toEqual([0, 0.95, 0.14]);
+    expect(pirate.file.test('Meshy_AI_T_Pose_Pirate_0714_texture.fbx')).toBe(true);
+    expect(pirate.joints.LeftHandTip).toEqual([0.424, 0.732, -0.047]);
+    expect(pirate.joints.head_end).toEqual([0, 0.97, 0]);
     // A Meshy rigging task the owner ran (fetch-meshy.mjs downloads by it).
     const ashwalker = buildSpec(list.find((m) => m.id === 'meshy_ashwalker'));
     expect(ashwalker.meshy.rig).toBe('01a18a0b-1e9b-7362-a818-d0779745bb32');

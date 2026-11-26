@@ -187,7 +187,7 @@
       "scale": 0.9,
       "melee": true,
       "damage": 0.6,
-      "look": "core.goblin",
+      "look": "core.grizzelda",
       "bot": {
         "id": "core.npc_goblin",
         "displayName": "Goblin",
@@ -198,7 +198,7 @@
         "tags": ["NPC", "BERSERKER", "RECKLESS"]
       },
       "notes": {
-        "design": "A creature original on the soldiers' rig with its weapon: darts in with blades."
+        "design": "Drawn as Goblina (the owner's own; the Goblin model was removed, owner 2026-11-25): darts in with blades."
       }
     },
     {
@@ -209,7 +209,7 @@
       "weapon": "core.marksman",
       "speed": 0.85,
       "scale": 1,
-      "look": "core.otter",
+      "look": "core.baristaotter",
       "bot": {
         "id": "core.npc_otter",
         "displayName": "Wealthy Otter",
@@ -220,7 +220,7 @@
         "rangePreference": 90,
         "tags": ["NPC", "SNIPER"]
       },
-      "notes": { "design": "A creature original on the soldiers' rig: snipes from the back." }
+      "notes": { "design": "Drawn as Ottis Crema, an otter of the owner's own (the Wealthy Otter model was removed, owner 2026-11-25): snipes from the back." }
     },
     {
       "role": "boglurker",
@@ -328,7 +328,7 @@
       "weapon": "core.lmg",
       "speed": 0.66,
       "scale": 1.18,
-      "look": "core.bogdan",
+      "look": "core.magmajuggernaut",
       "bot": {
         "id": "core.npc_titan",
         "displayName": "Strongman",
@@ -339,7 +339,7 @@
         "tags": ["NPC", "SUPPRESSOR"]
       },
       "notes": {
-        "design": "A Meshy community original: the strongman walks a spin gun straight at you, hard to put down."
+        "design": "Drawn as Ignatius Slagg, a large character of the owner's own (Big Bogdan was removed, owner 2026-11-25): the strongman walks a spin gun straight at you, hard to put down."
       }
     }
   ]

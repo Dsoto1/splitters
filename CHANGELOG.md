@@ -7,6 +7,11 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **St. Jasper's dorm bunks sit snug in the room's corner**, the footlocker at the open end (the Bunk Bed with Footlocker piece, every dorm room).
+- **Switching weapon cancels a throw you're aiming**: the grenade or mine stays in your pocket, nothing leaves your hand.
+- **The Blaster X-42's bolts leave a mark**: a small orange energy splash and a scorch where they land, a hit puff on bodies, their own crackle; nails, arrows, darts, discs, shards, the healing slime and the freeze blast land with an impact of their own too (calm with Reduce flashing on).
+- **Fixed:** a rare error report when the game asked for the mouse as the window lost focus (crash report 1d50cff7).
+- **Characters that weren't the owner's own are gone**: eleven from the roster (Bill, Bill the Barbarian, Big Bogdan, Wealthy Otter, The Hollow Visitor, Crimson Operative, Goblin, Rourke, Rusty Mech, Santa, Umpire) and eighteen retired looks; a saved pick or bot set that named one plays a similar character of the owner's own. The goblin, sniper otter and strongman enemies now look like Goblina, Ottis Crema and Ignatius Slagg.
 - **Doors that fit themselves.** In MapMaker a door cuts the wall it goes in to its own shape, in a room's wall or a wall of blocks, framed on both faces, and hangs in the middle of the wall; a new **Arched door** cuts an arched doorway; changing a door's look re-cuts it, and removing the door leaves the doorway.
 - **Sharper characters up close.** Character colour maps are twice as detailed (2048 px) for 177 of the 209 characters, and every character's maps now stay compressed on the graphics card, so all of them together take about 40% less video memory than before; the game downloads a little more per character.
 - **Story** heads the main menu (Story · Quick Play · Local · Online): the Operations Database, three placeholder sectors on today's maps, played one map at a time against bots and saved on your device and your account; a sector's later maps can't be hosted until you've won them in Story (joining is fine).

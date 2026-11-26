@@ -8000,7 +8000,7 @@ async function tracersFlow(browser) {
 }
 
 async function tracers2Flow(browser) {
-  await tracerMuzzleChecks(browser, ['core.otter']);
+  await tracerMuzzleChecks(browser, ['core.baristaotter']);
 }
 
 async function tracers3Flow(browser) {
@@ -8011,7 +8011,7 @@ async function tracers3Flow(browser) {
  * Bullets come out of the gun (grips auto-fit, owner 2026-11-18: "ensure bullets come out of the gun properly
  * (especially in 3rd person)"): every round you fire (a tracer or not: the pistol draws none) starts at your gun's muzzle as drawn the frame it first shows,
  * in third person (your character's gun) and first person (the viewmodel), for a few builds of character (the
- * Ranger, the small Wealthy Otter, the large Iron Knight), the rifle and the pistol, standing and crouched, still,
+ * Ranger, the small Ottis Crema, the large Iron Knight), the rifle and the pistol, standing and crouched, still,
  * strafing and aiming. Two measures each tracer: the gap to the muzzle point the game keeps (view muzzleOf /
  * localMuzzle, the drift), and the gap to the drawn gun itself (the nearest of its drawn vertices, and how far behind its
  * front along the barrel), so a muzzle point off the barrel fails too. Before, your own tracers in third person
@@ -12764,7 +12764,7 @@ const flashingFlow = (part) => async (browser) => {
 const FLASHING_PARTS = {
   flashing: { night: ['arc', 'fence', 'blast', 'cookoff', 'pairtp'] },
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
-  flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status'] },
+  flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status', 'bolts'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
   flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
 };
@@ -13305,6 +13305,20 @@ async function flashingScene(browser, scene, names) {
       look: aim([0, 0, -25.5], [0, 1.2, -29]),
       bots: [],
       fire: true,
+    },
+    {
+      // A no-splash projectile's impact (game/projectileLand.ts): the Blaster X-42's bolts landing on the wall 3.5 m
+      // off, each an orange energy splash and a scorch (with the setting on: an unlit, dimmer, slower puff).
+      name: 'bolts',
+      label: "the Blaster X-42's bolts landing on a wall 3.5 m off in the dark room (energy splashes and scorches)",
+      weapon: 'core.blaster_x42',
+      me: [0, 0, -25.5],
+      look: aim([0, 0, -25.5], [0, 1.2, -29]),
+      bots: [],
+      fire: true,
+      before: () => page.evaluate(() => (window.__landsBefore = window.__cs.view.landsDrawn)),
+      seen: () => page.evaluate(() => window.__cs.view.landsDrawn - window.__landsBefore),
+      sees: (_on, n) => n >= 5,
     },
     {
       // Dual wielding (docs/GUNPLAY_SPEC.md, "Akimbo / Dual Wield"): two guns' flashes. With the setting on the pair
@@ -14330,7 +14344,7 @@ async function farBodies(browser) {
   // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
   // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
   // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
-  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.panda', 'core.knight', 'core.croakley'];
+  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.zencapybara', 'core.knight', 'core.croakley'];
   await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
     const c = m.combatants().find((x) => x.slot === s);
     if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);

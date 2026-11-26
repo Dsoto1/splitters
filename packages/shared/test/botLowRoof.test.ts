@@ -156,7 +156,7 @@ describe('large bots and low roofs', () => {
     expect(large.arrived).toBe(true);
     expect(large.crossedAt).toBeGreaterThan(12);
     expect(large.ducked).toBe(0);
-    for (const look of ['core.goblin', 'core.dapper']) {
+    for (const look of ['core.grizzelda', 'core.dapper']) {
       const r = run(true, look, TUNNEL);
       expect(r.arrived).toBe(true);
       expect(r.crossedAt).toBeLessThan(5.5);

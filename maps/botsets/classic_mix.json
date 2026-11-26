@@ -15,7 +15,7 @@
     { "name": "Tibbs", "look": "core.biscuit" },
     { "name": "Ferro", "look": "core.grunt68" },
     { "name": "Lady Ash", "look": "core.mei", "skill": "hard" },
-    { "name": "Nub", "look": "core.goblin", "skill": "easy" },
+    { "name": "Nub", "look": "core.grizzelda", "skill": "easy" },
     { "name": "Quill", "look": "core.abe" }
   ]
 }

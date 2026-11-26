@@ -280,14 +280,14 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.sprout': 'core.mei',
   // Owner, 2026-11-24: nine more off the roster (files, manifests and portraits kept); a saved pick plays a kept look of
   // the same group. (The Dummy is the trooper NPC skin, off Character Select in PLAYER_NPC_LOOKS; see npc.ts.)
-  'core.astroexplorer': 'core.astronaut', // Astronaut Explorer -> Spacewalker
-  'core.neonninja': 'core.shadowenforcer', // Neon Shadow Ninja -> Shadow Enforcer
-  'core.neonguardian': 'core.starvoyager', // Neon Guardian -> Star Voyager
-  'core.hector': 'core.dale', // Bill the Barbarian -> Cal
-  'core.brasshare': 'core.biscuit', // Brass Hare -> Biscuit
-  'core.bigbab': 'core.gorillag', // Big Bab -> Gorilla G
-  'core.tortoise': 'core.coachtortoise', // Shellback -> Coach Hank Shelton
-  'core.giggles': 'core.teddy', // Giggles -> Teddy
+  'core.astroexplorer': 'core.crewpilot', // Astronaut Explorer
+  'core.neonninja': 'core.crewphase', // Neon Shadow Ninja
+  'core.neonguardian': 'core.crewcyborg', // Neon Guardian
+  'core.hector': 'core.frostvalkyrie', // Bill the Barbarian
+  'core.brasshare': 'core.harecourier', // Brass Hare
+  'core.bigbab': 'core.chimpanzee', // Big Bab
+  'core.tortoise': 'core.coachtortoise', // Shellback
+  'core.giggles': 'core.frida', // Giggles
   // Owner, 2026-11-24: Brutus Hornbeck off the roster too (files kept); a saved pick plays Gorilla G, a kept large Animalia.
   'core.rhinojuggernaut': 'core.gorillag', // Brutus Hornbeck -> Gorilla G
   // The Dummy (the trooper mannequin NPC skin): off Character Select (PLAYER_NPC_LOOKS); a saved pick plays Stealth
@@ -315,38 +315,38 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.brawler': 'core.dale',
   'core.engineer': 'core.dale',
   'core.warden': 'core.grunt68',
-  'core.rustwalker': 'core.t350',
-  'core.slugger': 'core.t350',
-  'core.crimsonop': 'core.stealthop', // held back: a close likeness of a famous game character; owner to decide (files kept)
+  'core.rustwalker': 'core.crewdemolitions',
+  'core.slugger': 'core.crewdemolitions',
+  'core.crimsonop': 'core.crewrecon',
   // Owner, 2026-11-03: off the roster (files and manifests kept). Rotter tears open at the sides and
   // waist (its download stands with the hands on the hips; see HANDOFF); the others by the owner's choice. Giggles
   // was here too until its new model (Tattered Circus Nightmare, a T-pose rig) replaced it, 2026-11-05.
-  'core.vampire': 'core.bonesworth',
-  'core.hollowvisitor': 'core.visitor',
-  'core.dusttrooper': 'core.desertranger',
+  'core.vampire': 'core.abyssalhunter',
+  'core.hollowvisitor': 'core.abyssalhunter',
+  'core.dusttrooper': 'core.greenarmy',
   'core.goblin': 'core.grizzelda',
-  'core.rotter': 'core.shambler',
+  'core.rotter': 'core.abyssalhunter',
   // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
-  // hands can't be fixed. The otter NPC role keeps its model (NPC_KEPT_LOOKS).
-  'core.otter': 'core.biscuit',
-  'core.shade': 'core.mei',
+  // hands can't be fixed. (Removed entirely 2026-11-25; the otter NPC role is drawn as Ottis Crema.)
+  'core.otter': 'core.baristaotter',
+  'core.shade': 'core.crewphase',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.
-  'core.tposesoldier1': 'core.wwiisoldier', // Hollis
-  'core.tposesoldier2': 'core.grunt68', // Briggs
+  'core.tposesoldier1': 'core.toysoldier', // Hollis
+  'core.tposesoldier2': 'core.greenarmy', // Briggs
   // Owner, 2026-11-05: Bill off the roster (files and manifests kept). Hyena Warrior (Gnoll) and Snikkit (Goblin
   // Mischief) stay; their hands get the palm-orientation fix first.
-  'core.bill': 'core.dale',
+  'core.bill': 'core.vintagepro',
   // Owner, 2026-11-06 ("Retire bamboo, add the new turtle"): Bamboo off the roster (files, manifest and portrait
   // kept); saved choices and bot sets play the tortoise, the animal that came in with it.
-  'core.panda': 'core.coachtortoise',
+  'core.panda': 'core.zencapybara',
   // Owner, 2026-11-06 (after the intake that gave it the light-blue astronaut): Capt. Nova off the roster (files,
   // manifest and portrait kept); saved choices and bot sets play Spacewalker, the nearest astronaut.
-  'core.nova': 'core.astronaut',
+  'core.nova': 'core.crewpilot',
   // Owner's Roster Board, 2026-11-14 (flagged Remove): off the roster (files, manifests and portraits kept); saved
   // choices and bot sets play the nearest kept look: Uncle Bao the Old Timer, the Rusty Mech T-TreeFitty (a large robot).
-  'core.unclebao': 'core.oldtimer',
-  'core.rustymech': 'core.t350',
+  'core.unclebao': 'core.elder',
+  'core.rustymech': 'core.crewdemolitions',
   // Owner, 2026-11-21 ("remove gas mask engineer character from game"): removed, files and all (its model, first-person
   // arms and portrait); saved choices and bot sets play Grunt '68, a kept Army soldier.
   'core.gasmaskengineer': 'core.grunt68',
@@ -358,6 +358,22 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-22 (the raccoon question): Zero Ringtail's model (the raccoon hacker of that afternoon) is Bandit's now,
   // and its own entry went (manifest and portrait; its built files renamed to Bandit's). Saved choices and bot sets play Bandit.
   'core.raccoonhacker': 'core.bandit',
+  // Owner, 2026-11-25 (fix batch 11-26): eleven removed entirely, files and all (models, first-person arms, portraits,
+  // manifests, grips, locks and provenance): Bill, Bill the Barbarian, Big Bogdan, Wealthy Otter, The Hollow Visitor,
+  // Crimson Operative, Goblin, Rourke, Rusty Mech, Santa and Umpire. Each plays a near look of
+  // the owner's own (the seven already off the roster too, since the removal below). The goblin, otter and
+  // strongman NPC roles are drawn as the owner's own Goblina, Ottis Crema and Ignatius Slagg (content/npcs.json).
+  'core.bogdan': 'core.magmajuggernaut', // Big Bogdan -> Ignatius Slagg (the Strongman role's look too)
+  'core.rourke': 'core.outlawranger', // Rourke -> Cutter McCrae
+  'core.saintnick': 'core.elder', // Santa -> Elder Tomo (white-bearded)
+  'core.umpire': 'core.vintagepro', // Umpire -> Coffee Brown (the vintage ball player)
+  // Owner, 2026-11-25 ("i dont want to support them and they are not my models"): every retired look whose model isn't
+  // the owner's own (Meshy, owned) removed entirely, files and all (manifests, models, arms, portraits, grips, locks and
+  // provenance): Astronaut Explorer, Neon Shadow Ninja, Neon Guardian, Brass Hare, Big Bab, Shellback, Giggles, Ivory
+  // Rustwalker, Slugger-9, the Vampire, Dust Trooper, Rotter, Shade, Hollis, Briggs, Bamboo, Capt. Nova and Uncle Bao, as
+  // the eleven above. Each removed id (theirs and the eleven's) now plays a near look of the owner's own, above; the
+  // older entries' comments name the look each led to before. (Retired looks of the owner's own models, Brutus Hornbeck
+  // among them, stay. The modular presets have no files of their own: their entries are unchanged.)
 };
 
 /**
@@ -368,7 +384,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
 const DESIGNER_BASE_ID = 'core.ranger';
 /** The sim's fixed default look: Cal, a kept, pickable look (owner, 2026-11-24: the default is never a retired look). */
 const DEFAULT_LOOK_ID = 'core.dale';
-export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set(['core.goblin', 'core.otter', DESIGNER_BASE_ID]);
+export const NPC_KEPT_LOOKS: ReadonlySet<string> = new Set([DESIGNER_BASE_ID]);
 
 /** Every preset ever defined, retired ones included (see RETIRED_LOOKS). */
 const ALL_LOOKS: readonly CharacterLook[] = [

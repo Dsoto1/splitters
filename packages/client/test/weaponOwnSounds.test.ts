@@ -19,8 +19,9 @@ afterEach(() => {
 });
 
 describe("weapons' own explosion and impact sounds", () => {
-  it('none in the game yet: the shared explosion, and no extra hit sound', () => {
-    expect(Object.values(CORE_WEAPONS).filter((w) => w.view.explosionSound || w.view.impactSound)).toEqual([]);
+  it("the Blaster X-42's energy crackle is the only one yet (2026-11-25): else the shared explosion, and no extra hit sound", () => {
+    expect(Object.values(CORE_WEAPONS).filter((w) => w.view.explosionSound || w.view.impactSound).map((w) => [w.id, w.view.explosionSound, w.view.impactSound])).toEqual([['core.blaster_x42', undefined, 'impact.energy']]);
+    expect(impactSoundOf('core.blaster_x42')).toBe('impact.energy');
     expect(explosionSoundOf('core.launcher')).toBe('explosion');
     expect(explosionSoundOf('core.frag')).toBe('explosion');
     expect(explosionSoundOf(undefined)).toBe('explosion');
