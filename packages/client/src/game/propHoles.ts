@@ -22,7 +22,7 @@ export interface PropHoleTarget {
   node: TransformNode;
   /** Each box's frame relative to the root (box world = rel × root world) and its half sizes in that frame. */
   boxes: { rel: Matrix; half: Vec3 }[];
-  /** A sphere round every box at load (world): a round's ray is tested against it first. */
+  /** A sphere round every box, its centre in the root's frame and its radius in the world: a round's ray is tested against it first. */
   centre: Vec3;
   radius: number;
   surface: SurfaceTypeId | null;
@@ -56,13 +56,15 @@ export function propHoleTargets(boxes: readonly WorldBox[], nodeOf: (id: string)
       const world = Matrix.RotationY(b.yaw ?? 0).multiply(Matrix.Translation(c.x, c.y, c.z));
       return { rel: world.multiply(inv), half };
     });
-    const centre = { x: (lo[0]! + hi[0]!) / 2, y: (lo[1]! + hi[1]!) / 2, z: (lo[2]! + hi[2]!) / 2 };
-    out.push({ node, boxes: parts, centre, radius: Math.hypot(hi[0]! - centre.x, hi[1]! - centre.y, hi[2]! - centre.z), surface: surfaceOf(id) });
+    const c = { x: (lo[0]! + hi[0]!) / 2, y: (lo[1]! + hi[1]!) / 2, z: (lo[2]! + hi[2]!) / 2 };
+    const centre = Vector3.TransformCoordinatesFromFloatsToRef(c.x, c.y, c.z, inv, new Vector3());
+    out.push({ node, boxes: parts, centre: { x: centre.x, y: centre.y, z: centre.z }, radius: Math.hypot(hi[0]! - c.x, hi[1]! - c.y, hi[2]! - c.z), surface: surfaceOf(id) });
   }
   return out;
 }
 
 const boxWorld = new Matrix();
+const centreNow = new Vector3();
 
 /**
  * The breakable prop a round from `from` stopped on at `to`, as drawn now: its root, the point and face normal in the
@@ -77,16 +79,17 @@ export function strikeProp(targets: readonly PropHoleTarget[], from: Vec3, to: V
   let best: { t: PropHoleTarget; hit: LocalHit; rel: Matrix } | null = null;
   for (const t of targets) {
     if (!t.node.isEnabled() || t.node.isDisposed()) continue;
-    // Quick out: the round's segment passes clear of the prop's sphere (most props, most rounds).
-    const ox = t.centre.x - from.x;
-    const oy = t.centre.y - from.y;
-    const oz = t.centre.z - from.z;
+    // Quick out: the round's segment passes clear of the prop's sphere, where the prop is now (most props, most rounds).
+    const root = t.node.computeWorldMatrix(true);
+    Vector3.TransformCoordinatesFromFloatsToRef(t.centre.x, t.centre.y, t.centre.z, root, centreNow);
+    const ox = centreNow.x - from.x;
+    const oy = centreNow.y - from.y;
+    const oz = centreNow.z - from.z;
     const k = Math.max(0, Math.min(1, (ox * dx + oy * dy + oz * dz) / len2));
     const ex = ox - dx * k;
     const ey = oy - dy * k;
     const ez = oz - dz * k;
     if (ex * ex + ey * ey + ez * ez > t.radius * t.radius) continue;
-    const root = t.node.computeWorldMatrix(true);
     for (const b of t.boxes) {
       b.rel.multiplyToRef(root, boxWorld);
       const hit = rayBoxLocalHit(from, to, boxWorld, b.half);
