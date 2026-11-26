@@ -158,7 +158,7 @@ import { autoReloadOn, damageNumbersOn, saveAutoReload, saveDamageNumbers, saveS
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
-import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscreen, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscreen, releasePointer, toggleFullscreen } from '../fullscreen.ts';
 import { PAD, glyphs, onPadPress, onPadScroll } from '../inputMode.ts';
 import { nextInDirection, type Dir } from './padNav.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
@@ -2388,6 +2388,8 @@ export class FrontEnd {
     let opening = false;
     edit.addEventListener('click', async () => {
       if (document.getElementById('bot-manager') || opening) return;
+      // (Over the pause menu the window needs the mouse: a lock held, or asked for and granted late, is let go.)
+      if (this.pause) releasePointer();
       opening = true;
       const { botManager } = await import('./botManager.ts').finally(() => (opening = false));
       if (document.getElementById('bot-manager')) return;
