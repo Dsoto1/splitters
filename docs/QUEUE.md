@@ -56,7 +56,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/prop-holes-1126` · 775ab4b2 · 45813203611 (bullet holes on breakable props; lane A)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -190,6 +189,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-26** train check/train-20261126-121603 (e6aad95, run 45818091351), landed by the splitters lead: bullet holes on breakable props (`wip/prop-holes-1126`): holes ride the prop and go when it breaks; drums and barrels holed on their curve; wood, metal and stone looks; 24 per prop, 40 props at once.
 - 2026-11-26 · B · Chat with mute: Enter all / I team text chat relayed by the host (rate limits, word filter), 12 quick-chat lines (B + keys, pad wheel, touch Chat button), a chat log that fades, Mute chat and host Kick on a player's card (train `check/train-20261126-114720`, green 6a41f416; checked green at ae7440f4, run 45805866880), landed by lane B's splitters22. Owner questions open: the five new quick lines, the team key, the filter in private games, a host's mute for everyone.
 - 2026-11-26 · A · The weapon holds still off: pistol holds for Gorilla G, Ellis Velvetrope, Boogie Tuskworth, El Zarpazo, Napsworth; Puddles Ironbill's long guns; new `fixes.holdPistol` (train `check/train-20261126-045712`, green fc8707c7, run 45758439037; lane A's train, landed by lane B's splitters22 after the lock went 3 h stale). Owner question left open: a one-handed pistol hold for bodies like Puddles Ironbill?
 - **2026-11-26** train `check/train-20261126-033801` (green 5608012, run 45750189700), landed by lane B's splitters22: `wip/dodge-roll-1125` (dodge-step and combat roll: V, B while aiming on a pad, touch Dodge; on stamina, no i-frames, bots don't use them; `SNAPSHOT_BINARY_VERSION` 4) and `wip/breakable-walls-1125` (breakable walls from MapMaker's inspector: health 300, explosives only by default, a 2.75 m hole with the band left over it, back next round; map format v54). Owner ("go recs"): defaults kept; bots through holes waits for the tiled navmesh.
