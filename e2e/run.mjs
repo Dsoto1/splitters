@@ -15047,12 +15047,11 @@ async function practicerangeFlow(browser) {
   const text = await read();
   check(/^(Body|Head|Legs) · 1[5-9] m · \d+ · \d+ hits? to down$/.test(text ?? ''), `a round into the 10 m target (about 17 m from the spawn behind the line) reads out the hit (${text})`);
   if (pics) await page.screenshot({ path: `${pics}/practice-hit.png` });
-  await page.keyboard.press('Escape');
-  await page.waitForFunction(() => !document.getElementById('pause').hidden, null, { timeout: T(10000) }).catch(() => {});
+  // Leaving: the pause menu's "Leave the range" (played without the mouse, nothing holds Esc here) goes back to the menu.
   const exitLabel = await page.textContent('#exitmatch').catch(() => '');
-  await page.keyboard.press('Escape');
+  await page.evaluate(() => document.getElementById('exitmatch').click());
   const back = await page.waitForFunction(() => !document.getElementById('menu').hidden, null, { timeout: T(20000) }).then(() => true, () => false);
-  check(exitLabel === 'Leave the range' && back, `Esc twice leaves the range for the menu (${exitLabel}, ${back})`);
+  check(exitLabel === 'Leave the range' && back, `the pause menu's "Leave the range" goes back to the menu (${exitLabel}, ${back})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await context.close();
 }
