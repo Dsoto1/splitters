@@ -1139,7 +1139,8 @@ export class Hud {
     }
     // (Drawn again each time: the keys it names follow Options → Controls.)
     if (open && el.hidden !== false) {
-      el.innerHTML = `<b>Quick message</b>${messages.map((m, i) => `<div><kbd>${i + 1}</kbd> ${escapeHtml(m)}</div>`).join('')}<small>1 &amp; 7 also order your team's bots · ${escapeHtml(hintKey('ping'))}: ping · ${escapeHtml(hintKey('dance'))}: dance · ${escapeHtml(hintKey('quickMessage'))}: close</small>`;
+      const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='];
+      el.innerHTML = `<b>Quick message</b><div class="msg-cols">${messages.map((m, i) => `<div><kbd>${keys[i] ?? ''}</kbd> ${escapeHtml(m)}</div>`).join('')}</div><small>1 &amp; 7 also order your team's bots · ${escapeHtml(hintKey('ping'))}: ping · ${escapeHtml(hintKey('dance'))}: dance · ${escapeHtml(hintKey('quickMessage'))}: close · ${escapeHtml(hintKey('chat'))}: type</small>`;
     }
     el.hidden = !open;
   }
