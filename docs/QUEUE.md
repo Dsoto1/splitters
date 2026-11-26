@@ -46,7 +46,12 @@ HANDOFF.md keeps the detail and the history (Landed notes, claims, lock lines). 
 Everything else keeps its place below these.
 
 ## In flight
-- **Lead: the "splitters" session (owner, 2026-11-22).**
+- **Lead: lane B's splitters22 again (owner, 2026-11-26: "lane b will need to be primary, it has a lot of usage left"; lane A has about 12% of its week left).** Lane B runs the trains, keeps this file and HANDOFF, takes new work (the owner's next character batch with the chimp's 10 variants first, then step 2 of "The plan"; lane A's items too while lane A is low).
+- **Lane A ("splitters", lead until 2026-11-26) only finishes what is running, in this landing order** (each touches the character tables, so one at a time, each merging main before its landing):
+  1. `wip/fixes-20261126` (fix batch: dorm bunk, pointer-lock crash 1d50cff7, cancel a throw, X-42 and projectile impacts, 11 characters and the non-owned retired looks removed);
+  2. `wip/chars-1125b` (the owner's 11-25 batch: replacements with the old models as MapMaker Figures (map format v53), El Zarpazo, Tetl Stonewarden, Rocco Tickwell (crew 14th place vacant until the Inquisitor), Civil War and Vietnam soldiers, renames, Blix to Space);
+  3. `wip/no-designer-1125` (the Character Designer and custom characters removed).
+  If lane A runs out before landing them, lane B takes them over from their Ready-to-land lines and HANDOFF claims.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
@@ -96,6 +101,7 @@ Everything else keeps its place below these.
 - XS · B · Tests near their timeouts at load 16-25, CPU-bound (flaky-tests helper, 2026-11-15): botRoles route variety, botai strafing aim, debrisGround, zipStream, server.test's first CTF test with four suites at once.
 
 ## Features
+- M · ? · **The owner's next character batch** (owner, 2026-11-26; Drive, Meshy, owned, arriving): among them a **chimp character with 10 variants, unlocked through challenges**: one character with variant looks (a variant picker on Character Select, each variant locked until its challenge is done; the unlock rules come with the unlock-by-play work, so variants ship unlocked behind the same switch until then). Start once the owner says the uploads are done; on this account, after the weekly usage resets (owner, 2026-11-26: ~12% left this week).
 - L · ? · **4-player split screen, online too** (owner, 2026-11-25, later): up to 4 players on one machine (a pad each, or keyboard plus pads), the screen split; that group can host online with bots, and online players join to fill places or take a bot's. Needs local player slots in the match and the netcode, one camera and HUD per player, and a performance budget for 4 views.
 - M · B · **Combat rules for map makers** (owner, 2026-11-24, "1 and 1"; GUNPLAY G5): a small safe set of `MatchRules` knobs: headshot multiplier (off / normal / high), ammo (normal / unlimited / scarce), reloads on or off, bullets through walls on or off, damage scale and health scale (0.5×, 1×, 1.5×, 2×); no per-weapon tweaks. Saved in the map file as its defaults (MapMaker sets them), the host can change them in Match Setup; official servers use the standard rules unless the owner sets a map's rules. Bots, the killfeed and the gun report respect them. Next free lane B helper slot.
 - L · ? · **Story campaign** (owner's notes, 2026-11-24; docs/STORY_CAMPAIGN.md): about 3 maps per period or theme, challenges unlock the next map, period bosses (the Aztec maps lead to Aurelio and the Sun Warrior), the Chrono Crew (14 with the owner's 3 more) as the player's team, unlocked characters swapped in, character unlocks by maps, catching or kill counts; 5 maps and the Chrono Crew at the start. Waits for the owner's story; the questions are in the doc.
