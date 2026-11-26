@@ -63,13 +63,17 @@ export const FX_MAP = {
     "concrete": {
       "sparks": 2,
       "dust": "#a39d92",
-      "dustSize": 1,
+      "dustSize": 1.2,
+      "chips": 2,
+      "chip": "#8d8880",
       "accent": null
     },
     "stone": {
       "sparks": 2,
-      "dust": "#a39d92",
-      "dustSize": 1,
+      "dust": "#aaa498",
+      "dustSize": 1.2,
+      "chips": 2,
+      "chip": "#9a948a",
       "accent": null
     },
     "rock": {
@@ -151,16 +155,22 @@ export const FX_MAP = {
     "dirt": {
       "dust": "#7d6a52",
       "dustSize": 1.4,
+      "chips": 3,
+      "chip": "#5e4b36",
       "accent": null
     },
     "grass": {
       "dust": "#6f6b48",
       "dustSize": 1.3,
+      "chips": 2,
+      "chip": "#5a4a34",
       "accent": null
     },
     "sand": {
       "dust": "#cdb88e",
       "dustSize": 1.6,
+      "chips": 3,
+      "chip": "#d6c296",
       "accent": null
     },
     "gravel": {
@@ -173,6 +183,15 @@ export const FX_MAP = {
     "snow": {
       "dust": "#eef2f6",
       "dustSize": 1.6,
+      "chips": 3,
+      "chip": "#f4f8fb",
+      "accent": null
+    },
+    "ice": {
+      "dust": "#e2eef4",
+      "dustSize": 0.5,
+      "chips": 4,
+      "chip": "#d4eaf4",
       "accent": null
     },
     "water": {

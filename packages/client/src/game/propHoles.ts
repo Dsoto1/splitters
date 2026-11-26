@@ -190,9 +190,12 @@ export class HoleBook<K> {
   }
 }
 
-/** How a hole looks on a surface: wood a pale splintered rim, metal a small bright dent, stone a wider chip, else as walls. */
+/**
+ * How a hole looks on a surface: wood a pale splintered rim, metal a small bright dent, stone a wider chip, glass and ice
+ * a small frosted pit, soft ground a darker, wider pock; else as walls.
+ */
 export interface HoleLook {
-  key: 'wood' | 'metal' | 'stone' | 'plain';
+  key: 'wood' | 'metal' | 'stone' | 'glass' | 'soft' | 'plain';
   /** The decal's tint (multiplies its texture: the dark middle stays dark, the rim takes the colour). */
   tint: [number, number, number];
   /** Its size against a wall hole. */
@@ -203,11 +206,29 @@ const LOOKS: Record<HoleLook['key'], HoleLook> = {
   wood: { key: 'wood', tint: [1.25, 1.0, 0.72], scale: 1 },
   metal: { key: 'metal', tint: [1.35, 1.4, 1.5], scale: 0.7 },
   stone: { key: 'stone', tint: [1.05, 1.05, 1.05], scale: 1.15 },
+  glass: { key: 'glass', tint: [1.5, 1.65, 1.8], scale: 0.75 },
+  soft: { key: 'soft', tint: [0.72, 0.64, 0.55], scale: 1.25 },
   plain: { key: 'plain', tint: [1, 1, 1], scale: 1 },
 };
 
-/** The hole look for a surface type (by its impact sound family: wood, metal, hard), plain when unknown. */
-export function holeLook(surface: SurfaceTypeId | null): HoleLook {
+/** The hole look for a surface type (by its impact sound family: wood, metal and sheet, hard and stone, glass and ice, soft), plain when unknown. */
+export function holeLook(surface: SurfaceTypeId | null | undefined): HoleLook {
   const sound = surface ? SURFACE_TYPES[surface]?.impact.sound : undefined;
-  return sound === 'wood' ? LOOKS.wood : sound === 'metal' ? LOOKS.metal : sound === 'hard' ? LOOKS.stone : LOOKS.plain;
+  switch (sound) {
+    case 'wood':
+      return LOOKS.wood;
+    case 'metal':
+    case 'sheet':
+      return LOOKS.metal;
+    case 'hard':
+    case 'stone':
+      return LOOKS.stone;
+    case 'glass':
+    case 'ice':
+      return LOOKS.glass;
+    case 'soft':
+      return LOOKS.soft;
+    default:
+      return LOOKS.plain;
+  }
 }

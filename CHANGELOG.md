@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Bullet hits look and sound like what they hit.** Wood throws long splinters, stone and brick chunky grit, soil clods, leaves flutter down, glass and ice shards; holes take the surface's look; brick and rock, thin metal and ice have hit sounds of their own, and wood, metal and dirt more takes. Bulletproof glass glints pale instead of sparking, and **ice** is its own surface (no sparks, a hard glassy knock). With Reduce flashing on, sparks are thinner.
 - **The pause menu's Host tab is Match Setup itself.** Offline and hosting, the Host tab has Match Setup's own tabs (Match setup, Bots & AI, Rules, Presets) for the match being played, so every setting is there (Spawn on teammates too), each marked Now or At restart; one button says what it will do: Apply now, or Restart with these. Kick, ban, the rotation and Change map stay.
 - **Simpler pickers in Rules and MapMaker's settings.** Match Setup's Rules tab: Weather and Weapon set as chips, the on/off rules as switches. MapMaker's Map settings: mode, category, weapon set, team layout, gravity, broken glass, walls, blood, weather and tier as chips, fall damage, Everything breaks and Test map as switches, team sizes as steppers. Saved setups and maps load as before.
 - **Bots no longer get stuck on propped-open doors**: their routes go round an open door's leaf instead of through it.

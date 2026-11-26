@@ -166,6 +166,12 @@ describe('holes on breakable props (owner, 2026-11-24)', () => {
     expect(holeLook('sheet_metal').key).toBe('metal');
     expect(holeLook('metal').scale).toBeLessThan(1);
     expect(holeLook('stone').key).toBe('stone');
+    expect(holeLook('brick').key).toBe('stone');
+    expect(holeLook('glass').key).toBe('glass');
+    expect(holeLook('ice').key).toBe('glass');
+    expect(holeLook('ice').scale).toBeLessThan(1);
+    expect(holeLook('dirt').key).toBe('soft');
+    expect(holeLook('foliage').key).toBe('soft');
     expect(holeLook(null).key).toBe('plain');
   });
 });
