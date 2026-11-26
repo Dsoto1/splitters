@@ -96,7 +96,7 @@ interface ChipKind {
 }
 const CHIP_KINDS: Record<'splinters' | 'leaves' | 'grit' | 'clods' | 'shards', ChipKind> = {
   // Long thin slivers that spin fast.
-  splinters: { sx: 1.9, sy: 0.55, sz: 0.4, fall: 9.8, drag: 1.5, spin: 14, speed: 1.1 },
+  splinters: { sx: 1.25, sy: 0.4, sz: 0.3, fall: 9.8, drag: 1.5, spin: 14, speed: 1.1 },
   // Flat flakes that drift down slowly.
   leaves: { sx: 1.3, sy: 0.25, sz: 1.4, fall: 3.2, drag: 3.5, spin: 5, speed: 0.8 },
   // Chunky stone and brick grit that drops hard.

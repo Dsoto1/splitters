@@ -8289,6 +8289,22 @@ async function destructionChecks(browser) {
       return { found: true, holes: view.impacts.propHolesOn(node), instances: mesh?.thinInstanceCount ?? 0, underRoot: mesh?.parent === node, batched: view.propBatches.copyState(node).drawnHere };
     });
     check(holed.found && holed.holes === 3 && holed.instances === 3 && holed.underRoot && holed.batched, `rounds stopping on a breakable crate leave holes on the crate, the crate still batched (${JSON.stringify(holed)})`);
+    // Impact effects by material (2026-11-26): a round into the level beside it leaves a hole tinted for that surface
+    // (impactVisuals.ts holeTint, propHoles.ts holeLook), and its sparks, if any, thinned by Reduce flashing (on here).
+    const level = await page.evaluate(() => {
+      const view = window.__cs.view;
+      const c = view.props.get(window.__crateIndex).getAbsolutePosition();
+      const eye = { x: c.x + 3, y: c.y + 5, z: c.z + 3 };
+      const hit = view.raycastLevel(eye, { x: 0, y: -1, z: 0 }, 12);
+      if (!hit) return { found: false };
+      const to = { x: eye.x, y: eye.y - hit.dist - 0.05, z: eye.z };
+      const surface = view.surfaceStruck(eye, to);
+      const before = view.impacts.holesInLevel;
+      const sparks = view.impacts.live.sparks;
+      view.landRound({ eye, to, victim: null, zone: 0, strength: 1 });
+      return { found: true, surface, holes: view.impacts.holesInLevel - before, tint: view.impacts.holeTint().map((x) => Math.round(x * 100) / 100), sparks: view.impacts.live.sparks - sparks };
+    });
+    check(level.found && level.holes === 1 && level.tint.some((x) => x !== 1) && level.sparks <= 4, `a round into the level leaves a hole in its surface's look, sparks thinned (${JSON.stringify(level)})`);
     await page.evaluate(() => window.__match.scenario.damageDestructible(window.__crate, 1e6, true, null));
     await page.waitForFunction(() => window.__cs.view.props.get(window.__crateIndex)?.isEnabled() === false, null, { timeout: T(10000) }).catch(() => {});
     const out = await page.evaluate(() => {

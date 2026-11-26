@@ -74,7 +74,7 @@ one marker (red for heads) and one kill sound. Bots led only projectiles.
 | Per-material resistance, ricochet, destruction multiplier | ❌ | ✅ `MATERIAL_BALLISTICS` |
 | Energy-based penetration with reduced exit | ❌ | ✅ thickness measured through the collider; velocity × √kept, damage × kept |
 | Rare bounded ricochet | ❌ (only some projectiles bounce) | ✅ grazing (< 20°) on metal/stone, at most one, half damage |
-| Impact effect / decal / sound set per material | 🟡 one hole + sparks + dust for everything | 🟡 penetration and ricochet points get impacts; per-material effects are G1 follow-up |
+| Impact effect / decal / sound set per material | 🟡 one hole + sparks + dust for everything | ✅ per surface type: hole look, debris shaped by kind (splinters, leaves, grit, clods, shards), sparks only off metal and masonry, a sound set per family (hard, stone, wood, metal, sheet, soft, glass, ice; 2026-11-26) |
 | Classification | n/a | free blocks and Style Pack pieces by library material, props by model name, destructibles by model, doors wood; tile structure stays structural concrete so existing maps keep their cover |
 
 ### §9 Environmental damage
@@ -302,7 +302,7 @@ ballistics and latency masquerading as lead are now all fixed.
 | Phase | Scope | Status |
 |---|---|---|
 | **G0** feel prototype | ballistic bullets with near-range instant, drop, lead; split deterministic recoil with recovery and counter; spread model; staged and per-shell reloads with interrupts; equip times; falloff and body multipliers; distinct hit and kill feedback; Heavy Revolver; benchmark retune; training range | ✅ done |
-| **G1** material ballistics | material classes, energy penetration, bounded ricochet | ✅ core done. Left: per-material impact effects, decals and sound sets; MapMaker "material type" on props; destructible props reacting by weapon class |
+| **G1** material ballistics | material classes, energy penetration, bounded ricochet | ✅ core done; per-material impact effects, decals and sound sets done (2026-11-26). Left: MapMaker "material type" on props; destructible props reacting by weapon class |
 | **G2** archetype expansion | retune shotgun (slug, semi-auto), precision rifle, LMG handling, rocket launcher, burst rifle timing, lever action; sprint-exit time, per-weapon movement speed, pump/hold-release fire modes, scope holdover marks, range damage readout and trajectory toggle | 🟡 sprint-exit time, movement speed per weapon and holdover marks done (2026-11-18) |
 | **G3** network validation | 8+ players under latency/loss with projectile reconciliation; killcam; interest management for bullets; near-miss snaps; environment audio tails; controller impulse | ❌ |
 | **G4** AI | weapon-selection by effective range and falloff, reload decisions, per-NPC-archetype ballistics tuning | 🟡 lead / drop / recoil / burst discipline done |
