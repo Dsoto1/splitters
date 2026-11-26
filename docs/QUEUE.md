@@ -97,6 +97,7 @@ Everything else keeps its place below these.
 
 
 ## Easy wins
+- XS · B · **MapMaker team Layout chips: only the common ones** (owner, 2026-11-26, "4b"): show 1v1, 2v2, 4v4, 8v8 and the three- and four-team chips; odd layouts (2v2v2v2v2v2v2v2 and the like) set with the team steppers, as Match Setup does (`editor/mapProperties.ts`). Saved maps with an odd layout still load and show it.
 
 
 - XS · B · (check: may be done: `beams`, `tracers` and `vehicles` on frozen clocks, 2026-11-20) e2e `vehicles` "a badly damaged buggy catches fire": the buggy burns out in about 200 ticks while the check waits on wall clock for the page to draw it burning (failed once locally under load; HANDOFF "Landed: the e2e `vehicles` flakes").
@@ -202,7 +203,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
-- 2026-11-26 · B · Simple pickers for the Rules tab and MapMaker's Map settings: chips, switches and steppers instead of long dropdowns (green 55e580d6, run 45864736617; landed alone, only docs since). Owner questions open: theme dropdowns, Sky lists, Character sizes, long team layouts.
+- 2026-11-26 · B · Simple pickers for the Rules tab and MapMaker's Map settings: chips, switches and steppers instead of long dropdowns (green 55e580d6, run 45864736617; landed alone, only docs since). Owner answers (2026-11-26, "recs, 4b"): theme dropdowns stay, Sky lists stay, Character sizes keeps its two chips; long team layouts: see Easy wins.
 - 2026-11-26 · B · The owner's 11-26 character batch: a Toys row, like histories side by side, famous people in Legends, 13 characters removed, Fishy Fred (bass diver) and Puddles Backspin (tennis duck), Dredge Marrow to Legends (train `check/train-20261126-153856`, green d94e9847, run 45851233622; checked green at fccaf16f, run 45846429054).
 - 2026-11-26 · B · Practice range: Quick Play → Practice range, 58 weapons on racks, steel targets 10–200 m with a hit readout, Practice Target and Steel Plate in MapMaker; map format v55 (green dec1d708, run 45834298500; landed alone, only docs since). Owner questions open: where it's reached from, the Space Shield, moving targets, readout distance.
 - **2026-11-26** train check/train-20261126-121603 (e6aad95, run 45818091351), landed by the splitters lead: bullet holes on breakable props (`wip/prop-holes-1126`): holes ride the prop and go when it breaks; drums and barrels holed on their curve; wood, metal and stone looks; 24 per prop, 40 props at once.
