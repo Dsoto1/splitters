@@ -1931,13 +1931,14 @@ html.touch #weapon-wheel .ww-slice-tag kbd { display: none; }
 #order-wheel .ww-dot { background: var(--orange); box-shadow: 0 0 6px var(--orange); }
 #order-wheel .ww-item.empty small { color: var(--muted); }
 #chat-wheel .ww-ring { box-shadow: 0 0 0 1px rgba(92, 199, 122, 0.4); }
-#chat-wheel .ww-item { width: 22%; }
-#chat-wheel .ww-item b { text-transform: none; letter-spacing: 0.01em; }
+#chat-wheel .ww-item b, #chat-wheel .ww-ring.compact .ww-item b { display: block; text-transform: none; letter-spacing: 0; font-size: clamp(10px, 2.3vmin, 14px); }
+#chat-wheel .ww-ring .ww-item small { display: none; }
+#chat-wheel .ww-centre small { display: block; }
 #chat-wheel .ww-item.on { background: rgba(92, 199, 122, 0.2); border-color: var(--success); }
 #chat-wheel .ww-centre b { color: var(--success); }
 #chat-wheel .ww-dot { background: var(--success); box-shadow: 0 0 6px var(--success); }
 /* Chat (chatBox.ts): the log bottom left above the health, newest at the bottom; lines fade once (no blinking). */
-#chat { position: absolute; left: 18px; bottom: 96px; width: min(440px, calc(100vw - 36px)); display: flex; flex-direction: column; gap: 6px; z-index: 4; font: 500 14px/1.3 var(--font-display); pointer-events: none; }
+#chat { position: absolute; left: 18px; bottom: 112px; width: min(440px, calc(100vw - 36px)); display: flex; flex-direction: column; gap: 6px; z-index: 4; font: 500 14px/1.3 var(--font-display); pointer-events: none; }
 #chat-log { display: flex; flex-direction: column; gap: 2px; max-height: 40vh; overflow: hidden; }
 #chat .chat-line { align-self: flex-start; max-width: 100%; padding: 2px 9px; border-radius: 4px; background: rgba(6, 9, 16, 0.62); color: #eef2f8; text-shadow: 0 1px 2px rgba(0, 0, 0, 0.9); overflow-wrap: anywhere; transition: opacity 1s ease-out; }
 #chat .chat-line b { font-weight: 700; }
@@ -1955,7 +1956,7 @@ html.touch #weapon-wheel .ww-slice-tag kbd { display: none; }
 #chat-input { flex: 1; min-width: 0; padding: 6px 8px; font: 500 15px var(--font-display); color: var(--text); background: rgba(255, 255, 255, 0.06); border: 1px solid var(--line); border-radius: 3px; }
 #chat-send { min-height: 0; padding: 4px 12px; font: 700 12px var(--font-display); text-transform: uppercase; }
 #chat-hint { flex-basis: 100%; color: var(--muted); font-size: 11px; }
-@media (max-height: 480px) { #chat { bottom: 84px; font-size: 13px; } #chat-log { max-height: 30vh; } }
+@media (max-height: 480px) { #chat { bottom: 100px; font-size: 13px; } #chat-log { max-height: 30vh; } }
 /* Touch: the move pad has the bottom left, and the on-screen keyboard comes up from below: the chat sits under the scorebar. */
 html.touch #chat { top: 72px; bottom: auto; left: 50%; transform: translateX(-50%); width: min(420px, calc(100vw - 140px)); }
 html.touch #chat-log { max-height: 28vh; }

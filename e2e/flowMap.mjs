@@ -211,6 +211,8 @@ const RULES = [
   [/^packages\/client\/src\/(crashReport|crashPanel|crashReportsUi)\.ts$/, ['crashreport'], ['client']],
   // Sound captions (Options → Accessibility): the setting and the captions in a match.
   [/^packages\/client\/src\/game\/(soundCaptions|captionPrefs|prefSync)\.ts$/, ['captions', 'offline'], ['client']],
+  // Chat (MULTIPLAYER_PROTOCOL.md section 28): the chat box, mute and quick chat, online and in Host game.
+  [/^packages\/client\/src\/game\/(chatBox|chatMute)\.ts$/, ['chat'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline', 'captions'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],
   [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost'], ['client']],
