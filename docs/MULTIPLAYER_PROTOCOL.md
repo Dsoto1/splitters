@@ -872,3 +872,43 @@ your own loadout) and `zm` is not set for your 2x. An older client ignores the r
 defaults. Host handoff's checkpoint carries no choices: after a handoff the next host has them again only from each
 player's `hello` when they rejoin (the new host's own from its loadout).
 
+
+## 28. Chat (November 2026)
+
+Owner, 2026-11-26 ("go"; QUEUE "Chat with mute"). **One new message each way and an optional welcome field;
+`PROTOCOL_VERSION` stays 5 and `SNAPSHOT_BINARY_VERSION` stays 3.** Chat rides the player's existing connection to
+whoever hosts the match: the dedicated server and Host Service (`server/src/server.ts`), or the browser hosting
+friends (`game/matchHost.ts`, also offline). A friend's line goes to the host and the host passes it on; nothing goes
+player to player, and nothing through the hub or AWS (MULTIPLAYER_DIRECTION.md, "AWS coordinates").
+
+| Field | Where | |
+|---|---|---|
+| `ch: 1` | `welcome` | The host relays text chat. Absent from older hosts: the client opens no chat box (quick messages still work) |
+| `{ t: 'chat', x, tm? }` | `ClientMessage` | A line of text (`x`; at most 500 characters at the door, `net/clientMessages.ts`); `tm: 1` for the sender's team only. An older host ignores it |
+| `{ t: 'chat', s, x, tm? }` | `ServerMessage` | A line from slot `s`, cleaned and filtered; `tm: 1` when it went to the sender's team only. `s` -1 (`CHAT_SYSTEM`): the host's answer to the receiver's own refused line ("Slow down…", "You just said that"). An older client ignores it |
+
+**The host's gate** (`net/chat.ts` `ChatRelay`, one per match, the same code on every host): the line is cleaned
+(control, zero-width and direction marks out, spaces collapsed, at most `CHAT_MAX_CHARS` 120 characters; empty:
+dropped quietly); per sender a token bucket of `CHAT_RATE` (a line every 2 s, up to 4 in a row) and the same line
+again within `CHAT_REPEAT_MS` (10 s) refused, each with an answer to the sender alone; then the word filter masks
+listed words and phrases as stars (`filterChat`; the list in `net/chatWords.ts`, ROT13'd, matched through capitals,
+look-alike digits, repeated letters and accents; some words only whole or at a word's start, so "Scunthorpe" and
+"cocktail" pass). The connection's message budget (`MESSAGE_RATE`) still applies on top. A slot that leaves starts
+afresh.
+
+**Who hears it** (`chatHears`): all chat, everyone connected (spectators too); team chat, the people whose slot is on
+the sender's team (`Match.slots[s].faction`; spectators have none). Team chat from someone with no team (free-for-all,
+spectating) goes out as all chat, without `tm`.
+
+**Quick messages** are unchanged on the wire: `PlayerInput.say` 1..`QUICK_MESSAGES.length` and the `say` event (team
+modes: the client shows it to the sender's team only). The list grew from 7 to 12 (`Need ammo!`, `Defend A!`,
+`Defend B!`, `Fall back!`, `Sorry!`, added at the end); an older host drops numbers past its own 7, an older client
+shows nothing for them. The match still takes one a second per player (`sayAt`). Bots send none.
+
+**Mute** is the receiver's alone (`game/chatMute.ts`): names kept on the device (`cs.chatMuted`, at most 200); a muted
+player's text and quick messages are not shown. Nothing is sent: the host and the muted player don't know. **Kick**
+is the existing `{ c: 'kick', slot }` host command (section 12), also on a player's card for whoever runs the match.
+
+**Older peers.** A new client on an older host gets no `ch` and offers no chat box. An older client on a new host
+ignores `chat` messages and never sends one. Host handoff's checkpoint carries no chat: the next host's gate starts
+empty.

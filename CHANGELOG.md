@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Chat in online matches.** Enter types a line to everyone, P to your team (Tab switches in the box); the host holds back floods and masks rude words. **Quick chat** has more lines (Need ammo!, Defend A!, Defend B!, Fall back!, Sorry!: B, then 1-9, 0, - or =), a wheel on a controller (hold d-pad up) and on touch (Chat), and shows in the chat log. **Mute** anyone from their card (click their name on the pause menu's scoreboard), remembered on your device; whoever runs the match can **Kick** from the same card.
 - **New models for Cyber Lion, Croakley, Greyfang, Gorilla G and Boglurker** (same names and places); **Lion in a Suit is now Kesi Tallgrass**, a safari lioness; Elephant Warrior is now **Ellis Velvetrope** (a bouncer), Hyena Warrior **Rollo Splitworth** (a bowler) and Juice **Puddles Ironbill** (a duck in a mech), each with a new model.
 - **Seven new characters:** El Zarpazo (a white tiger luchador), Tetl Stonewarden (a basalt temple guardian, Legends), Rocco Tickwell (a K9, joins the Chrono Crew), and for the history wars Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund and Lien Vo (Soldiers).
 - **Chrono Crew:** Blix Orrin moves to Outer Space; the crew's 14th place shows as Unknown until the story unlocks it.
