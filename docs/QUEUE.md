@@ -52,10 +52,11 @@ Everything else keeps its place below these.
   2. ~~`wip/chars-1125b`~~ landed 2026-11-26 (the owner's 11-25 batch: replacements with the old models as MapMaker Figures (map format v53), El Zarpazo, Tetl Stonewarden, Rocco Tickwell (crew 14th place vacant until the Inquisitor), Civil War and Vietnam soldiers, renames, Blix to Space);
   3. ~~`wip/no-designer-1125`~~ landed 2026-11-26 (the Character Designer and custom characters removed).
   If lane A runs out before landing them, lane B takes them over from their Ready-to-land lines and HANDOFF claims.
-- **Lane A keeps working while its week lasts (owner, 2026-11-26: ~10% left, "save and save often"):** one helper at a time on lane A's own list (step 2), pushing its wip branch at every milestone so lane B can pick it up mid-way from its HANDOFF claim: ~~the weapon holds still off~~ (landed 2026-11-26), then bullet holes on breakable props.
+- **Lane A keeps working while its week lasts (owner, 2026-11-26: ~10% left, "save and save often"):** one helper at a time on lane A's own list (step 2), pushing its wip branch at every milestone so lane B can pick it up mid-way from its HANDOFF claim: ~~the weapon holds still off~~ (landed 2026-11-26), then ~~bullet holes on breakable props~~ (green, Ready to land).
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/prop-holes-1126` · 775ab4b2 · 45813203611 (bullet holes on breakable props; lane A)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -88,7 +89,7 @@ Everything else keeps its place below these.
 
 ## Bugs
 - S–M · ? · **Bots get stuck on propped-open doors** (owner, 2026-11-26, seen on St. Jasper's: "seen a few get stuck"): a door leaf standing open beside its doorway catches bots. The navmesh and the bots' local steering should treat an open leaf as an obstacle and route around it (or the leaf's collision/position adjusted so the doorway stays clear); check the door-fit work (map v52) and nav-audit on st_johns; a unit or e2e check that a bot walks through a propped door both ways.
-- M · A · **Bullet holes on breakable props** (owner 11-24, later, its own item): crates, barrels and every solid prop on 'Everything breaks' maps; holes ride the prop and go when it breaks (like blockHoles.ts for blocks).
+- ~~M · A · **Bullet holes on breakable props**~~ green on `check/prop-holes-1126` (Ready to land) (owner 11-24, later, its own item): crates, barrels and every solid prop on 'Everything breaks' maps; holes ride the prop and go when it breaks (like blockHoles.ts for blocks).
 - ~~**Light gaps where roofs meet walls, and at the top of the new windows**~~ fixed on `wip/stjohns-12` (Ready to land; PLAN 4r): the ridge roof generator's eave and gable foot closed from below, the open leaded windows' bars through the wall; no map re-save needed (the pieces are generated).
 - **Fixes go to lane A from now on** (owner, 2026-11-17); the two already running in lane B (Dropship deck, character pass) finish there.
 - S–M · B · **Props pop between their far and near look, the part still open** (owner, 2026-11-16, two screenshots, an indoor shop shelf): points 1 and 2 (switch by size on screen, hysteresis) landed 2026-11-17 and far looks baked from the real model (4) on 2026-11-17; left: (3) a short dithered cross-fade instead of a hard swap; (5) models loaded well before the view reaches them. A screenshot check walking up to a shelf and away with no visible change in the near range.

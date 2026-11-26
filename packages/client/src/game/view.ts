@@ -121,6 +121,7 @@ import {
   indoorProps,
   TICK_RATE,
   materialSurface,
+  propSurface,
   dodgeTicks,
 } from '@tiletrigger/shared';
 // The props' contact faces (docs/LOOK.md, "No flicker: props"): with the match code, never in the menu's bundle.
@@ -151,6 +152,7 @@ import { ScopeGlints } from './scopeGlint.ts';
 import { GodotVfx, type VfxHandle } from './godotVfx.ts';
 import { LastingFx } from './lastingFx.ts';
 import { PropFlames } from './propFlames.ts';
+import { isRoundProp, propHoleTargets, strikeProp, type PropHoleTarget } from './propHoles.ts';
 import { ACCENT_RANGE, arcFx, explosionFor, farFxSize, gameplayFx, impactStyle, lastingFx, lastingKeys, mappedEffects, mappedPacks, meleeImpact, surfaceMap, surfaceOfFace, weaponImpact, type FxRef, type Surface, type SurfaceMap } from './fxMap.ts';
 import { buildPathMeshes, mergePathMeshes } from '../pathMeshes.ts';
 
@@ -533,6 +535,8 @@ export class GameView {
   private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number; at: Vector3; stream?: StreamStart }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
   private readonly props = new Map<number, TransformNode>();
+  /** Breakable props a round can hole (propHoles.ts): their roots and collision boxes in the roots' frames. */
+  private propHoleTargets: PropHoleTarget[] = [];
   private effects: Fx[] = [];
   /** Binbun's hit and explosion effects (godotVfx.ts), once their packs are in. */
   private readonly vfx: GodotVfx;
@@ -913,6 +917,21 @@ export class GameView {
       const flame = getProp(e.model)?.flame;
       if (flame) this.propFlames.add(e.id, node, flame, e.scale, carried.has(e.id));
     });
+    // Breakable props are the scenario's, not the effects world's: a round stopping on one is found by its boxes, and
+    // its hole goes on the prop (propHoles.ts).
+    {
+      const index = new Map(doc.entities.map((e, i) => [e.id, i]));
+      const model = new Map(doc.entities.map((e) => [e.id, e.kind === 'prop' ? e.model : '']));
+      this.propHoleTargets = propHoleTargets(
+        propBoxes(doc, true),
+        (id) => {
+          const i = index.get(id);
+          return i === undefined ? undefined : this.props.get(i);
+        },
+        (id) => (model.get(id) ? propSurface(model.get(id)!) : null),
+        (id) => isRoundProp(model.get(id) ?? ''),
+      );
+    }
     this.scenario.build(doc.entities, doc);
     this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && (e.entrance ?? 'none') !== 'none');
     // Warm the model cache so first switches and pickups don't hitch.
@@ -1533,6 +1552,16 @@ export class GameView {
       this.accent(style.accent, block.point, block.normal);
       return;
     }
+    // A breakable prop (a crate, a barrel, any solid prop on an 'Everything breaks' map): its hole goes on the prop.
+    const prop = strikeProp(this.propHoleTargets, o.eye, o.to);
+    if (prop) {
+      const style = impactStyle(prop.surface ?? 'concrete');
+      const size = Math.min(1.6, 0.7 + o.strength * 0.4);
+      this.impacts.wallImpact(prop.point, prop.normal, size, { ...style, hole: false });
+      if (style.hole !== false) this.impacts.holeOnProp(prop.node, prop.local.point, prop.local.normal, size, prop.surface);
+      this.accent(style.accent, prop.point, prop.normal);
+      return;
+    }
     const wall = this.impacts.surfaceHit(o.eye, o.to);
     if (wall) {
       // The surface type it hit (content/surface-types.json, the same one the server's ballistic class comes from;
@@ -1586,6 +1615,8 @@ export class GameView {
   surfaceStruck(from: Vec3, to: Vec3): Surface | null {
     const block = this.scenario.strikeBlock(from, to);
     if (block) return materialSurface(block.material ?? '');
+    const prop = strikeProp(this.propHoleTargets, from, to);
+    if (prop) return prop.surface;
     const wall = this.impacts.surfaceHit(from, to);
     return wall ? (wall.surface ?? surfaceOfFace(wall.box, wall.normal, wall.point, this.surfaces)) : null;
   }
@@ -3975,6 +4006,8 @@ export class GameView {
   /** A breakable prop drawn or not: its node, and its copy in a prop batch (PropBatches.shown) when it changes. */
   private setPropShown(node: TransformNode, on: boolean): void {
     if (node.isEnabled(false) === on) return;
+    // Broken, or whole again at a new round: no bullet holes either way (propHoles.ts).
+    this.impacts.clearPropHoles(node);
     node.setEnabled(on);
     this.propBatches?.shown(node);
   }
