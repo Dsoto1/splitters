@@ -11,24 +11,26 @@
   "bio": "Built to sweep floors for $3.50/hr. Upgraded itself to sweep arenas.",
   "body": "male",
   "size": "large",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: automaton.",
+  "variant": "Original",
+  "notes": "New model 2026-11-26 (owner, 2026-11-26: \"T-Treefitty gets a replacement model plus several variants\"; id and place kept): the Skinny T1000 Base upload is the main look, Disco, Lifeguard, Tourist, Tutu and Suit its variants (like the chimp's: one character, a variant picker; unlocked until the unlock rules exist). T-TreeFitty's model until 2026-11-26 (a Meshy Community CC0 model \"T Pose Automaton\") no longer ships. Drive intake of 2026-11-26 (\"Skinny T1000 Base Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/TPose-Automaton-019fbb32-61f6-75c6-897c-e36f20750c47",
-    "community": {
-      "model": "T Pose Automaton"
-    },
-    "modelUrl": "https://drive.usercontent.google.com/download?id=1ASIw9qPut_cutdCUK6ZEhcMlzZ0FrpE7&export=download&confirm=t",
-    "file": "^Meshy_AI_T_Pose_Automaton_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_Skinny_T1000_Base_Rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
     "metallic": 0.5,
     "roughness": 0.45
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
   }
 }

@@ -215,7 +215,7 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   ['core.aztecjaguar', 'core.eagleclan', 'core.snakeshaman', 'core.goldenwarrior', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
   ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.celestialknight', 'core.frostvalkyrie'], // Medieval and the Crusades
   ['core.dustycolt', 'core.outlawranger', 'core.prospector'], // the Wild West
-  ['core.ashwalker', 'core.zuluwarrior', 'core.ashtribal'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
+  ['core.shaka', 'core.zuluwarrior', 'core.ashwalker'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
   ['core.galloway', 'core.brannock'], // knights: Sir Galloway, Ser Brannock
   ['core.unionofficer', 'core.rebelcommander'], // the Civil War
   ['core.wwiisoldier', 'core.paratrooper', 'core.germanpara'], // WW2
@@ -384,6 +384,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.maskedfigure': 'core.hoodieguy', // The Masked Figure -> Dez Kickley
   'core.hollowpilgrim': 'core.ankhmummy', // The Hollow Pilgrim -> Nebka the Unwrapped
   'core.barnacle': 'core.femalepirate', // Cap'n Rusty Barnacle -> Scarlet Brinewell
+  // Owner, 2026-11-26 ("Kato is Ashwalker's true replacement"): Kato Emberline moved onto core.ashwalker the day he was
+  // built as core.ashtribal; Shaka Mpande, who had core.ashwalker for that day, is core.shaka.
+  'core.ashtribal': 'core.ashwalker', // Kato Emberline's first id -> Kato Emberline
   'core.shade': 'core.crewphase',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.

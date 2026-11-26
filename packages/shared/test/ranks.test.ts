@@ -1,9 +1,10 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_GROUPS, CORE_LOOKS, INSIGNIA_CUTS, INSIGNIA_IDS, INSIGNIA_LABELS, INSIGNIA_SHAPES, MARK_GROUPS, RANK_GROUPS, RANK_TITLES, addMatch, careerProblem, careerRankPoints, cleanSummary, emptyCareer, matchProblem, matchRankPoints, nameWithoutRank, rankGroup, rankInsignia, rankStep, rankedName, readCareer, readRankPoints, shownRank, type MatchSummary } from '../src/index.ts';
+import { BOT_NAMES, NAME_THEMES } from '../src/content/botNames.ts';
+import { CHARACTER_GROUPS, NAME_TITLES, nameWithoutTitle, CORE_LOOKS, INSIGNIA_CUTS, INSIGNIA_IDS, INSIGNIA_LABELS, INSIGNIA_SHAPES, MARK_GROUPS, RANK_GROUPS, RANK_TITLES, addMatch, careerProblem, careerRankPoints, cleanSummary, emptyCareer, matchProblem, matchRankPoints, nameWithoutRank, rankGroup, rankInsignia, rankStep, rankTitle, rankedName, readCareer, readRankPoints, shownRank, type MatchSummary } from '../src/index.ts';
 
 describe('ranks for everyone (Options → Ranks & badges)', () => {
   it('gives every group nine titles, first and last as the owner agreed', () => {
-    const ends: Record<string, [string, string]> = { agency: ['Asset', 'Spymaster'], horror: ['Ghoul', 'Overlord'], space: ['Cadet', 'Admiral'], machines: ['Unit', 'Prime'], legends: ['Squire', 'Emperor'], animals: ['Pup', 'Apex'], folk: ['Rookie', 'Icon'], army: ['Pvt.', 'Col.'] };
+    const ends: Record<string, [string, string]> = { agency: ['Asset', 'Spymaster'], horror: ['Ghoul', 'Overlord'], space: ['Cadet', 'Admiral'], machines: ['Unit', 'Prime'], legends: ['Squire', 'Emperor'], animals: ['Pup', 'Apex'], folk: ['Rookie', 'Icon'], toys: ['Wind-Up', 'Toy of the Year'], army: ['Pvt.', 'Col.'] };
     for (const g of RANK_GROUPS) {
       const t = RANK_TITLES[g];
       expect(t).toHaveLength(9);
@@ -17,7 +18,6 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
     for (const l of CORE_LOOKS) {
       const r = rankGroup(l.id);
       if (l.group === 'soldiers') expect(r).toBe(l.branch === 'agency' ? 'agency' : 'army');
-      else if (l.group === 'toys') expect(r).toBe('folk'); // the Toys row wears Folk's chevrons
       else if (l.group && groups.has(l.group)) expect(r).toBe(l.group);
     }
     expect(rankGroup('my.design')).toBe('folk');
@@ -25,7 +25,7 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
   });
 
   it('has a badge for every group and step, inside its box', () => {
-    expect(INSIGNIA_IDS).toHaveLength(9 * 8);
+    expect(INSIGNIA_IDS).toHaveLength(9 * 9);
     for (const g of RANK_GROUPS) for (let n = 1; n <= 9; n++) expect(INSIGNIA_IDS).toContain(rankInsignia(g, n));
     expect(rankInsignia('army', 4)).toBe('sgt');
     expect(rankInsignia('horror', 0)).toBe('horror1');
@@ -58,10 +58,32 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
     expect(rankedName('Sgt. Dunmore', 'army', 1)).toBe('Pvt. Dunmore');
     expect(rankedName('Grimsby', 'horror', 4)).toBe('Ghast Grimsby');
     expect(rankedName('Flt. Lt. Ember', 'army', 2)).toBe('Pfc. Ember');
-    expect(rankedName('Capt. Orion', 'space', 1)).toBe('Cadet Capt. Orion');
+    expect(rankedName('Capt. Orion', 'space', 1)).toBe('Cadet Orion');
     const s = shownRank('core.chimpanzee', 'Chester Knuckleby', 2);
     expect(s.ins).toBe(`${s.group}2`);
     expect(s.name).toBe(`${RANK_TITLES[s.group][1]} Chester Knuckleby`);
+  });
+
+  // Owner, 2026-11-26: "do we accommodate when turning on ranks so they dont duplicate and instead actually just rank up".
+  it('ranks names up instead of doubling their titles: every roster, theme and general name, in every group', () => {
+    expect(rankedName('Det. Drake Montego', 'animals', 3)).toBe('Scout Drake Montego');
+    expect(rankedName('Dr. Hugo Hue', 'folk', 1)).toBe('Rookie Hugo Hue');
+    expect(rankedName('Sarge Tobias Crane', 'army', 4)).toBe('Sgt. Tobias Crane');
+    expect(rankedName('Pvt. Pete Plastic', 'toys', 2)).toBe('Tin Toy Pete Plastic');
+    expect(rankedName('Customs Agent Zhao', 'agency', 6)).toBe('Agent Zhao');
+    expect(rankedName('Uncle Moe', 'folk', 1)).toBe('Rookie Uncle Moe'); // family words are names
+    expect(nameWithoutTitle('Sir')).toBe('Sir');
+    const titled = (n: string) => NAME_TITLES.some((t) => n.startsWith(`${t} `));
+    const names = new Set([...CORE_LOOKS.map((l) => l.name), ...NAME_THEMES.flatMap((t) => t.names), ...BOT_NAMES]);
+    const doubled: string[] = [];
+    for (const name of names) for (const g of RANK_GROUPS) for (let n = 1; n <= 9; n++) {
+      const shown = rankedName(name, g, n);
+      const rest = shown.slice(rankTitle(g, n).length + 1);
+      if (titled(rest)) doubled.push(`${name} → ${shown}`);
+    }
+    expect(doubled).toEqual([]);
+    // Every look's own name, ranked in its own group: one title.
+    for (const l of CORE_LOOKS) expect(titled(shownRank(l.id, l.name, 5).name.slice(rankTitle(rankGroup(l.id), 5).length + 1)), l.name).toBe(false);
   });
 
   it('reads rank points from the wire only in range', () => {

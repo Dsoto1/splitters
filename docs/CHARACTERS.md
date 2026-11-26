@@ -173,8 +173,16 @@ enemies where enemy markers are shown; hidden as the arrow is, under smoke or a 
 | Legends (`legends`) | crown | Squire | Knight | Champion | Baron | Earl | Duke | Prince | King | Emperor |
 | Animalia (`animals`) | paw | Pup | Cub | Scout | Tracker | Hunter | Stalker | Prowler | Alpha | Apex, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
 | Everyday Folk (`folk`; also a design of yours) | plain chevron | Rookie | Regular | Local | Pro | Ace | Star | Hero | Superstar | Icon |
+| Toys (`toys`, 2026-11-26) | toy brick | Wind-Up | Tin Toy | Plaything | Favourite | Best-Seller | Collectible | Keepsake | Heirloom | Toy of the Year |
 
-The first and last titles are the owner's ("as written is fine"); the steps between are the lead's. **Badges**
+The first and last titles are the owner's ("as written is fine"); the steps between are the lead's (the Toys' nine all
+the lead's, 2026-11-26). **A name's own title gives way** (owner, 2026-11-26: "so they dont duplicate and instead actually
+just rank up"): with ranks on, a title the name starts with (`NAME_TITLES` in insignia.ts: the Army's ranks and Flt. Lt.,
+Det., Dr., Prof., Sarge, Officer, Agent, Inquisitor, Emperor, Sir, Ser, Dame, Lady, Lord, Captain, Madame, Mister,
+Coach, Chef, Brother, Elder and the like, and every group's own rank titles) is replaced by the rank's: "Det. Drake
+Montego" shows as "Scout Drake Montego", "Pvt. Pete Plastic" as "Wind-Up Pete Plastic". Family words (Uncle, Granny,
+Grandpa) are names and stay; off, every name keeps its title. A unit test (ranks.test.ts) ranks every roster, theme and
+general name in every group and finds no name with two titles. **Badges**
 (`content/insignia.ts`, `INSIGNIA_SHAPES` and `INSIGNIA_CUTS`; a few flat polygons in a -1..1 box, so they read at
 kill-feed size and far off): the Army's are its military ranks (Pvt. one chevron, Pfc. one and a rocker, Cpl. two,
 Sgt. three, SSgt. three and a rocker, Lt. one bar, Capt. two bars, Maj. one star, Col. two stars). Every other group
@@ -350,6 +358,9 @@ white-grey; 133 characters on the roster):
 | **Black oil and sparks** (`oil`) | 10 | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty |
 | **Bone dust** (`bone`) | 10 | *Bonejack*, *Count Bonesworth*, *Dog Tag Doyle*, *Grinning Gus*, *Mummy Bot*, *Pharaoh Mummy Warrior*, *Rattles*, *Spiked Skeleton Biker*, *Sugar Skull*, *Teddy* |
 | **Stone dust** (`stone`) | 1 | *Bronzer* |
+
+Since the table: **Pvt. Pete Plastic bleeds green** (owner, 2026-11-26: the green army man's plastic), The Veiled
+Vanguard spirit (her dark hooded new model, 2026-11-26).
 | **Spectral wisp** (`spirit`) | 1 | *The Hollow Pilgrim* |
 
 Retired looks (`RETIRED_LOOKS`) bleed as the look they play; those still on disk (the owner's own, Brutus Hornbeck) keep a `blood` in their manifests, and the removed ones bleed as the owner's look they now play.
@@ -1678,7 +1689,7 @@ label is in each manifest's notes.
   it): Cpl. Tinwhistle and Pvt. Pete Plastic (from Soldiers & Spies), Teddy (from Horrors & Creatures, his new model),
   and the batch's wind-up robot (Tik Winderly), brick man (Bricksby), cymbal monkey (Clangers), jack-in-the-box (Jolly
   Springjack) and rag doll (Patchwork Polly). Bots ticked for Toys wear them (`BOT_TYPES`), Roulette's group fallback
-  is the Bubble Blaster, and the rank mark is Folk's chevron. The radish man is a lanky cartoon man, not a toy: Everyday
+  is the Bubble Blaster, and the rank mark is the Toys' own toy brick (2026-11-26; Folk's chevron before). The radish man is a lanky cartoon man, not a toy: Everyday
   Folk. The office worker, hoodie guy, "Karen" and salaryman downloads are zombies: Horrors & Creatures.
 - **Like histories side by side (owner, 2026-11-26):** `CHARACTER_NEIGHBOURS` keeps each row's periods together: the
   famous real people in Legends in time order (General Cherrytree, Poor Richard, Honest Abe, The Rough Rider, Prof.
@@ -1696,10 +1707,12 @@ label is in each manifest's notes.
   Brinewell; the campaign's allies, companion and reward that named one take a current look. The Hollow Pilgrim's
   glide stays in code as `locomotion: 'roll'` (the Baseball Robot's, and the coming snowman's). **Dredge Marrow** moves
   to Legends.
-- **Teddy:** the owner's replacement model is coming; swap it in when it's on the Drive (id, name, place kept).
-- **Shaka Mpande** (`core.ashwalker`) takes the download named after him ("shaka mpande": a red-beret commander in a
-  leopard sash); the ash-painted tribal look the id had ("ash tribal", its new model) is a new character, Kato
-  Emberline (`core.ashtribal`), with the old bio. To confirm with the owner.
+- **Teddy:** the owner's replacement model is coming; swap it in when it's on the Drive (id, name, place kept). Not
+  there yet at 16:35 UTC on 2026-11-26 (the folder's only teddy is the 11-25 "Rigged Teddy Bear" he already wears).
+- **Kato Emberline** (`core.ashwalker`, the ash-painted tribal look the id had: "ash tribal", its new model, with the
+  old bio) and **Shaka Mpande** (`core.shaka`: "shaka mpande", a red-beret commander in a leopard sash). Built the
+  other way round at first (Shaka on `core.ashwalker`, Kato on `core.ashtribal`); the owner, 2026-11-26: "Kato is
+  Ashwalker's true replacement", so Kato took the id and place and `core.ashtribal` is retired to it (RETIRED_LOOKS).
 
 ### Variants: the chimp (owner, 2026-11-26)
 
@@ -1718,3 +1731,14 @@ Cyber Commando and Scrapper. Each look is its own manifest and model:
   Egyptian the Sunken Dynasty, Aztec the Jade Empire, Roman the Iron Republic, Cowboy the Last Frontier, Vietnam
   Soldier and Aviator the Wars, Disco Operative Urban Breakdown, Cyber Commando Neon Tomorrow, Scrapper After the End,
   Ninja open.
+
+### The 11-26 round (b): T-TreeFitty's looks, The Veiled Vanguard (owner, 2026-11-26)
+
+- **T-TreeFitty** (`core.t350`, id and place kept) is the owner's "Skinny T1000" now, with five variant looks like the
+  chimp's: Original (the base, "Skinny T1000 Base"), Disco, Lifeguard, Tourist, Tutu and Suit (`core.t350_<label>`,
+  `variantOf: "core.t350"`, orders 264-268; open while `CHARACTER_LOCKS_ON` is off, each its own unlock later). The
+  community T Pose Automaton no longer ships.
+- **The Veiled Vanguard** (`core.vanguard`, id and place kept; was Luther Vanguard, a name that no longer fit) is the
+  owner's "Dark Hooded Entity": she (`body: female`), spirit blood, and she **floats** (`locomotion: roll`, the glide
+  the Baseball Robot has and The Hollow Pilgrim had: legs still, no walk cycle, leaning into her motion). The
+  community futuristic warrior (and its grafted hands, handgraft.mjs) no longer ships.
