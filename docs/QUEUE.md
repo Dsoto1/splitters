@@ -115,6 +115,8 @@ Everything else keeps its place below these.
     - One skeleton character with variants (like the chimp's): Dogtag Doyle, Grinning Gus, Zombie Soldier A and Biker Skeleton, each on a new skeleton upload (biker, civil war, Vietnam, WW2, Desert Storm skeletons), plus the pirate skeleton.
     - Cool Hand Rex to Legends; Anubis to Horrors & Creatures beside the other Egypt ones.
     - Punkin removed; the Pumpkin Scarecrow upload takes the place (no longer held).
+    - The skeleton's variants (owner): biker, Civil War, Vietnam, WW2, Desert Storm and the pirate skeleton, all one character.
+    - **Chester Knuckleby** becomes another variant of Ziggy Bananas, no longer his own character (owner, 2026-11-26).
   - **Coming:** a space mercenary with variants (owner, 2026-11-26).
   - **The Hollow Pilgrim's glide stays as a movement style** (keep the code): the coming **snowman** glides like the baseball robot and the Hollow Pilgrim did.
   - **Vanguard's replacement is the dark hooded character** (the owner's upload; she): Vanguard's id and place kept, a fitting name if Vanguard's no longer fits; she **floats** like the baseball robot (legs still, no walk cycle). **The ghost character** (upload) floats the same way. Same glide/float style as the snowman.
