@@ -1585,17 +1585,14 @@
      -0.005,
      -0.015,
      -0.022
-    ],
-    "supportLong": [
-     0.09,
-     -0.058,
-     0
     ]
    },
-   "keep": [],
+   "keep": [
+    "supportLong"
+   ],
    "audit": {
     "long": {
-     "pick": "auto",
+     "pick": "hand",
      "eR": 1.412,
      "eL": 3.705,
      "flags": [],

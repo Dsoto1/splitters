@@ -29,7 +29,7 @@
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true,
-    "grip": { "gripLong": [-0.009, -0.013, -0.025], "supportLong": [0.09, -0.05, 0] },
+    "grip": { "supportLong": [0.09, -0.05, 0] },
     "hold": {
       "forward": 0.12,
       "down": 0.03,

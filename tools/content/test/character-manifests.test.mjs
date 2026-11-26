@@ -63,6 +63,10 @@ describe('character manifests', () => {
     // The far copy's share (main's character-lod.mjs).
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 0.45 } }, 'meshy_cat.json')).toEqual([]);
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 1 } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.lod: 0.15–0.6/);
+    // A look's own pistol hold (2026-11-26): forward / down / out, each within 0.3 m.
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { out: -0.1 } } }, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { out: -0.4 } } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.holdPistol.out/);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { in: 0.1 } } }, 'meshy_cat.json').join('\n')).toMatch(/fixes.holdPistol: \{ forward, down, out \}/);
     expect(buildSpec({ ...good, fixes: { ...good.fixes, lod: 0.45 } }).lod).toBe(0.45);
     // A hand bent as one, whatever gaps are found.
     expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { r: { mitten: true, curl: 1.2 } } } }, 'meshy_cat.json')).toEqual([]);
