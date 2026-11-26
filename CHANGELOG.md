@@ -8,7 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **New models for 15 characters** (Bonejack, Shaka Mpande, Honest Abe, Cal, Teddy, Cap'n Rusty Barnacle, Brother Silencio, Sgt. Mackie, Orange Suit Engineer, Chef Basile, The Butcher, Grandpa Chains, Biker Gang Girl, Old Timer, Hazmat Joe; same names and places), and **Rourke is back** with a new model.
-- **30 new characters:** historical figures, crusaders, WW2 paratroopers, city folk, animals and a pirate captain; **The Playhouse**, a new Character Select section for the toys.
+- **30 new characters:** historical figures, crusaders, WW2 and Desert Storm soldiers, city folk and four office zombies, animals and a pirate captain; **The Playhouse**, a new Character Select section for the toys.
 - **Ziggy Bananas, a chimp with ten looks** (one per era): pick one on his variant picker in Character Select.
 - **New models for Cyber Lion, Croakley, Greyfang, Gorilla G and Boglurker** (same names and places); **Lion in a Suit is now Kesi Tallgrass**, a safari lioness; Elephant Warrior is now **Ellis Velvetrope** (a bouncer), Hyena Warrior **Rollo Splitworth** (a bowler) and Juice **Puddles Ironbill** (a duck in a mech), each with a new model.
 - **Seven new characters:** El Zarpazo (a white tiger luchador), Tetl Stonewarden (a basalt temple guardian, Legends), Rocco Tickwell (a K9, joins the Chrono Crew), and for the history wars Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund and Lien Vo (Soldiers).

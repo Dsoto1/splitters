@@ -5,10 +5,10 @@
   "order": 243,
   "name": "Hiro Overtime",
   "look": "core.salaryman",
-  "group": "folk",
+  "group": "horror",
   "blood": "red",
-  "nameTheme": "townsfolk",
-  "bio": "Last train home left hours ago. Might as well win.",
+  "nameTheme": "undead",
+  "bio": "Missed the last train home. Kept working anyway.",
   "body": "male",
   "notes": "New 2026-11-26 (owner's 11-26 batch). Drive intake of 2026-11-26 (\"Salaryman Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {

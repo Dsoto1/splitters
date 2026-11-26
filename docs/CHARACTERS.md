@@ -1679,8 +1679,12 @@ label is in each manifest's notes.
   place; `RETIRED_LOOKS` no longer maps him.
 - **New:** see `content/characters/` (orders 224–253) and docs/STORY_CAMPAIGN.md, "Characters by sector".
 - **The Playhouse** (`playhouse`, a collection after Animalia, like the Chrono Crew): the toys (wind-up robot, brick
-  man, cymbal monkey, jack-in-the-box, rag doll) and the radish man; each keeps its group for bots and Roulette. Teddy
-  keeps his place in Horrors & Creatures.
+  man, cymbal monkey, jack-in-the-box, rag doll); each keeps its group for bots and Roulette. Teddy keeps his place in
+  Horrors & Creatures. The radish man is a lanky cartoon man, not a toy: Everyday Folk. The office worker, hoodie guy,
+  "Karen" and salaryman downloads are zombies: Horrors & Creatures (bots name them as undead).
+- **Shaka Mpande** (`core.ashwalker`) takes the download named after him ("shaka mpande": a red-beret commander in a
+  leopard sash); the ash-painted tribal look the id had ("ash tribal", its new model) is a new character, Kato
+  Emberline (`core.ashtribal`), with the old bio. To confirm with the owner.
 
 ### Variants: the chimp (owner, 2026-11-26)
 

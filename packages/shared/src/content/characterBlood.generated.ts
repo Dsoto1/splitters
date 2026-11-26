@@ -201,7 +201,7 @@ export const WHOLE_BODY_BLOOD: Readonly<Record<string, BloodKind>> = {
   'core.ankhmummy': 'bone',
   'core.femalepirate': 'red',
   'core.afropi': 'red',
-  'core.radishman': 'green',
+  'core.radishman': 'red',
   'core.windupbot': 'oil',
   'core.brickman': 'stone',
   'core.cymbalmonkey': 'oil',

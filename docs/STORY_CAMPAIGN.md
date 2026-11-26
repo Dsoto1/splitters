@@ -37,17 +37,18 @@ into its data):
 - **Wars:** Civil War: Capt. Elias Harrowgate (`core.unionofficer`) and Col. Josiah Beaumont (`core.rebelcommander`);
   Vietnam: Pfc. Danny Okerlund (`core.vietnamsoldier`) and Lien Vo (`core.vcscout`) (2026-11-25); WW2: WWII Infantry and
   the Army soldiers already on the roster.
-  **2026-11-26 (owner's batch):** WW2 adds Gefr. Otto Brandt (`core.germanpara`, the German paratrooper), Sgt. Mickey
-  Callahan (`core.paratrooper`) and Pvt. Hank Dowling (`core.usgrunt`).
+  **2026-11-26 (owner's batch):** WW2 adds Gefr. Otto Brandt (`core.germanpara`, the German paratrooper) and Sgt. Mickey
+  Callahan (`core.paratrooper`); Desert Storm Pvt. Hank Dowling (`core.usgrunt`, desert camouflage).
 - **Medieval / Crusades (The Broken Crown), 2026-11-26:** Ser Godric Vale (`core.templar`), Kaiser Ironhelm
   (`core.gothickaiser`), Ser Aldous Lionmane (`core.lionheart`) and Emir Tariq Falconsword (`core.emir`).
 - **Founders and famous minds (Legends), 2026-11-26:** Poor Richard (`core.franklin`), General Cherrytree
   (`core.washington`), The Rough Rider (`core.roosevelt`) and Prof. Quanta (`core.einstein`), with Honest Abe.
 - **The Sunken Dynasty, 2026-11-26:** Nebka the Unwrapped (`core.ankhmummy`).
-- **Urban Breakdown, 2026-11-26:** Marla Quarterly (`core.officeworker`), Dez Kickley (`core.hoodieguy`), Linda
-  Refundsworth (`core.karen`), Hiro Overtime (`core.salaryman`), Cleo Groovestone (`core.afropi`) and Rourke.
+- **Urban Breakdown, 2026-11-26:** Cleo Groovestone (`core.afropi`), Rad Rootley (`core.radishman`) and Rourke; and a
+  city of the dead: Marla Quarterly (`core.officeworker`), Dez Kickley (`core.hoodieguy`), Linda Refundsworth
+  (`core.karen`) and Hiro Overtime (`core.salaryman`), four zombies (Horrors & Creatures).
 - **The Playhouse, 2026-11-26:** its own Character Select section (docs/CHARACTERS.md): Tik Winderly, Bricksby, Clangers,
-  Jolly Springjack, Patchwork Polly and Rad Rootley.
+  Jolly Springjack and Patchwork Polly.
 - **The chimp, Ziggy Bananas (`core.chimp`), 2026-11-26:** ten variant looks, one per era, each unlocked by a challenge
   in its sector once the unlock rules exist (docs/CHARACTERS.md, "Variants").
 

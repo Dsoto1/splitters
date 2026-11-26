@@ -159,7 +159,7 @@ describe("Character Select's groups", () => {
     expect(ids.indexOf('playhouse')).toBe(ids.indexOf('animals') + 1);
     expect(CHARACTER_COLLECTIONS.find((c) => c.id === 'playhouse')?.label).toBe('The Playhouse');
     const toys = CORE_LOOKS.filter((l) => l.collection === 'playhouse');
-    expect(toys.map((l) => l.id).sort()).toEqual(['core.brickman', 'core.cymbalmonkey', 'core.jackinthebox', 'core.radishman', 'core.ragdoll', 'core.windupbot']);
+    expect(toys.map((l) => l.id).sort()).toEqual(['core.brickman', 'core.cymbalmonkey', 'core.jackinthebox', 'core.ragdoll', 'core.windupbot']);
     for (const t of toys) expect(t.group, t.id).toBeTruthy();
   });
 
