@@ -7,9 +7,10 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
-- **New models for 15 characters** (Bonejack, Shaka Mpande, Honest Abe, Cal, Teddy, Cap'n Rusty Barnacle, Brother Silencio, Sgt. Mackie, Orange Suit Engineer, Chef Basile, The Butcher, Grandpa Chains, Biker Gang Girl, Old Timer, Hazmat Joe; same names and places), and **Rourke is back** with a new model.
+- **New models for 14 characters** (Bonejack, Shaka Mpande, Honest Abe, Cal, Teddy, Brother Silencio, Sgt. Mackie, Orange Suit Engineer, Chef Basile, The Butcher, Grandpa Chains, Biker Gang Girl, Old Timer, Hazmat Joe; same names and places), and **Rourke is back** with a new model.
 - **29 new characters:** historical figures, crusaders, WW2 and Desert Storm soldiers, city folk and four office zombies, animals and a pirate captain.
 - **A Toys row on Character Select:** Cpl. Tinwhistle, Pvt. Pete Plastic, Teddy and five new toys. Characters from the same period now sit side by side in each row, and the famous historical figures are together in Legends.
+- **Eleven more characters are removed** (The Purple Comet, Frost Viking, Scamp, Armored Sentinel, Steel Guardian, Botney Mullz, Goblin Gunslinger, Sugar Skull, The Masked Figure, The Hollow Pilgrim, Cap'n Rusty Barnacle; a saved pick plays a near look); Dredge Marrow moves to Legends.
 - **Fishy Fred is a scuba fish now, and Puddles Ironbill is Puddles Backspin, a tennis duck**; **Biscuit and Kiko Banyan are removed** (a saved pick plays Sterling Purrcival and Chester Knuckleby).
 - **Ziggy Bananas, a chimp with ten looks** (one per era): pick one on his variant picker in Character Select.
 - **Chat in online matches.** Enter types a line to everyone, I to your team (Tab switches in the box); the host holds back floods and masks rude words. **Quick chat** has more lines (Need ammo!, Defend A!, Defend B!, Fall back!, Sorry!: B, then 1-9, 0, - or =), a wheel on a controller (hold d-pad up) and on touch (Chat), and shows in the chat log. **Mute** anyone from their card (click their name on the pause menu's scoreboard), remembered on your device; whoever runs the match can **Kick** from the same card.

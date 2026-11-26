@@ -70,9 +70,8 @@ describe("Character Select's groups", () => {
 
   it("the owner's moves of 2026-11-17", () => {
     const group = (name: string) => CORE_LOOKS.find((l) => l.name === name)?.group;
-    expect(group('Steel Guardian')).toBe('machines');
     expect(group('Shadow Enforcer')).toBe('space');
-    for (const n of ['The Hollow Pilgrim', 'Scary Larry']) expect(group(n), n).toBe('horror');
+    expect(group('Scary Larry')).toBe('horror');
     // Teddy moved again on 2026-11-26, to the Toys row (owner).
     expect(group('Teddy')).toBe('toys');
   });

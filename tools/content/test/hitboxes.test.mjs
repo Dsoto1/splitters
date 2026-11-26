@@ -81,7 +81,7 @@ describe('head spheres where the heads are drawn', () => {
 
 describe('zones come from the shape a ray meets', () => {
   it('head sphere: head; torso and arms: body; thighs and shins: legs, standing, crouching and prone', () => {
-    for (const look of ['core.dale', 'core.abe', 'core.shiba']) {
+    for (const look of ['core.dale', 'core.abe', 'core.chimpanzee']) {
       const { box } = lookHitbox(look);
       for (const [stance, s] of [[0, box.stand], [1, box.crouch ?? box.stand], [2, box.prone ?? box.stand]]) {
         const body = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance, scale: 1, box };

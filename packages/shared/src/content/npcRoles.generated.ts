@@ -34,7 +34,7 @@ export const NPC_ROLE_SPECS: Record<(typeof NPC_ROLES)[number], NpcRoleSpec> = {
   // design: A Meshy community original: grey visitors pick you off with lasers from mid range.
   alien: { label: 'Visitor', health: 65, weapon: 'core.laser_rifle', speed: 0.95, scale: 1, look: 'core.visitor' },
   // design: A Meshy community original: pirates board with sawed-offs.
-  pirate: { label: 'Pirate', health: 90, weapon: 'core.sawed_off', speed: 0.92, scale: 1, look: 'core.barnacle' },
+  pirate: { label: 'Pirate', health: 90, weapon: 'core.sawed_off', speed: 0.92, scale: 1, look: 'core.femalepirate' },
   // design: Drawn as Ignatius Slagg, a large character of the owner's own (Big Bogdan was removed, owner 2026-11-25): the strongman walks a spin gun straight at you, hard to put down.
   titan: { label: 'Strongman', health: 300, weapon: 'core.lmg', speed: 0.66, scale: 1.18, look: 'core.magmajuggernaut' },
 };

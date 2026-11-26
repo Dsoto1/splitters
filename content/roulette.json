@@ -9,7 +9,6 @@
     "core.elder": "core.spear",
     "core.visitor": "core.laser_rifle",
     "core.ember": "core.burst_rifle",
-    "core.barnacle": "core.hand_cannon",
     "core.t350": "core.lmg",
     "core.aldric": "core.gilded_pistol",
     "core.mei": "core.spear",
@@ -44,7 +43,6 @@
     "core.thornweaver": "core.spear",
     "core.croakley": "core.goo_gun",
     "core.snikkit": "core.nailgun",
-    "core.scamp": "core.machine_pistol",
     "core.halvard": "core.battle_axe",
     "core.pruitt": "core.lmg",
     "core.barnaby": "core.shotgun",
@@ -82,14 +80,11 @@
     "core.butcher": "core.battle_axe",
     "core.oldtimer": "core.shotgun",
     "core.imperialguard": "core.spear",
-    "core.frostviking": "core.battle_axe",
     "core.goblinwarlord": "core.spear",
-    "core.maskedfigure": "core.sawed_off",
     "core.astronaut": "core.railgun",
     "core.darkastronaut": "core.plasma",
     "core.trex": "core.smg",
-    "core.fishyfred": "core.bubble_blaster",
-    "core.goblingunslinger": "core.laser_rifle"
+    "core.fishyfred": "core.bubble_blaster"
   },
   "groups": {
     "soldiers": "core.rifle",

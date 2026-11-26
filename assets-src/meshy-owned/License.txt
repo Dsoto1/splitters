@@ -167,7 +167,7 @@ Provenance: Meshy, owned.
   meshy-owned; the owner's own Meshy creations). Built by tools/content/prepare-meshy-characters.mjs. The models the
   replacements replaced no longer ship.
 
-  - "pirate remeshed 15k" (2026-11-25)  -> character meshy_pirate (look Cap'n Rusty Barnacle), its new model
+  - "pirate remeshed 15k" (2026-11-25)  -> character meshy_pirate (look Cap'n Rusty Barnacle): removed 2026-11-26 (owner), no longer shipped
   - "cal rigged" (2026-11-26)  -> character meshy_dale (look Cal), its new model
   - "grandpa chains rigged" (2026-11-26)  -> character meshy_grandpa_chains (look Grandpa Chains), its new model
   - "hazmat joe rigged" (2026-11-26)  -> character meshy_hazmat (look Hazmat Joe), its new model

@@ -227,8 +227,6 @@ export const CHARACTER_PROFILES: Readonly<Record<string, BotProfile>> = Object.f
     // Small, quick and easily distracted by shiny pickups.
     character('core.ember', 'Flt. Lt. Ember', { aggression: 70, reactionSpeed: 80, exploration: 65, rangePreference: 45, tags: ['ARENA'], weaponPreferences: ['core.rockets', 'core.burst_rifle', 'core.flare_gun'] }),
     // Boards at close range with a short gun and a long grudge.
-    character('core.barnacle', "Cap'n Barnacle", { aggression: 80, itemGreed: 85, riskTolerance: 75, rangePreference: 20, meleePreference: 45, tags: ['ARENA', 'RECKLESS'], weaponPreferences: ['core.sawed_off', 'core.hand_cannon', 'core.flak'] }),
-    // Walks through the front door carrying the heaviest thing in the building.
     character('core.bogdan', 'Big Bogdan', { aggression: 75, selfPreservation: 25, riskTolerance: 85, rangePreference: 25, pursuitPersistence: 70, tags: ['SUPPRESSOR'], weaponPreferences: ['core.lmg', 'core.auto_shotgun', 'core.launcher'] }),
     character('core.frost', 'Frost', { rangePreference: 90, accuracy: 82, aggression: 30, selfPreservation: 70, tags: ['SNIPER'], weaponPreferences: ['core.sniper', 'core.railgun', 'core.marksman'] }),
     character('core.operative', 'Operative', { accuracy: 75, reactionSpeed: 75, tacticalAwareness: 80, aggression: 45, tags: ['TACTICAL'], weaponPreferences: ['core.smg', 'core.hand_cannon', 'core.marksman'] }),

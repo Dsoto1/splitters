@@ -213,9 +213,7 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   // in their time order.
   ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'], // famous real people, by period
   ['core.aztecjaguar', 'core.eagleclan', 'core.snakeshaman', 'core.goldenwarrior', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
-  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.celestialknight'], // Medieval and the Crusades
-  ['core.frostviking', 'core.frostvalkyrie'], // the Norse
-  ['core.barnacle', 'core.femalepirate'], // pirates
+  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.celestialknight', 'core.frostvalkyrie'], // Medieval and the Crusades
   ['core.dustycolt', 'core.outlawranger', 'core.prospector'], // the Wild West
   ['core.ashwalker', 'core.zuluwarrior', 'core.ashtribal'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
   ['core.galloway', 'core.brannock'], // knights: Sir Galloway, Ser Brannock
@@ -374,6 +372,18 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-26: removed completely; a saved pick plays a near look of the owner's own.
   'core.biscuit': 'core.tuxedocat', // Biscuit -> Sterling Purrcival
   'core.monkeyspirit': 'core.chimpanzee', // Kiko Banyan -> Chester Knuckleby
+  // Owner, 2026-11-26 (2): eleven more removed completely (the Hollow Pilgrim's glide stays: `locomotion: 'roll'`).
+  'core.purplehero': 'core.celestialknight', // The Purple Comet -> Ser Castor Brightmoor
+  'core.frostviking': 'core.frostvalkyrie', // Frost Viking -> Sigrun Frostmane
+  'core.scamp': 'core.chimpanzee', // Scamp -> Chester Knuckleby
+  'core.armoredsentinel': 'core.crewdemolitions', // Armored Sentinel -> Fuse Hollister
+  'core.steelguardian': 'core.crewdemolitions', // Steel Guardian -> Fuse Hollister
+  'core.botney': 'core.crewdemolitions', // Botney Mullz -> Fuse Hollister
+  'core.goblingunslinger': 'core.grizzelda', // Goblin Gunslinger -> Goblina
+  'core.sugarskull': 'core.frida', // Sugar Skull -> Freaky Frida
+  'core.maskedfigure': 'core.hoodieguy', // The Masked Figure -> Dez Kickley
+  'core.hollowpilgrim': 'core.ankhmummy', // The Hollow Pilgrim -> Nebka the Unwrapped
+  'core.barnacle': 'core.femalepirate', // Cap'n Rusty Barnacle -> Scarlet Brinewell
   'core.shade': 'core.crewphase',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.

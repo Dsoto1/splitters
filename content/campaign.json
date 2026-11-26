@@ -15,7 +15,7 @@
       ],
       "boss": { "character": "core.aztecjaguar", "companions": ["core.eagleclan", "core.goldenwarrior", "core.sunpriest"] },
       "rewards": ["core.aztecjaguar", "core.goldenwarrior", "core.sunpriest"],
-      "expedition": { "crew": 10, "allies": ["core.sugarskull", "core.basaltguardian", "core.snakeshaman", "core.skywarrior"] }
+      "expedition": { "crew": 10, "allies": ["core.goldenwarrior", "core.basaltguardian", "core.snakeshaman", "core.skywarrior"] }
     },
     {
       "id": "lockdown",
@@ -45,9 +45,9 @@
         { "map": "neon_spire", "unlock": "core.ricochet" },
         { "map": "halcyon_station", "unlock": "core.cyberlion", "mode": "core.tdm", "picked": 8, "enemies": 10 }
       ],
-      "boss": { "character": "core.bossinquisitor", "companions": ["core.shadowenforcer", "core.steelguardian"] },
+      "boss": { "character": "core.bossinquisitor", "companions": ["core.shadowenforcer", "core.crtrobot"] },
       "rewards": ["core.shadowenforcer"],
-      "expedition": { "crew": 9, "allies": ["core.armoredsentinel", "core.emeraldrobot", "core.starvoyager", "core.spacemarine"] }
+      "expedition": { "crew": 9, "allies": ["core.medicautomaton", "core.emeraldrobot", "core.starvoyager", "core.spacemarine"] }
     }
   ],
   "convergences": [
@@ -58,7 +58,7 @@
       "description": "Today's prison and 2032's cryo vault meet across one fault line.",
       "sectors": ["lockdown", "neon_tomorrow"],
       "maps": ["glasswork_office"],
-      "rewards": ["core.steelguardian"]
+      "rewards": ["core.crtrobot"]
     }
   ]
 }

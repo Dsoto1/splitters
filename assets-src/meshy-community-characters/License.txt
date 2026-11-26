@@ -13,7 +13,6 @@ Models (name as on the download, download file date):
 - "Elder T-pose" (2025-11-14)  -> character meshy_elder (look Elder Tomo) until 2026-11-25, when the owner's "elder tomo rigged" replaced its model (no longer shipped)
 - "T Pose Alien" (2026-07-21)  -> character meshy_alien (look The Visitor)
 - "T Pose Pilot" (2026-05-10)  -> character meshy_pilot (look Flt. Lt. Ember)
-- "T Pose Pirate" (2026-07-14)  -> character meshy_pirate (look Cap'n Barnacle)
 - "T Pose Titan" (2026-05-03)  -> character meshy_titan (look Big Bogdan)
 
 The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landmarks found on the mesh; the post URL is each model's community page):
@@ -92,9 +91,7 @@ from the owner for every one (HANDOFF.md, "Drive intake of 2026-11-05"):
 - "Painter in a T Pose" (downloaded 2026-11-05)  -> character meshy_butcher (look The Butcher)
 - "An old man in his 90s presented in a" (downloaded 2026-11-05)  -> character meshy_oldtimer (look Old Timer)
 - "A fit ancient Chinese male soldier from" (downloaded 2026-11-05)  -> character meshy_imperialguard (look Imperial Guard)
-- "Frost Viking" (downloaded 2026-11-05)  -> character meshy_frostviking (look Frost Viking)
 - "Goblin Warlord villain" (downloaded 2026-11-05)  -> character meshy_goblinwarlord (look Goblin Warlord)
-- "The Masked Figure" (downloaded 2026-11-05)  -> character meshy_maskedfigure (look The Masked Figure)
 - "T Pose on Green Screen" (downloaded 2026-11-05)  -> character meshy_bill (look Bill)
 - "Iron Warden" (downloaded 2026-11-05)  -> character meshy_knight (look Iron Knight), its new model (intake step 2b; the model it replaced is no longer shipped)
 - "Gnoll warrior" (downloaded 2026-11-05)  -> character meshy_hyena (look Hyena Warrior), its new model (intake step 2b; the model it replaced is no longer shipped)

@@ -1682,12 +1682,21 @@ label is in each manifest's notes.
   Folk. The office worker, hoodie guy, "Karen" and salaryman downloads are zombies: Horrors & Creatures.
 - **Like histories side by side (owner, 2026-11-26):** `CHARACTER_NEIGHBOURS` keeps each row's periods together: the
   famous real people in Legends in time order (General Cherrytree, Poor Richard, Honest Abe, The Rough Rider, Prof.
-  Quanta), Mesoamerica, the Crusades and the knights, the Norse, the pirates; the Wild West and Southern Africa in
+  Quanta), Mesoamerica, the Crusades and the knights (Sigrun Frostmane with them); the Wild West and Southern Africa in
   Everyday Folk; the Civil War, WW2 and Vietnam in Soldiers & Spies; Egypt and the city's dead in Horrors.
 - **Fishy Fred** takes the scuba fish ("bass diver 3d"; id, name and place kept, no longer small) and **Puddles
   Ironbill** the tennis duck ("petite scrappy tennis duck 15k"; renamed **Puddles Backspin**, small): both the owner's
   own (2026-11-26). **Biscuit** and **Kiko Banyan** are removed (a saved pick plays Sterling Purrcival and Chester
   Knuckleby); Kiko's place as the Jungle Steps unlock in content/campaign.json goes to Ziggy's Aztec look.
+- **Removed completely (owner, 2026-11-26 (2)):** The Purple Comet, Frost Viking (the Frozen sector's boss is
+  Frostmane), Scamp, Armored Sentinel, Steel Guardian, Botney Mullz, Goblin Gunslinger, Sugar Skull, The Masked Figure,
+  The Hollow Pilgrim and Cap'n Rusty Barnacle (the 11-26 pirate model with him; four new pirates are coming). Each plays
+  a near look of the owner's own in `RETIRED_LOOKS` (Frost Viking Sigrun Frostmane, Scamp Chester Knuckleby, the
+  Barnacle Scarlet Brinewell, the three machines Fuse Hollister, and so on); the pirate NPC role wears Scarlet
+  Brinewell; the campaign's allies, companion and reward that named one take a current look. The Hollow Pilgrim's
+  glide stays in code as `locomotion: 'roll'` (the Baseball Robot's, and the coming snowman's). **Dredge Marrow** moves
+  to Legends.
+- **Teddy:** the owner's replacement model is coming; swap it in when it's on the Drive (id, name, place kept).
 - **Shaka Mpande** (`core.ashwalker`) takes the download named after him ("shaka mpande": a red-beret commander in a
   leopard sash); the ash-painted tribal look the id had ("ash tribal", its new model) is a new character, Kato
   Emberline (`core.ashtribal`), with the old bio. To confirm with the owner.
