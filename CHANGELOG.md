@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **St. Jasper's classrooms: the front aisle is open past the open door.** The row of desks by the door has three desks, its hall end free, so players and bots get round the door's leaf (MapMaker: School Desks, row of three).
 - **Simpler pickers in Rules and MapMaker's settings.** Match Setup's Rules tab: Weather and Weapon set as chips, the on/off rules as switches. MapMaker's Map settings: mode, category, weapon set, team layout, gravity, broken glass, walls, blood, weather and tier as chips, fall damage, Everything breaks and Test map as switches, team sizes as steppers. Saved setups and maps load as before.
 - **Bots no longer get stuck on propped-open doors**: their routes go round an open door's leaf instead of through it.
 - **Practice range.** Quick Play → **Practice range**: alone, no bots or score, every weapon on the racks behind the firing line, steel targets at 10 to 200 m with their distance signs, plates at 15 m, a spray target, a peek wall and a slide lane. Each hit on a target reads out the zone, the distance, the damage and how many such hits down a player.
