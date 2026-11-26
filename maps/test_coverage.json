@@ -1,6 +1,6 @@
 {
   "format": "tiletrigger.map",
-  "formatVersion": 52,
+  "formatVersion": 53,
   "metadata": {
     "id": "test_coverage",
     "name": "Coverage Test",
@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_vxhkrg6j3qgfuo32",
-      "revision": 64,
-      "contentHash": "sha256:cf8480c2f29859a2ae5354918b35d3031beb32fd0645b77fbae5bd0727ca2b8c",
-      "schemaVersion": 52,
-      "releasedAt": "2026-11-25T22:07:26.924Z"
+      "versionId": "v_hlg4xdlmqmslm6nk",
+      "revision": 65,
+      "contentHash": "sha256:768e11c8f424e055d29464e457e58b74b093f645d47500cb39b5dd75c170f7e5",
+      "schemaVersion": 53,
+      "releasedAt": "2026-11-25T23:11:47.455Z"
     },
     "testOnly": true,
     "category": "weird"
@@ -5737,12 +5737,12 @@
     },
     {
       "id": "block_doorfit_w",
-      "kind": "block",
       "position": [
         -111,
         0,
         132
       ],
+      "kind": "block",
       "size": [
         6,
         4,
@@ -5765,12 +5765,12 @@
     },
     {
       "id": "block_doorfit_e",
-      "kind": "block",
       "position": [
         -105,
         0,
         132
       ],
+      "kind": "block",
       "size": [
         6,
         4,
@@ -5793,31 +5793,55 @@
     },
     {
       "id": "door_24o1vve1ao",
-      "kind": "door",
       "position": [
         -108,
         0,
         144
       ],
+      "kind": "door",
       "yaw": 1.5707963267948966,
+      "style": "arched",
       "startOpen": false,
       "locked": false,
-      "auto": true,
-      "style": "arched"
+      "auto": true
     },
     {
       "id": "door_vtihakx4ow",
-      "kind": "door",
       "position": [
         -108,
         0,
         132
       ],
+      "kind": "door",
       "yaw": 0,
+      "style": "arched",
       "startOpen": false,
       "locked": false,
-      "auto": true,
-      "style": "arched"
+      "auto": true
+    },
+    {
+      "id": "figure_olal5h8xi2",
+      "kind": "figure",
+      "position": [
+        75,
+        0,
+        12
+      ],
+      "yaw": 2.356194490192345,
+      "look": "core.dale",
+      "pose": "stand"
+    },
+    {
+      "id": "figure_chmqxvwvop",
+      "kind": "figure",
+      "position": [
+        73,
+        0,
+        12
+      ],
+      "yaw": 2.356194490192345,
+      "look": "core.crewk9",
+      "pose": "dance"
     }
   ],
   "factions": [],

@@ -8,30 +8,27 @@
   "group": "animals",
   "blood": "red",
   "nameTheme": "frog",
-  "bio": "Ran the bait shop by the pond until somebody shot it up. Now he returns the favour, suspenders and all.",
+  "bio": "Traded the bait shop for camo paint. The pond has never been safer, or louder.",
   "body": "male",
   "size": "small",
-  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not Boglurker (a different toad, in rags): a cartoon frog in a vest, jeans and suspenders. Rebuilt 2026-11-05 (intake step 2b) from the re-rigged download \"T Pose Frog in Suspenders\" (Meshy rig, Mixamo skeleton; its clips not used).",
+  "notes": "New model 2026-11-25 (owner: \"many are replacements for what we currently have\"; id, name and place kept, as Thornweaver's and Anoobys's swaps). Croakley's model until 2026-11-25 (\"T Pose Frog in Suspenders\", Meshy Community CC0) no longer ships (a community model, not the owner's: owner, 2026-11-25, only the owner's own retired models stay as MapMaker figures). Drive intake of 2026-11-25 (\"jungle commando croakley 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "T Pose Frog in Suspenders"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
     "url": null,
-    "file": "^Meshy_AI_T_Pose_Frog_in_Suspenders_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_jungle_commando_croakley_15k_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0,
+    "metallic": 0.1,
     "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true,
-    "grip": {
-      "curlL": 1.2,
-      "rollL": -0.25
-    }
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }

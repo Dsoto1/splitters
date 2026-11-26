@@ -78,7 +78,13 @@ import {
   type MountModel,
   type MountSkin,
   type MoverMode,
-  type ObjectiveEntity
+  type ObjectiveEntity,
+  CHARACTER_GROUPS,
+  CORE_LOOKS,
+  getLook,
+  FIGURE_POSES,
+  FIGURE_POSE_LABELS,
+  type FigurePose,
 } from '@tiletrigger/shared';
 import { envRendererOn } from '../environment/envFlag.ts';
 import { LIQUID_LOOKS } from '../game/scenarioVisuals.ts';
@@ -472,6 +478,24 @@ export class EntityInspector {
         number('Blinks per s (0 steady)', e.blink ?? 0, 0.5, (v) => ({ blink: v <= 0 ? undefined : clamp(v, 0.2, 10) }));
         el.append(small('Logic can switch it on and off, change its colour, flash it or make it blink (alarms, trap tells, a cinema dimming).'));
         el.append(small('Lights the area round it out to its reach (lighting only). Ceiling panels and strips go just under a ceiling (within 1.5 m they are drawn fastened to it; a bulb\'s cord and a chandelier\'s chain reach up to it), wall lamps on a wall facing into the room. Hundreds are fine on most GPUs.'));
+        break;
+      }
+      case 'figure': {
+        // Every character on the roster, by group (owner, 2026-11-26: retired characters are removed, not kept for MapMaker).
+        const sel = document.createElement('select');
+        sel.id = 'ed-insp-figure-look';
+        const group = (label: string, looks: readonly { id: string; name: string }[]) => {
+          const g = document.createElement('optgroup');
+          g.label = label;
+          for (const l of [...looks].sort((a, b) => a.name.localeCompare(b.name))) g.append(new Option(l.name, l.id, false, l.id === e.look));
+          if (g.children.length) sel.append(g);
+        };
+        for (const g of CHARACTER_GROUPS) group(g.label, CORE_LOOKS.filter((l) => l.group === g.id));
+        if (![...sel.options].some((o) => o.selected)) sel.prepend(new Option(`${getLook(e.look).name} (unknown look: drawn as this)`, e.look, true, true));
+        sel.addEventListener('change', () => update('Set figure', { look: sel.value }));
+        el.append(row('Character', sel));
+        choose('Pose', FIGURE_POSES.map((p) => [p, FIGURE_POSE_LABELS[p]] as const), e.pose, (v) => ({ pose: v as FigurePose }));
+        el.append(small('A character standing here in a pose, for scenarios and set dressing: anyone on the roster. Looks only: players walk through it; stand it on a block or a prop to make it solid.'));
         break;
       }
       case 'hostage':

@@ -8,66 +8,26 @@
   "group": "animals",
   "blood": "red",
   "nameTheme": "wolf",
-  "bio": "Hunts in packs. Today the pack is you lot, and he is keeping score.",
+  "bio": "A lone wolf with no master and one rule: the pack eats first.",
   "body": "male",
-  "notes": "From the owner's T-pose uploads (2026-11-01, \"found some new ones\"): an unrigged textured GLB, rigged here from T-pose landmarks (arms level; the manifest's landmarks, read off front and side views). Named here; the owner reviews it on the grip and portrait sheets. Not the Hyena Warrior (armoured): a grey wolf standing upright, bushy tail (left on the hips).",
+  "notes": "New model 2026-11-25 (owner: \"many are replacements for what we currently have\"; id, name and place kept, as Thornweaver's and Anoobys's swaps). Greyfang's model until 2026-11-25 (\"Wolf T Pose\", Meshy Community CC0) no longer ships (a community model, not the owner's: owner, 2026-11-25, only the owner's own retired models stay as MapMaker figures). Drive intake of 2026-11-25 (\"wolf ronin rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Wolf T Pose"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
     "url": null,
-    "file": "^Meshy_AI_Wolf_T_Pose_\\d+_texture\\.glb$"
+    "file": "^Meshy_AI_wolf_ronin_rigged_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.85
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
-    "tail": [
-      [0, 0.45, 0.08],
-      [0, 0.4, -0.05],
-      [0, 0.3, -0.2],
-      [0, 0.2, -0.32]
-    ],
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
-  },
-  "landmarks": {
-    "spine": [
-      [0, 0.49, 0.144],
-      [0, 0.546, 0.15],
-      [0, 0.605, 0.153],
-      [0, 0.669, 0.14],
-      [0, 0.79, 0.165],
-      [0, 0.83, 0.165],
-      [0, 0.93, 0.16]
-    ],
-    "L": [
-      [0.025, 0.75, 0.13],
-      [0.1, 0.725, 0.125],
-      [0.2, 0.69, 0.123],
-      [0.29, 0.675, 0.14],
-      [0.365, 0.662, 0.155],
-      [0.05, 0.46, 0.14],
-      [0.055, 0.264, 0.13],
-      [0.055, 0.065, 0.129],
-      [0.09, 0.02, 0.2],
-      [0.09, 0.015, 0.229]
-    ],
-    "R": [
-      [-0.025, 0.75, 0.13],
-      [-0.1, 0.725, 0.125],
-      [-0.2, 0.69, 0.123],
-      [-0.29, 0.675, 0.14],
-      [-0.365, 0.662, 0.155],
-      [-0.05, 0.46, 0.14],
-      [-0.055, 0.264, 0.13],
-      [-0.055, 0.065, 0.129],
-      [-0.091, 0.02, 0.198],
-      [-0.091, 0.015, 0.227]
-    ]
   }
 }

@@ -7,7 +7,7 @@ import { BODY_SIZES, HITBOX_MARGIN } from '../../../packages/shared/src/sim/cons
 import { rayBody, lastHit } from '../../../packages/shared/src/sim/hitbox.ts';
 import { lookHitbox } from '../../../packages/shared/src/sim/lookHitbox.ts';
 import { hitZone } from '../../../packages/shared/src/sim/weapons.ts';
-import { DESIGNER_BASE_LOOK, encodeLook, getLook } from '../../../packages/shared/src/content/looks.ts';
+import { MODULAR_PARTS_MALE, encodeLook, getLook } from '../../../packages/shared/src/content/looks.ts';
 import { outsideShapes, pointsOf, subjects } from '../hitboxes.mjs';
 
 const subjectList = await subjects();
@@ -61,9 +61,9 @@ describe('head spheres where the heads are drawn', () => {
   }
 
   it('a small look: its shoulders are body, where the old fixed 0.32 m head band called them head', async () => {
-    // (A small design from the Designer's base body: no small outfit-parts preset is left on the roster.)
-    const look = encodeLook({ body: 'male', parts: DESIGNER_BASE_LOOK.parts, hair: [], colorways: [], skin: null, hairColor: null, size: 'small' });
-    const { reg } = await pointsOf({ ...subject(DESIGNER_BASE_LOOK.id), key: look });
+    // (A small part-made look: no outfit-parts preset is left on the roster.)
+    const look = encodeLook({ body: 'male', parts: [...MODULAR_PARTS_MALE], hair: [], colorways: [], skin: null, hairColor: null, size: 'small' });
+    const { reg } = await pointsOf({ key: look, files: ['head_male', ...MODULAR_PARTS_MALE] });
     const headLow = Math.min(...reg.head.map((p) => p[1]));
     // The top of the torso (shoulder line), just below the head.
     const shoulder = reg.torso.filter((p) => p[1] < headLow && p[1] > headLow - 0.12);
@@ -81,7 +81,7 @@ describe('head spheres where the heads are drawn', () => {
 
 describe('zones come from the shape a ray meets', () => {
   it('head sphere: head; torso and arms: body; thighs and shins: legs, standing, crouching and prone', () => {
-    for (const look of ['core.ranger', 'core.abe', 'core.biscuit']) {
+    for (const look of ['core.dale', 'core.abe', 'core.biscuit']) {
       const { box } = lookHitbox(look);
       for (const [stance, s] of [[0, box.stand], [1, box.crouch ?? box.stand], [2, box.prone ?? box.stand]]) {
         const body = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance, scale: 1, box };

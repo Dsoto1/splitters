@@ -72,15 +72,15 @@ describe('change-based selection', () => {
   });
 
   it.each([
-    ['content/characters/soldier.json', ['offline', 'designer', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
-    ['content/characters.lock.json', ['offline', 'designer', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
+    ['content/characters/soldier.json', ['offline', 'firstperson', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
+    ['content/characters.lock.json', ['offline', 'firstperson', ...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
     ['content/clip-sets/rifle.json', [...CHARACTER_FLOWS, 'visual'], ['client', 'content', 'shared']],
     ['content/props.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/props/kenney-survival-kit.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/props.lock.json', ['editor', 'scenery', 'setpieces', 'visual'], ['client', 'shared']],
     ['content/guns.json', ['arsenal', 'vehicles', ...CHARACTER_FLOWS], ['shared']],
     ['content/vfx.json', ['physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3', 'arsenal', 'flashing', 'flashing2', 'flashing3', 'flashing4', 'flashing5'], ['client']],
-    ['content/gear.json', ['designer', ...CHARACTER_FLOWS, 'visual'], ['shared']],
+    ['content/gear.json', ['firstperson', ...CHARACTER_FLOWS, 'visual'], ['shared']],
     ['content/sounds.json', ['offline'], ['client']],
   ])('a content manifest (%s) runs the flows that look at it', (p, flows, unit) => {
     const s = sel(p);
@@ -96,7 +96,7 @@ describe('change-based selection', () => {
     });
     it('manifest, models, portrait, provenance and the Meshy lock together: no full suite', () => {
       const s = selectForPaths([manifest, ...built, ...ledgers], mapIds);
-      expect(s).toMatchObject({ full: false, flows: ['offline', 'designer', ...CHARACTER_FLOWS, 'visual'], unit: ['client', 'content', 'shared'], reasons: [] });
+      expect(s).toMatchObject({ full: false, flows: ['offline', 'firstperson', ...CHARACTER_FLOWS, 'visual'], unit: ['client', 'content', 'shared'], reasons: [] });
       // Without the manifest (a rebuilt model): the proposal's flows exactly.
       expect(selectForPaths([...built, ...ledgers], mapIds)).toMatchObject({ full: false, flows: ['offline', ...CHARACTER_FLOWS] });
     });
@@ -212,8 +212,8 @@ describe('change-based selection', () => {
   });
 
   it('combines rules: the union of flows, units widened to all by a full change', () => {
-    const s = sel('packages/server/src/lobby.ts', 'packages/client/src/designer/customLooks.ts');
-    expect(s.flows).toEqual(['designer', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage']);
+    const s = sel('packages/server/src/lobby.ts', 'packages/client/src/tools/characterViewer.ts');
+    expect(s.flows).toEqual([...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage']);
     expect(s.unit).toEqual(['client', 'host', 'server']);
     expect(sel('packages/server/src/lobby.ts', 'packages/shared/src/protocol.ts').unit).toBe('all');
   });

@@ -733,6 +733,27 @@ export const HostageEntity = EntityBase.extend({
   yaw: Yaw,
 });
 
+/**
+ * How a Figure stands (FigureEntity): the rig's rest pose, cheering, dancing or crouched. Each plays that clip over and
+ * over (empty-handed).
+ */
+export const FIGURE_POSES = ['stand', 'cheer', 'dance', 'crouch'] as const;
+export type FigurePose = (typeof FIGURE_POSES)[number];
+export const FIGURE_POSE_LABELS: Record<FigurePose, string> = { stand: 'Standing', cheer: 'Cheering', dance: 'Dancing', crouch: 'Crouching' };
+
+/**
+ * A figure (v53; owner, 2026-11-25: characters "retired to the mapmaker for use in other creations such as
+ * scenarios"): a character standing on the map in a pose, for scenarios and set dressing: a look from the roster or one
+ * retired to MapMaker (looks.ts FIGURE_LOOKS). Looks only: no collision, no part in play (a block or a prop under it
+ * makes it solid). An unknown look draws as the default.
+ */
+export const FigureEntity = EntityBase.extend({
+  kind: z.literal('figure'),
+  yaw: Yaw,
+  look: z.string().min(1).max(64).default('core.dale'),
+  pose: z.enum(FIGURE_POSES).default('stand'),
+});
+
 /** Hostage mode: where rescuers bring hostages out. */
 export const RescueEntity = EntityBase.extend({
   kind: z.literal('rescue'),
@@ -855,7 +876,7 @@ export const ZiplineEntity = EntityBase.extend({
   sag: z.number().min(0).max(0.1).default(0.03),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity, SectorEntity, ObjectiveEntity]);
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity, SectorEntity, ObjectiveEntity, FigureEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -1466,6 +1487,7 @@ export type BombsiteEntity = z.infer<typeof BombsiteEntity>;
 export type SectorEntity = z.infer<typeof SectorEntity>;
 export type ObjectiveEntity = z.infer<typeof ObjectiveEntity>;
 export type HostageEntity = z.infer<typeof HostageEntity>;
+export type FigureEntity = z.infer<typeof FigureEntity>;
 export type RescueEntity = z.infer<typeof RescueEntity>;
 export type LightEntity = z.infer<typeof LightEntity>;
 export type AirplaneEntity = z.infer<typeof AirplaneEntity>;

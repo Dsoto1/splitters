@@ -35,7 +35,7 @@ unless the page asks with `&crashpanel=1` (the `crashreport` flow). With no hub,
 | `message`, `stack` | the error's text, scrubbed (below), 300 and 4000 characters at most |
 | `version`, `sha` | the client's version (the menu's) and the commit it was built from |
 | `map`, `mode` | in a match only: a suite map's ID, or `custom` for any other map (a player's own, a community map), and the mode |
-| `screen` | `menu`, `game`, `editor`, `designer` |
+| `screen` | `menu`, `game`, `editor` (and `designer` from builds before the Character Designer was removed, 2026-11-25) |
 | `quality` | the graphics quality (`low`, `medium`, `high`) |
 | `browser`, `os` | the browser family and major version (`Chrome 131`) and the OS family (`Windows`): nothing finer |
 | `at` | the time, to the minute |

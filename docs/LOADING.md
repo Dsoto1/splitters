@@ -14,7 +14,7 @@ Measured with a module-size dump of the 0.3.0 build (sizes before minifying):
 | every map in `maps/` (eager `import.meta.glob` in main.ts) | 15.0 MB |
 | Rapier (`@dimforge/rapier3d-compat`: its WebAssembly inlined as base64) | 4.3 MB |
 | Babylon (engine, materials, meshes, post-processes, glTF with every extension, flow graph, audio…) | ~7 MB |
-| the match, MapMaker, Character Designer, shared sim and content tables | ~2.5 MB |
+| the match, MapMaker, shared sim and content tables | ~2.5 MB |
 
 ## How it's split now
 
@@ -57,7 +57,7 @@ Measured with a module-size dump of the 0.3.0 build (sizes before minifying):
   dynamic import at main.ts's mode switch. Physics (Rapier) initialises with it
   instead of before the menu. The match worker (`simWorker`) shares the page's
   Rapier file (`rapier-*.js`: same bytes, same hashed name, one download).
-- **MapMaker** and the **Character Designer**: dynamic imports when opened.
+- **MapMaker**: a dynamic import when opened (the Character Designer, also one, was removed on 2026-11-25).
   MapMaker's Open list comes from the map index; a template loads when its row
   is seen or opened.
 - **WebGPU's engine** loads only with `?renderer=webgpu`.
@@ -75,7 +75,7 @@ Measured with a module-size dump of the 0.3.0 build (sizes before minifying):
   would also take in the shaders the menu fetches on demand.
 
 Hooks for browser tests are unchanged: `window.__front` once the menu is up,
-`__editor` when MapMaker opens, `__designer` when the designer does, `__cs`
+`__editor` when MapMaker opens, `__cs`
 when a match is ready.
 
 ## Prefetch
@@ -143,6 +143,11 @@ reached `map/track.ts` for `racePath`; `setIdRandom` (main.ts, test mode) reache
 already import those modules (and the idle prefetch brings them in while the menu is up). A module the menu reads is
 put in the menu's chunk whole, with everything it imports: keep what the menu needs in small modules of its own.
 
+**The Character Designer removed** (2026-11-25): it was already a dynamic import (its chunk, 12.2 kB raw, 4.9 kB gzip,
+is gone), so the menu's first JS lost only what the menu itself carried for it (the saved-designs list, Design new,
+Customise, Yours and the kept design pictures): 2790.0 to 2786.8 kB raw, 792.2 to 791.2 kB gzip (`index` 1038.8 to
+1035.6 kB raw, 340.8 to 339.8 kB gzip), the same budget.
+
 Measure a change: `pnpm build && node tools/ci/bundle-budget.mjs`, and
 `node tools/perf/first-load.mjs [dist …]` for times (it serves each build the
 way the hub does and alternates runs between them).
@@ -154,7 +159,7 @@ page until the first screen is ready: `client/src/boot.ts` counts the steps
 `main.ts` gives it (the engine, fonts, the menu scene, your character's
 portrait, the shipped portraits and the first map pictures, each capped) and
 fades out when they're done, after 12 s at the most, or as soon as a match,
-MapMaker or the Character Designer takes over (they have their own). The
+MapMaker takes over (they have their own). The
 /host page, the team tools and test mode (`?test=1`) skip it.
 
 ## Starting a match

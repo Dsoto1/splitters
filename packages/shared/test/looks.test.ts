@@ -1,6 +1,6 @@
 import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, DESIGNER_BASE_LOOK, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, NPC_KEPT_LOOKS, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
+import { CHARACTER_PARTS, COLORWAYS, CORE_BOT_PROFILES, CORE_LOOKS, DEFAULT_LOOK, MODULAR_PARTS_MALE, decodeLook, encodeLook, getLook, HAIR_STYLES, initPhysics, lookForBot, lookProblems, materialTint, NPC_KEPT_LOOKS, partInfo, RETIRED_LOOKS, textureFor, validLookId } from '../src/index.ts';
 import { Match, initNavigation } from '../src/match.ts';
 import { loadArena } from './helpers.ts';
 import { GRIP_FITS } from '../src/content/gripFit.generated.ts';
@@ -14,6 +14,8 @@ const file = (id: string) => lock.files.find((f) => f.id === id);
 /** Whole-body characters made with Meshy (tools/content/prepare-meshy-characters.mjs). */
 const meshy = JSON.parse(readFileSync(new URL('../../../content/meshy.lock.json', import.meta.url), 'utf8')) as { files: { role: string; id: string }[] };
 const parted = CORE_LOOKS.filter((l) => !l.whole);
+/** A part-made look on the shared parts (Linktifa's outfit; no outfit preset is on the roster). */
+const BASE = decodeLook(encodeLook({ body: 'male', parts: [...MODULAR_PARTS_MALE], hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50', gear: ['pack'] }))!;
 
 describe('character looks', () => {
   it('only uses parts that ship, made for the look’s body, one per slot', () => {
@@ -49,9 +51,9 @@ describe('character looks', () => {
     }
   });
 
-  it('offers every shipped part, hairstyle and colourway (in a preset or the Designer)', () => {
+  it('offers every shipped part, hairstyle and colourway (in a preset or the part catalogue)', () => {
     const designer = ['head_male', 'head_female', ...CHARACTER_PARTS.map((p) => p.id), ...Object.values(HAIR_STYLES).flatMap((h) => h.map((x) => x.id)), ...COLORWAYS.map((c) => c.id)];
-    const used = new Set([...[...CORE_LOOKS, DESIGNER_BASE_LOOK].flatMap((l) => [l.head, ...l.parts, ...l.hair, ...l.colorways]), ...designer]);
+    const used = new Set([...CORE_LOOKS.flatMap((l) => [l.head, ...l.parts, ...l.hair, ...l.colorways]), ...designer]);
     const unused = lock.files.filter((f) => ['head', 'part', 'hair'].includes(f.role) && !used.has(f.id!)).map((f) => f.id);
     expect(unused).toEqual([]);
     // Every alternative colourway (a texture ID with a variant word) is worn by someone.
@@ -68,7 +70,7 @@ describe('character looks', () => {
       }
     }
     expect(textureFor('MI_Eyes', CORE_LOOKS[0]!)).toBeNull();
-    expect(textureFor('MI_Ranger', { ...getLook('core.ranger'), colorways: ['ranger_moss'] })).toBe('ranger_moss');
+    expect(textureFor('MI_Ranger', { ...BASE, colorways: ['ranger_moss'] })).toBe('ranger_moss');
     expect(textureFor('MI_Athlete_Female', { ...getLook('core.huntress'), colorways: ['athlete_light_f'] })).toBe('athlete_light_f');
     expect(materialTint('MI_Superhero_Male')).toBe('skin');
     expect(materialTint('MI_Hair_2')).toBe('hair');
@@ -104,7 +106,7 @@ describe('character looks', () => {
   });
 });
 
-describe('custom looks', () => {
+describe('custom look IDs (drawn for the client, no longer played: the Character Designer went, 2026-11-25)', () => {
   it('lists exactly the shipped parts', () => {
     const shipped = lock.files.filter((f) => f.role === 'part').map((f) => f.id).sort();
     expect(CHARACTER_PARTS.map((p) => p.id).sort()).toEqual(shipped);
@@ -129,7 +131,7 @@ describe('custom looks', () => {
   });
 
   it('rejects looks that cannot be worn and falls back to the default', () => {
-    const base = getLook('core.ranger');
+    const base = BASE;
     expect(lookProblems({ ...base, parts: base.parts.filter((p) => !p.startsWith('ranger_legs')) })).toContain('needs trousers');
     expect(lookProblems({ ...base, parts: [...base.parts, 'athlete_torso_m'] }).length).toBeGreaterThan(0);
     expect(lookProblems({ ...base, parts: ['athlete_torso_m', 'ranger_arms_m', 'ranger_legs_m', 'ranger_feet_m'] })).toContain('a sportswear top already has arms');
@@ -141,10 +143,18 @@ describe('custom looks', () => {
     expect(getLook(noLegs).id).toBe(DEFAULT_LOOK);
   });
 
-  it('keeps a valid custom look for a joining player', () => {
+  it('a saved custom look (from the removed Character Designer) plays the default, on the device and in a match', () => {
     const custom = encodeLook({ body: 'female', parts: ['peasant_torso_f', 'ranger_arms_f', 'athlete_legs_f', 'ranger_feet_f'], hair: ['hair_buns'], colorways: ['peasant_dusk'], skin: '#9a6a4e', hairColor: '#8a3a2a' });
+    expect(decodeLook(custom)).not.toBeNull();
+    expect(validLookId(custom)).toBe(DEFAULT_LOOK);
+    // An old design with size, dyes and gear, and one made from Linktifa's base ("Design new").
+    expect(validLookId(encodeLook({ ...BASE, size: 'large', cloth: '#2a3a5c', trim: null, gear: ['goggles', 'vest'] }))).toBe(DEFAULT_LOOK);
+    expect(validLookId(encodeLook(BASE))).toBe(DEFAULT_LOOK);
+    // Presets, retired ones and NPC skins are as before.
+    expect(validLookId('core.dale')).toBe('core.dale');
+    expect(validLookId('npc:cyclops')).toBe('npc:cyclops');
     const match = new Match(loadArena());
     match.addHuman('Kit', custom);
-    expect(match.roster()[0]!.look).toBe(custom);
+    expect(match.roster()[0]!.look).toBe(DEFAULT_LOOK);
   });
 });

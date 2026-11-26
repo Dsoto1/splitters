@@ -66,8 +66,8 @@ A look (`packages/shared/src/content/looks.ts`) is made of:
 - colourways;
 - a skin tint and a hair tint, multiplied over the textures.
 
-The part-built presets (the originals) wear these outfits; the Designer
-offers every part, hairstyle and colourway, and a unit test keeps it that way:
+The part-built presets (the originals) wear these outfits; the part catalogue
+lists every part, hairstyle and colourway, and a unit test keeps it that way:
 
 | Preset | Made of |
 |---|---|
@@ -132,7 +132,10 @@ Outer Space), the time crew of the owner's 2026-11-21/22 Drive batch, each with 
 owner 2026-11-22): Vesper Quill (the Alchemist), Nova Kade (Cyborg), Fuse Hollister (Demolitions), Dex Calloway
 (Gunslinger), Gears Okafor (Mechanic), Doc Seraphine Vale (Medic), Flicker (Phase-Shifter), Wren Halloway (Recon),
 Sarge Tobias Crane (Veteran), Mags Petrov (Quartermaster) and Lyra Vantis (Chrono Mage). Their group is Outer Space;
-the Time Traveler was not in the crew then. **2026-11-25 (owner):** Clio Everwhen (the Time Traveler) joins, and she and Sarge Tobias Crane are the team's #1 and #2, the first two tiles of the section (`sortAs` `01 …`, `02 …`); Fuse Hollister leaves for Machines; two new members, Blix Orrin (the alien recruit) and Juno Hartwell (the pilot): 13 in all. `characterSectionOf(look)` gives a look's section.
+the Time Traveler was not in the crew then. **2026-11-25 (owner):** Clio Everwhen (the Time Traveler) joins, and she and Sarge Tobias Crane are the team's #1 and #2, the first two tiles of the section (`sortAs` `01 …`, `02 …`); Fuse Hollister leaves for Machines; two new members, Blix Orrin (the alien recruit) and Juno Hartwell (the pilot): 13 in all. Later that day (owner) Rocco Tickwell (the K9, `core.crewk9`) joined and Blix Orrin moved to Outer Space: **13**, and the
+crew's **14th place is kept** for the Inquisitor, Vesk Tockley (`core.bossinquisitor`), whom the story unlocks: Character
+Select shows an **Unknown** tile there until his look is in the player's campaign progress (`COLLECTION_RESERVED_PLACES`,
+`vacantCollectionPlaces` in looks.ts; the unlock itself and his roster place come with the campaign's rules). `characterSectionOf(look)` gives a look's section.
 
 **Army and Agency.** Every character in Soldiers & Spies carries a sub-designator, `branch` (`CHARACTER_BRANCHES`):
 **Army** (the uniformed soldiers; the old Soldiers) or **Agency** (agents and spies; the old Agents & Spies: Customs
@@ -199,12 +202,12 @@ Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 
 | Group (`id`) | Who |
 |---|---|
-| Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Grunt '68, Kenji, Pemberton, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry, and from 2026-11-25 Cpl. Tinwhistle, Pvt. Pete Plastic |
+| Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Grunt '68, Kenji, Pemberton, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry, and from 2026-11-25 Cpl. Tinwhistle, Pvt. Pete Plastic, and from the second batch Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund, Lien Vo |
 | Everyday Folk (`folk`) | Biker Gang Girl, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver (the plains huntress model since 2026-11-25), Cutter McCrae (2026-11-25), Velvet Vance |
-| Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Star Voyager, Starfarer, Steampunk Warrior, The Visitor |
-| Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Blix Orrin, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Vesper Quill, Wren Halloway (their group is Outer Space) |
-| Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo (new model 2026-11-25), Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw |
-| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Biscuit, Boglurker, Croakley, Cyber Lion, Elephant Warrior, Fishy Fred, Gorilla G, Greyfang, Hyena Warrior, Lion in a Suit, Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
+| Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Star Voyager, Starfarer, Steampunk Warrior, The Visitor, Blix Orrin (from the Chrono Crew, 2026-11-25) |
+| Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell (the K9, 2026-11-25), Vesper Quill, Wren Halloway (their group is Outer Space); the 14th place an Unknown tile kept for the Inquisitor |
+| Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo (new model 2026-11-25), Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw, Tetl Stonewarden |
+| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Biscuit, Boglurker, Croakley, Cyber Lion, Ellis Velvetrope (was Elephant Warrior), Fishy Fred, Gorilla G, Greyfang, Rollo Splitworth (was Hyena Warrior), Kesi Tallgrass (was Lion in a Suit), Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too), El Zarpazo, Puddles Ironbill (was Juice); new models 2026-11-25 for Boglurker, Croakley, Cyber Lion, Gorilla G, Greyfang |
 | Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
 | Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
 
@@ -213,9 +216,9 @@ Where a group comes from: a part-built preset has `group` on its entry in
 copied into characters.generated.ts); an NPC skin gets it from
 `NPC_LOOK_GROUPS` in sim/npc.ts (creatures and the zombie → Horrors & Creatures,
 the Dummy (trooper) → Soldiers & Spies as Agency, the other soldier roles as Army). `lookGroup(id)` reads any of
-them; a design of yours has none and goes under **Yours**. The screen is one
+them. The screen is one
 grid that scrolls through the sections in that order (each group with anyone
-in it, its characters by name, then Yours with **Design new**), each under a
+in it, its characters by name), each under a
 compact header with its count. The jump strip above lights the section in
 view; a chip, or Q / E (LB / RB), scrolls to a section. Arrow keys and the
 d-pad cross from one section into the next.
@@ -354,29 +357,26 @@ Retired looks (`RETIRED_LOOKS`) bleed as the look they play; those still on disk
 **Stone dust** (`stone`) is bone dust's chips and cloud in grey (`#a6a39b`), for a statue. The **wisp** is white-grey:
 its own mist `#c4c6ca`, the pack's burst tinted `#a9adb3` at 0.22 of its size and 0.45 of its strength, eased in (softer than a white burst; owner, 2026-11-18).
 
-## Character Designer
+## Character Designer (removed 2026-11-25)
 
-Character Select → **Design new** (D / controller X), or **Customise** on a part-built look (or `?mode=designer`).
-Players choose:
-- a body;
-- one part per slot (top, arms, trousers, feet, hood, pauldrons);
-- hair and beard, with a hair colour;
-- colourways and a skin tone (swatches or any colour).
+The Character Designer (Character Select's **Design new** and **Customise**, `?mode=designer`) is gone, owner,
+2026-11-25: "i do think that custom characters should be removed given we have over 200 to choose from now." With
+the roster past 200 hand-made characters, a part-built look of your own added little and cost a screen, its code and its
+checks. Character Select has no **Yours** section, and nothing saves designs any more.
 
-A live preview idles, runs or dances, holding a weapon of the player's choice. Each
-change rebuilds it from the shared parts.
+A design saved before (a `c1-` ID in `cs.look`, in a saved setup or bot set, or sent by an older build in its hello)
+plays the default character, Cal (`DEFAULT_LOOK`), on the device and in every match: `validLookId` (sim/npc.ts) maps
+it, as it maps a retired look. The ID names no base character, and none of the modular presets a design could start
+from is pickable now. The menu keeps the mapped pick and drops the Designer's old `cs.customLooks` list and its kept
+pictures (`cs.portraits`). The accounts never stored designs (a profile has no look), so the hub has nothing to change.
+Crash reports still accept the `designer` screen from older builds (`CRASH_SCREENS`).
 
-How custom looks are stored:
-- **Saving:** looks are saved in the browser (up to 24) and listed under "Your characters" in the Character picker.
-- **ID format:** a look travels as a 22-character ID (`encodeLook`): `c1-`, the body, then bitmasks of parts, hair and colourways in catalogue order, then the two colours.
-- **Validation:** the server and every client decode the ID with the same `decodeLook`. Anything malformed or unwearable becomes the default look.
-- **Catalogue:** `CHARACTER_PARTS`, `HAIR_STYLES`, `COLORWAYS`, `SKIN_TONES` and `HAIR_COLORS` in `looks.ts`. A test keeps `CHARACTER_PARTS` equal to the shipped parts.
-
-Mixing rules (`lookProblems`; the designer shows them and won't save until they're met):
-- The athlete torso includes bare arms, so it doesn't take an `arms` part.
-- A look needs a top, trousers and feet, and arms unless the top is sportswear.
-- Low-rise trousers (female peasant) show the sportswear waistband above them.
-- Athlete feet are bare feet only (no shins), so they pair with athlete legs.
+Custom look IDs stay in the code as the client's own: an NPC skin's first-person arms are a part-built look
+(`armsLookFor`), and `encodeLook` / `decodeLook` with the part catalogue (`CHARACTER_PARTS`, `HAIR_STYLES`, `COLORWAYS`,
+`lookProblems`) draw them. Linktifa (`core.ranger`), kept drawable as the Designer's base body until then, went with it:
+`NPC_KEPT_LOOKS` is empty, a saved pick of Linktifa plays Honest Abe (`RETIRED_LOOKS`), and its measured hit shapes
+left `hitboxes.generated.ts`. Tests and tools that need a part-made body build one from `MODULAR_PARTS_MALE` (Linktifa's
+outfit parts); the grip checks that drew Linktifa draw Cal.
 
 ## Animation in game
 
@@ -1392,7 +1392,7 @@ character with every clip.
   downloads). For a community model, add it to the licence file's list
   (`assets-src/meshy-community-characters/License.txt`).
 - Run `pnpm content:check`, `pnpm typecheck`, `pnpm test:changed` and the
-  `characters` and `designer` e2e flows.
+  `characters` and `firstperson` e2e flows.
 - Capture its portrait (the **Capture portraits** workflow) once it's on `main`.
 
 ## Known gaps
@@ -1520,9 +1520,8 @@ each plays their own choice from their next life. It works with Character stats 
 
 ## Character sizes
 
-Every look is small, standard or large (`size` on the look; custom looks add
-`-s` / `-l` to their ID, and the Character Designer has a Size choice on the
-Body tab). Presets: Sprout (retired) was small, Bulwark is large, everyone else standard.
+Every look is small, standard or large (`size` on the look; a custom look ID
+adds `-s` / `-l`). Presets: Sprout (retired) was small, Bulwark is large, everyone else standard.
 
 | Size | Body (height, width, eyes) | Speed | Health |
 |---|---|---|---|
@@ -1536,7 +1535,7 @@ ceiling, a low window), and large ones are easier to hit and must crouch
 under openings a little over 2 m. A look's own `size` stat (Character stats) replaces its class's scale. Health pickups fill up to the size's
 health. The match setting **Character sizes: Matter / All equal**
 (`MatchRules.bodySizes`) makes everyone play and look standard.
-Character Select and the Character Designer draw each look at its size too (a small look at 1.40 m, a large one at
+Character Select draws each look at its size too (a small look at 1.40 m, a large one at
 2.12 m), as a match does.
 
 ## Portraits
@@ -1621,3 +1620,42 @@ Character Select, never a bot's, a random or a Roulette pick; a saved or typed i
 `tier: "experimental"`, and no NPC role (`NPC_ROLE_SPECS`) names them. Bringing one in is naming its look in a role or
 moving it to `use: "player"`.
 
+
+## Characters of 2026-11-25, second batch (owner)
+
+The owner's 16 Drive uploads of 2026-11-25's afternoon (rigged and animated Meshy downloads; Meshy, owned: "all are the
+owner's own Meshy creations"). The owner's words: "many are replacements for what we currently have … All replacements
+can be retired to the mapmaker for use in other creations such as scenarios … I'm trying to bring all my own characters
+into the game vs others creations while simultaneously creating character gaps for our story mode/challenges/unlocks."
+Built as the first batch was (11k triangles, or a rebake at 12k for one over the 1.8 MB budget; grips from the auto-fit;
+portraits captured). Names of new characters are the lead's (the owner can rename any).
+
+- **Replacements: new model, id, name and place kept** (the download's label in each manifest's notes): Cyber Lion
+  ("futuristic cyber lion 15k"), Croakley ("jungle commando croakley 15k": his new counterpart takes his spot), Elephant
+  Warrior ("bouncer elephant 15k"; renamed **Ellis Velvetrope**, owner 2026-11-25), Hyena Warrior ("bowling hyena 15k";
+  renamed **Rollo Splitworth**; the `hyena` NPC role wears it too), Greyfang
+  ("wolf ronin rigged"), Gorilla G ("circus strongman gorilla 15k"), Juice ("duck mech fps rigged"; renamed **Puddles
+  Ironbill**), Boglurker
+  ("boglurker game ready"; the `boglurker` NPC role wears it too). Sizes kept (Croakley small; Boglurker, the hyena and
+  Gorilla G large).
+- **Lion in a Suit became Kesi Tallgrass** (`core.lionsuit`, "safari scout lioness 15k"; owner: "one becomes lioness
+  safari"): the id and place kept, a new name, a her.
+- **New:** El Zarpazo (`core.whitetiger`, the white tiger luchador; Animalia); Tetl Stonewarden (`core.basaltguardian`,
+  the Basalt Guardian; Legends, large, bleeds stone; Mesoamerica's: docs/STORY_CAMPAIGN.md, "Characters by sector");
+  Rocco Tickwell (`core.crewk9`, the K9; Chrono Crew); and four for the Wars sector, all Soldiers & Spies
+  (Army): Capt. Elias Harrowgate (`core.unionofficer`) and Col. Josiah Beaumont (`core.rebelcommander`) for the Civil
+  War, Pfc. Danny Okerlund (`core.vietnamsoldier`) and Lien Vo (`core.vcscout`) for Vietnam.
+
+### Retired: removed; Figures use roster characters (owner, 2026-11-26)
+
+"I would prefer to use what we will have (over 200 characters)": every retired character is removed completely, the
+owner's own included (manifest, model, arms, portrait, lock, provenance, grip fit). `RETIRED_LOOKS` is a mapping only
+(an old id → a current roster look) so saved picks, setups and maps that name one still load (Linktifa's modular body
+stayed drawable as the Designer's base, `NPC_KEPT_LOOKS`, until the Designer went on 2026-11-25). The nine models replaced on 2026-11-25 were not kept, and
+Brutus Hornbeck (`meshy_rhinojuggernaut`, plays as Gorilla G) went on 2026-11-26.
+
+MapMaker's **Figure** (NPCs tab, "Figures"; map format v53, `FigureEntity` in map/schema.ts) places a roster character
+standing on the map in a pose (Standing, Cheering, Dancing, Crouching), empty-handed, at its body size, for scenarios
+and set dressing. The inspector's Character list is the roster by group. Looks only: no collision and no part in play
+(stand it on a block or a prop to make it solid). The game and MapMaker draw it with the same character library
+(`ScenarioVisuals.figure`). No NPC squad wears a chosen look.

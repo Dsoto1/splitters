@@ -193,6 +193,8 @@ export class EditorView {
     this.area = new BuildAreaVisuals(this.scene);
     this.scene.onBeforeRenderObservable.add(() => this.area.update(this.camera.position, viewDirection(this.yaw, this.pitch)));
     this.scenario = new ScenarioVisuals(this.scene, { editor: true });
+    // A figure's character arrives after the map is drawn: show it (MapMaker draws only when something changes).
+    this.scenario.onFigureReady = () => this.gate.wake();
 
     const flat = (name: string, hex: string, alpha = 1, wire = false) => {
       const m = new StandardMaterial(name, this.scene);
@@ -1409,6 +1411,7 @@ function selectionSize(e: MapEntity): number {
     case 'sector':
       return 4;
     case 'hostage':
+    case 'figure':
       return 1.2;
     case 'flag':
       return 2.6;

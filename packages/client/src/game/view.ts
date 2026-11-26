@@ -704,6 +704,8 @@ export class GameView {
     this.scenario = new ScenarioVisuals(this.scene);
     this.zoneVisuals = new ZoneVisuals(this.scene);
     this.characters = new CharacterLibrary(this.scene, { atlas: true });
+    // Figures (map entities: a character standing in a pose) come from the same library as everyone else.
+    this.scenario.characters = this.characters;
     // Characters are built one a frame: the host adding a dozen bots, or a full match's first wave, built them all
     // in one long frame, a stall on every computer. A build (10-25 ms) runs just after the frame, outside its measured
     // spans (the "outside" time of a recording's hitches), so a slow frame no longer lets two or three through at once

@@ -8,6 +8,11 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **Dodge-step and combat roll.** Press **V** (a controller: **B while aiming**; touch: **Dodge**) for a quick step the way you're moving (back, with no direction), or, crouched or sprinting, a combat roll of about 3 m with the gun lowered. Both use stamina (a step less than a slide, a roll more) and share the slide's short cooldown; the first-person view never flips. The second trigger's spare V key moved to Dodge (middle mouse stays; Options → Controls can give it another).
+- **New models for Cyber Lion, Croakley, Greyfang, Gorilla G and Boglurker** (same names and places); **Lion in a Suit is now Kesi Tallgrass**, a safari lioness; Elephant Warrior is now **Ellis Velvetrope** (a bouncer), Hyena Warrior **Rollo Splitworth** (a bowler) and Juice **Puddles Ironbill** (a duck in a mech), each with a new model.
+- **Seven new characters:** El Zarpazo (a white tiger luchador), Tetl Stonewarden (a basalt temple guardian, Legends), Rocco Tickwell (a K9, joins the Chrono Crew), and for the history wars Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund and Lien Vo (Soldiers).
+- **Chrono Crew:** Blix Orrin moves to Outer Space; the crew's 14th place shows as Unknown until the story unlocks it.
+- **MapMaker: Figures.** NPCs → Figures places a character standing in a pose (standing, cheering, dancing, crouching) for scenarios and set dressing: anyone on the roster.
+- **Brutus Hornbeck is removed** (a saved pick plays Gorilla G).
 - **St. Jasper's dorm bunks sit snug in the room's corner**, the footlocker at the open end (the Bunk Bed with Footlocker piece, every dorm room).
 - **Switching weapon cancels a throw you're aiming**: the grenade or mine stays in your pocket, nothing leaves your hand.
 - **The Blaster X-42's bolts leave a mark**: a small orange energy splash and a scorch where they land, a hit puff on bodies, their own crackle; nails, arrows, darts, discs, shards, the healing slime and the freeze blast land with an impact of their own too (calm with Reduce flashing on).
@@ -17,6 +22,7 @@ made only on a commit that passed CI on a check branch.
 - **Sharper characters up close.** Character colour maps are twice as detailed (2048 px) for 177 of the 209 characters, and every character's maps now stay compressed on the graphics card, so all of them together take about 40% less video memory than before; the game downloads a little more per character.
 - **Story** heads the main menu (Story · Quick Play · Local · Online): the Operations Database, three placeholder sectors on today's maps, played one map at a time against bots and saved on your device and your account; a sector's later maps can't be hosted until you've won them in Story (joining is fine).
 - **Seamless tunnels and a Stair Tunnel.** Brick, stone and concrete now run on across tunnel pieces (vaults and arches, pieces turned east-west or back to front, curves and junctions) with no jump or stone band at the joints, and every tunnel family has a Stair Tunnel in MapMaker: down a level over two cells, with landings and room to stand on every step.
+- **The Character Designer is gone**, with over 200 characters to choose from: no Design new, Customise or Yours on Character Select. A design you saved plays Cal, the default character; pick anyone you like. The menu's news line is current again.
 - **Pip Quickfoot is a her**: a woman's body and arms.
 - **A new model for Elder Tomo** (same name, size and place in Character Select).
 - **Bottomless Mag's pickup is a small stack of rounds under a glowing ∞** (it read like a pair of scissors).

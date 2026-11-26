@@ -156,6 +156,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // Arched doorway) and a free block's `doorways` (map/blockDoorways.ts). v51 data is valid as is. The bump is for the
   // other direction: an older build refuses a v52 map outright instead of dropping a block's doorways without a word.
   [51, (doc) => ({ ...doc })],
+  // v52 -> v53: a new entity kind, `figure` (a character standing on the map in a pose; owner, 2026-11-25: characters
+  // retired to MapMaker). v52 data is valid as is. The bump is for the other direction: an older build refuses a v53 map
+  // outright instead of failing on an entity it has never heard of.
+  [52, (doc) => ({ ...doc })],
 ]);
 
 /** v50 -> v51: the `categories` pairs become one `category` (none when there were none). */

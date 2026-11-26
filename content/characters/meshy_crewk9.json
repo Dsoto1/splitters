@@ -1,0 +1,34 @@
+{
+  "id": "meshy_crewk9",
+  "kind": "character",
+  "use": "player",
+  "order": 219,
+  "name": "Rocco Tickwell",
+  "look": "core.crewk9",
+  "group": "space",
+  "collection": "chrono",
+  "blood": "red",
+  "nameTheme": "dog",
+  "bio": "Sniffs out a time leak a century away. Very good boy, every era.",
+  "body": "male",
+  "notes": "The Chrono Crew's K9 (owner, 2026-11-25: \"the K9 is new chrono member\"): 14 on the crew. Drive intake of 2026-11-25 (\"crew k9 anthro rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
+    "url": null,
+    "file": "^Meshy_AI_crew_k9_anthro_rigged_\\d+_animated_mixamo_All_animation\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 11000,
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
