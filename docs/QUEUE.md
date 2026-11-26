@@ -56,7 +56,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/practice-range-1126` · dec1d708 · 45834298500 (the Practice range and the Practice Target, map format v55; touches e2e/run.mjs and flowMap.mjs flow lists, test_coverage.json, frontEnd.ts Quick Play foot, main.ts playRange)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -149,7 +148,6 @@ Everything else keeps its place below these.
 - S · B · **Breakable walls: a mark in MapMaker's 3D view** showing which walls break (owner, 2026-11-26, "go recs"; today only the inspector shows it).
 - M · B · **The same simple pickers for the Rules tab and MapMaker's other settings** (owner, 2026-11-19, "5a" on the pickers' questions): plain tick-boxes, switches, steppers and chips instead of long dropdowns and "More…" bins, as in Bot types and Teams. After the pickers land.
 - M · B · **The pause menu's Host tab is Match Setup itself** (owner, 2026-11-19, "a": "if we are able to restart the entire thing from the pause we should just have all the other options too. ex. Spawn on Teammates is not present"): the Host tab uses Match Setup's own panels (Match setup, Bots & AI, Rules, Presets), so every setting there appears in the pause menu and new ones arrive by themselves; each is marked *now* (bots, skill, switches like Ranks & badges) or *at restart* (teams, score, time, spawn rules); one button says what it will do ("Apply now" / "Restart with these"); kick/ban and the rotation stay. Right after the Rules-tab pickers (shared parts).
-- M · B · **Practice range** (**built 2026-11-26 on `wip/practice-range-1126`, green, Ready to land**; owner, 2026-11-19, "A" on the lead's list of gaps): a quiet map to try every weapon, the scopes (after the sights pass) and slide and peek, with targets at marked distances; built in MapMaker. With the weapons intake and sights pass.
 - M · B · **Retire the Kenney Nature Kit** (owner, 2026-11-19, "2a"; after the nature swap): generated replacements first for its last props in use (Stone Campfire 7, Stone Pillar 6, Hanging Moss 4, Log Stack 3: the Log Stack stays until a generated woodpile exists, "1a"), swapped in MapMaker, then the kit leaves the build with load-time aliases like the Quaternius nature pack (`map/natureAliases.ts`).
 - **Found in the notes, 2026-11-18** (owner "1": all added; "dont adjust queue priority too much", so these come after the lane B order above, ★ ones first):
   - M · B · ★ **Impact effects by material**: wood splinters, stone dust, metal sparks, each with its sound set (GUNPLAY_GAPS G1; with the surface-types data and the Sonniss sounds).
@@ -194,6 +192,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-26 · B · Practice range: Quick Play → Practice range, 58 weapons on racks, steel targets 10–200 m with a hit readout, Practice Target and Steel Plate in MapMaker; map format v55 (green dec1d708, run 45834298500; landed alone, only docs since). Owner questions open: where it's reached from, the Space Shield, moving targets, readout distance.
 - **2026-11-26** train check/train-20261126-121603 (e6aad95, run 45818091351), landed by the splitters lead: bullet holes on breakable props (`wip/prop-holes-1126`): holes ride the prop and go when it breaks; drums and barrels holed on their curve; wood, metal and stone looks; 24 per prop, 40 props at once.
 - 2026-11-26 · B · Chat with mute: Enter all / I team text chat relayed by the host (rate limits, word filter), 12 quick-chat lines (B + keys, pad wheel, touch Chat button), a chat log that fades, Mute chat and host Kick on a player's card (train `check/train-20261126-114720`, green 6a41f416; checked green at ae7440f4, run 45805866880), landed by lane B's splitters22. Owner questions open: the five new quick lines, the team key, the filter in private games, a host's mute for everyone.
 - 2026-11-26 · A · The weapon holds still off: pistol holds for Gorilla G, Ellis Velvetrope, Boogie Tuskworth, El Zarpazo, Napsworth; Puddles Ironbill's long guns; new `fixes.holdPistol` (train `check/train-20261126-045712`, green fc8707c7, run 45758439037; lane A's train, landed by lane B's splitters22 after the lock went 3 h stale). Owner question left open: a one-handed pistol hold for bodies like Puddles Ironbill?
