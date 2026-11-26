@@ -121,7 +121,8 @@ Everything else keeps its place below these.
     - **The Stranger** (the 11-26 upload) joins Horrors & Creatures; **Warrior of the Skies** removed completely (owner, 2026-11-26).
     - The **female viking** upload joins Legends beside the vikings; **Patchwork Polly** becomes an unlockable variant of Teddy (owner, 2026-11-26).
     - **Genghis Khan** (the 11-26 upload) joins Legends, under a made-up name like the other famous people (owner, 2026-11-26).
-  - **Coming:** a space mercenary with variants; replacement models for **Barnaby Bruin**, **Octobuddy** and **Pink Mantis** (each keeps its id and place) (owner, 2026-11-26).
+    - **The space mercenary** (uploaded 2026-11-26 evening): one new character with variants like Ziggy's; base `merc_base_prison`, variants space hunter, gladiator, smuggler, wasteland; in the space row, a made-up name.
+  - **Coming:** replacement models for **Barnaby Bruin**, **Octobuddy** and **Pink Mantis** (each keeps its id and place) (owner, 2026-11-26).
   - **The Hollow Pilgrim's glide stays as a movement style** (keep the code): the coming **snowman** glides like the baseball robot and the Hollow Pilgrim did.
   - **Vanguard's replacement is the dark hooded character** (the owner's upload; she): Vanguard's id and place kept, a fitting name if Vanguard's no longer fits; she **floats** like the baseball robot (legs still, no walk cycle). **The ghost character** (upload) floats the same way. Same glide/float style as the snowman.
   - **T-Treefitty gets a replacement model plus several variants** (owner, 2026-11-26; uploads coming or on the Drive): id and place kept; the variants work like the chimp's (one character, a variant picker; variants unlocked by challenges later, shipped unlocked until the unlock rules exist).
