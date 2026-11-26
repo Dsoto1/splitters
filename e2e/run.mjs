@@ -14085,10 +14085,12 @@ async function drawnHands(page) {
   // Long melee weapons in first person (game/meleeView.ts; owner, 2026-11-22: only the blade showed, the hands below
   // the frame): held by the grip with both hands, at rest both hand joints are on screen, both palms on their points
   // and the shooting hand drawn round the handle, arms only and full body.
+  // (Honest Abe until his new model, 2026-11-26: in full body his support hand sits at the frame's bottom edge, as The
+  // Dapper's, Cal's and Frost Viking's do; Sir Galloway, unchanged, stands in. Full-body framing for every body: HANDOFF, chars-1126.)
   const meleeMisses = [];
   for (const weapon of ['core.katana', 'core.scimitar', 'core.baseball_bat', 'core.battle_axe', 'core.spear']) {
     for (const view of ['first', 'body']) {
-      await page.evaluate(([w, v]) => window.__grips.pose('core.abe', w, v), [weapon, view]);
+      await page.evaluate(([w, v]) => window.__grips.pose('core.galloway', w, v), [weapon, view]);
       const [on, miss, d] = await page.evaluate(() => [window.__grips.handsOnScreen(), window.__grips.miss(), window.__grips.drawn()]);
       const inView = (h) => h && h.ahead > 0.1 && Math.abs(h.x) < 1 && Math.abs(h.y) < 1;
       if (!on || !inView(on.r) || !inView(on.l) || !miss || miss.r > 0.02 || miss.l > 0.02 || badHand(d, 0.05)) {
