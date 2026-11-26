@@ -2377,7 +2377,7 @@ export class FrontEnd {
     });
     return [
       el('h4', { class: 'pane-title', textContent: 'Saved setups' }),
-      el('div', { class: 'saved-items', id: 'setup-saved-items' }, ...(rows.length ? rows : [el('p', { class: 'setup-hint', textContent: 'None yet. Save preset (below) keeps this setup by name: its map, mode, teams and rules.' })])),
+      el('div', { class: 'saved-items', id: 'setup-saved-items' }, ...(rows.length ? rows : [el('p', { class: 'setup-hint', textContent: this.pause ? 'None yet: Play → Match setup saves them (Save preset).' : 'None yet. Save preset (below) keeps this setup by name: its map, mode, teams and rules.' })])),
     ];
   }
 
