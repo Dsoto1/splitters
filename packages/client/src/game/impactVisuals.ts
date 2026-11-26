@@ -9,7 +9,9 @@ import { DynamicTexture } from '@babylonjs/core/Materials/Textures/dynamicTextur
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { Matrix, Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import type { EffectsWorld, SurfaceTypeId, Vec3, WorldBox } from '@tiletrigger/shared';
+import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { MeshPool } from './meshPool.ts';
+import { HoleBook, PROP_HOLE_CAP, PROP_HOLED_MAX, holeLook } from './propHoles.ts';
 
 /** How fast drawn rounds fly (m/s): slow enough to see leave the muzzle and land, fast enough to feel like bullets. */
 export const BULLET_SPEED = 260;
@@ -118,6 +120,11 @@ export class ImpactVisuals {
   private readonly holeMatrices = new Float32Array(MAX_HOLES * 16);
   /** Holes on blocks the scenario drives, by the block's body (holeOn); they go with the block's meshes. */
   private readonly blockHoles = new WeakMap<Mesh, { mesh: Mesh; buf: Float32Array; count: number; next: number }>();
+  /** Holes on breakable props (propHoles.ts): which props have how many (a cap each, a budget of props), and their meshes. */
+  private readonly propBook = new HoleBook<TransformNode>(PROP_HOLE_CAP, PROP_HOLED_MAX);
+  private readonly propHoleMeshes = new Map<TransformNode, { mesh: Mesh; buf: Float32Array }>();
+  /** The hole decal tinted for a surface (wood, metal, stone), made once each. */
+  private readonly holeLookMats = new Map<string, StandardMaterial>();
 
   constructor(
     private readonly scene: Scene,
@@ -392,6 +399,82 @@ export class ImpactVisuals {
     return this.blockHoles.get(body)?.count ?? 0;
   }
 
+  /**
+   * A bullet hole on a breakable prop (propHoles.ts): `point` and `normal` in the prop root's own frame. Thin instances
+   * of the wall decal under the root, so they ride the prop and go when it breaks (its root switched off); up to
+   * PROP_HOLE_CAP a prop (the oldest reused) and PROP_HOLED_MAX props holed at once (the one holed longest ago gives
+   * its holes up). The decal is tinted and sized by the prop's surface where it is known (holeLook).
+   */
+  holeOnProp(node: TransformNode, point: Vec3, normal: Vec3, size: number, surface: SurfaceTypeId | null): void {
+    const { slot, count, evicted } = this.propBook.add(node);
+    if (evicted) this.dropPropHoles(evicted);
+    let h = this.propHoleMeshes.get(node);
+    if (h && h.mesh.isDisposed()) {
+      this.propHoleMeshes.delete(node);
+      h = undefined;
+    }
+    const look = holeLook(surface);
+    if (!h) {
+      const mesh = CreateDisc(`${node.name}_holes`, { radius: 0.05, tessellation: 10 }, this.scene);
+      mesh.material = this.holeMaterial(look.key, look.tint);
+      mesh.isPickable = false;
+      mesh.parent = node;
+      // Holes on a prop cast no shadow and stay out of the merged shadow proxies (a broken prop's would stay).
+      mesh.metadata = { castsNoShadow: true, breakable: true };
+      const buf = new Float32Array(PROP_HOLE_CAP * 16);
+      mesh.thinInstanceSetBuffer('matrix', buf, 16, false);
+      h = { mesh, buf };
+      this.propHoleMeshes.set(node, h);
+    }
+    // The root is scaled with the prop: the hole is drawn its own size, a touch off the face, whatever the prop's scale.
+    const k = 1 / (Math.abs(node.scaling.x) || 1);
+    const n = new Vector3(normal.x, normal.y, normal.z).normalize();
+    holeMatrix(point, n, size * look.scale * k, 0.01 * k).copyToArray(h.buf, slot * 16);
+    h.mesh.thinInstanceCount = count;
+    h.mesh.thinInstanceBufferUpdated('matrix');
+  }
+
+  /** A breakable prop broke or came back: no holes on it (its decal mesh goes, so the budget is free). */
+  clearPropHoles(node: TransformNode): void {
+    if (this.propBook.clear(node)) this.dropPropHoles(node);
+  }
+
+  /** Bullet holes on a breakable prop (for tests). */
+  propHolesOn(node: TransformNode): number {
+    return this.propBook.count(node);
+  }
+
+  /** Breakable props with holes now (for tests). */
+  get holedProps(): number {
+    return this.propBook.size;
+  }
+
+  private dropPropHoles(node: TransformNode): void {
+    const h = this.propHoleMeshes.get(node);
+    if (!h) return;
+    this.propHoleMeshes.delete(node);
+    if (!h.mesh.isDisposed()) h.mesh.dispose(false, false);
+  }
+
+  /** The wall decal's material, tinted for a surface look (shared by every prop of that look). */
+  private holeMaterial(key: string, tint: readonly [number, number, number]): StandardMaterial {
+    const base = this.holes.material as StandardMaterial;
+    if (key === 'plain') return base;
+    let m = this.holeLookMats.get(key);
+    if (!m) {
+      // The same decal texture (a clone would copy the texture too, as a blank canvas), tinted.
+      m = new StandardMaterial(`bulletHoleMat_${key}`, this.scene);
+      m.diffuseTexture = base.diffuseTexture;
+      m.useAlphaFromDiffuseTexture = true;
+      m.specularColor = base.specularColor.clone();
+      m.zOffset = base.zOffset;
+      m.backFaceCulling = false;
+      m.diffuseColor = new Color3(tint[0], tint[1], tint[2]);
+      this.holeLookMats.set(key, m);
+    }
+    return m;
+  }
+
   /** A spray of hot sparks from a point (a badly damaged vehicle shorting out, a crash). */
   sparkBurst(at: Vec3, count: number, speed = 3): void {
     for (let i = 0; i < count && this.sparks.length < MAX_SPARKS; i++) {
@@ -528,17 +611,20 @@ export class ImpactVisuals {
     this.puffPool.dispose();
     this.streak.dispose();
     this.spark.dispose();
+    for (const node of [...this.propHoleMeshes.keys()]) this.dropPropHoles(node);
+    for (const m of this.holeLookMats.values()) m.dispose();
+    this.holeLookMats.clear();
     this.holes.dispose();
   }
 }
 
 /** A hole's matrix: the disc facing out along `n` (unit), turned at random, a touch off the face. */
-function holeMatrix(point: Vec3, n: Vector3, size: number): Matrix {
+function holeMatrix(point: Vec3, n: Vector3, size: number, lift = 0.01): Matrix {
   const q = new Quaternion();
   Quaternion.FromUnitVectorsToRef(new Vector3(0, 0, -1), n, q);
   const twist = Quaternion.RotationAxis(new Vector3(0, 0, 1), Math.random() * Math.PI * 2);
   const s = size * (0.8 + Math.random() * 0.4);
-  return Matrix.Compose(new Vector3(s, s, s), q.multiply(twist), new Vector3(point.x + n.x * 0.01, point.y + n.y * 0.01, point.z + n.z * 0.01));
+  return Matrix.Compose(new Vector3(s, s, s), q.multiply(twist), new Vector3(point.x + n.x * lift, point.y + n.y * lift, point.z + n.z * lift));
 }
 
 /** A dark, ragged hole with a lighter chipped rim (drawn once, in code). */
