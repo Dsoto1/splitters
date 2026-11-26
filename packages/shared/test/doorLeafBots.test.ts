@@ -32,10 +32,10 @@ beforeAll(() => Promise.all([initPhysics(), initNavigation()]));
 
 const ROTATIONS = [0, 1, 2, 3] as Rotation[];
 
-function mapOf(rotation: Rotation, roomDoors: 'wide' | 'slim'): MapDocument {
+function mapOf(rotation: Rotation, roomDoors: 'wide' | 'slim', piece = 'setpiece.dorm_bay'): MapDocument {
   // (No terrain under the floor: a capsule walking along one of its grid lines snags on the seam: slimDoors.test.)
   const map = makeMap([{ id: 'home', tile: 'core.room', x: -20, y: -20, z: 0, rotation: 0 }], [[-160, 0, -160]]);
-  const r = loadMap(serializeMap({ ...map, setPieces: [{ id: 'bay0', piece: 'setpiece.dorm_bay', x: 0, y: 0, z: 0, rotation, mirror: false, pack: 'collegiate', overrides: { options: { roomDoors } } }], terrain: null }));
+  const r = loadMap(serializeMap({ ...map, setPieces: [{ id: 'bay0', piece, x: 0, y: 0, z: 0, rotation, mirror: false, pack: 'collegiate', ...(piece === 'setpiece.dorm_bay' ? { overrides: { options: { roomDoors } } } : {}) }], terrain: null }));
   if (!r.ok) throw new Error(r.issues.filter((i) => i.severity === 'error').map((i) => i.message).join('; '));
   return r.map;
 }
@@ -137,5 +137,28 @@ describe('bots and propped-open doors', () => {
         nav.destroy();
       }
     }
+  });
+
+  it("a classroom's front aisle: open where the leaf stands on the far jamb; shut to bodies and routes where it stands on the aisle's side", { timeout: 60_000 }, () => {
+    // The Classroom Bay's doors (x 2.3), leaves on the +x jamb: the north room's (x 3.2) beside the back corner, the
+    // south room's (turned half round: x 1.4, z 0.86 to 2.7) across the aisle along the hall wall, 0.66 m short of the
+    // desks (a body is 0.8 m across). The leaf was off the navmesh, so routes ran through it and bots stuck there.
+    const map = mapOf(0, 'wide', 'setpiece.classroom_bay');
+    const geo = buildMapGeometry(map);
+    const physics = new PhysicsWorld(geo, mapTerrainMesh(map));
+    const nav = NavWorld.build(geo, mapTerrainMesh(map), navLinks(map.entities, physics));
+    const end = (a: Vec3, b: Vec3) => {
+      const path = nav.findPath(a, b);
+      return path ? Math.hypot(path.at(-1)!.x - b.x, path.at(-1)!.z - b.z) : Infinity;
+    };
+    expect(end({ x: 2.4, y: 0, z: 10.6 }, { x: -2.2, y: 0, z: 6.6 }), 'north: back to the front aisle').toBeLessThan(1.2);
+    expect(end({ x: 2.4, y: 0, z: -2.6 }, { x: -2.2, y: 0, z: 1.4 }), 'south: no route past the leaf').toBeGreaterThan(2);
+    // A body walking west along the aisle's desk side stops at the leaf's end.
+    const collider = physics.createPlayerCollider();
+    let s: MoveState = { pos: { x: 2.4, y: 0.02, z: 0.5 }, velY: 0, grounded: true };
+    for (let t = 0; t < TICK_RATE * 4; t++) s = stepMovement(physics, collider, s, { ...emptyInput(t), forward: 1, yaw: -Math.PI / 2 });
+    expect(s.pos.x, 'south: stopped at the leaf').toBeGreaterThan(0.9);
+    physics.removeCollider(collider);
+    nav.destroy();
   });
 });
