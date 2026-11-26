@@ -17125,7 +17125,7 @@ async function hostcontrolsFlow(browser) {
     await page.setViewportSize({ width: 960, height: 540 });
   }
   const tabs = await page.evaluate(() => {
-    const tag = (id, box) => document.getElementById(id)?.closest(box)?.querySelector('.when-tag')?.textContent;
+    const tag = (id, box) => document.getElementById(id)?.closest(box)?.querySelector('.when-tag.live, .when-tag.restart')?.textContent;
     return { tabs: [...document.querySelectorAll('#pause-setup .setup-tab span')].map((t) => t.textContent), once: document.querySelectorAll('#arcade-skill').length, squad: !!document.getElementById('arcade-squad'), streaks: !!document.getElementById('arcade-streaks'), skill: tag('arcade-skill', '.row'), score: tag('arcade-score', '.field'), spawn: tag('arcade-squad', '.row'), end: !!document.getElementById('hc-end'), rotation: !!document.getElementById('hc-rot-next') };
   });
   check(tabs.tabs.join() === 'Match setup,Bots & AI,Rules,Presets' && tabs.once === 1 && tabs.squad && tabs.streaks && tabs.skill === 'Now' && tabs.score === '⟳ At restart' && tabs.spawn === '⟳ At restart' && tabs.end && tabs.rotation, `the Host tab has Match Setup's tabs and every setting, marked Now or At restart, with the match's own cards (${JSON.stringify(tabs)})`);
