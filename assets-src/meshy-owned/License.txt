@@ -192,7 +192,7 @@ Provenance: Meshy, owned.
   - "TS2 Wizard Rigged" (2026-11-26)  -> character meshy_ts2wizard (look Astor Moonvale)
   - "Ancient Ankh Mummy" (2026-11-25)  -> character meshy_ankhmummy (look Nebka the Unwrapped)
   - "rigged female pirate" (2026-11-26)  -> character meshy_femalepirate (look Scarlet Brinewell)
-  - "afro pi rigged" (2026-11-26)  -> character meshy_afropi (look Clyde Groovestone)
+  - "afro pi rigged" (2026-11-26)  -> character meshy_afropi (look Cleo Groovestone)
   - "radish man rigged" (2026-11-26)  -> character meshy_radishman (look Rad Rootley)
   - "Rigged Wind Up Robot" (2026-11-25)  -> character meshy_windupbot (look Tik Winderly)
   - "Rigged Brick Man" (2026-11-25)  -> character meshy_brickman (look Bricksby)

@@ -45,7 +45,7 @@ into its data):
   (`core.washington`), The Rough Rider (`core.roosevelt`) and Prof. Quanta (`core.einstein`), with Honest Abe.
 - **The Sunken Dynasty, 2026-11-26:** Nebka the Unwrapped (`core.ankhmummy`).
 - **Urban Breakdown, 2026-11-26:** Marla Quarterly (`core.officeworker`), Dez Kickley (`core.hoodieguy`), Linda
-  Refundsworth (`core.karen`), Hiro Overtime (`core.salaryman`), Clyde Groovestone (`core.afropi`) and Rourke.
+  Refundsworth (`core.karen`), Hiro Overtime (`core.salaryman`), Cleo Groovestone (`core.afropi`) and Rourke.
 - **The Playhouse, 2026-11-26:** its own Character Select section (docs/CHARACTERS.md): Tik Winderly, Bricksby, Clangers,
   Jolly Springjack, Patchwork Polly and Rad Rootley.
 - **The chimp, Ziggy Bananas (`core.chimp`), 2026-11-26:** ten variant looks, one per era, each unlocked by a challenge

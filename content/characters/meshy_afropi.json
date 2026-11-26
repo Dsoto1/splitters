@@ -3,13 +3,13 @@
   "kind": "character",
   "use": "player",
   "order": 233,
-  "name": "Clyde Groovestone",
+  "name": "Cleo Groovestone",
   "look": "core.afropi",
   "group": "folk",
   "blood": "red",
   "nameTheme": "gangster",
-  "bio": "Private eye, public afro. Solves the case before the record ends.",
-  "body": "male",
+  "bio": "Private eye, public afro. Cracks the case before the record ends.",
+  "body": "female",
   "notes": "New 2026-11-26 (owner's 11-26 batch). Drive intake of 2026-11-26 (\"afro pi rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
     "license": "owned",
@@ -23,7 +23,8 @@
     "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,

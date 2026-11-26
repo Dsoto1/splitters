@@ -8,7 +8,7 @@
   "group": "folk",
   "blood": "red",
   "nameTheme": "barbarian",
-  "bio": "Leads from the front, shield first. The arena learned his name the hard way.",
+  "bio": "Red beret, leopard sash, and the last word in every argument.",
   "body": "male",
   "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Shaka Mpande's model until 2026-11-26 (a Meshy Community CC0 model \"a black tribal man wi\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"shaka mpande rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
@@ -23,7 +23,8 @@
     "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,
