@@ -1027,6 +1027,13 @@ html.touch .char-spin .spin-label kbd { display: none; }
 #pause button.danger, #pause .confirm button.danger { background: transparent; border-color: rgba(231, 76, 60, 0.6); color: #ff8a7a; }
 #pause button.danger:hover { background: rgba(231, 76, 60, 0.16); }
 #pause #host-info, #pause .host-controls { max-width: none; width: auto; }
+/* The Host tab as Match Setup (FrontEnd.pauseSetup): its tabs and the fit on one line, the panes in the page's flow. */
+#pause .pause-setup { overflow: visible; margin: 0 0 12px; background: rgba(0, 0, 0, 0.22); border: 1px solid var(--line); border-radius: 4px; }
+#pause .pause-setup-bar { display: flex; align-items: center; gap: 8px; padding-right: 12px; }
+#pause .pause-setup-bar .setup-tabs { flex: 1; padding-bottom: 8px; }
+#pause .pause-setup .setup-body { overflow: visible; }
+#pause .pause-setup h4 { margin: 0; }
+#pause .pause-setup .when-tag { margin-left: 6px; }
 /*
  * Cards: Settings' groups and the Host tab's sections (Online, teams and bots, rules, match, rotation,
  * people: hostPanel.ts) sit in balanced columns, as many as fit (one on narrow windows), each card whole,

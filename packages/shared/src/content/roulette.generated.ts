@@ -43,6 +43,7 @@ export const ROULETTE_DATA = {
     'core.rattles': 'core.flak',
     'core.bonejack': 'core.sawed_off',
     'core.ashwalker': 'core.spear',
+    'core.shaka': 'core.rifle',
     'core.thornweaver': 'core.spear',
     'core.croakley': 'core.goo_gun',
     'core.snikkit': 'core.nailgun',

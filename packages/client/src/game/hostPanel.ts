@@ -1,8 +1,9 @@
-import { WEATHER_PRESETS, isWeatherChoice, BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
+import { rulesFromSetup, WEATHER_PRESETS, isWeatherChoice, BREAKTHROUGH_POOL_MAX, DEFAULT_TEAMS, botSetLabel, getWeaponSet, HOST_BOT_SKILLS, HOST_BOT_STYLES, MODE_LABELS, ROTATION_MAX, SCORE_LIMIT_MAX, TICK_RATE, isTeamMode, isTwoTeamMode, limitsScale, mapPickPlayers, matchingPreset, peopleAndBots, scoreStep, setupFit, sizePresets, suggestedLimits, teamsLabel, type HostCommand, type HostRulesPatch, type HostState, type MapDocument, type MatchSetup, type RotationEntry, type RotationPreset, type RotationState } from '@tiletrigger/shared';
 import { botTypePicker, choice, el, infoTip, field, fitChip, fitList, limitsText, segmented, settingRow, sizeChips, stepper, teamEditor, weaponSetSelect, weatherSelect } from '../frontend/setupControls.ts';
 import { botManager } from '../frontend/botManager.ts';
 import { BOT_SET_PRESETS } from '../playlists.ts';
 import { releasePointer } from '../fullscreen.ts';
+import { changeWords, restartPatch, setupChanges } from './hostSetup.ts';
 
 const SKILL_LABELS: Record<HostState['skill'], string> = { easy: 'Easy', normal: 'Normal', hard: 'Hard' };
 const STYLE_LABELS: Record<HostState['style'], string> = { mixed: 'Mixed', arena: 'Arena', tactical: 'Tactical' };
@@ -22,6 +23,25 @@ export interface HostPanelHooks {
    * (MapMaker TEST, a playlist, or a server too old to have one). Changes go through `command`.
    */
   rotation?: { add(): void; presets: readonly RotationPreset[] };
+  /**
+   * Match Setup's own tabs for this match (offline, Host game; owner, 2026-11-19, "a"): every setting there, in place
+   * of the panel's own. Absent: the panel's own (a dedicated server's admin: the server takes only host commands).
+   */
+  setup?: {
+    /** The match as it plays now, as a setup (null: not yet known). */
+    base(): MatchSetup | null;
+    /** Match Setup's tabs drawing `setup`, each change to `onChange` (null: Match Setup doesn't list this map). */
+    panel(setup: MatchSetup, onChange: (s: MatchSetup) => void): SetupView | null;
+    /** A new match on this map with `setup` (everyone comes along): what a change Restart can't take needs. */
+    restart(setup: MatchSetup): void;
+  };
+}
+
+/** Match Setup's tabs in the Host tab (FrontEnd.pauseSetup). */
+export interface SetupView {
+  root: HTMLElement;
+  set(s: MatchSetup): void;
+  close(): void;
 }
 
 /** What the host has changed and not yet applied: the players and bots (live), and the rules. */
@@ -92,6 +112,13 @@ export class HostPanel {
    * this one carries on). The host's choice stays while the panel does.
    */
   private when: 'now' | 'next' = 'now';
+  /** Match Setup's tabs (hooks.setup): the view, the match as a setup, the host's edit of it; `none`: not for this map. */
+  private view: SetupView | null = null;
+  private noView = false;
+  private base: MatchSetup | null = null;
+  private baseKey = '';
+  private edit: MatchSetup | null = null;
+  private readonly grid = el('div', { class: 'hc-grid' });
 
   constructor(
     private readonly hooks: HostPanelHooks,
@@ -160,6 +187,7 @@ export class HostPanel {
   remove(): void {
     if (this.lead && this.lead.node.parentElement !== this.lead.home) this.lead.home.prepend(this.lead.node);
     this.lead = null;
+    this.view?.close();
     this.root.remove();
     this.foot.remove();
   }
@@ -178,6 +206,179 @@ export class HostPanel {
   setStatus(text: string, error = false): void {
     this.status.textContent = text;
     this.status.classList.toggle('error', error);
+  }
+
+  /** The match's own cards: Match (change map, restart, end) and the people (kick, ban), and the panel's summary line. */
+  private matchCards(s: HostState, now: number[]): { summary: HTMLElement; matchCard: HTMLElement; people: HTMLElement[] } {
+    const pending = s.pending && Object.keys(s.pending).length ? s.pending : null;
+    // ---- the match: Change map (routine), then what undoes everyone's match (restart, end), set apart in red
+    const routine: HTMLElement[] = [];
+    if (this.hooks.changeMap) {
+      const mapBtn = el('button', { id: 'hc-map', textContent: 'Change map…', title: 'Pick another map (and mode): the match starts over there with the same players and bots' });
+      mapBtn.addEventListener('click', () => this.hooks.changeMap?.());
+      routine.push(mapBtn);
+    }
+    const restart = el('button', { id: 'hc-restart', class: 'danger', textContent: 'Restart match', title: pending ? 'Start over with the rules saved for the next match (asks for a second click)' : 'Start the match over on this map (asks for a second click)' });
+    confirmTwice(restart, 'Click again to restart', () => this.hooks.command({ c: 'restart' }));
+    const end = el('button', { id: 'hc-end', class: 'danger', textContent: 'End match', title: 'End the match now and show the scoreboard (asks for a second click)' });
+    confirmTwice(end, 'Click again to end', () => this.hooks.command({ c: 'end' }));
+    const matchCard = card('Match', null, ...(routine.length ? [el('div', { class: 'hc-actions' }, ...routine)] : []), el('div', { class: 'hc-actions hc-danger' }, restart, end));
+    // People: kick (they may come back) or ban (kept out: their account when signed in, else weakly by browser).
+    const people = this.people.length
+      ? [
+          card(
+            'Players',
+            null,
+            ...this.people.map((p) => {
+              const kick = el('button', { id: `hc-kick-${p.slot}`, textContent: 'Kick', title: `Remove ${p.name} (they may rejoin)` });
+              kick.addEventListener('click', () => this.hooks.command({ c: 'kick', slot: p.slot }));
+              const ban = el('button', { id: `hc-ban-${p.slot}`, class: 'danger', textContent: 'Ban', title: `Remove ${p.name} and keep them out` });
+              ban.addEventListener('click', () => window.confirm(`Ban ${p.name} from this ${this.title === 'Admin' ? 'server' : 'game'}?`) && this.hooks.command({ c: 'ban', slot: p.slot }));
+              return el('div', { class: 'hc-row hc-person' }, el('span', { textContent: p.name }), kick, ban);
+            }),
+          ),
+        ]
+      : [];
+    const label = s.teams ? (now.every((n) => n === now[0]) ? teamsLabel(s.teams, now[0]!) : now.join('v')) : `${s.fill} players`;
+    const summary = el('summary', {}, `Match (${this.title.toLowerCase()})`, el('small', { textContent: ` ${label} · ${MODE_LABELS[s.mode]} · ${SKILL_LABELS[s.skill]} bots` }));
+    return { summary, matchCard, people };
+  }
+
+  /**
+   * The Host tab as Match Setup (hooks.setup): Match Setup's tabs for the match, then the match's own cards (the
+   * Online block, Match, the rotation, the people). False where it can't be (the match not known yet, a map Match
+   * Setup doesn't list): the panel's own settings then. The tabs stay on the page across redraws (scroll, focus);
+   * a change in the match itself (Apply, a restart) starts the edit again from it.
+   */
+  private drawSetup(s: HostState): boolean {
+    const hook = this.hooks.setup;
+    const base = hook && !this.noView ? hook.base() : null;
+    if (!hook || !base) return false;
+    const key = JSON.stringify(base);
+    if (key !== this.baseKey) {
+      this.baseKey = key;
+      this.base = base;
+      this.edit = structuredClone(base);
+      this.view?.set(this.edit);
+    }
+    if (!this.view) {
+      this.view = hook.panel(this.edit!, (x) => {
+        this.edit = x;
+        if (this.state) this.drawSetupFoot(this.state);
+      });
+      if (!this.view) {
+        this.noView = true;
+        return false;
+      }
+    }
+    const { summary, matchCard, people } = this.matchCards(s, this.sizesOf(s));
+    const open = this.root.open;
+    if (this.root.children[1] !== this.view.root) this.root.replaceChildren(summary, this.view.root, this.grid);
+    else this.root.firstElementChild!.replaceWith(summary);
+    this.grid.replaceChildren(...(this.lead ? [this.lead.node] : []), matchCard, ...this.rotationSection(s), ...people);
+    this.root.open = open;
+    this.drawSetupFoot(s);
+    return true;
+  }
+
+  /** What the edit changes now, in the foot's words ("+2 bots", "hard bots", "mixed pickups on"). */
+  private livePhrases(s: HostState, b: MatchSetup, e: MatchSetup, keys: readonly (keyof MatchSetup)[]): string[] {
+    const out: string[] = [];
+    const total = (x: MatchSetup) => (x.teams ? x.teams.reduce((a, n) => a + n, 0) : x.bots + 1);
+    const delta = total(e) - total(b);
+    if (delta) out.push(`${delta > 0 ? '+' : '−'}${Math.abs(delta)} bot${Math.abs(delta) === 1 ? '' : 's'}`);
+    else if (keys.includes('teams')) out.push(e.teams!.join('v'));
+    if (keys.includes('skill')) out.push(`${SKILL_LABELS[e.skill].toLowerCase()} bots`);
+    if (keys.includes('botStyle')) out.push(`${STYLE_LABELS[e.botStyle ?? 'mixed'].toLowerCase()} style`);
+    if (keys.includes('botCast')) out.push('bot characters');
+    if (keys.includes('botSet')) out.push('your bots');
+    if (keys.includes('mixPickups')) out.push(`mixed pickups ${e.mixPickups ? 'on' : 'off'}`);
+    if (keys.includes('dropWeapons')) out.push(`weapon drops ${e.dropWeapons === false ? 'off' : 'on'}`);
+    if (keys.includes('weaponSet')) out.push(`${e.weaponSet ? getWeaponSet(e.weaponSet).name : `the map's (${getWeaponSet(s.mapWeaponSet).name})`} weapons`);
+    return out;
+  }
+
+  /** The restart's changes in words: score and time with what they'll be, a switch on or off ("score 16", "spawn on teammates off"). */
+  private restartPhrases(b: MatchSetup, e: MatchSetup, keys: readonly (keyof MatchSetup)[]): string[] {
+    const rest = keys.filter((k) => !['scoreLimit', 'scoreAuto', 'minutes', 'timeAuto'].includes(k));
+    // A switch: its value, or (back to its standard, unset) the other way from before.
+    const on = (k: keyof MatchSetup): string => {
+      const v = typeof e[k] === 'boolean' ? e[k] : typeof b[k] === 'boolean' ? !b[k] : null;
+      return v === null ? '' : v ? ' on' : ' off';
+    };
+    return [
+      ...(keys.includes('scoreLimit') || keys.includes('scoreAuto') ? [`score ${e.scoreLimit}`] : []),
+      ...(keys.includes('minutes') || keys.includes('timeAuto') ? [`time ${e.minutes ? `${e.minutes} min` : '∞'}`] : []),
+      ...new Set(rest.map((k) => `${changeWords([k])[0]}${on(k)}`)),
+    ];
+  }
+
+  /**
+   * The foot with Match Setup's tabs: Resume, then one button saying what it will do: Apply now (every change
+   * applies live) or Restart with these (one needs a new match: it starts over with all of them); a line saying what.
+   */
+  private drawSetupFoot(s: HostState): void {
+    const b = this.base;
+    const e = this.edit;
+    if (!b || !e) return;
+    const c = setupChanges(b, e);
+    const restart = c.restart.length > 0;
+    const any = restart || c.live.length > 0;
+    const resume = el('button', { type: 'button', class: 'primary', id: 'hc-resume', textContent: 'Resume', title: 'Back to the game (Esc)' });
+    resume.addEventListener('click', () => this.hooks.resume?.());
+    const apply = el('button', { type: 'button', class: `hc-apply${restart ? ' restart' : ''}`, id: 'hc-apply', textContent: restart ? 'Restart with these' : 'Apply now', disabled: !any });
+    apply.title = !any ? 'Change something above first' : restart ? 'Start the match over with these settings (scores reset): some only change with a new match' : 'Apply these changes now (bots join or leave one at a time)';
+    apply.addEventListener('click', () => {
+      if (!any) return;
+      // A restart undoes everyone's match: with other people in it, the first press asks.
+      if (restart && this.people.length && !this.armed) {
+        apply.textContent = 'Click again to restart';
+        apply.classList.add('armed');
+        this.armed = setTimeout(() => {
+          this.armed = null;
+          if (apply.isConnected && this.state) this.drawSetupFoot(this.state);
+        }, 3000);
+        return;
+      }
+      if (this.armed) clearTimeout(this.armed);
+      this.armed = null;
+      this.applySetup(s, e, c);
+    });
+    const live = this.livePhrases(s, b, e, c.live);
+    const text = !any ? 'No changes' : restart ? `${[...live, ...this.restartPhrases(b, e, c.restart)].join(', ')}: the match starts over with them` : live.join(', ');
+    const what = el('span', { class: 'hc-changes', id: 'hc-changes', textContent: text, title: text });
+    this.foot.replaceChildren(resume, apply, what, this.status);
+  }
+
+  /**
+   * Apply the edit: what changes live through the host's commands (bots, the live rules); a restart that the match
+   * takes itself (score, time, respawn, friendly fire, weather) as its rules then Restart; any other, a new match
+   * with the whole setup (hooks.setup.restart).
+   */
+  private applySetup(s: HostState, e: MatchSetup, c: ReturnType<typeof setupChanges>): void {
+    const map = this.map && this.map.metadata.id === s.map ? this.map : null;
+    if (!map) return;
+    if (c.restart.length && !c.patched) return this.hooks.setup?.restart(e);
+    const next = rulesFromSetup(e, map, s.max);
+    const cmd: Extract<HostCommand, { c: 'bots' }> = { c: 'bots' };
+    if (c.live.includes('bots') || c.live.includes('teams')) {
+      const sizes = next.rules.teamSizes;
+      if (s.teams && sizes) {
+        if (sizes.every((n) => n === sizes[0])) cmd.teamSize = sizes[0]!;
+        else cmd.teamSizes = [...sizes];
+      } else cmd.fill = next.fill;
+    }
+    if (c.live.includes('skill')) cmd.skill = e.skill;
+    if (c.live.includes('botStyle')) cmd.style = e.botStyle ?? 'mixed';
+    if (c.live.includes('botCast')) cmd.cast = e.botCast ?? null;
+    if (c.live.includes('botSet')) cmd.botSet = e.botSet ?? null;
+    if (Object.keys(cmd).length > 1) this.hooks.command(cmd);
+    const rules: HostRulesPatch = c.restart.length ? restartPatch(next.rules) : {};
+    if (c.live.includes('mixPickups')) rules.mixPickups = !!e.mixPickups;
+    if (c.live.includes('dropWeapons')) rules.dropWeapons = e.dropWeapons !== false;
+    if (c.live.includes('weaponSet')) rules.weaponSet = e.weaponSet ?? null;
+    if (Object.keys(rules).length) this.hooks.command({ c: 'rules', rules });
+    if (c.restart.length) this.hooks.command({ c: 'restart' });
   }
 
   /**
@@ -365,6 +566,7 @@ export class HostPanel {
       this.foot.replaceChildren();
       return;
     }
+    if (this.drawSetup(s)) return;
     const redraw = () => this.render();
     const now = this.sizesOf(s);
     const map = this.map && this.map.metadata.id === s.map ? this.map : null;
@@ -505,36 +707,7 @@ export class HostPanel {
     const pending = s.pending && Object.keys(s.pending).length ? s.pending : null;
     if (pending) ruleRows.push(el('p', { class: 'hc-pending', id: 'hc-pending', textContent: `Saved for the next match: ${rulePhrases(pending).join(', ')}. They play once this match ends (or on Restart match, or a map change).` }));
 
-    // ---- the match: Change map (routine), then what undoes everyone's match (restart, end), set apart in red
-    const routine: HTMLElement[] = [];
-    if (this.hooks.changeMap) {
-      const mapBtn = el('button', { id: 'hc-map', textContent: 'Change map…', title: 'Pick another map (and mode): the match starts over there with the same players and bots' });
-      mapBtn.addEventListener('click', () => this.hooks.changeMap?.());
-      routine.push(mapBtn);
-    }
-    const restart = el('button', { id: 'hc-restart', class: 'danger', textContent: 'Restart match', title: pending ? 'Start over with the rules saved for the next match (asks for a second click)' : 'Start the match over on this map (asks for a second click)' });
-    confirmTwice(restart, 'Click again to restart', () => this.hooks.command({ c: 'restart' }));
-    const end = el('button', { id: 'hc-end', class: 'danger', textContent: 'End match', title: 'End the match now and show the scoreboard (asks for a second click)' });
-    confirmTwice(end, 'Click again to end', () => this.hooks.command({ c: 'end' }));
-    const matchCard = card('Match', null, ...(routine.length ? [el('div', { class: 'hc-actions' }, ...routine)] : []), el('div', { class: 'hc-actions hc-danger' }, restart, end));
-    // People: kick (they may come back) or ban (kept out: their account when signed in, else weakly by browser).
-    const people = this.people.length
-      ? [
-          card(
-            'Players',
-            null,
-            ...this.people.map((p) => {
-              const kick = el('button', { id: `hc-kick-${p.slot}`, textContent: 'Kick', title: `Remove ${p.name} (they may rejoin)` });
-              kick.addEventListener('click', () => this.hooks.command({ c: 'kick', slot: p.slot }));
-              const ban = el('button', { id: `hc-ban-${p.slot}`, class: 'danger', textContent: 'Ban', title: `Remove ${p.name} and keep them out` });
-              ban.addEventListener('click', () => window.confirm(`Ban ${p.name} from this ${this.title === 'Admin' ? 'server' : 'game'}?`) && this.hooks.command({ c: 'ban', slot: p.slot }));
-              return el('div', { class: 'hc-row hc-person' }, el('span', { textContent: p.name }), kick, ban);
-            }),
-          ),
-        ]
-      : [];
-    const label = s.teams ? (now.every((n) => n === now[0]) ? teamsLabel(s.teams, now[0]!) : now.join('v')) : `${s.fill} players`;
-    const summary = el('summary', {}, `Match (${this.title.toLowerCase()})`, el('small', { textContent: ` ${label} · ${MODE_LABELS[s.mode]} · ${SKILL_LABELS[s.skill]} bots` }));
+    const { summary, matchCard, people } = this.matchCards(s, now);
     const teamsTitle = s.teams ? (isTwoTeamMode(s.mode) ? 'Teams' : 'Players & teams') : coop ? 'Squad' : 'Players';
     // Cards in balanced columns (style.css: as many as fit, each card whole): Online, what wins, who plays,
     // the bots, the rules, the match buttons, the rotation, the people.

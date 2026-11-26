@@ -306,7 +306,9 @@ describe('role behaviour in a match', () => {
     if (!r.ok) throw new Error('map');
     const rules = rulesForMode(r.map, 'core.tdm');
     const match = new Match(r.map, { ...rules, scoreLimit: 0, timeLimitSeconds: 0, teamSizes: [16, 16], startingWeapons: [...rules.startingWeapons, 'core.sniper'] }, 4);
-    for (let i = 0; i < 32; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % 4 === 1 ? 1 : (i % 2) * 3]!, BOT_DIFFICULTIES.normal);
+    // Every bot in one look (Cal, the default): the roster's bodies and hit shapes change with each character round,
+    // and a 32-bot match is chaotic enough that a new body anywhere in the rotation reshuffles who gets a sniper post.
+    for (let i = 0; i < 32; i++) match.addBot(`b${i}`, CORE_BOT_PROFILES[i % 4 === 1 ? 1 : (i % 2) * 3]!, BOT_DIFFICULTIES.normal, false, { look: 'core.dale' });
     const director = (match as unknown as { director: BotDirector }).director;
     const snipers = match.combatants().filter((c) => director.planFor(c.slot).role === 'sniper');
     expect(snipers.length).toBeGreaterThan(0);

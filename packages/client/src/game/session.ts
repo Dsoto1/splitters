@@ -140,6 +140,8 @@ import {
   environmentShapes,
   mountDamageState,
   rulesForTravel,
+  rulesFromSetup,
+  type MatchSetup,
   mapPlayerCaps,
   travelNotice,
   withPending,
@@ -202,7 +204,8 @@ import { PerfOverlay, loadPerfOverlay, savePerfOverlay } from './perfOverlay.ts'
 import { loadHitboxOverlay } from './hitboxPrefs.ts';
 import { PerfRecorder, captureTrace, downloadJson, fileStamp, type RecorderContext } from './perfRecorder.ts';
 import { NetTransport } from './netTransport.ts';
-import { HostPanel } from './hostPanel.ts';
+import { HostPanel, type SetupView } from './hostPanel.ts';
+import { LIVE_IDS, setupOfMatch } from './hostSetup.ts';
 import { loadSignaling, type HostLink } from './transport.ts';
 import { loadRelay, relayParams } from './relay.ts';
 import { ROTATION_PRESETS, inSuite } from '../playlists.ts';
@@ -334,6 +337,11 @@ export interface SessionOptions {
   greeting?: string;
   /** The map picker for the host's Change map (pause menu → Match): the front end's map cards. `title`: its heading and button. */
   mapPicker?: (o: { mode: GameMode; current: string; suiteOnly: boolean; title?: string; onPick: (map: MapDocument, mode: GameMode) => void; onClose: () => void }) => HTMLElement;
+  /**
+   * Match Setup's own tabs for the Host tab (the front end's FrontEnd.pauseSetup): `live` the controls that apply now.
+   * Null where Match Setup doesn't list the map.
+   */
+  setupPanel?: (o: { setup: MatchSetup; map: MapDocument; max: number; live: readonly string[]; onChange: (s: MatchSetup) => void }) => SetupView | null;
   /**
    * The map rotation this browser keeps across map changes (offline and Host game; main.ts holds it):
    * after each match the next of its maps instead of a replay. `load` fetches a map of our suite;
@@ -1818,6 +1826,8 @@ export class GameSession {
         resume: () => ($('resume') as HTMLButtonElement).click(),
         ...((local ? this.opts.hostable : net) && this.opts.mapPicker ? { changeMap: () => this.openMapPicker() } : {}),
         ...(net ? { login: (token: string) => net.sendCommand({ t: 'admin', token }) } : {}),
+        // Match Setup's own tabs: offline and Host game (not MapMaker's Test, a playlist or a server's admin).
+        ...(local && this.opts.hostable && !this.opts.chain && this.opts.setupPanel ? { setup: this.setupHook(this.opts.setupPanel) } : {}),
         // The map rotation: kept by this browser (not in a playlist, whose wins move it on), or by the server (when it has one).
         ...(this.opts.mapPicker && ((local && this.opts.hostable && this.opts.rotation && !this.opts.chain) || net) ? { rotation: { add: () => this.openMapPicker('rotation'), presets: ROTATION_PRESETS } } : {}),
       },
@@ -1834,6 +1844,32 @@ export class GameSession {
     const tab = document.querySelector<HTMLElement>('#pause .pause-sec[data-sec="host"]');
     if (local && online && tab) panel.setLead(online, tab);
     return panel;
+  }
+
+  /** The Host tab's Match Setup: the match as a setup, its tabs, and a new match with an edited one (as Change map does, on this map). */
+  private setupHook(panel: NonNullable<SessionOptions['setupPanel']>): NonNullable<ConstructorParameters<typeof HostPanel>[0]['setup']> {
+    const live = () => {
+      const t = this.opts.transport;
+      return t instanceof LocalTransport ? (t.liveRules() ?? this.rules) : this.rules;
+    };
+    return {
+      base: () => {
+        const r = live();
+        const s = this.hostState;
+        return r && s && this.map && this.map.metadata.id === s.map ? setupOfMatch(r, s, s.map) : null;
+      },
+      panel: (setup, onChange) => (this.map && this.hostState ? panel({ setup, map: this.map, max: this.hostState.max, live: LIVE_IDS, onChange }) : null),
+      restart: (setup) => {
+        const t = this.opts.transport;
+        const map = this.map;
+        const s = this.hostState;
+        if (!(t instanceof LocalTransport) || !map || !s || this.travel) return;
+        const next = rulesFromSetup(setup, map, s.max);
+        t.notice('Restarting the match with new settings…');
+        this.travel = { host: { map, rules: next.rules, fill: next.fill, skill: setup.skill, botSet: setup.botSet ?? null } };
+        window.setTimeout(() => this.exit('travel'), 1200);
+      },
+    };
   }
 
   /** This browser's rotation, if it keeps one here (offline, Host game; not a playlist or MapMaker TEST). */

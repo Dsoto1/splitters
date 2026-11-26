@@ -10,7 +10,7 @@
  */
 import type { InsigniaId, RankGroup } from './insignia.ts';
 import { RANK_KILL_POINTS } from '../net/career.ts';
-import { RANK_TITLES, nameWithoutRank, rankGroup, rankInsignia } from './insignia.ts';
+import { RANK_TITLES, nameWithoutTitle, rankGroup, rankInsignia } from './insignia.ts';
 
 /** Rank points at which each step starts (step 1 at 0). A good match is 100-250, so a session climbs a few steps. */
 export const RANK_STEP_POINTS = [0, 100, 250, 500, 900, 1500, 2400, 3600, 5000] as const;
@@ -35,9 +35,12 @@ export function rankStep(points: number, floor = 1): number {
 /** A step's title in a group ("Sgt.", "Ghast"). */
 export const rankTitle = (group: RankGroup, step: number): string => RANK_TITLES[group][Math.max(1, Math.min(9, step)) - 1]!;
 
-/** What a ranked player is shown as: their title before their name (an Army soldier's own rank replaced). */
+/**
+ * What a ranked player is shown as: their title before their name, a title the name starts with replaced
+ * (NAME_TITLES: "Det. Drake Montego" as "Scout Drake Montego", an Army soldier's own rank as their rank now).
+ */
 export function rankedName(name: string, group: RankGroup, step: number): string {
-  return `${rankTitle(group, step)} ${group === 'army' ? nameWithoutRank(name, true) : name}`;
+  return `${rankTitle(group, step)} ${nameWithoutTitle(name)}`;
 }
 
 /** A player's rank as shown: their group, step, title, badge and name. */
