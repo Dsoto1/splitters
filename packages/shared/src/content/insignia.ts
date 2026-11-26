@@ -81,7 +81,7 @@ export const NAME_TITLES: readonly string[] = /* @__PURE__ */ (() => {
     'Flt. Lt.', 'Customs Agent', 'Old King', 'Sea Dog',
     'Det.', 'Detective', 'Dr.', 'Doctor', 'Prof.', 'Professor', 'Insp.', 'Inspector', 'Officer', 'Agent', 'Inquisitor',
     'Sarge', 'Sergeant', 'Corporal', 'Private', 'Lieutenant', 'Major', 'Colonel', 'General', 'Admiral', 'Commander', 'Captain', 'Cap\'n', 'Commodore', 'Marshal', 'Sheriff', 'Deputy', 'Judge',
-    'Emperor', 'Empress', 'King', 'Queen', 'Prince', 'Princess', 'Duke', 'Duchess', 'Count', 'Countess', 'Baron', 'Baroness', 'Earl', 'Lord', 'Lady', 'Sir', 'Dame', 'Ser', 'Squire', 'Knight',
+    'Emperor', 'Empress', 'Imperator', 'King', 'Queen', 'Prince', 'Princess', 'Duke', 'Duchess', 'Count', 'Countess', 'Baron', 'Baroness', 'Earl', 'Lord', 'Lady', 'Sir', 'Dame', 'Ser', 'Squire', 'Knight',
     'Emir', 'Sultan', 'Kaiser', 'Tsar', 'Pharaoh', 'Chief', 'Elder', 'Brother', 'Sister', 'Father', 'Mother', 'Abbot', 'Friar',
     'Madame', 'Mme.', 'Mister', 'Mr.', 'Mrs.', 'Ms.', 'Miss', 'Coach', 'Chef',
   ];

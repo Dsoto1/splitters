@@ -217,13 +217,17 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   // in their time order.
   ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'], // famous real people, by period
   ['core.aztecjaguar', 'core.eagleclan', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
-  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.ts2wizard', 'core.ansel'], // Medieval and the Crusades (owner, 2026-11-26: Astor Moonvale and Brother Silencio with them)
+  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.paladin', 'core.ts2wizard', 'core.ansel'], // Medieval and the Crusades (owner, 2026-11-26: Astor Moonvale and Brother Silencio with them)
   ['core.abyssalhunter', 'core.celestialknight', 'core.magmajuggernaut', 'core.mystic'], // owner, 2026-11-26: Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine together
+  ['core.frostvalkyrie', 'core.vikingf', 'core.vikingm'], // vikings (owner, 2026-11-26): Sigrun Frostmane, Astrid Stormbrand, Ulf Ravenshield
+  ['core.khan', 'core.imperialguard', 'core.mei'], // the Asian dynasties (owner, 2026-11-26): the Khan, Imperial Guard, Lancer Mei
+  ['core.gladiatrix', 'core.caesar'], // Rome's arena (owner, 2026-11-26): Valeria Sandstorm, Imperator Laurel
   ['core.dustycolt', 'core.outlawranger', 'core.snakeshaman'], // the Wild West (owner, 2026-11-26: Silas Coilwhisper with them)
   ['core.shaka', 'core.zuluwarrior', 'core.kato'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
   ['core.unionofficer', 'core.rebelcommander'], // the Civil War
   ['core.paratrooper', 'core.germanpara'], // WW2
   ['core.vietnamsoldier', 'core.vcscout'], // Vietnam
+  ['core.usgrunt', 'core.repguard'], // Desert Storm: Pvt. Hank Dowling, Sgt. Samir Haddad
   ['core.toysoldier', 'core.greenarmy'], // toy soldiers
 ];
 
