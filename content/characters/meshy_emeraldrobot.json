@@ -10,29 +10,25 @@
   "nameTheme": "robot",
   "bio": "Polished to a mirror shine. Every scratch is a story, and it remembers every one of them.",
   "body": "male",
-  "notes": "Drive, 2026-11-02 (\"Emerald Robot\", rigged; the owner's download \"Meshy_AI_Emerald_Robot_All_Animations.glb\", put on disk by the lead with the owner's approval). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its Walking and Running clips are not used). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), recorded like WWII Infantry and the clip set's sources (content/clip-sets/shooter.json). It moves with the shared clip set. Normal map 512 px (the default): at 1024 px the body was over the 1.8 MB file budget. A slim teal-and-grey robot with a boxy camera head, standing arms down in the download. Hands: blocky clamps turned on their joints (measured, mitten); grip audit 0 as built. Name a placeholder.",
+  "notes": "New model 2026-11-26 (owner: Emerald Robot's replacement; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"Emerald Robot\") no longer ships. Drive intake of 2026-11-26 (\"Chappie Scout Robot Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Emerald Robot"
-    },
-    "date": "2026-11-02",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Emerald_Robot_All_Animations(-\\d+)?\\.glb$"
+    "file": "^Meshy_AI_Chappie_Scout_Robot_Rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.5,
-    "roughness": 0.4
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
+    "normalSize": 1024,
     "lod": 0.25,
-    "feet": true,
-    "grip": {
-      "curlR": 1.2
-    }
+    "feet": true
   }
 }

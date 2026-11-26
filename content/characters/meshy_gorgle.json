@@ -10,28 +10,25 @@
   "nameTheme": "spooky",
   "bio": "Crawled out of a lab vent. Nobody wants to know which lab.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged by Meshy's rigging API (source.modelUrl \"upload\", the download sent as a data URI). Queue note: creature.",
+  "notes": "New model 2026-11-26 (owner: \"gorgle gets a replacement\"; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"A horrifying mutated creature\") no longer ships. Drive intake of 2026-11-26 (\"creature goblin rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/0196daa9-6371-746f-b8ec-eb93815c0c4c",
-    "community": {
-      "model": "A horrifying mutated creature"
-    },
-    "modelUrl": "upload",
-    "file": "^Meshy_AI__A_horrifying_mutated_\\d+_(image-to-3d-)?texture\\.glb$",
-    "meshy": {
-      "rig": "01a18a06-642d-75c0-91e0-b190e85219e8"
-    }
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_creature_goblin_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.05,
+    "metallic": 0.1,
     "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
-    "feet": true,
-    "hands": { "r": { "curl": 0.8 } }
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }

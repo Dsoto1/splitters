@@ -10,175 +10,26 @@
   "nameTheme": "soldier",
   "bio": "Buried with full honours in three different wars. Keeps marching back for a fourth.",
   "body": "male",
-  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks: found on the mesh (landmarks.mjs), then the knees set by hand (the straps hanging between the legs pulled a found knee inward and back, crossing the legs). The download is 1.1M triangles whose careful cut stopped at 22k, so it is built with `surface: rebake`. A grinning skeleton in a helmet and camouflage fatigues, webbing and bone hands. 2026-11-03: finish.maps (the download's glossy metal-roughness map) and the rebake at 17k triangles with headShare 0.24 (at 14k his helmet was faceted and his skull blotchy; the download layout keeps 25k at any budget, over the 20k limit).",
+  "variant": "Desert Storm",
+  "notes": "New model 2026-11-26 (owner: the skeletons get replacements, one character with variants; its period's upload; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"Undead Soldier\") no longer ships. Drive intake of 2026-11-26 (\"desert storm skeleton rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Undead Soldier"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Undead_Soldier_\\d+_texture\\.glb$"
+    "file": "^Meshy_AI_desert_storm_skeleton_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 1,
-    "roughness": 1,
-    "maps": true
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 17000,
+    "triangles": 12000,
     "surface": "rebake",
-    "headShare": 0.24,
-    "feet": true,
-    "hands": {
-      "r": {
-        "curl": 0.9
-      }
-    }
-  },
-  "landmarks": {
-    "spine": [
-      [
-        0,
-        0.487,
-        -0.002
-      ],
-      [
-        0,
-        0.559,
-        -0.012
-      ],
-      [
-        0,
-        0.633,
-        -0.005
-      ],
-      [
-        0,
-        0.714,
-        0.008
-      ],
-      [
-        0,
-        0.866,
-        0.004
-      ],
-      [
-        0,
-        0.906,
-        -0.004
-      ],
-      [
-        0,
-        1,
-        -0.004
-      ]
-    ],
-    "L": [
-      [
-        0.025,
-        0.821,
-        -0.025
-      ],
-      [
-        0.081,
-        0.811,
-        -0.024
-      ],
-      [
-        0.248,
-        0.8,
-        -0.035
-      ],
-      [
-        0.385,
-        0.806,
-        -0.033
-      ],
-      [
-        0.485,
-        0.801,
-        -0.035
-      ],
-      [
-        0.063,
-        0.457,
-        -0.003
-      ],
-      [
-        0.098,
-        0.262,
-        -0.015
-      ],
-      [
-        0.117,
-        0.065,
-        -0.018
-      ],
-      [
-        0.133,
-        0.02,
-        0.061
-      ],
-      [
-        0.133,
-        0.015,
-        0.103
-      ]
-    ],
-    "R": [
-      [
-        -0.025,
-        0.821,
-        -0.025
-      ],
-      [
-        -0.082,
-        0.811,
-        -0.018
-      ],
-      [
-        -0.248,
-        0.801,
-        -0.027
-      ],
-      [
-        -0.389,
-        0.808,
-        -0.032
-      ],
-      [
-        -0.489,
-        0.801,
-        -0.033
-      ],
-      [
-        -0.063,
-        0.457,
-        -0.003
-      ],
-      [
-        -0.098,
-        0.262,
-        -0.015
-      ],
-      [
-        -0.107,
-        0.065,
-        -0.021
-      ],
-      [
-        -0.118,
-        0.02,
-        0.061
-      ],
-      [
-        -0.118,
-        0.015,
-        0.102
-      ]
-    ]
-  },
-  "variant": "Desert Storm"
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
 }

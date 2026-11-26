@@ -5,30 +5,28 @@
   "order": 109,
   "name": "Imperial Guard",
   "look": "core.imperialguard",
-  "group": "folk",
+  "group": "legends",
   "blood": "red",
   "nameTheme": "knight",
   "bio": "Stood guard for a dynasty. Standing guard for you now.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-05 (\"A fit ancient Chinese male soldier from\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). A fit ancient Chinese soldier. Not Kenji or Lancer Mei (compared side by side). 165k triangles: rebaked. Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
+  "notes": "New model 2026-11-26 (owner: his new dynasty model, in Legends with the Asian dynasty; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"A fit ancient Chinese male soldier from\") no longer ships. Drive intake of 2026-11-26 (\"rigged male dynasty\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
-    "community": {
-      "model": "A fit ancient Chinese male soldier from"
-    },
-    "date": "2026-11-05",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_A_fit_ancient_Chinese_male_soldier_from_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_rigged_male_dynasty_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.05,
-    "roughness": 0.7
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 14000,
+    "triangles": 12000,
     "surface": "rebake",
     "headShare": 0.16,
+    "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true

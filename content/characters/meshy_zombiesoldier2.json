@@ -10,26 +10,27 @@
   "nameTheme": "soldier",
   "bio": "Lost his face somewhere in the trenches and kept the grin. Still salutes anyone with a higher rank, or a pulse.",
   "body": "male",
-  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB in a T-pose, not rigged (no skin), so it is rigged here from T-pose landmarks found on the mesh (landmarks.mjs). A zombie soldier with a bare skull (dark metal in the download; only its colour is kept here) and red eyes, a plate carrier and torn trousers. 2026-11-03: finish.maps: the download's skull is black chrome from its metal-roughness map (built matte white before). A variant of Dog Tag Doyle since 2026-11-26 (owner: one character with variant looks, like the chimp's; this id kept, so a saved pick plays this look on Dog Tag Doyle's picker).",
+  "variant": "WW2",
+  "variantOf": "core.undeadsoldier",
+  "notes": "New model 2026-11-26 (owner: the skeletons get replacements, one character with variants; its period's upload; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"Zombie Soldier\") no longer ships. Drive intake of 2026-11-26 (\"ww2 soldier skeleton rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Zombie Soldier"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Zombie_Soldier_1101160817_texture\\.glb$"
+    "file": "^Meshy_AI_ww2_soldier_skeleton_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 1,
-    "roughness": 1,
-    "maps": true
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
-  },
-  "variant": "WW2",
-  "variantOf": "core.undeadsoldier"
+  }
 }

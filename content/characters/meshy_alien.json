@@ -9,60 +9,27 @@
   "blood": "green",
   "nameTheme": "alien",
   "bio": "Came a very long way to study human culture. Stayed for the deathmatches.",
-  "size": "small",
   "body": "male",
-  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. Re-uploaded by the owner as an unrigged textured GLB (2026-11-01, same model) and rebuilt from it with the T-pose landmarks below, the head and hands keeping their share of the cut.",
+  "size": "small",
+  "notes": "New model 2026-11-26 (owner: the classic grey alien is The Visitor's replacement; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"T Pose Alien\") no longer ships. Drive intake of 2026-11-26 (\"Classic Grey Alien Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-07-21",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "community": {
-      "model": "T Pose Alien"
-    },
-    "file": "^Meshy_AI_T_Pose_Alien_\\d+_texture\\.(glb|fbx)$"
+    "file": "^Meshy_AI_Classic_Grey_Alien_Rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.55
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 10000,
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
-  },
-  "landmarks": {
-    "spine": [
-      [0, 0.5, -0.025],
-      [0, 0.565, -0.02],
-      [0, 0.63, -0.015],
-      [0, 0.7, -0.02],
-      [0, 0.775, -0.025],
-      [0, 0.815, -0.02],
-      [0, 1, 0]
-    ],
-    "L": [
-      [0.025, 0.755, -0.02],
-      [0.075, 0.75, -0.045],
-      [0.2, 0.733, -0.062],
-      [0.33, 0.722, -0.055],
-      [0.41, 0.71, -0.06],
-      [0.04, 0.48, -0.02],
-      [0.042, 0.3, -0.03],
-      [0.048, 0.08, -0.054],
-      [0.055, 0.02, 0],
-      [0.06, 0.01, 0.05]
-    ],
-    "R": [
-      [-0.025, 0.755, -0.02],
-      [-0.075, 0.75, -0.045],
-      [-0.2, 0.733, -0.062],
-      [-0.33, 0.722, -0.055],
-      [-0.41, 0.71, -0.06],
-      [-0.04, 0.48, -0.02],
-      [-0.042, 0.3, -0.03],
-      [-0.048, 0.08, -0.054],
-      [-0.055, 0.02, 0],
-      [-0.06, 0.01, 0.05]
-    ]
   }
 }

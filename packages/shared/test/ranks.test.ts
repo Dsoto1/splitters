@@ -4,7 +4,7 @@ import { CHARACTER_GROUPS, NAME_TITLES, nameWithoutTitle, CORE_LOOKS, INSIGNIA_C
 
 describe('ranks for everyone (Options → Ranks & badges)', () => {
   it('gives every group nine titles, first and last as the owner agreed', () => {
-    const ends: Record<string, [string, string]> = { agency: ['Asset', 'Spymaster'], horror: ['Ghoul', 'Overlord'], space: ['Cadet', 'Admiral'], machines: ['Unit', 'Prime'], legends: ['Squire', 'Emperor'], animals: ['Pup', 'Apex'], folk: ['Rookie', 'Icon'], toys: ['Wind-Up', 'Toy of the Year'], army: ['Pvt.', 'Col.'] };
+    const ends: Record<string, [string, string]> = { agency: ['Asset', 'Spymaster'], horror: ['Ghoul', 'Overlord'], space: ['Cadet', 'Admiral'], machines: ['Unit', 'Prime'], legends: ['Squire', 'Emperor'], animals: ['Pup', 'Apex'], folk: ['Rookie', 'Icon'], toys: ['Wind-Up', 'Toy of the Year'], pirates: ['Deckhand', 'Pirate King'], holiday: ['Guest', 'Holiday Legend'], army: ['Pvt.', 'Col.'] };
     for (const g of RANK_GROUPS) {
       const t = RANK_TITLES[g];
       expect(t).toHaveLength(9);
@@ -25,7 +25,7 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
   });
 
   it('has a badge for every group and step, inside its box', () => {
-    expect(INSIGNIA_IDS).toHaveLength(9 * 9);
+    expect(INSIGNIA_IDS).toHaveLength(9 * 11);
     for (const g of RANK_GROUPS) for (let n = 1; n <= 9; n++) expect(INSIGNIA_IDS).toContain(rankInsignia(g, n));
     expect(rankInsignia('army', 4)).toBe('sgt');
     expect(rankInsignia('horror', 0)).toBe('horror1');

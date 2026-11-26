@@ -155,9 +155,13 @@ export const CHARACTER_GROUPS = [
   { id: 'folk', label: 'Everyday Folk' },
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
+  // Owner, 2026-11-26 (evening): the pirates get a row of their own.
+  { id: 'pirates', label: 'Pirates' },
   { id: 'animals', label: 'Animalia' },
   // Owner, 2026-11-26: the toys get a row of their own (the Playhouse sector's local allies come from it).
   { id: 'toys', label: 'Toys' },
+  // Owner, 2026-11-26 (evening): a Holiday row (Santa, the witch, the elf, the snowman, Uncle Sam, the scarecrow, the turkey pilgrim, the Easter bunny).
+  { id: 'holiday', label: 'Holiday' },
   { id: 'machines', label: 'Machines' },
   { id: 'horror', label: 'Horrors & Creatures' },
 ] as const;

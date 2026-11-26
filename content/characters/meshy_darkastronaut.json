@@ -10,38 +10,25 @@
   "nameTheme": "soldier",
   "bio": "Came back from the far side of the Moon with a new suit, a purple glow and no explanation.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-06 (\"a meticulously detailed astronaut with a\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its two clips are not used). A dark teal and violet armoured spacesuit with glowing magenta strips and a black visor. No finger joints (32-joint rig: its extra hand joints ride the hands), so the fingers are re-fitted from the mesh (`fingers: fit`). 167k triangles: rebaked. Its back pack (the box and the tank on top) is held whole by the chest (`skin.rigid`, bound in the download's own pose; the helmet's back, held by the head, left out): the download's rig spread it over the neck, head, clavicles, upper arms, spine and pelvis, so it bent with them and its lower corners came out of the T-pose turn flared (the owner, 2026-11-06: \"back/pack is distorted a little\"). The owner kept the name (2026-11-06). Licence: Meshy Community, CC0 per the owner (2026-11-06); post URL pending from the owner.",
+  "notes": "New model 2026-11-26 (owner: the two astronaut uploads replace the three astronauts; the future one is Starfarer's; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"a meticulously detailed astronaut with a\") no longer ships. Drive intake of 2026-11-26 (\"Future Astronaut Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "a meticulously detailed astronaut with a"
-    },
-    "date": "2026-11-06",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_a_meticulously_detailed_astronaut_with_a_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_Future_Astronaut_Rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.15,
-    "roughness": 0.55
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 14000,
+    "triangles": 12000,
     "surface": "rebake",
     "headShare": 0.16,
+    "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true,
-    "fingers": "fit",
-    "skin": {
-      "rigid": [
-        {
-          "joint": "spine_03",
-          "box": [[-0.105, 0.62, -0.15, 0.105, 0.815, -0.042], [-0.125, 0.81, -0.135, 0.125, 0.915, -0.02]],
-          "blend": 0.025,
-          "except": "^Head$"
-        }
-      ]
-    }
+    "feet": true
   }
 }

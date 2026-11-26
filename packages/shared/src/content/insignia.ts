@@ -19,10 +19,10 @@ export const SOLDIER_RANKS = ['Pvt.', 'Pfc.', 'Cpl.', 'Sgt.', 'SSgt.', 'Lt.', 'C
 export type SoldierRank = (typeof SOLDIER_RANKS)[number];
 
 /** The rank groups: Soldiers & Spies split by branch, then Character Select's other groups (a design of yours: Folk). */
-export const RANK_GROUPS = ['army', 'agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk', 'toys'] as const;
+export const RANK_GROUPS = ['army', 'agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk', 'toys', 'pirates', 'holiday'] as const;
 export type RankGroup = (typeof RANK_GROUPS)[number];
 /** The groups that wear their own mark with the step told by rings and bars (every one but the Army). */
-export const MARK_GROUPS = ['agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk', 'toys'] as const;
+export const MARK_GROUPS = ['agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk', 'toys', 'pirates', 'holiday'] as const;
 export type MarkGroup = (typeof MARK_GROUPS)[number];
 
 const ARMY_IDS = ['pvt', 'pfc', 'cpl', 'sgt', 'ssgt', 'lt', 'capt', 'maj', 'col'] as const;
@@ -52,10 +52,13 @@ export const RANK_TITLES: Readonly<Record<RankGroup, readonly string[]>> = {
   folk: ['Rookie', 'Regular', 'Local', 'Pro', 'Ace', 'Star', 'Hero', 'Superstar', 'Icon'],
   // The Toys row (owner, 2026-11-26: "do we accommodate when turning on ranks"): its own nine, the lead's.
   toys: ['Wind-Up', 'Tin Toy', 'Plaything', 'Favourite', 'Best-Seller', 'Collectible', 'Keepsake', 'Heirloom', 'Toy of the Year'],
+  // The Pirates and Holiday rows (owner, 2026-11-26 evening): their own nine each, the lead's.
+  pirates: ['Deckhand', 'Powder Monkey', 'Rigger', 'Gunner', 'Boatswain', 'Quartermaster', 'First Mate', 'Captain', 'Pirate King'],
+  holiday: ['Guest', 'Reveller', 'Caroler', 'Merrymaker', 'Host', 'Toastmaster', 'Grand Marshal', 'Guest of Honour', 'Holiday Legend'],
 };
 
 /** Each group's mark as named (labels, the docs). */
-export const MARK_NAMES: Readonly<Record<MarkGroup, string>> = { agency: 'Agency ring', horror: 'skull', space: 'star', machines: 'gear', legends: 'crown', animals: 'paw', folk: 'chevron', toys: 'toy brick' };
+export const MARK_NAMES: Readonly<Record<MarkGroup, string>> = { agency: 'Agency ring', horror: 'skull', space: 'star', machines: 'gear', legends: 'crown', animals: 'paw', folk: 'chevron', toys: 'toy brick', pirates: 'anchor', holiday: 'gift' };
 
 /** Each badge's name (tooltips, screen readers): the rank's title. */
 export const INSIGNIA_LABELS: Readonly<Record<InsigniaId, string>> = /* @__PURE__ */ (() => Object.fromEntries([
@@ -239,6 +242,10 @@ const MARKS: Readonly<Record<MarkGroup, () => Badge>> = {
   folk: () => ({ fill: chevron(-0.3).map((p) => p.map(([x, y]) => [x, y + 0.05] as Pt)) }),
   // A toy brick: the block and its two studs on top.
   toys: () => ({ fill: [rect(-0.95, -0.62, 0.95, 0.3), rect(-0.7, 0.3, -0.2, 0.66), rect(0.2, 0.3, 0.7, 0.66)] }),
+  // An anchor: the ring, the shank, the stock across it and the crown's two flukes.
+  pirates: () => ({ fill: [...ring(0.12, 0.26, 12).map((p) => p.map(([x, y]) => [x, y + 0.74] as Pt)), rect(-0.1, -0.72, 0.1, 0.5), rect(-0.5, 0.26, 0.5, 0.42), tri([-0.1, -0.72], [-0.82, -0.2], [-0.7, -0.42]), tri([0.1, -0.72], [0.82, -0.2], [0.7, -0.42]), tri([-0.3, -0.62], [0.3, -0.62], [0, -0.95])] }),
+  // A gift: the box and its lid, the ribbon cut down the middle and a bow on top.
+  holiday: () => ({ fill: [rect(-0.8, -0.85, 0.8, 0.2), rect(-0.92, 0.2, 0.92, 0.48), tri([0, 0.48], [-0.55, 0.9], [-0.45, 0.48]), tri([0, 0.48], [0.55, 0.9], [0.45, 0.48])], cut: [rect(-0.09, -0.85, 0.09, 0.48)] }),
 };
 
 /** A group's badge for a step: the mark (in a ring from step 4, a double ring from 7) and its bars (none, one or two). */

@@ -10,28 +10,25 @@
   "nameTheme": "robot",
   "bio": "A robot raised by humans, with the dress sense to prove it.",
   "body": "male",
-  "size": "small",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: robot boy.",
+  "notes": "New model 2026-11-26 (owner: Botboy's replacement, \"not really giant\": a normal robot's size; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"Robot in T Pose\") no longer ships. Drive intake of 2026-11-26 (\"Astro Giant Boy Robot Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019c7dbf-4c20-7354-850c-cce8cd7b3c37",
-    "community": {
-      "model": "Robot in T Pose"
-    },
-    "file": "^Meshy_AI_Robot_in_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_Astro_Giant_Boy_Robot_Rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.3,
-    "roughness": 0.55
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
-    "feet": true,
-    "grip": {
-      "curlL": 1.2,
-      "rollR": 0.25
-    }
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }

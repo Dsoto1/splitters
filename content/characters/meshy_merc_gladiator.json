@@ -1,0 +1,36 @@
+{
+  "id": "meshy_merc_gladiator",
+  "kind": "character",
+  "use": "player",
+  "order": 282,
+  "name": "Gladiator Ryker",
+  "look": "core.merc_gladiator",
+  "group": "space",
+  "blood": "red",
+  "nameTheme": "soldier",
+  "bio": "Broke out of three prison moons. Charges by the jump.",
+  "body": "male",
+  "variant": "Gladiator",
+  "variantOf": "core.merc",
+  "notes": "New 2026-11-26 (owner, 2026-11-26 evening). Drive intake of 2026-11-26 (\"merc gladiator rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_merc_gladiator_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

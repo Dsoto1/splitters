@@ -570,7 +570,7 @@ async function editorFlow(browser) {
   // It is kept with the map (the draft store saves the whole document, as Save and Export do).
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
-  // Map properties → Bots → Bot characters: the nine bot types (Toys since 2026-11-26), all ticked; None, then Soldiers: the map keeps it (one undo step).
+  // Map properties → Bots → Bot characters: the eleven bot types (Toys since 2026-11-26, Pirates and Holiday since that evening), all ticked; None, then Soldiers: the map keeps it (one undo step).
   await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
   const types = await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`));
@@ -578,7 +578,7 @@ async function editorFlow(browser) {
   await page.evaluate(() => document.getElementById('ed-cast-army').click());
   await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
   const cast = { types, doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]:checked')].map((b) => b.dataset.type)) };
-  check(types.length === 9 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: nine types (Toys since 2026-11-26), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
+  check(types.length === 11 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: eleven types (Toys, Pirates and Holiday since 2026-11-26), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
@@ -8839,9 +8839,9 @@ async function botCastFlow(browser) {
   await page.click('#nav-play');
   await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
-  // The nine bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
+  // The eleven bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
   const offered = await page.evaluate(() => ({ types: [...document.querySelectorAll('#arcade-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`), ranks: document.getElementById('arcade-ranks')?.checked, names: document.getElementById('arcade-names')?.checked }));
-  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,animals:1,toys:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the nine bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
+  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,pirates:1,animals:1,toys:1,holiday:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the eleven bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
   // Unticking all but one keeps one (the last can't go); None, then Soldiers: Army only.
   await page.evaluate(() => document.getElementById('arcade-cast-none').click());
   await page.evaluate(() => document.getElementById('arcade-cast-army').click());

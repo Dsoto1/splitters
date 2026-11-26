@@ -10,23 +10,21 @@
   "nameTheme": "critter",
   "bio": "Eight arms, one grudge. He only brought two of them to the fight.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-11 (\"Octo Buddy villain\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it in game (new characters start there, like maps). Name and bio are ours. Licence: Meshy Community, CC0 per the owner (2026-11-11: \"new character models to my drive from the meshy community (CC0 license)\").",
+  "notes": "New model 2026-11-26 (owner: Octo Buddy's replacement; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"Octo Buddy villain\") no longer ships. Drive intake of 2026-11-26 (\"funky streetwear octopus 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "Octo Buddy villain"
-    },
-    "date": "2026-11-11",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Octo_Buddy_villain_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_funky_streetwear_octopus_15k_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,
