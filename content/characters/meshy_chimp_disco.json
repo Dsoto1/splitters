@@ -1,0 +1,37 @@
+{
+  "id": "meshy_chimp_disco",
+  "kind": "character",
+  "use": "player",
+  "order": 261,
+  "name": "Disco Operative Ziggy",
+  "look": "core.chimp_disco",
+  "group": "animals",
+  "blood": "red",
+  "nameTheme": "monkey",
+  "bio": "One chimp, every era. Never the same outfit twice.",
+  "body": "male",
+  "size": "small",
+  "variant": "Disco Operative",
+  "variantOf": "core.chimp",
+  "notes": "The chimp (owner, 2026-11-26: \"a chimp character with 10 variants, unlocked through challenges\"): variant \"Disco Operative\" of Ziggy Bananas, picked on Character Select's variant picker. Drive intake of 2026-11-26 (\"ts chimp disco operative rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
+    "url": null,
+    "file": "^Meshy_AI_ts_chimp_disco_operative_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

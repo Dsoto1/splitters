@@ -18,7 +18,7 @@ export const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 const FILE = 'content/roulette.json';
 const GENERATED = 'packages/shared/src/content/roulette.generated.ts';
 /** Character Select's groups: the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (and GROUPS in character-manifests.mjs). */
-const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'];
+const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'toys', 'machines', 'horror'];
 /** Soldiers & Spies' branches (CHARACTER_BRANCHES): a branch's fallback, where it has one, comes before its group's. */
 const BRANCHES = ['army', 'agency'];
 

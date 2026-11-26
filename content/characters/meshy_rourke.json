@@ -1,0 +1,34 @@
+{
+  "id": "meshy_rourke",
+  "kind": "character",
+  "use": "player",
+  "order": 65,
+  "name": "Rourke",
+  "look": "core.rourke",
+  "group": "folk",
+  "blood": "red",
+  "nameTheme": "townsfolk",
+  "bio": "Hitched a ride into the war zone by mistake. Stayed because the pay beats his last job.",
+  "body": "male",
+  "notes": "Rourke comes back (removed 2026-11-25, its id played Cutter McCrae): the owner's own new model, the old id, name and roster place (order 65). Drive intake of 2026-11-26 (\"bum rourke rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_bum_rourke_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

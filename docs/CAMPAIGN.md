@@ -33,7 +33,7 @@ The checks: ids unique across sectors and convergences, one or more maps a secto
 
 | Sector | Kind | Maps (unlocks) | Boss encounter | Repaired unlocks |
 |---|---|---|---|---|
-| The Jade Empire | Historical, Mesoamerica | Cradle of Idols (Kiko Banyan), Vinefall Sanctum (Silas Coilwhisper), Step Temple (Talon Skycrest) | Balam Nightclaw with Talon Skycrest, the Sun Warrior and Aurelio (owner, 2026-11-25) | Balam, Sun Warrior, Aurelio |
+| The Jade Empire | Historical, Mesoamerica | Cradle of Idols (Ziggy Bananas's Aztec look; Kiko Banyan until 2026-11-26), Vinefall Sanctum (Silas Coilwhisper), Step Temple (Talon Skycrest) | Balam Nightclaw with Talon Skycrest, the Sun Warrior and Aurelio (owner, 2026-11-25) | Balam, Sun Warrior, Aurelio |
 | Lockdown | Modern, today | Runway Nine (Tactical Soldier), Midnight Keel (Stealth Operative), Cormorant Isle (Pemberton) | Customs Agent Zhao with Imperial Guard and Kenji | Zhao |
 | Neon Tomorrow | Future city | Express Lobby (Reef Wanderer), Neon Spire (Ricochet), Halcyon Station (Cyber Lion) | Inquisitor Vesk Tockley (NPC-only) with Shadow Enforcer and Steel Guardian | Shadow Enforcer |
 

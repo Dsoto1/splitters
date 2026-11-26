@@ -86,7 +86,8 @@ export function nameWithoutRank(name: string, own = false): string {
 export function rankGroup(look: string | undefined): RankGroup {
   const g = lookGroup(look);
   if (g === 'soldiers') return lookBranch(look) === 'agency' ? 'agency' : 'army';
-  return g ?? 'folk';
+  // The Toys row (owner, 2026-11-26) wears Folk's chevrons.
+  return g === 'toys' ? 'folk' : (g ?? 'folk');
 }
 
 /** A group's badge for a step (1 to 9, clamped). */

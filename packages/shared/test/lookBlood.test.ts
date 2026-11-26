@@ -31,7 +31,7 @@ describe('blood by character', () => {
     expect(lookBlood('core.astronaut')).toBe('red');
     expect(lookBlood('core.rattles')).toBe('bone');
     expect(lookBlood('core.bonejack')).toBe('bone');
-    expect(lookBlood('core.hollowpilgrim')).toBe('spirit');
+    expect(lookBlood('core.ragdoll')).toBe('spirit');
     expect(lookBlood('core.crewdemolitions')).toBe('oil');
     expect(lookBlood('core.groaner')).toBe('red');
     // The owner's answers (2026-11-18).
