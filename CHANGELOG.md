@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Bullet holes on breakable props.** Crates, barrels and every solid prop on an 'Everything breaks' map keep the holes you put in them (wood, metal and stone each their own look), and the holes go when the prop breaks.
 - **Dodge-step and combat roll.** Press **V** (a controller: **B while aiming**; touch: **Dodge**) for a quick step the way you're moving (back, with no direction), or, crouched or sprinting, a combat roll of about 3 m with the gun lowered. Both use stamina (a step less than a slide, a roll more) and share the slide's short cooldown; the first-person view never flips. The second trigger's spare V key moved to Dodge (middle mouse stays; Options → Controls can give it another).
 - **Breakable walls.** In MapMaker, mark a piece's walls (or one side, or every wall of a set piece) breakable, with their health and whether shots break them too (explosives only by default): in play a blast leaves a ragged hole you can shoot, see and walk through, back next round (map format v54).
 - **New models for Cyber Lion, Croakley, Greyfang, Gorilla G and Boglurker** (same names and places); **Lion in a Suit is now Kesi Tallgrass**, a safari lioness; Elephant Warrior is now **Ellis Velvetrope** (a bouncer), Hyena Warrior **Rollo Splitworth** (a bowler) and Juice **Puddles Ironbill** (a duck in a mech), each with a new model.
