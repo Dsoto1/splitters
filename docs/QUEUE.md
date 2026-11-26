@@ -56,6 +56,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/chars-1126` · 912bde60 · run 45806543991 (the owner's 11-26 character batch: 15 new models in place, Rourke back, 30 new, Ziggy Bananas the chimp with 10 variant looks and Character Select's variant picker, the Playhouse section; menu first JS 2775.7 kB)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
