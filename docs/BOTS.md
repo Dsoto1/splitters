@@ -976,7 +976,9 @@ which are gone now (`Scenario.surfacesGone`: broken, crumbled, hidden, a mover a
 `NavWorld.setGone`). Every route search keeps off gone ground (except the polygon it starts or ends on: a bot riding a
 button-called lift), and a bot whose route was planned before plans again. When the ground comes back, so do the routes.
 A breakable crate or wall that opens a way when it breaks doesn't open a route (the navmesh has no ground under it):
-that needs the navmesh rebuilt there (a tiled navmesh: not done).
+that needs the navmesh rebuilt there (a tiled navmesh: not done). The same goes for MapMaker's breakable walls (format
+v54, BUILDING_KIT.md "Breakable walls"): they stay in the navmesh, so bots route as if the wall stood, though they see
+and shoot through the hole.
 
 ## Parked vehicles, wrecks and turrets in the way (Bot AI Phase C, moving obstacles)
 The navmesh is built once, without mounts (vehicles move), so a route can run straight through a parked vehicle, a
@@ -1274,6 +1276,10 @@ players (`bots/brain.ts` `inCover`):
 - **Fair both ways.** A bot sees a leaning head where it is (the sight line goes to the leaned eye), sees from its own
   leaned eye, and aims at a leaning target's real head and chest (`bots/aim.ts`, the hit shapes with the lean). The
   match keeps a bot's lean off walls as it does a player's.
+
+**Dodge-step and combat roll (2026-11-25): bots don't use them** (GUNPLAY_SPEC section 27). The simpler choice: a bot
+under fire already strafes and jinks on its own, and a roll would lower its gun mid-fight. They take a player's dodge as
+any other movement (they aim at where the body is; a roll's body is at crouch height).
 
 ## Snipers (Bot AI Phase B)
 

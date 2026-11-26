@@ -1,7 +1,7 @@
 import { CHAT_MAX_CHARS } from '@tiletrigger/shared/chat';
 
 /**
- * The chat log and box (docs/MULTIPLAYER_PROTOCOL.md section 28), bottom left above the health: text chat and quick
+ * The chat log and box (docs/MULTIPLAYER_PROTOCOL.md section 29), bottom left above the health: text chat and quick
  * messages, newest at the bottom. Closed, the last few lines show for LINE_SECONDS and then fade (no blinking: they
  * appear and go, once); open (Enter, or the team chat key), the recent lines show on a dark panel above the box.
  * Enter sends, Esc closes, Tab switches between your team and everyone (team modes).

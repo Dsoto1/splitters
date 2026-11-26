@@ -61,7 +61,7 @@ export type ClientMessage =
    */
   | { t: 'team'; i?: number }
   /**
-   * A line of text chat (net/chat.ts; docs/MULTIPLAYER_PROTOCOL.md section 28): `tm` for the sender's team only.
+   * A line of text chat (net/chat.ts; docs/MULTIPLAYER_PROTOCOL.md section 29): `tm` for the sender's team only.
    * Hosts whose welcome said `ch` clean it, rate-limit it, mask the filter's words and pass it on as a `chat`
    * message; others ignore it.
    */
@@ -241,6 +241,11 @@ export interface PlayerSnapshot {
    * hit shapes are out to that side (section 26).
    */
   ln?: number;
+  /**
+   * A dodge under way (sim/moves.ts DODGE, ROLL): [1 a dodge-step or 2 a combat roll, ticks into it]. Drawn as the step
+   * or the roll, the way the body moves. Absent otherwise, and from older hosts (docs/MULTIPLAYER_PROTOCOL.md section 27).
+   */
+  dg?: [number, number];
 }
 
 /** State only the owning player receives: inventory and timers for HUD and prediction. */
@@ -307,8 +312,11 @@ export interface PrivateState {
   ks?: number;
   /** Stamina for sprinting, when not full: [stamina ×1000, rest ticks, winded 0/1]. */
   sta?: [number, number, number];
-  /** A slide under way and the stamina moves' cooldown, when either is: [ticks into the slide (0: none), cooldown ticks left] (sim/moves.ts). */
-  mv?: [number, number];
+  /**
+   * A slide under way and the stamina moves' cooldown, when either is: [ticks into the slide (0: none), cooldown ticks
+   * left], and with a dodge-step or roll under way two more: [.., ticks into it, 1 a roll / 0 a step] (sim/moves.ts).
+   */
+  mv?: [number, number] | [number, number, number, number];
   /**
    * Classes: [class (index into CLASS_IDS), class asked for at the next spawn, ability 0-100 (charge, energy
    * or readiness), ability active 0/1, air jumps used + 4 while jump is held (for predicting double jumps)].

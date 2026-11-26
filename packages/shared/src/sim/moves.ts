@@ -3,8 +3,8 @@
  * the way sprinting does, and the lean (peek), which doesn't. Shared by the host and client prediction, so both step
  * them alike; plain arithmetic and the level's own rays, quantised like the rest of a move.
  *
- * Stamina moves (the slide now; a dodge-step and a combat roll later) are rows of STAMINA_MOVES: a lump of stamina to
- * start, and one cooldown they share (MoveState.moveCd), so they can't be chained back to back.
+ * Stamina moves (the slide, the dodge-step and the combat roll) are rows of STAMINA_MOVES: a lump of stamina to start,
+ * and one cooldown they share (MoveState.moveCd), so they can't be chained back to back.
  */
 import type { Vec3 } from '../math.ts';
 import { STANCES, type Stance } from './constants.ts';
@@ -44,8 +44,83 @@ export const SLIDE = {
   blocked: 0.35,
 } as const;
 
-/** Every stamina move. The dodge-step and combat roll go here (cost and cooldown) when they come. */
-export const STAMINA_MOVES: { readonly slide: StaminaMove } = { slide: SLIDE };
+/**
+ * The dodge-step (owner, 2026-11-18; docs/GUNPLAY_SPEC.md section 27, "Dodge-step and combat roll"): a press of Dodge
+ * standing or walking. A quick burst the way you are moving (straight back with no direction held), about 2 m in
+ * 0.4 s; the gun stays up and can fire (hip fire's moving spread applies). No invulnerability.
+ */
+export const DODGE = {
+  /** Stamina to start: less than a slide. */
+  cost: 0.15,
+  /** Seconds after it before another stamina move. */
+  cooldown: 0.4,
+  /** The burst's speed, × running pace (a sprint's speed: 7.8 m/s). */
+  speed: 1.5,
+  /** How long the burst is held (s); then it fades as a knockback does on the ground (another 0.8 m or so). */
+  seconds: 0.15,
+  /** How much of the legs' own steering is kept during it. */
+  control: 0.3,
+  /** Moving less than this share of its speed (a wall in the way) ends it. */
+  blocked: 0.35,
+  /** Off the ground (a jump out of it, a ledge), the share of its momentum that goes on: a dodge-jump is a sprint jump's length. */
+  air: 0.35,
+} as const;
+
+/**
+ * The combat roll: a press of Dodge while crouched or sprinting. A tucked roll the way you are moving (forward with no
+ * direction held), about 3.3 m in 0.55 s at crouch height (the crouch's hit shapes; it passes under what a crouch does).
+ * The gun is lowered for it and comes up after it in the weapon's sprint-exit time. It ends crouched if crouch is still
+ * on, standing otherwise. No invulnerability.
+ */
+export const ROLL = {
+  cost: 0.3,
+  cooldown: 0.6,
+  /** × running pace (6 m/s). */
+  speed: 1.15,
+  seconds: 0.55,
+  control: 0.2,
+  blocked: 0.35,
+  air: 0.35,
+} as const;
+
+/** Every stamina move. */
+export const STAMINA_MOVES: { readonly slide: StaminaMove; readonly dodge: StaminaMove; readonly roll: StaminaMove } = { slide: SLIDE, dodge: DODGE, roll: ROLL };
+
+/** A dodge under way: 1 a dodge-step, 2 a combat roll, 0 none. */
+export type DodgeKind = 0 | 1 | 2;
+export const dodgeKindOf = (s: { dodge?: number; roll?: boolean }): DodgeKind => (s.dodge ? (s.roll ? 2 : 1) : 0);
+
+/** The move's table row for a kind. */
+export const dodgeMove = (kind: 1 | 2): typeof DODGE | typeof ROLL => (kind === 2 ? ROLL : DODGE);
+
+/** Ticks a dodge of `kind` holds its burst at `dt`. */
+export const dodgeTicks = (kind: 1 | 2, dt: number): number => Math.max(1, Math.round(dodgeMove(kind).seconds / dt));
+
+/**
+ * The way a dodge goes (a unit vector on the ground): the way the move keys point in the view's frame, or, with none
+ * held, straight back (a dodge-step) or straight ahead (a roll).
+ */
+export function dodgeDirection(forward: number, right: number, yaw: number, kind: 1 | 2): { x: number; z: number } {
+  const sin = Math.sin(yaw);
+  const cos = Math.cos(yaw);
+  let f = forward;
+  let r = right;
+  if (Math.abs(f) < 0.2 && Math.abs(r) < 0.2) {
+    f = kind === 2 ? 1 : -1;
+    r = 0;
+  }
+  const x = sin * f + cos * r;
+  const z = cos * f - sin * r;
+  const l = Math.hypot(x, z);
+  return { x: x / l, z: z / l };
+}
+
+/**
+ * The raise timer a roll holds the gun at (the host's Match and client prediction both apply it after a move): lowered
+ * for the whole roll, so it comes up afterwards in the weapon's sprint-exit time, as out of a sprint (at least a tick, so
+ * nothing fires mid-roll).
+ */
+export const rollRaise = (s: { dodge?: number; roll?: boolean }, sprintExit: number): number => (s.dodge && s.roll ? Math.max(1, sprintExit) : 0);
 
 /** Can a stamina move start: enough stamina (character stats `staminaScale` stretch it as they stretch a sprint), not winded, no cooldown left? */
 export function canStartMove(move: StaminaMove, stamina: number, winded: boolean, cooldown: number, staminaScale = 1): boolean {

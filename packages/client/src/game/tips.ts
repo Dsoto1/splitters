@@ -1,15 +1,16 @@
 /**
  * Contextual first-time tips: a short hint the first time a situation happens in a match
- * (low ammo, a vehicle in reach, a pickup in sight, your first death, armour picked up, spawn protection), shown
+ * (low ammo, a vehicle in reach, a pickup in sight, your first death, armour picked up, spawn protection, hurt and
+ * still standing: the dodge), shown
  * once each, one at a time, never over the crosshair. Options → HUD turns them off or shows them all again.
  *
  * This file is the rules (what shows when, and what has been seen); coachHud.ts draws them.
  */
 
-export type TipId = 'reload' | 'vehicle' | 'pickup' | 'armor' | 'shield' | 'death';
+export type TipId = 'reload' | 'vehicle' | 'pickup' | 'armor' | 'shield' | 'death' | 'dodge';
 
 /** Every tip, in the order Options lists them. */
-export const TIP_IDS: readonly TipId[] = ['reload', 'vehicle', 'pickup', 'armor', 'shield', 'death'];
+export const TIP_IDS: readonly TipId[] = ['reload', 'vehicle', 'pickup', 'armor', 'shield', 'death', 'dodge'];
 
 /**
  * Each tip's words, for keyboard and mouse and for the touch controls. `[X]` marks a key or a button: the HUD
@@ -21,6 +22,7 @@ export const TIP_TEXT: Record<TipId, { kb: string; touch: string }> = {
   pickup: { kb: 'Walk over pickups to take them: weapons, ammo, health and armour', touch: 'Walk over pickups to take them: weapons, ammo, health and armour' },
   armor: { kb: 'Armour (the blue bar) takes most of the damage before your health does', touch: 'Armour (the blue bar) takes most of the damage before your health does' },
   shield: { kb: "Spawn protection: you can't be hurt for a few seconds. Firing ends it", touch: "Spawn protection: you can't be hurt for a few seconds. Firing ends it" },
+  dodge: { kb: 'Under fire: [@dodge] dodges a quick step the way you move; crouched or sprinting, it is a combat roll. Both use stamina', touch: 'Under fire: tap [Dodge] for a quick step the way the pad points; crouched or sprinting, it is a combat roll. Both use stamina' },
   death: { kb: 'You respawn in a moment. Meanwhile [@specPrev] [@specNext] watch other players and [@specCamera] switches the camera', touch: 'You respawn in a moment. Meanwhile [◀] [▶] watch other players and [Camera] switches the view' },
 };
 

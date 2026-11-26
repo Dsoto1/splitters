@@ -134,13 +134,46 @@ export class EffectsWorld {
       const desc = RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz).setCollisionGroups(statics).setFriction(0.9);
       if (b.pitch || b.roll) desc.setRotation(boxQuat(b.yaw, b.pitch, b.roll));
       else if (b.yaw) desc.setRotation({ x: 0, y: Math.sin(b.yaw / 2), z: 0, w: Math.cos(b.yaw / 2) });
-      this.boxes.set(this.world.createCollider(desc).handle, b);
+      const c = this.world.createCollider(desc);
+      this.boxes.set(c.handle, b);
+      if (b.breakWall !== undefined) this.wallParts(b.breakWall).standing.push(c);
     }
     for (const sh of shapes) floor = Math.min(floor, shapeBottom(sh));
     this.floor = Number.isFinite(floor) ? floor : 0;
     // Rays see colliders only once a step has put them in the query structure: one empty step, so the level answers
     // the first ray (a blast's air-burst test, a debris chunk's clearOfGround) before the first frame's step.
     this.world.step();
+  }
+
+  /** Breakable walls (sim/breakWalls.ts): each section's colliders while it stands, and its remains once broken. */
+  private readonly walls = new Map<number, { standing: RAPIER.Collider[]; remains: RAPIER.Collider[] }>();
+
+  private wallParts(k: number): { standing: RAPIER.Collider[]; remains: RAPIER.Collider[] } {
+    let w = this.walls.get(k);
+    if (!w) this.walls.set(k, (w = { standing: [], remains: [] }));
+    return w;
+  }
+
+  /** A breakable wall section's remains (they stop debris and ragdolls once it is broken). */
+  addWallRemains(k: number, remains: readonly WorldBox[]): void {
+    const statics = groups(GROUP_STATIC, GROUP_DEBRIS | GROUP_RAGDOLL | GROUP_STATIC);
+    for (const b of remains) {
+      const hx = (b.max[0] - b.min[0]) / 2;
+      const hy = (b.max[1] - b.min[1]) / 2;
+      const hz = (b.max[2] - b.min[2]) / 2;
+      const c = this.world.createCollider(RAPIER.ColliderDesc.cuboid(hx, hy, hz).setTranslation(b.min[0] + hx, b.min[1] + hy, b.min[2] + hz).setCollisionGroups(statics).setFriction(0.9));
+      c.setEnabled(false);
+      this.boxes.set(c.handle, b);
+      this.wallParts(k).remains.push(c);
+    }
+  }
+
+  /** A breakable wall section standing or broken: its colliders or its remains'. */
+  setWallStanding(k: number, standing: boolean): void {
+    const w = this.walls.get(k);
+    if (!w) return;
+    for (const c of w.standing) c.setEnabled(standing);
+    for (const c of w.remains) c.setEnabled(!standing);
   }
 
   /** A body this far down has fallen out of the world (through it, or off its edge): nothing will stop it now. */

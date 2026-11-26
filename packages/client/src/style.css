@@ -2049,6 +2049,7 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
 #touch-ui .tc-reload { --x: 84px; bottom: 148px; }
 #touch-ui .tc-throw { --x: 14px; bottom: 146px; width: 50px; height: 50px; }
 #touch-ui .tc-use { --x: 204px; bottom: 50px; }
+#touch-ui .tc-dodge { --x: 270px; bottom: 64px; width: 52px; height: 52px; }
 #touch-ui .tc-wheel { --x: 158px; bottom: 160px; width: 68px; height: 68px; border-color: rgba(0, 209, 255, 0.6); font-size: 12px; letter-spacing: -0.02em; }
 /* ("Weapons" ran past the 64 px ring at 11 px; 12 px fits the 68 px one without letter spacing.) */
 /* The scorebar's tap target: invisible, over the scorebar; a tap shows the scoreboard, another hides it. */

@@ -2,7 +2,7 @@ import { TokenBucket } from './rateLimit.ts';
 import { CHAT_PHRASES_ROT13, CHAT_WORDS_ROT13, rot13 } from './chatWords.ts';
 
 /**
- * Text chat (docs/MULTIPLAYER_PROTOCOL.md section 28): a player's line goes to whoever hosts the match (the
+ * Text chat (docs/MULTIPLAYER_PROTOCOL.md section 29): a player's line goes to whoever hosts the match (the
  * dedicated server, Host Service, or the browser hosting friends), which cleans it, holds back floods, masks the
  * filter's words and passes it on to everyone, or to the sender's team. Nothing goes through the hub or AWS.
  * Shared by every host so they all trust a sender exactly as little. Imported by the hosts and the match page

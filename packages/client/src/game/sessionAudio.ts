@@ -1,4 +1,4 @@
-import { CORE_WEAPONS, THROWABLE_DEFS, type ThrowableKind, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook, weaponByCode } from '@tiletrigger/shared';
+import { wallSectionAt, CORE_WEAPONS, THROWABLE_DEFS, type ThrowableKind, ELECTRIC_FENCE, PLAYER, UNARMED, lookGroup, borderShockLines, borderStyles, fenceRun, getItem, shockLineNearest, type ShockLine, type MapDocument, type GameEvent, type Tuple3, type Vec3, type WeaponDefinition, getWeapon, getProp, glassAt, propBreakLook, weaponByCode } from '@tiletrigger/shared';
 import { gunPan } from './pairView.ts';
 import type { AudioSystem, SoundId } from '../audio/audio.ts';
 import { Announcer, loadVoiceLines } from '../audio/announcer.ts';
@@ -721,6 +721,13 @@ export class SessionAudio {
         const pane = this.doc && glassAt(this.doc, ev.i);
         if (pane) {
           this.audio.play('break.glass', { at: pane.box.center });
+          break;
+        }
+        // A breakable wall (shared sim/breakWalls.ts) gives way like a scenario wall.
+        const wall = this.doc && wallSectionAt(this.doc, ev.i);
+        if (wall) {
+          this.audio.play('break.wall', { at: wall.bounds.center });
+          this.audio.play('explosion.debris', { at: wall.bounds.center });
           break;
         }
         // A force field switching off crackles out.

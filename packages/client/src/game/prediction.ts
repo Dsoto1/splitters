@@ -40,6 +40,7 @@ import {
   autoReloadDue,
   shotCone,
   stepAds,
+  rollRaise,
   stepReload,
   traceBullet,
   type AmmoBox,
@@ -418,6 +419,8 @@ export class LocalPlayer {
       if (this.raiseTicks > 0) this.raiseTicks--;
       // As the server: out of a sprint the weapon comes up before it fires (its sprint-exit time, on the raise timer).
       if (!this.mounted && sprinted && !this.state.sprint) this.raiseTicks = Math.max(this.raiseTicks, this.handling(this.held).sprintExit);
+      // As the server: a combat roll holds the gun down (sim/moves.ts rollRaise).
+      if (!this.mounted && this.state.roll) this.raiseTicks = Math.max(this.raiseTicks, rollRaise(this.state, this.handling(this.held).sprintExit));
       this.sprintAfter.set(input.seq, !!this.state.sprint);
       this.sprintAfter.delete(input.seq - 600);
       this.advanceReload();
@@ -630,7 +633,7 @@ export class LocalPlayer {
       this.fillHeld(def, ammo, off);
       if (this.reload || this.reload2) this.cancelReload();
     }
-    stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun && !paired);
+    stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun && !paired && !(this.state.roll && !this.mounted));
     const ready = (a: [number, number, number, number]) => (this.seatGun ? a[0] : roundsReady(this.box(this.held, a)));
     // As the server: a swing always interrupts a melee weapon's barrel reload; its barrel fires once a load is in.
     if (this.reload && !this.seatGun && this.fireCooldown === 0 && this.raiseTicks === 0) {
@@ -865,6 +868,7 @@ export class LocalPlayer {
       ...(server.sr ? { sprint: true } : {}),
       ...(me?.mv?.[0] ? { slide: me.mv[0] } : {}),
       ...(me?.mv?.[1] ? { moveCd: me.mv[1] } : {}),
+      ...(me?.mv?.[2] ? { dodge: me.mv[2], ...(me.mv[3] ? { roll: true } : {}) } : {}),
       ...(server.ln ? { lean: server.ln } : {}),
       ...(sta ? { ...(sta[0] < 1000 ? { stamina: sta[0] / 1000 } : {}), ...(sta[1] ? { rest: sta[1] } : {}), ...(sta[2] ? { winded: true } : {}) } : {}),
       // Double jumps already used and whether jump was held, so a replay doesn't jump again.
@@ -891,6 +895,7 @@ export class LocalPlayer {
         this.state = this.move(this.state, applied, ++t, false, held, this.serverPair(held));
         if (raise > 0) raise--;
         if (sprinted && !this.state.sprint) raise = Math.max(raise, this.handling(held).sprintExit);
+        if (this.state.roll) raise = Math.max(raise, rollRaise(this.state, this.handling(held).sprintExit));
         sprinted = !!this.state.sprint;
         this.sprintAfter.set(input.seq, sprinted);
       }

@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'colourvision', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'firstperson', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions', 'chat',
+  'firstperson', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'dodgeroll', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'crashreport', 'captions', 'chat',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -58,7 +58,7 @@ const MAP_USERS = {
   grid_rings: ['classes'],
   apex_ring: ['traffic'],
   atomic_court: ['hostcontrols'],
-  void_yard: ['hostcontrols', 'slidepeek'],
+  void_yard: ['hostcontrols', 'slidepeek', 'dodgeroll'],
   [COVERAGE_MAP]: ['coverage'],
   test_breakthrough: ['breakthrough'],
   grand_marquee: ['colourvision'],
@@ -211,7 +211,7 @@ const RULES = [
   [/^packages\/client\/src\/(crashReport|crashPanel|crashReportsUi)\.ts$/, ['crashreport'], ['client']],
   // Sound captions (Options → Accessibility): the setting and the captions in a match.
   [/^packages\/client\/src\/game\/(soundCaptions|captionPrefs|prefSync)\.ts$/, ['captions', 'offline'], ['client']],
-  // Chat (MULTIPLAYER_PROTOCOL.md section 28): the chat box, mute and quick chat, online and in Host game.
+  // Chat (MULTIPLAYER_PROTOCOL.md section 29): the chat box, mute and quick chat, online and in Host game.
   [/^packages\/client\/src\/game\/(chatBox|chatMute)\.ts$/, ['chat'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline', 'captions'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],

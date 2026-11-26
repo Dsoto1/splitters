@@ -485,7 +485,7 @@ export async function startServer(opts: ServerOptions): Promise<RunningServer> {
   /** The team a slot plays for (null: free-for-all, or out of play spectating). */
   const teamOf = (slot: number | null) => (slot !== null && match.teams ? (match.slots[slot]?.faction ?? null) : null);
   /**
-   * A line of text chat (docs/MULTIPLAYER_PROTOCOL.md section 28): through the gate (limits, filter), then to
+   * A line of text chat (docs/MULTIPLAYER_PROTOCOL.md section 29): through the gate (limits, filter), then to
    * everyone, or to the sender's team; a refused line's reason goes back to the sender alone.
    */
   const relayChat = (from: Client, raw: string, toTeam: boolean) => {

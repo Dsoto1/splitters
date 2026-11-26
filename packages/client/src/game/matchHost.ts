@@ -576,7 +576,7 @@ export class MatchHost {
   }
 
   /**
-   * A line of text chat (docs/MULTIPLAYER_PROTOCOL.md section 28) from `slot` (a friend's link `from`, or null: this
+   * A line of text chat (docs/MULTIPLAYER_PROTOCOL.md section 29) from `slot` (a friend's link `from`, or null: this
    * browser's player): through the gate (limits, filter), then to everyone, or to the sender's team. A refused
    * line's reason goes back to the sender alone. Friends' lines pass through here and nowhere else.
    */

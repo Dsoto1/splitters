@@ -56,6 +56,8 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/dodge-roll-1125` · 65fb7581 · 45736531167 (dodge-step and combat roll: V, LT + B, touch Dodge; `SNAPSHOT_BINARY_VERSION` 4)
+- `wip/breakable-walls-1125` · 49ac9d45 · 45747080635 (breakable walls, map format v54 (v53 is chars-1125b's `figure`); touches `maps/test_coverage.json`: rerun its two breakable walls through MapMaker on a conflict)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
