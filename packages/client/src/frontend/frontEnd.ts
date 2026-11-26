@@ -36,6 +36,7 @@ import {
   randomFirstLook,
   DEFAULT_RULES,
   GAME_MODES,
+  playableModes,
   raceTrack,
   MODE_LABELS,
   isTeamMode,
@@ -158,7 +159,7 @@ import { autoReloadOn, damageNumbersOn, saveAutoReload, saveDamageNumbers, saveS
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
 import type { PortraitRenderer } from './portraits.ts';
 import { SHIPPED_PORTRAITS } from './portraitIndex.ts';
-import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscreen, toggleFullscreen } from '../fullscreen.ts';
+import { bindFullscreenButton, browserTookEscape, fullscreenSupported, isFullscreen, releasePointer, toggleFullscreen } from '../fullscreen.ts';
 import { PAD, glyphs, onPadPress, onPadScroll } from '../inputMode.ts';
 import { nextInDirection, type Dir } from './padNav.ts';
 import { BOT_SET_PRESETS, PLAYLISTS } from '../playlists.ts';
@@ -491,7 +492,16 @@ export class FrontEnd {
   private readonly status = el('p', { id: 'menu-status' });
   private readonly footerHints = el('div', { class: 'hintbar' });
   private readonly footer = el('footer', { class: 'menu-footer' });
-  private setup: ArcadeSetup;
+  private menuSetup!: ArcadeSetup;
+  /** The pause menu's Host tab draws Match Setup's tabs for the match being played (pauseSetup): its setup, map and panel. */
+  private pause: { root: HTMLElement; setup: ArcadeSetup; entry: ArcadeMap; max: number; live: readonly string[]; onChange: (s: ArcadeSetup) => void } | null = null;
+  private get setup(): ArcadeSetup {
+    return this.pause?.setup ?? this.menuSetup;
+  }
+  private set setup(v: ArcadeSetup) {
+    if (this.pause) this.pause.setup = v;
+    else this.menuSetup = v;
+  }
   name: string;
   /** Clan tag shown in front of your name ("[TAG] Name"), up to 5 letters or digits. */
   clan = '';
@@ -615,6 +625,7 @@ export class FrontEnd {
   }
 
   show(status = ''): void {
+    this.pause = null;
     this.root.hidden = false;
     this.setStatus(status || this.notice || '');
     this.notice = null;
@@ -1323,6 +1334,7 @@ export class FrontEnd {
   private fitOpen = false;
 
   private currentMap(): ArcadeMap {
+    if (this.pause) return this.pause.entry;
     return this.maps.find((m) => m.key === this.setup.map) ?? this.maps[0]!;
   }
 
@@ -1338,6 +1350,7 @@ export class FrontEnd {
 
   /** The most players this device runs, and how its limit is named ("24 per team is this computer's limit"). */
   private device(): { max: number; name: string } {
+    if (this.pause) return { max: this.pause.max, name: 'this match' };
     return { max: deviceMaxPlayers(), name: isTouchDevice() ? 'this device' : 'this computer' };
   }
 
@@ -1410,7 +1423,7 @@ export class FrontEnd {
     if (tab === this.setupTab) return;
     this.setupTab = tab;
     this.refreshSetup();
-    const body = this.setupPanel?.querySelector<HTMLElement>('.setup-body');
+    const body = (this.pause?.root ?? this.setupPanel)?.querySelector<HTMLElement>('.setup-body');
     if (body) body.scrollTop = this.setupScroll = 0;
   }
 
@@ -1432,6 +1445,13 @@ export class FrontEnd {
   }
 
   private refreshSetup(): void {
+    const p = this.pause;
+    if (p) {
+      const focus = document.activeElement?.id;
+      this.fillSetup(p.root);
+      if (focus) document.getElementById(focus)?.focus({ preventScroll: true });
+      return p.onChange(this.setup);
+    }
     if (!this.setupPanel?.isConnected) return void this.go('play');
     this.setupScroll = this.setupPanel.querySelector('.setup-body')?.scrollTop ?? this.setupScroll;
     // Keep the keyboard where it was (a stepper's +, a tab) across the redraw.
@@ -1763,7 +1783,7 @@ export class FrontEnd {
 
     // ---- header: the map's picture with its top-down plan, name, what it is, who plays and how long, the fit
     const thumbs = mapThumbs(map, isBuiltInEntry(current));
-    requestAnimationFrame(thumbs.draw);
+    if (!this.pause) requestAnimationFrame(thumbs.draw);
     // The list is hidden on narrow screens: there, this button opens it full screen (docs/MOBILE_AUDIT.md, proposal
     // 2). The plain list stays in the page, hidden (tests and anything that reads it).
     const mapPick = el('button', { type: 'button', id: 'arcade-map-pick', class: 'map-pick-btn', title: 'Pick a map: pictures, modes, search and favourites' }, el('b', { textContent: map.metadata.name }), el('span', { textContent: 'Change map' }));
@@ -1933,7 +1953,8 @@ export class FrontEnd {
       // A preset with maps of its own (Fireteams) moves to one when this map can't play it or doesn't suit it.
       const move = partyMapMove(p, map, current.modes, dev.max, this.maps.map((m) => ({ key: m.key, modes: m.modes, recommendedMax: m.metadata.recommendedPlayers.max, official: !m.group })));
       const moveTo = move ? this.maps.find((m) => m.key === move) : undefined;
-      const offWhy = moveTo ? null : partyUnavailable(p, map, current.modes);
+      // (Mid-match the map stays: Change map first.)
+      const offWhy = moveTo ? (this.pause ? `It plays on ${moveTo.metadata.name}: Change map first.` : null) : partyUnavailable(p, map, current.modes);
       const on = !offWhy && !moveTo && partyOn(p, s, map, current.modes);
       const mode = moveTo ? (p.mode.teams ?? p.mode.ffa ?? null) : partyMode(p, map, current.modes);
       if (on) partyOnNow.name = p.label;
@@ -2051,7 +2072,7 @@ export class FrontEnd {
         ...(this.stopped ? [el('p', { class: 'cap-note', id: 'arcade-bots-stopped', role: 'status', textContent: this.stopped })] : []),
       );
     }
-    if (s.mode === 'core.coop' && PLAYLISTS.length) {
+    if (s.mode === 'core.coop' && PLAYLISTS.length && !this.pause) {
       playerRows.push(settingRow('Playlist', `Play a chain of co-op maps: win one and you go on to the next${PLAYLISTS.map((p) => `\n\n${p.name} (${p.maps.length} maps): ${p.description}`).join('')}`, choice([['', 'Just this map'], ...PLAYLISTS.map((p): ChoiceOption<string> => [p.id, `${p.name} (${p.maps.length})`])], s.playlist ?? '', (v) => this.change((x) => (x.playlist = v || undefined)))));
     }
     // Section 3: the size presets in a compact row (More layouts… on the title's line), then the teams or the count.
@@ -2202,6 +2223,17 @@ export class FrontEnd {
         return pane;
       }),
     );
+    if (this.pause) {
+      // The pause menu's Host tab: the tabs and the fit, every setting marked Now or At restart (its map stays).
+      const live = this.pause.live;
+      for (const r of body.querySelectorAll<HTMLElement>('.row, .field, .opt-switch, .setup-num, .bot-block')) {
+        const label = r.querySelector(':scope > .row-label, :scope > .field-label, :scope > .num-head h4, :scope > h4, :scope > span:last-child');
+        if (!label || r.querySelector('.row, .field, .opt-switch')) continue;
+        const now = live.includes(r.id) || [...r.querySelectorAll('[id]')].some((x) => live.includes(x.id));
+        label.append(el('span', { class: `when-tag ${now ? 'live' : 'restart'}`, textContent: now ? 'Now' : '⟳ At restart', title: now ? 'Changes the match now (Apply now)' : 'Plays when the match starts over (Restart with these)' }));
+      }
+      return void panel.replaceChildren(el('div', { class: 'pause-setup-bar' }, tabBar, fitChip(fit, this.fitOpen, toggleFit, 'setup-fit')), body);
+    }
     body.addEventListener('scroll', () => (this.setupScroll = body.scrollTop), { passive: true });
 
     // A phone's strip along the bottom (the sheet down): the map and the setup in a line, ▲ pulls the settings up; Start.
@@ -2329,7 +2361,9 @@ export class FrontEnd {
       const m = this.maps.find((k) => k.key === (x.setup as { map?: unknown }).map);
       const mode = (x.setup as { mode?: GameMode }).mode;
       const load = el('button', { type: 'button', class: 'saved-load', textContent: 'Load', title: `Load "${x.name}"` });
-      load.addEventListener('click', () => this.loadSaved(x.name));
+      // (Mid-match the map stays: a setup for another map loads from Change map, or the menu.)
+      if (this.pause && m?.key !== this.setup.map) inert(load, 'For another map: Change map first.');
+      load.addEventListener('click', () => !load.classList.contains('off') && this.loadSaved(x.name));
       const del = el('button', { type: 'button', class: 'link saved-del', textContent: 'Delete', title: `Delete "${x.name}"` });
       del.setAttribute('aria-label', `Delete the saved setup ${x.name}`);
       del.addEventListener('click', () => {
@@ -2343,7 +2377,7 @@ export class FrontEnd {
     });
     return [
       el('h4', { class: 'pane-title', textContent: 'Saved setups' }),
-      el('div', { class: 'saved-items', id: 'setup-saved-items' }, ...(rows.length ? rows : [el('p', { class: 'setup-hint', textContent: 'None yet. Save preset (below) keeps this setup by name: its map, mode, teams and rules.' })])),
+      el('div', { class: 'saved-items', id: 'setup-saved-items' }, ...(rows.length ? rows : [el('p', { class: 'setup-hint', textContent: this.pause ? 'None yet: Play → Match setup saves them (Save preset).' : 'None yet. Save preset (below) keeps this setup by name: its map, mode, teams and rules.' })])),
     ];
   }
 
@@ -2355,6 +2389,8 @@ export class FrontEnd {
     let opening = false;
     edit.addEventListener('click', async () => {
       if (document.getElementById('bot-manager') || opening) return;
+      // (Over the pause menu the window needs the mouse: a lock held, or asked for and granted late, is let go.)
+      if (this.pause) releasePointer();
       opening = true;
       const { botManager } = await import('./botManager.ts').finally(() => (opening = false));
       if (document.getElementById('bot-manager')) return;
@@ -2369,7 +2405,7 @@ export class FrontEnd {
         onApply: (set) => this.change((x) => (set ? (x.botSet = set) : delete x.botSet)),
         onClose: () => (document.getElementById('arcade-botset') as HTMLElement | null)?.focus(),
       });
-      this.root.append(win);
+      (this.pause ? (document.getElementById('pause') ?? document.body) : this.root).append(win);
     });
     const clear = el('button', { type: 'button', class: 'link', id: 'arcade-botset-clear', textContent: 'Random', title: 'Back to random bots', hidden: !s.botSet });
     clear.addEventListener('click', () => this.change((x) => delete x.botSet));
@@ -2470,10 +2506,12 @@ export class FrontEnd {
     this.setStatus(gone ?? '');
     this.setupScroll = 0;
     this.folds.delete('setup-saved');
+    if (this.pause) return this.refreshSetup();
     this.go('play');
   }
 
   private saveSetup(): void {
+    if (this.pause) return;
     storage('cs.arcade', JSON.stringify(this.setup));
   }
 
@@ -2499,6 +2537,36 @@ export class FrontEnd {
     if (playlist) return o.spectate ? undefined : this.hooks.playPlaylist(this.setup.playlist!, fill, this.setup.skill, this.setup.botSet ?? null);
     // Team modes: bots fill every team to its size and you take a place on one; otherwise the bot filler counts you too.
     this.hooks.playLocal(m.map, rules, fill, this.setup.skill, this.hostOnline, this.setup.botSet ?? null, !!o.spectate);
+  }
+
+  // ---------------------------------------------------------------- host: the pause menu's Host tab
+
+  /**
+   * Match Setup's own tabs (Match setup, Bots & AI, Rules, Presets) for the match being played, in the pause menu's
+   * Host tab (owner, 2026-11-19, "a"): `setup` the match as it plays, on its map (fixed: Change map moves it); every
+   * change goes to `onChange`, and `live` names the controls that apply now (the rest say At restart). `set` draws
+   * another setup; `close` ends it.
+   */
+  pauseSetup(o: { setup: MatchSetup; map: MapDocument; max: number; live: readonly string[]; onChange: (s: MatchSetup) => void }): { root: HTMLElement; set(s: MatchSetup): void; close(): void } {
+    // A map the list doesn't offer (a retired one, by ?offline=): drawn from the match's own copy.
+    const found = this.maps.find((m) => m.key === o.setup.map || m.metadata.id === o.setup.map) ?? { key: o.setup.map, metadata: o.map.metadata, load: () => Promise.resolve(o.map), blurb: '', modes: playableModes(o.map), bots: Math.max(0, o.setup.bots) };
+    // The menu's own setup goes (the same ids): the menu draws it again when it's back.
+    this.body.replaceChildren();
+    const root = el('div', { class: 'setup pause-setup', id: 'pause-setup' });
+    const p = { root, setup: { ...o.setup, map: found.key }, entry: Object.assign(Object.create(found) as ArcadeMap, { map: o.map }), max: o.max, live: o.live, onChange: o.onChange };
+    const draw = () => {
+      this.pause = p;
+      this.fillSetup(root);
+    };
+    draw();
+    return {
+      root,
+      set: (s) => {
+        p.setup = { ...s, map: found.key };
+        draw();
+      },
+      close: () => void (this.pause === p && (this.pause = null)),
+    };
   }
 
   // ---------------------------------------------------------------- host: change map mid-match
