@@ -23,6 +23,7 @@ import {
   freeHeightfield,
   freePolyMesh,
   freePolyMeshDetail,
+  markConvexPolyArea,
   markWalkableTriangles,
   NavMesh,
   NavMeshCreateParams,
@@ -49,6 +50,17 @@ import {
  * splits polygons at it, and tall bodies' route searches price it so they go round (NavWorld.findPath `tall`).
  */
 export const LOW_AREA = 3;
+
+/**
+ * A footprint cut out of the walkable area after its erosion (generateSolo `carve`): ground under it at heights from
+ * `hmin` to `hmax` is no navmesh, without the erosion's keep-off round it (an open door's leaf: nav/index.ts).
+ */
+export interface NavCarve {
+  /** The footprint's corners in order, x and z. */
+  points: readonly (readonly [number, number])[];
+  hmin: number;
+  hmax: number;
+}
 
 /** Low headroom's marking (soloNavMesh `low`): the clearance in metres under which ground is low, and how far round it (m). */
 export interface LowHeadroom {
@@ -150,7 +162,8 @@ function markLow(chf: RecastCompactHeightfield, low: LowHeadroom): number {
 
 /**
  * generateSoloNavMesh (recast-navigation/generators) as it is, step for step, with one step of our own: after the
- * walkable area's erosion, low headroom to LOW_AREA (`low`; none: the navmesh is the generator's own). Polygons of
+ * walkable area's erosion, low headroom to LOW_AREA (`low`; none: the navmesh is the generator's own) and `carve`'s
+ * footprints cut out. Polygons of
  * LOW_AREA get flags 1, as walkable ones do.
  */
 export function generateSolo(
@@ -159,6 +172,7 @@ export function generateSolo(
   config: Partial<RecastConfig> & { offMeshConnections?: OffMesh[] },
   keepIntermediates: boolean,
   low: LowHeadroom | null,
+  carve: readonly NavCarve[] = [],
 ): { success: true; navMesh: NavMesh; intermediates: SoloIntermediates; low: number } | { success: false; error: string; intermediates: SoloIntermediates } {
   const buildContext = new RecastBuildContext();
   const inter: SoloIntermediates = { type: 'solo', buildContext };
@@ -213,6 +227,12 @@ export function generateSolo(
   }
   if (!erodeWalkableArea(buildContext, rcConfig.walkableRadius, chf)) return fail('Failed to erode walkable area');
   const lowSpans = low ? markLow(chf, low) : 0;
+  for (const c of carve) {
+    const verts = new VerticesArray();
+    verts.copy(c.points.flatMap(([x, z]) => [x, 0, z]));
+    markConvexPolyArea(buildContext, verts, c.points.length, c.hmin, c.hmax, Recast.RC_NULL_AREA, chf);
+    verts.destroy();
+  }
   if (!buildDistanceField(buildContext, chf)) return fail('Failed to build distance field');
   if (!buildRegions(buildContext, chf, rcConfig.borderSize, rcConfig.minRegionArea, rcConfig.mergeRegionArea)) return fail('Failed to build regions');
   const contourSet = allocContourSet();

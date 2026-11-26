@@ -162,13 +162,15 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
     ],
   },
   // St. John's step 5 (Stangeland / Cord): the classroom bay. Along the hall (as far as the closed east end allows);
-  // into each classroom at its back door, to the back by the windows, along the front aisle past the rows, and out.
+  // into each classroom at its back door, to the back by the windows, and out. (The front aisle along the hall wall is
+  // shut by the open door's leaf when it stands on the aisle's side, the south room's, or the north one's mirrored: the
+  // leaf ends 0.66 m short of the desks; doorLeafBots.test, "a classroom's front aisle".)
   'setpiece.classroom_bay': {
-    chains: [[[-7, 0, 4], [0, 0, 4], [3, 0, 4]], ...[true, false].map((north): P3[] => (north ? [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]] : [[0, 0, 4], [2.4, 0, 1.2], [2.4, 0, -2.6], [-2.2, 0, 1.4], [0, 0, 4]]))],
+    chains: [[[-7, 0, 4], [0, 0, 4], [3, 0, 4]], ...[true, false].map((north): P3[] => (north ? [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [0, 0, 4]] : [[0, 0, 4], [2.4, 0, 1.2], [2.4, 0, -2.6], [0, 0, 4]]))],
   },
   // St. John's step 5b: the court door. Along the hall; in under the arch to the hall; into the north classroom.
   'setpiece.classroom_entry_bay': {
-    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]]],
+    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [0, 0, 4]]],
   },
   // St. John's step 6 (Welles): the mess hall bay. Along its middle and both sides past the tables and benches.
   // (With each choice of its Long walls here; the step 7d options, which move the floor, the furniture and the west
