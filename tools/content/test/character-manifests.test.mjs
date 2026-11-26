@@ -16,21 +16,26 @@ describe('character manifests', () => {
   it('turn into what the prepare tool builds', () => {
     // A model from the owner's Drive is Meshy Community CC0 unless the owner says they made it (2026-11-06): the Alien
     // Biker was recorded as owned until the owner said it was community too (the same day). Only a model the owner made,
-    // or one we generate through the Meshy API, is owned. (The Goblin, this test's first example, was removed 2026-11-25:
-    // the Pirate, another textured FBX rigged here from its landmarks, stands in.)
-    const pirate = buildSpec(list.find((m) => m.id === 'meshy_pirate'));
+    // or one we generate through the Meshy API, is owned. (The Goblin, this test's first example, was removed 2026-11-25,
+    // and the Pirate got the owner's rigged model 2026-11-26: Flt. Lt. Ember, another textured FBX rigged here from its
+    // landmarks, stands in.)
+    const pirate = buildSpec(list.find((m) => m.id === 'meshy_pilot'));
     expect(pirate.pack).toBe('meshy-community-characters');
-    expect(pirate.community).toEqual({ model: 'T Pose Pirate', date: '2026-07-14' });
+    expect(pirate.community).toEqual({ model: 'T Pose Pilot', date: '2026-05-10' });
     const biker = list.find((m) => m.id === 'meshy_alienbiker');
     expect(buildSpec(biker).pack).toBe('meshy-community-characters');
     expect(buildSpec(biker).community).toEqual({ model: 'stylized alien biker', date: '2026-11-01' });
     expect(buildSpec({ ...biker, source: { license: 'owned', author: 'the owner', date: '2026-11-01', url: null, file: biker.source.file } }).pack).toBe('meshy-owned');
-    expect(pirate.file.test('Meshy_AI_T_Pose_Pirate_0714_texture.fbx')).toBe(true);
-    expect(pirate.joints.LeftHandTip).toEqual([0.424, 0.732, -0.047]);
-    expect(pirate.joints.head_end).toEqual([0, 0.97, 0]);
+    expect(pirate.file.test('Meshy_AI_T_Pose_Pilot_0510_texture.fbx')).toBe(true);
+    expect(pirate.joints.LeftHandTip).toEqual([0.475, 0.748, -0.012]);
+    expect(pirate.joints.head_end).toEqual([0, 1, 0]);
     // A Meshy rigging task the owner ran (fetch-meshy.mjs downloads by it).
-    const ashwalker = buildSpec(list.find((m) => m.id === 'meshy_ashwalker'));
-    expect(ashwalker.meshy.rig).toBe('01a18a0b-1e9b-7362-a818-d0779745bb32');
+    const brannock = buildSpec(list.find((m) => m.id === 'meshy_brannock'));
+    expect(brannock.meshy.rig).toBe('01a18a02-443b-7442-ad18-a291c82dc28c');
+    // A replaced model (the owner's 2026-11-26 batch): owned, its rigged download matched by name.
+    const pirateNow = buildSpec(list.find((m) => m.id === 'meshy_pirate'));
+    expect(pirateNow.pack).toBe('meshy-owned');
+    expect(pirateNow.file.test('Meshy_AI_pirate_remeshed_15k_20261125_animated_mixamo_All_animation.glb')).toBe(true);
     // The Iron Knight's model since 2026-11-05: a community download (no task IDs), its triangle budget its own.
     const knight = buildSpec(list.find((m) => m.id === 'meshy_knight'));
     expect(knight.meshy).toBeUndefined();
@@ -180,12 +185,34 @@ describe('character manifests', () => {
 
   it('carry a Character Select collection (the Chrono Crew): a known one reaches the generated look, anything else is a problem', () => {
     const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_cat.json'), 'utf8'));
-    expect(COLLECTIONS).toEqual(['chrono']);
+    expect(COLLECTIONS).toEqual(['chrono', 'playhouse']);
     expect(manifestProblems({ ...good, collection: 'chrono' }, 'meshy_cat.json')).toEqual([]);
     for (const collection of ['Chrono', 'crew', '', null, 1]) expect(manifestProblems({ ...good, collection }, 'meshy_cat.json').join('\n')).toMatch(/collection: a Character Select collection/);
     const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
     expect(line({ ...good, collection: 'chrono' })).toMatch(/group: 'animals', collection: 'chrono'/);
     expect(line(good)).not.toMatch(/collection:/);
+  });
+
+  it('carry variant looks (the chimp, owner 2026-11-26): a labelled base, variants naming it, both reaching the generated look', () => {
+    const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_cat.json'), 'utf8'));
+    const base = { ...good, variant: 'Aviator' };
+    const v = { ...good, id: 'meshy_cat_roman', look: 'core.cat_roman', name: 'Roman Cat', order: 999, variant: 'Roman', variantOf: good.look };
+    expect(manifestProblems(base, 'meshy_cat.json')).toEqual([]);
+    expect(manifestProblems(v, 'meshy_cat_roman.json')).toEqual([]);
+    expect(manifestProblems({ ...v, variant: undefined }, 'meshy_cat_roman.json').join('\n')).toMatch(/variantOf: the base look/);
+    expect(manifestProblems({ ...v, variantOf: 'cat' }, 'meshy_cat_roman.json').join('\n')).toMatch(/variantOf: the base look/);
+    expect(manifestProblems({ ...v, variantOf: v.look }, 'meshy_cat_roman.json').join('\n')).toMatch(/variantOf: the base look/);
+    expect(manifestProblems({ ...base, variant: '' }, 'meshy_cat.json').join('\n')).toMatch(/variant: the look's label/);
+    const line = (m) => looksSource([m]).split('\n').find((l) => l.includes(`id: '${m.look}'`));
+    expect(line(v)).toMatch(/variant: 'Roman', variantOf: 'core\.biscuit'/);
+    expect(line(base)).toMatch(/variant: 'Aviator'/);
+    expect(line(good)).not.toMatch(/variant/);
+    // The shipped chimp: one base and nine variants, each keeping the base's group and size.
+    const all = readManifests({ ready: true });
+    const chimp = all.filter((m) => m.look === 'core.chimp' || m.variantOf === 'core.chimp');
+    expect(chimp).toHaveLength(10);
+    expect(new Set(chimp.map((m) => m.variant)).size).toBe(10);
+    for (const m of chimp) expect([m.group, m.size], m.id).toEqual(['animals', 'small']);
   });
 
   it('an experimental character named by an NPC role or by Roulette is a problem', () => {

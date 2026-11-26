@@ -10,25 +10,22 @@
   "nameTheme": "townsfolk",
   "bio": "Ninety-three, still drives, still wins.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-05 (\"An old man in his 90s presented in a\", rigged and animated on Meshy (Mixamo joint names read as Meshy's; finger chains, where it has them, folded into the hands and refitted by hands.mjs; its clips not used)). An old man in his 90s in a shirt and slacks. A new character (owner, 2026-11-05), not Uncle Bao or Elder Tomo. 122k triangles: rebaked. Display name a placeholder for the owner. Licence: Meshy Community, CC0 per the owner (2026-11-05: most of this intake is community, not owned); author and post URL pending from the owner (HANDOFF.md).",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Old Timer's model until 2026-11-26 (a Meshy Community CC0 model \"An old man in his 90s presented in a\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"old timer rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
-    "community": {
-      "model": "An old man in his 90s presented in a"
-    },
-    "date": "2026-11-05",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_An_old_man_in_his_90s_presented_in_a_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_old_timer_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
-    "triangles": 14000,
-    "surface": "rebake",
+    "triangles": 11000,
     "headShare": 0.16,
+    "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
     "feet": true

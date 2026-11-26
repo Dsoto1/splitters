@@ -10,20 +10,17 @@
   "nameTheme": "gangster",
   "bio": "Rides with the pack, shoots with the pack, and never once waited at a red light.",
   "body": "female",
-  "notes": "Drive, 2026-11-02 (\"Biker Gang Girl\", rigged; the owner's download \"Meshy_AI_Biker_Gang_Girl_All_Animations.glb\"). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints are not used: the hands are fitted by hands.mjs). A CC0 Meshy community model that the owner rigged and animated on their Meshy account (licence per the owner, 2 Nov), like the clip set's sources (content/clip-sets/shooter.json, where its clips were measured). It moves with the shared clip set. Hands: fingerless gloves whose fingers are modelled fused, with shallow gaps that the splitter read as fingers (the left hand crumpled into shards on the grip): both hands bend as mittens (fixes.hands.mitten, curl 0.9). Her bare low-poly fingertips still fold sharply against the dark glove up close; the curl test on her shooting hand stays flat (grip audit 3, as WWII Infantry's). Name a placeholder.",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Biker Gang Girl's model until 2026-11-26 (a Meshy Community CC0 model \"Biker Gang Girl\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"biker girl rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Biker Gang Girl"
-    },
-    "date": "2026-11-02",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Biker_Gang_Girl_All_Animations(-\\d+)?\\.glb$"
+    "file": "^Meshy_AI_biker_girl_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0.05,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
@@ -31,10 +28,6 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true,
-    "hands": {
-      "mitten": true,
-      "curl": 0.9
-    }
+    "feet": true
   }
 }

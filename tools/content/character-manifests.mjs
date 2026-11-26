@@ -54,7 +54,7 @@ const HEX = /^#[0-9a-f]{6}$/;
 export const TIERS = ['core', 'experimental'];
 export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'];
 /** Character Select's collections (CHARACTER_COLLECTIONS in looks.ts, a test keeps them equal): a section of its own for a set of characters, whatever their tier; `collection` in a manifest. */
-export const COLLECTIONS = ['chrono'];
+export const COLLECTIONS = ['chrono', 'playhouse'];
 /** Soldiers & Spies' sub-designators (`branch`; CHARACTER_BRANCHES in looks.ts, a test keeps them equal): every character in `soldiers` names one, no other does. */
 export const BRANCHES = { army: 'soldiers', agency: 'soldiers' };
 /** What a character bleeds (`blood`; BLOOD_KINDS in looks.ts, a test keeps them equal): every built manifest names one (docs/CHARACTERS.md, "Blood"). */
@@ -155,6 +155,10 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   }
   need(BLOOD.includes(m.blood), `blood: what it bleeds when hit (${BLOOD.join(', ')}): red for people, green or blue for aliens, oil for robots and machines, bone for skeletons, stone for statues, spirit for ghosts`);
   need(m.collection === undefined || (COLLECTIONS.includes(m.collection) && isPlayable(m)), `collection: a Character Select collection it is listed in (${COLLECTIONS.join(', ')}), or left out (its group's section)`);
+  // Variants (owner, 2026-11-26: the chimp's 10 looks): one character on Character Select, its other looks picked on
+  // its variant picker. The base names its own variant's label (`variant`); each other look names the base (`variantOf`).
+  need(m.variant === undefined || (typeof m.variant === 'string' && m.variant.length > 0 && m.variant.length <= 20), 'variant: the look\'s label on the variant picker (1–20 characters), or left out');
+  need(m.variantOf === undefined || (typeof m.variantOf === 'string' && /^core\.[a-z0-9_]+$/.test(m.variantOf) && m.variantOf !== m.look && m.variant !== undefined && isPlayable(m)), 'variantOf: the base look (core.<name>) this is a variant of, with its own `variant` label');
   need(m.sortAs === undefined || (typeof m.sortAs === 'string' && m.sortAs.length > 0 && m.sortAs.length <= 24), 'sortAs: the name Character Select lists it as (1–24 characters), or left out');
   need(m.nameTheme === undefined || NAME_THEMES.includes(m.nameTheme), `nameTheme: the kind of creature, for its bots' names (${NAME_THEMES.join(', ')}); left out: its group's (soldiers: soldier)`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
@@ -336,6 +340,11 @@ export function readManifests({ ready = false } = {}) {
       seen.set(m[key], m.id);
     }
   }
+  for (const m of built.filter((x) => x.variantOf)) {
+    const base = built.find((o) => o.look === m.variantOf);
+    if (!base || base.variantOf || base.variant === undefined) problems.push(`${m.id}.json: variantOf ${m.variantOf} names no base look with a variant label of its own`);
+    else if (['group', 'collection', 'tier', 'body'].some((k) => base[k] !== m[k])) problems.push(`${m.id}.json: a variant keeps its base's group, collection, tier and body`);
+  }
   if (problems.length) throw new Error(`character manifests:\n  ${problems.join('\n  ')}`);
   return (ready ? built : list).sort((a, b) => (a.order ?? Infinity) - (b.order ?? Infinity) || a.id.localeCompare(b.id));
 }
@@ -469,7 +478,7 @@ function lookLine(m) {
   const body = (fp.body === false ? ', body: false' : '') + hold + grip;
   const dyes = ['skin', 'cloth', 'trim'].filter((k) => fp[k]).map((k) => `, ${k}: ${q(fp[k])}`).join('');
   const whole = own ? `whole: { arms: ${q(armsOf(m))}${body} }` : `whole: { arms: ${q(fp.arms ?? universalArms(m))}${dyes}${body} }`;
-  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.collection ? [`collection: ${q(m.collection)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
+  const parts = [`id: ${q(m.look)}`, `name: ${q(m.name)}`, `body: ${q(m.body)}`, "head: ''", `parts: [${q(m.id)}]`, 'hair: []', 'colorways: []', 'skin: null', 'hairColor: null', ...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), whole, ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.collection ? [`collection: ${q(m.collection)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.variant ? [`variant: ${q(m.variant)}`] : []), ...(m.variantOf ? [`variantOf: ${q(m.variantOf)}`] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  { ${parts.join(', ')} },`;
 }
 

@@ -6002,7 +6002,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,animals,playhouse,machines,horror,mine' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -6073,6 +6073,21 @@ async function offlineFlow(browser) {
   await page.keyboard.press('Enter');
   const kbChose = await front();
   check(kbShown.shown === pickC && kbShown.look === pickA && kbChose.look === pickC, `keyboard: Enter on a portrait shows them, Enter again chooses (${kbShown.shown} / ${kbChose.look})`);
+  // The chimp's variants (owner, 2026-11-26): one tile; its picker shows each look, Choose takes the one shown, and the
+  // chimp's tile wears the Chosen badge for any of them. Unlocked for now (CHARACTER_LOCKS_ON off).
+  await openChars();
+  check((await page.$(tileOf('core.chimp_roman'))) === null && (await page.$(tileOf('core.chimp'))) !== null, 'the chimp is one tile (its variants have none of their own)');
+  await page.click(tileOf('core.chimp'));
+  const variantBtns = await page.$$eval('#char-variants .char-variant', (bs) => bs.map((b) => ({ look: b.dataset.look, on: b.classList.contains('on'), locked: b.classList.contains('locked') })));
+  await page.click('#char-variants .char-variant[data-look="core.chimp_roman"]');
+  const roman = await front();
+  await page.click('#char-choose');
+  const choseRoman = await front();
+  await openChars();
+  const badged = (await page.$(`${tileOf('core.chimp')} .chosen-badge`)) !== null;
+  const shownOn = await page.$$eval('#char-variants .char-variant.on', (bs) => bs.map((b) => b.dataset.look));
+  check(variantBtns.length === 10 && variantBtns[0].look === 'core.chimp' && variantBtns[0].on && variantBtns.every((b) => !b.locked) && roman.shown === 'core.chimp_roman' && choseRoman.look === 'core.chimp_roman' && badged && shownOn.join() === 'core.chimp_roman', `the chimp's variant picker: ten looks, all open, a click shows one, Choose takes it, the tile wears Chosen (${variantBtns.length}, ${roman.shown}, ${choseRoman.look}, ${badged}, ${shownOn})`);
+  await page.keyboard.press('Escape');
   await openChars();
   await page.dblclick(tileOf(mine));
   check((await front()).look === mine, 'a double-click on a portrait chooses them');

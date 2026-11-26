@@ -25,7 +25,13 @@ export const CHARACTER_TIERS: readonly CharacterTier[] = ['core', 'experimental'
 export const CHARACTER_TIER_LABELS: Record<CharacterTier, string> = { core: 'Core', experimental: 'Experimental' };
 export const characterTier = (look: { tier?: CharacterTier | undefined }): CharacterTier => look.tier ?? 'core';
 /** The looks of a roster an automatic pick may draw (a bot's, a random character's, Roulette's): its core tier, in order. */
-export const pickableLooks = <T extends { tier?: CharacterTier | undefined }>(roster: readonly T[]): T[] => roster.filter((l) => characterTier(l) === 'core');
+export const pickableLooks = <T extends { tier?: CharacterTier | undefined; variantOf?: string | undefined }>(roster: readonly T[]): T[] => roster.filter((l) => characterTier(l) === 'core' && !l.variantOf);
+/** A look's variants in picker order, the base first (empty for a look with none): the base's `variant` and each look naming it in `variantOf`. */
+export const lookVariants = <T extends { id: string; variant?: string | undefined; variantOf?: string | undefined }>(roster: readonly T[], id: string): T[] => {
+  const baseId = roster.find((l) => l.id === id)?.variantOf ?? id;
+  const base = roster.find((l) => l.id === baseId && l.variant !== undefined);
+  return base ? [base, ...roster.filter((l) => l.variantOf === baseId)] : [];
+};
 
 export interface CharacterLook {
   id: string;
@@ -83,6 +89,13 @@ export interface CharacterLook {
   branch?: CharacterBranch;
   /** A Character Select collection it is listed in instead of its group's section (CHARACTER_COLLECTIONS; `collection` in its manifest). */
   collection?: CharacterCollection;
+  /**
+   * Variant looks (owner, 2026-11-26: the chimp's): `variant` is this look's label on Character Select's variant picker;
+   * a look with `variantOf` is one of the base look's variants, off the roster's tiles (picked on the base's picker)
+   * and off automatic picks. `variant` and `variantOf` in its manifest.
+   */
+  variant?: string;
+  variantOf?: string;
   /** Character Select lists it as if it were named this (`sortAs` in its manifest; the owner's order): left out, its name. */
   sortAs?: string;
   /** Its tier (`tier` in its manifest; characterTier below): absent = core, as every character offered before the tiers. */
@@ -162,7 +175,7 @@ export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_G
  * whatever their tier (an experimental one stays out of automatic picks, but not out of its collection's section).
  * `collection` in a manifest; the checker's list (COLLECTIONS in character-manifests.mjs) matches this one.
  */
-export const CHARACTER_COLLECTIONS = [{ id: 'chrono', label: 'Chrono Crew', after: 'space' }] as const satisfies readonly { id: string; label: string; after: CharacterGroup }[];
+export const CHARACTER_COLLECTIONS = [{ id: 'chrono', label: 'Chrono Crew', after: 'space' }, { id: 'playhouse', label: 'The Playhouse', after: 'animals' }] as const satisfies readonly { id: string; label: string; after: CharacterGroup }[];
 /**
  * Places in a collection kept for a character the story unlocks (owner, 2026-11-25): until the look is unlocked
  * (campaign progress `characters`), Character Select shows an "Unknown" tile in its place. The Chrono Crew's 14th is
@@ -375,7 +388,6 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // the owner's own (the seven already off the roster too, since the removal below). The goblin, otter and
   // strongman NPC roles are drawn as the owner's own Goblina, Ottis Crema and Ignatius Slagg (content/npcs.json).
   'core.bogdan': 'core.magmajuggernaut', // Big Bogdan -> Ignatius Slagg (the Strongman role's look too)
-  'core.rourke': 'core.outlawranger', // Rourke -> Cutter McCrae
   'core.saintnick': 'core.elder', // Santa -> Elder Tomo (white-bearded)
   'core.umpire': 'core.vintagepro', // Umpire -> Coffee Brown (the vintage ball player)
   // Owner, 2026-11-25 ("i dont want to support them and they are not my models"): every retired look whose model isn't

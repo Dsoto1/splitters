@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, lookVariants, pickableLooks, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { BRANCHES, COLLECTIONS, GROUPS, readManifests } from '../../../tools/content/character-manifests.mjs';
 
@@ -137,6 +137,32 @@ describe("Character Select's groups", () => {
     expect(getLook('core.magmajuggernaut').group).toBe('legends');
   });
 
+  it('the chimp is one character with ten variant looks (owner, 2026-11-26): the base first, the rest off automatic picks', () => {
+    const v = lookVariants(CORE_LOOKS, 'core.chimp');
+    expect(v).toHaveLength(10);
+    expect(v[0]!.id).toBe('core.chimp');
+    expect(new Set(v.map((l) => l.variant)).size).toBe(10);
+    // From any of its looks, the same list; a look with none has none.
+    expect(lookVariants(CORE_LOOKS, 'core.chimp_roman').map((l) => l.id)).toEqual(v.map((l) => l.id));
+    expect(lookVariants(CORE_LOOKS, 'core.dale')).toEqual([]);
+    for (const l of v.slice(1)) {
+      expect(l.variantOf, l.id).toBe('core.chimp');
+      expect(PICKABLE_LOOKS.some((p) => p.id === l.id), l.id).toBe(false);
+      expect(validLookId(l.id), l.id).toBe(l.id);
+    }
+    expect(PICKABLE_LOOKS.some((p) => p.id === 'core.chimp')).toBe(true);
+    expect(pickableLooks([{ id: 'a' }, { id: 'b', variantOf: 'a' }]).map((l) => l.id)).toEqual(['a']);
+  });
+
+  it('the Playhouse (owner, 2026-11-26): the toys get a section of their own after Animalia; they keep their groups', () => {
+    const ids = characterSections(CORE_LOOKS.filter((l) => !l.variantOf).map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine' }))).map((s) => s.id);
+    expect(ids.indexOf('playhouse')).toBe(ids.indexOf('animals') + 1);
+    expect(CHARACTER_COLLECTIONS.find((c) => c.id === 'playhouse')?.label).toBe('The Playhouse');
+    const toys = CORE_LOOKS.filter((l) => l.collection === 'playhouse');
+    expect(toys.map((l) => l.id).sort()).toEqual(['core.brickman', 'core.cymbalmonkey', 'core.jackinthebox', 'core.radishman', 'core.ragdoll', 'core.windupbot']);
+    for (const t of toys) expect(t.group, t.id).toBeTruthy();
+  });
+
   it("retired looks that aren't the owner's own models are gone entirely, and every removed one plays one of the owner's own (owner, 2026-11-25)", () => {
     const manifests = readManifests() as { look?: string; source: { license: string } }[];
     const byLook = new Map(manifests.filter((m) => m.look).map((m) => [m.look!, m]));
@@ -145,7 +171,7 @@ describe("Character Select's groups", () => {
       const m = byLook.get(old);
       if (m) expect(m.source.license, old).toBe('owned');
     }
-    const removed = ['core.astroexplorer', 'core.neonninja', 'core.neonguardian', 'core.brasshare', 'core.bigbab', 'core.tortoise', 'core.giggles', 'core.rustwalker', 'core.slugger', 'core.vampire', 'core.dusttrooper', 'core.rotter', 'core.shade', 'core.tposesoldier1', 'core.tposesoldier2', 'core.panda', 'core.nova', 'core.unclebao', 'core.bill', 'core.hector', 'core.bogdan', 'core.otter', 'core.hollowvisitor', 'core.crimsonop', 'core.goblin', 'core.rourke', 'core.rustymech', 'core.saintnick', 'core.umpire'];
+    const removed = ['core.astroexplorer', 'core.neonninja', 'core.neonguardian', 'core.brasshare', 'core.bigbab', 'core.tortoise', 'core.giggles', 'core.rustwalker', 'core.slugger', 'core.vampire', 'core.dusttrooper', 'core.rotter', 'core.shade', 'core.tposesoldier1', 'core.tposesoldier2', 'core.panda', 'core.nova', 'core.unclebao', 'core.bill', 'core.hector', 'core.bogdan', 'core.otter', 'core.hollowvisitor', 'core.crimsonop', 'core.goblin', 'core.rustymech', 'core.saintnick', 'core.umpire'];
     for (const old of removed) {
       expect(byLook.has(old), old).toBe(false);
       const now = RETIRED_LOOKS[old]!;
@@ -155,8 +181,10 @@ describe("Character Select's groups", () => {
     }
   });
 
-  it('eleven characters are gone entirely (owner, 2026-11-25): a saved choice or bot set plays a near kept look', () => {
-    const gone = ['core.bill', 'core.hector', 'core.bogdan', 'core.otter', 'core.hollowvisitor', 'core.crimsonop', 'core.goblin', 'core.rourke', 'core.rustymech', 'core.saintnick', 'core.umpire'];
+  it('eleven characters were removed (owner, 2026-11-25; Rourke back on 2026-11-26 with the owner\'s new model): a saved choice or bot set plays a near kept look', () => {
+    expect(CORE_LOOKS.find((l) => l.id === 'core.rourke')?.name).toBe('Rourke');
+    expect(validLookId('core.rourke')).toBe('core.rourke');
+    const gone = ['core.bill', 'core.hector', 'core.bogdan', 'core.otter', 'core.hollowvisitor', 'core.crimsonop', 'core.goblin', 'core.rustymech', 'core.saintnick', 'core.umpire'];
     for (const id of gone) {
       expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
       expect(PICKABLE_LOOKS.some((l) => l.id === id), id).toBe(false);

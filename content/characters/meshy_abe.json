@@ -11,36 +11,24 @@
   "bio": "Four score and seven rounds ago. Has never told a lie about a headshot.",
   "body": "male",
   "size": "large",
-  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): rigged in Meshy (the All Animations GLB; its clips are not used). Its rig names its joints the Mixamo way (mixamorig:Hips ...), read as Meshy's. Abraham Lincoln in a stovepipe hat, frock coat and waistcoat. Hands: his right hand's fingers were read as split (the thumb gap) and crumpled into shards, so it bends as a mitten (`mitten`, curl 1.2); his left measures as a fist, and curled fully it bends away from the grip, so curl 0.4. 2026-11-03: large (owner: \"should be large model\").",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Honest Abe's model until 2026-11-26 (a Meshy Community CC0 model \"Abraham Lincoln with All Animations\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"AbeLincolnRigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Abraham Lincoln with All Animations"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "file": "^Meshy_AI_Abraham_Lincoln_with__All_Animations\\.glb$"
+    "file": "^Meshy_AI_AbeLincolnRigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true,
-    "hands": {
-      "l": {
-        "curl": 0.4
-      },
-      "r": {
-        "mitten": true,
-        "curl": 1.2
-      }
-    },
-    "grip": {
-      "curlR": 0.6,
-      "curlL": 0.6
-    }
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }

@@ -10,30 +10,24 @@
   "nameTheme": "undead",
   "bio": "Sailed off the edge of the map and came back lighter.",
   "body": "male",
-  "notes": "Not in the intake queue: found among the owner's downloads (2026-10-29) and brought in as a new character (named here; the owner reviews it on the grip and portrait sheets). Rigged by Meshy's rigging API from the unrigged textured GLB (source.modelUrl \"upload\"). Licence (the owner's rule, 2026-11-06: models from the owner's Drive are Meshy Community CC0 unless the owner says they made them): recorded as Meshy Community, CC0 per the owner; it was recorded as owned before, with no record of the owner saying they made it (provenance audit, HANDOFF.md \"Intake of 2026-11-06\"). Post URL pending; if the owner made it, it goes back to owned.",
+  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Bonejack's model until 2026-11-26 (a Meshy Community CC0 model \"The object is a reali\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"rigged bonejack\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "The object is a reali"
-    },
-    "date": "2026-10-29",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
     "url": null,
-    "modelUrl": "upload",
-    "file": "^Meshy_AI_The_object_is_a_reali_\\d+_(image-to-3d-)?texture\\.glb$",
-    "meshy": {
-      "rig": "01a18a0a-85ac-77dc-94a8-df489f7fe426"
-    }
+    "file": "^Meshy_AI_rigged_bonejack_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
-    "metallic": 0,
-    "roughness": 0.75
+    "metallic": 0.1,
+    "roughness": 0.6
   },
   "fixes": {
     "triangles": 11000,
-    "feet": true,
-    "grip": {
-      "curlR": 1.6
-    }
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }
