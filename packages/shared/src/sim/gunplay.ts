@@ -898,6 +898,9 @@ export function entityMaterial(e: MapEntity): BallisticMaterial {
       return DESTRUCTIBLE_MATERIAL[e.model] ?? 'wood';
     case 'door':
       return 'wood';
+    // A Practice Target is hardened steel: rounds stop on it.
+    case 'target':
+      return 'armor';
     case 'block':
       return surfaceMaterial(e.material);
     case 'prop':

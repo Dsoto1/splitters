@@ -480,6 +480,12 @@ export type GameEvent =
   | { e: 'broken'; i: number }
   /** Bulletproof glass at scenario index `i` took a hit and cracked further (sim/glass.ts). */
   | { e: 'crack'; i: number }
+  /**
+   * A Practice Target at entity index `i` was hit by `s` (null: a blast nobody owns): `z` the zone (0 body, 1 head,
+   * 2 legs), `n` what that hit would do to a player there (after falloff; pellets of one shot summed), `p` the pellets
+   * that struck when more than one, `d` the shooter's distance in metres.
+   */
+  | { e: 'thit'; i: number; s: number | null; z: 0 | 1 | 2; n: number; d: number; p?: number }
   /** A player pressed a button, or was refused (locked door, disabled button). */
   | { e: 'use'; s: number; i: number; ok: 0 | 1 }
   /** Team leaders: `s` now leads `team` ('lead'), or `team`'s leader went down ('down'; Leader variant: `n` points to the killer's side). */

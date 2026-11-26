@@ -83,6 +83,9 @@ import {
   CORE_LOOKS,
   getLook,
   FIGURE_POSES,
+  TARGET_STYLES,
+  TARGET_STYLE_LABELS,
+  type TargetStyle,
   FIGURE_POSE_LABELS,
   type FigurePose,
 } from '@tiletrigger/shared';
@@ -496,6 +499,18 @@ export class EntityInspector {
         el.append(row('Character', sel));
         choose('Pose', FIGURE_POSES.map((p) => [p, FIGURE_POSE_LABELS[p]] as const), e.pose, (v) => ({ pose: v as FigurePose }));
         el.append(small('A character standing here in a pose, for scenarios and set dressing: anyone on the roster. Looks only: players walk through it; stand it on a block or a prop to make it solid.'));
+        break;
+      }
+      case 'target': {
+        choose('Look', TARGET_STYLES.map((t) => [t, TARGET_STYLE_LABELS[t]] as const), e.style, (v) => ({ style: v as TargetStyle }));
+        el.lastElementChild?.querySelector('select')?.setAttribute('id', 'ed-insp-target-style');
+        toggle('Stays up when hit', !!e.stays, (v) => ({ stays: v || undefined }));
+        el.lastElementChild?.querySelector('input')?.setAttribute('id', 'ed-insp-target-stays');
+        if (!e.stays) {
+          number('Stands up after (s)', e.resetSeconds, 0.5, (v) => ({ resetSeconds: clamp(v, 0.5, 30) }));
+          el.lastElementChild?.querySelector('input')?.setAttribute('id', 'ed-insp-target-reset');
+        }
+        el.append(small('A steel practice target: each of your hits on it reads out the zone (head, body or legs on the silhouette), how far you stood, what that round would do to a player there and how many such hits down a fresh one. Unless it stays up it knocks back flat on a hit and stands again after the time above; a blast knocks it down too. Rounds stop on it. Face it toward the firing line; a Sign light beside it marks the distance. Logic: "Target hit" on each hit, "Object destroyed" as it goes down.'));
         break;
       }
       case 'hostage':

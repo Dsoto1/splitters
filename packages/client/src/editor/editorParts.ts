@@ -125,6 +125,8 @@ export const SCENARIO_ICONS: Record<ScenarioPaletteKey, string> = {
   door_locked: '<rect x="12" y="10" width="15" height="38" fill="#6f7884"/><rect x="29" y="10" width="15" height="38" fill="#6f7884"/><rect x="12" y="28" width="32" height="4" fill="#e3b021"/><circle cx="28" cy="6" r="3" fill="#e0412f"/><rect x="23" y="34" width="10" height="9" rx="1" fill="#e0412f"/><path d="M25 34v-3a3 3 0 0 1 6 0v3" stroke="#e0412f" stroke-width="2" fill="none"/>',
   flag: '<ellipse cx="28" cy="48" rx="16" ry="5" fill="#2a2f3a" stroke="#e2703a" stroke-width="2"/><rect x="18" y="8" width="3" height="40" fill="#c9ccd2"/><path d="M21 10h22l-5 8 5 8H21z" fill="#e2703a"/>',
   figure: '<circle cx="28" cy="13" r="6" fill="#c9a26b"/><path d="M20 50l3-18-6-8 11-3 11 3-6 8 3 18h-5l-3-13-3 13z" fill="#c9a26b"/><path d="M8 52h40" stroke="#6a5a48" stroke-width="3"/>',
+  'target:silhouette': '<circle cx="28" cy="11" r="5.5" fill="#e39a33"/><path d="M21 19h14l4 4v13h-5v14h-12V36h-5V23z" fill="#ebe5d6"/><path d="M12 52h32" stroke="#3a3d42" stroke-width="3"/><path d="M44 12h6M47 9v6" stroke="#e39a33" stroke-width="2"/>',
+  'target:plate': '<rect x="26" y="30" width="4" height="20" fill="#3a3d42"/><circle cx="28" cy="20" r="13" fill="#e39a33"/><circle cx="28" cy="20" r="5" fill="none" stroke="#ebe5d6" stroke-width="2"/><path d="M16 52h24" stroke="#3a3d42" stroke-width="3"/>',
   hostage: '<circle cx="28" cy="16" r="7" fill="#e8d8a0"/><path d="M18 46V30q0-6 10-6t10 6v16" fill="#e8d8a0"/><path d="M14 34h28" stroke="#3ddc84" stroke-width="3"/>',
   rescue: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#3ddc84" fill-opacity=".25" stroke="#3ddc84" stroke-width="2"/><path d="M20 30l8-12 8 12M28 18v18" stroke="#3ddc84" stroke-width="3" fill="none"/>',
   bombsite: '<ellipse cx="28" cy="40" rx="22" ry="9" fill="#ff7a2a" fill-opacity=".25" stroke="#ff7a2a" stroke-width="2"/><text x="28" y="32" font-size="26" font-weight="bold" text-anchor="middle" fill="#ff7a2a">A</text>',
@@ -291,6 +293,7 @@ export function pickRadius(e: MapEntity): number {
       return 2.5;
     case 'hostage':
     case 'figure':
+    case 'target':
       return 0.8;
     case 'flag':
       return 1.1;

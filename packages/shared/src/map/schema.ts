@@ -771,6 +771,31 @@ export const FigureEntity = EntityBase.extend({
   pose: z.enum(FIGURE_POSES).default('stand'),
 });
 
+/**
+ * How a Practice Target looks (TargetEntity): a steel silhouette the size of a player (head, body and legs zones, as a
+ * player's hits count) or a round steel plate on a post (one zone: body).
+ */
+export const TARGET_STYLES = ['silhouette', 'plate'] as const;
+export type TargetStyle = (typeof TARGET_STYLES)[number];
+export const TARGET_STYLE_LABELS: Record<TargetStyle, string> = { silhouette: 'Steel silhouette', plate: 'Steel plate' };
+
+/**
+ * A Practice Target (v55; owner, 2026-11-19: the Practice range): a steel target on a stand that reports each hit to
+ * the shooter (the zone, how far, what that round would do to a player there and how many such hits down a fresh one)
+ * and, unless it `stays`, knocks back flat on a hit and stands up again after `resetSeconds`. Rounds stop on it;
+ * blasts knock it down too. Logic: "Target hit" fires on each hit (the shooter as instigator), "Object destroyed" as
+ * it goes down.
+ */
+export const TargetEntity = EntityBase.extend({
+  kind: z.literal('target'),
+  yaw: Yaw,
+  style: z.enum(TARGET_STYLES).default('silhouette'),
+  /** Stays standing when hit (rings and rocks instead): for sprays and bursts. Absent: it knocks down. */
+  stays: z.boolean().optional(),
+  /** Seconds a knocked-down target stays down. */
+  resetSeconds: z.number().min(0.5).max(30).default(2),
+});
+
 /** Hostage mode: where rescuers bring hostages out. */
 export const RescueEntity = EntityBase.extend({
   kind: z.literal('rescue'),
@@ -893,7 +918,7 @@ export const ZiplineEntity = EntityBase.extend({
   sag: z.number().min(0).max(0.1).default(0.03),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity, SectorEntity, ObjectiveEntity, FigureEntity]);
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity, SectorEntity, ObjectiveEntity, FigureEntity, TargetEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -1507,6 +1532,7 @@ export type SectorEntity = z.infer<typeof SectorEntity>;
 export type ObjectiveEntity = z.infer<typeof ObjectiveEntity>;
 export type HostageEntity = z.infer<typeof HostageEntity>;
 export type FigureEntity = z.infer<typeof FigureEntity>;
+export type TargetEntity = z.infer<typeof TargetEntity>;
 export type RescueEntity = z.infer<typeof RescueEntity>;
 export type LightEntity = z.infer<typeof LightEntity>;
 export type AirplaneEntity = z.infer<typeof AirplaneEntity>;

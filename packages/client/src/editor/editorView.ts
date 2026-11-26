@@ -1413,6 +1413,8 @@ function selectionSize(e: MapEntity): number {
     case 'hostage':
     case 'figure':
       return 1.2;
+    case 'target':
+      return 2;
     case 'flag':
       return 2.6;
     case 'trap':

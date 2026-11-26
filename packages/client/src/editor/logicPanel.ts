@@ -47,6 +47,7 @@ const EVENT_FOR_KIND: Partial<Record<MapEntity['kind'], EventType>> = {
   trap: 'trap_fired',
   pickup: 'pickup_taken',
   encounter: 'encounter_cleared',
+  target: 'target_hit',
 };
 
 const action = (type: ActionType, extra: Partial<LogicAction> = {}): LogicAction => ({ type, target: null, value: 0, text: '', state: '', ...extra });

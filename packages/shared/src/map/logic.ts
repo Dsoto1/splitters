@@ -14,7 +14,7 @@ import { z } from 'zod';
 const LogicId = z.string().regex(/^[A-Za-z0-9_-]{4,64}$/, 'IDs must be 4-64 chars of [A-Za-z0-9_-]');
 
 /** What a `target` field refers to. */
-export type TargetKind = 'door' | 'button' | 'destructible' | 'zone' | 'trap' | 'pickup' | 'encounter' | 'toggleable' | 'light' | 'block' | 'mover' | 'variable' | 'timer' | 'objective';
+export type TargetKind = 'door' | 'button' | 'destructible' | 'zone' | 'trap' | 'pickup' | 'encounter' | 'toggleable' | 'light' | 'block' | 'mover' | 'variable' | 'timer' | 'objective' | 'target';
 
 export const EVENT_TYPES = [
   'match_start',
@@ -33,6 +33,7 @@ export const EVENT_TYPES = [
   'encounter_cleared',
   'npc_killed',
   'mover_arrived',
+  'target_hit',
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];
 
@@ -53,6 +54,8 @@ export const EVENT_INFO: Record<EventType, { label: string; target: TargetKind |
   encounter_cleared: { label: 'Encounter cleared', target: 'encounter' },
   npc_killed: { label: 'An NPC dies', target: 'encounter' },
   mover_arrived: { label: 'Mover arrives at a point', target: 'mover' },
+  /** A Practice Target (v55) took a round or a blast; the shooter is the instigator. */
+  target_hit: { label: 'Target hit', target: 'target' },
 };
 
 export const COMPARE_OPS = ['==', '!=', '<', '<=', '>', '>='] as const;
@@ -246,7 +249,7 @@ export const TOGGLEABLE_KINDS = ['button', 'zone', 'trap', 'pickup', 'block', 'm
 /** Whether an entity of `kind` can be a rule's target of this kind (`breakable`: a prop that can be shot apart, which fires "destroyed" too). */
 export function entityFitsTarget(kind: string, target: TargetKind, breakable = false): boolean {
   if (target === 'toggleable') return (TOGGLEABLE_KINDS as readonly string[]).includes(kind);
-  if (target === 'destructible') return kind === 'destructible' || kind === 'block' || (kind === 'prop' && breakable);
+  if (target === 'destructible') return kind === 'destructible' || kind === 'block' || kind === 'target' || (kind === 'prop' && breakable);
   return kind === target;
 }
 

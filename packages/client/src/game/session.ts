@@ -168,6 +168,7 @@ import {
   DEFAULT_LOOK,
 } from '@tiletrigger/shared';
 import { LEAN, PROJECTILE_VISUALS, leanShift, dodgeTicks } from '@tiletrigger/shared';
+import { targetReadout } from './targetReadout.ts';
 import { MapVoteHud } from './mapVoteHud.ts';
 import { myParty } from './party.ts';
 import { GameplayFxWatch } from './gameplayFxWatch.ts';
@@ -2934,8 +2935,14 @@ export class GameSession {
             // A trap going off (content/vfx.json map.gameplay: trap.<type>).
             const e = this.map?.entities[ev.i];
             if (e?.kind === 'trap') this.view.playGameplayFx(`trap.${e.trap}`, { x: e.position[0], y: e.position[1] + 0.3, z: e.position[2] });
+          } else if (ev.e === 'thit') {
+            // A Practice Target (map v55): it rocks on its hinge; your own hit is read out on the pickup line.
+            this.view.scenario.targetHit(ev.i, ev.z);
+            if (ev.s === this.slot) this.hud.targetReadout(targetReadout(ev));
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
+            // A Practice Target knocked down: it falls on its hinge (scenario state), no debris.
+            if (e?.kind === 'target') continue;
             // Glass (window panes past the entities, glass blocks, Window panes): a shower of shards.
             const pane = this.view.scenario.glass.paneAt(ev.i) ?? (this.map ? glassAt(this.map, ev.i) : null);
             const wall = !pane && this.map ? wallSectionAt(this.map, ev.i) : null;

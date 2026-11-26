@@ -35,6 +35,7 @@ import {
   trapHazard,
   trapTrigger,
   zoneBox,
+  targetZoneAt,
   type Aabb,
 } from './scenarioDefs.ts';
 import { ELECTRIC_FENCE, borderFloor, borderRect, borderShockLines, borderStyles, fenceRun, shockLineNearest, type ShockLine } from '../map/border.ts';
@@ -108,6 +109,9 @@ interface DestructibleRt {
   glassBack?: number | null;
   /** A pane in a breakable wall: the wall's scenario index (it stays gone while the wall is). */
   inWall?: number;
+  /** A Practice Target: the tick it went down (it takes the rest of that tick's rounds too) and when it stands up. */
+  downAt?: number;
+  upAt?: number | null;
 }
 
 interface ZoneRt {
@@ -286,6 +290,7 @@ export class Scenario {
           this.buttons.set(i, { i, e, enabled: e.startEnabled, used: false, readyAt: 0, litUntil: 0 });
           break;
         case 'destructible':
+        case 'target':
         case 'prop': {
           const b = breakableOf(e, undefined, !!this.map.metadata.destruction);
           if (!b) break;
@@ -454,6 +459,7 @@ export class Scenario {
     this.stepDoors(tick);
     this.stepBlocks(tick);
     this.stepGlass(tick);
+    this.stepTargets(tick);
     this.stepZones();
     this.stepTraps(tick);
     this.stepBorderFence(tick);
@@ -489,6 +495,60 @@ export class Scenario {
         this.bodies.setSolid(d.i, true);
       }
     }
+  }
+
+  /** Knocked-down Practice Targets stand up again after their reset time. */
+  private stepTargets(tick: number): void {
+    for (const d of this.destructibles.values()) {
+      if (d.alive || !d.b.target || d.upAt == null || tick < d.upAt) continue;
+      d.alive = true;
+      d.health = d.max;
+      d.upAt = null;
+      this.bodies.setSolid(d.i, true);
+    }
+  }
+
+  /** The zone of a Practice Target a round struck at `at` (null: that body is no target). */
+  targetZone(handle: number, at: Vec3): 0 | 1 | 2 | null {
+    const i = this.bodies.entityAt(handle);
+    const t = i === undefined ? undefined : this.destructibles.get(i)?.b.target;
+    return t ? targetZoneAt(t, at) : null;
+  }
+
+  /** The last target-hit event this tick, so a shotgun's pellets on one target are one report. */
+  private lastTargetHit: { tick: number; ev: Extract<GameEvent, { e: 'thit' }> } | null = null;
+
+  /**
+   * A round struck a Practice Target (Match: noteTargetHit): `amount` is what it would do to a player in that zone,
+   * `dist` the shooter's distance. It reports the hit (summing one shot's pellets), fires "Target hit" and, unless the
+   * target stays up, knocks it down for its reset time. Rounds already in flight that tick still count.
+   */
+  targetHit(handle: number, amount: number, zone: 0 | 1 | 2, instigator: number | null, dist: number): void {
+    const i = this.bodies.entityAt(handle);
+    const d = i === undefined ? undefined : this.destructibles.get(i);
+    const t = d?.b.target;
+    const tick = this.host.tick;
+    if (!d || !t || !(d.alive || d.downAt === tick)) return;
+    const last = this.lastTargetHit;
+    if (last && last.tick === tick && last.ev.i === d.i && last.ev.s === instigator) {
+      last.ev.n = Math.round(last.ev.n + amount);
+      last.ev.p = (last.ev.p ?? 1) + 1;
+      if (zone === 1 || (zone === 0 && last.ev.z === 2)) last.ev.z = zone;
+    } else {
+      const ev: Extract<GameEvent, { e: 'thit' }> = { e: 'thit', i: d.i, s: instigator, z: zone, n: Math.round(amount), d: Math.round(dist) };
+      this.lastTargetHit = { tick, ev };
+      this.host.emit(ev);
+      this.fire('target_hit', d.id, instigator);
+    }
+    if (!t.stays) this.knockDown(d, instigator);
+  }
+
+  /** A Practice Target goes down (a hit, a blast, or logic's Destroy) and stands up after its reset time. */
+  private knockDown(d: DestructibleRt, instigator: number | null): void {
+    if (!d.alive || !d.b.target) return;
+    d.downAt = this.host.tick;
+    d.upAt = this.host.tick + Math.max(1, Math.round(d.b.target.resetSeconds * TICK_RATE));
+    this.destroy(d, instigator);
   }
 
   /** Shattered panes come back after the map's glass respawn time, once nobody stands in the way. */
@@ -803,7 +863,7 @@ export class Scenario {
   shootableTarget(handle: number): boolean {
     const i = this.bodies.entityAt(handle);
     const d = i === undefined ? undefined : this.destructibles.get(i);
-    return !!d && d.alive && !d.b.explosiveOnly && d.b.shootable !== false && !d.b.glass && !d.b.wall;
+    return !!d && d.alive && !d.b.explosiveOnly && d.b.shootable !== false && !d.b.glass && !d.b.wall && !d.b.target;
   }
 
   /** Explosion damage to destructibles in range. */
@@ -823,6 +883,15 @@ export class Scenario {
 
   private damageDestructible(d: DestructibleRt, amount: number, explosive: boolean, instigator: number | null): void {
     if (!d.alive || (d.b.explosiveOnly && !explosive) || d.b.shootable === false) return;
+    // Practice Targets: rounds report through targetHit; a blast knocks one down (a standing one only rocks).
+    if (d.b.target) {
+      if (explosive && amount > 0) {
+        this.host.emit({ e: 'thit', i: d.i, s: instigator, z: 0, n: Math.round(amount), d: 0 });
+        this.fire('target_hit', d.id, instigator);
+        if (!d.b.target.stays) this.knockDown(d, instigator);
+      }
+      return;
+    }
     // Bulletproof glass cracks (its health shows how badly) but never gives way.
     if (d.b.glass === 'reinforced') {
       const before = d.health;
@@ -1074,7 +1143,9 @@ export class Scenario {
       }
       case 'destroy': {
         const d = this.destructibles.get(this.entityIndex(a.target) ?? -1);
-        if (d) this.destroy(d, instigator);
+        // A Practice Target knocks down and stands up again after its reset time.
+        if (d?.b.target) this.knockDown(d, instigator);
+        else if (d) this.destroy(d, instigator);
         break;
       }
       case 'set_var':

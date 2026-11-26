@@ -66,6 +66,7 @@ import {
   BODY_SIZES,
   getLook,
   type FigurePose,
+  TARGET_PARTS,
 } from '@tiletrigger/shared';
 import { BT_COLORS, createBombsiteModel, createFlagBase, createFlagModel, createHillModel, createSectorModel, createTargetModel } from './flagVisuals.ts';
 import { buildFence } from '../borderVisuals.ts';
@@ -93,7 +94,7 @@ export const LIQUID_LOOKS: Record<Liquid, { color: string; glow: number; alpha: 
  */
 
 type Kind = Exclude<MapEntity['kind'], 'spawn' | 'pickup' | 'prop' | 'mount'>;
-export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline', 'sector', 'objective', 'figure'];
+export const SCENARIO_KINDS: readonly Kind[] = ['door', 'button', 'destructible', 'zone', 'trap', 'pad', 'block', 'water', 'flag', 'hill', 'ladder', 'bombsite', 'hostage', 'rescue', 'light', 'mover', 'portal', 'zipline', 'sector', 'objective', 'figure', 'target'];
 
 /**
  * Place an entity's visual root: at its position, turned to its facing.
@@ -116,6 +117,9 @@ export function placeScenarioNode(node: TransformNode, e: MapEntity): void {
 /** The clip each Figure pose plays, looped (FIGURE_POSES). */
 const FIGURE_POSE_CLIPS: Record<FigurePose, Clip> = { stand: 'idle', cheer: 'cheer', dance: 'dance', crouch: 'crouch_idle' };
 
+/** How far a knocked-down Practice Target lies back (radians; a little short of flat, so it reads as down from the line). */
+const TARGET_DOWN = 1.35;
+
 /** Scenario kinds whose visual never changes once built when it has no `update` (merged in the game: mergeStill). */
 const STILL_KINDS: ReadonlySet<string> = new Set(['ladder', 'pad', 'bombsite', 'rescue', 'zipline']);
 /** Static decorations are merged per square of this many metres. */
@@ -129,6 +133,8 @@ interface Visual {
   update?: (a: number, b: number, now: number, dt: number) => void;
   /** A destructible in the game: its meshes become GPU thin instances shared with every other one (see batchDestructibles). */
   batch?: { base: string };
+  /** A Practice Target took a round (ScenarioVisuals.targetHit): it rocks on its hinge. */
+  hit?: (zone: number) => void;
 }
 
 /** One shape and material that destructibles share: every copy is a thin instance of `mesh`. */
@@ -590,7 +596,88 @@ export class ScenarioVisuals {
         return this.zipline(name, e);
       case 'figure':
         return this.figure(name, e);
+      case 'target':
+        return this.target(name, e);
     }
+  }
+
+  /** A Practice Target took a round (the `thit` event): it rocks back on its hinge (a standing one only rocks). */
+  targetHit(index: number, zone: number): void {
+    this.visuals.get(index)?.hit?.(zone);
+  }
+
+  /**
+   * A Practice Target (TargetEntity, map v55): painted steel on a dark stand, its face to local +Z. The silhouette's head
+   * is amber and its body and legs warm white, so the zones read through a scope at 200 m; the round plate is amber on a
+   * post. It falls back flat on its hinge while down (state 0) and stands up again; a hit rocks it a few degrees.
+   * Motion only, at one brightness: nothing flashes (Reduce flashing has nothing to calm here).
+   */
+  private target(name: string, e: Extract<MapEntity, { kind: 'target' }>): Visual {
+    const root = new TransformNode(name, this.scene);
+    const stand = this.mat('targetStand', '#3a3d42', { spec: 0.2 });
+    const white = this.mat('targetWhite', '#ebe5d6', { spec: 0.25 });
+    const amber = this.mat('targetAmber', '#e39a33', { spec: 0.25 });
+    const hinge = new TransformNode(`${name}_hinge`, this.scene);
+    hinge.parent = root;
+    const parts = TARGET_PARTS[e.style];
+    const base = Math.min(...parts.map((p) => p.center.y - p.half.y));
+    if (e.style === 'silhouette') {
+      // A low stand: a foot bar across and two struts back, the hinge just above the ground.
+      this.box(`${name}_foot`, root, [0.9, 0.06, 0.12], [0, 0.03, -0.02], stand);
+      this.box(`${name}_strutL`, root, [0.05, 0.05, 0.5], [-0.32, 0.03, -0.25], stand);
+      this.box(`${name}_strutR`, root, [0.05, 0.05, 0.5], [0.32, 0.03, -0.25], stand);
+      this.box(`${name}_axle`, root, [0.5, 0.05, 0.05], [0, base, -0.06], stand);
+    } else {
+      // A post with the hinge bracket at the plate's foot.
+      const post = CreateCylinder(`${name}_post`, { diameter: 0.06, height: base, tessellation: 10 }, this.scene);
+      post.parent = root;
+      post.position.set(0, base / 2, -0.07);
+      post.material = stand;
+      this.box(`${name}_foot`, root, [0.6, 0.06, 0.6], [0, 0.03, -0.07], stand);
+      this.box(`${name}_bracket`, root, [0.16, 0.05, 0.1], [0, base, -0.05], stand);
+    }
+    hinge.position.set(0, base, 0);
+    for (const p of parts) {
+      const mat = p.zone === 1 || e.style === 'plate' ? amber : white;
+      const local: [number, number, number] = [p.center.x, p.center.y - base, p.center.z];
+      if (p.zone === 1 || e.style === 'plate') {
+        // Round: the head and the plate are discs facing the shooter.
+        const disc = CreateCylinder(`${name}_z${p.zone}`, { diameter: p.half.x * 2, height: p.half.z * 2, tessellation: 24 }, this.scene);
+        disc.parent = hinge;
+        disc.rotation.x = Math.PI / 2;
+        disc.position.set(...local);
+        disc.material = mat;
+        if (e.style === 'silhouette') this.box(`${name}_neck`, hinge, [0.1, 0.12, p.half.z * 2], [0, p.center.y - base - p.half.y, 0], white);
+      } else if (p.zone === 0) {
+        // Shoulders: the torso narrows to the neck.
+        this.box(`${name}_z0`, hinge, [p.half.x * 2, p.half.y * 2, p.half.z * 2], local, mat);
+        this.box(`${name}_shoulders`, hinge, [p.half.x * 1.5, 0.08, p.half.z * 2], [0, p.center.y - base + p.half.y + 0.04, 0], mat);
+      } else {
+        this.box(`${name}_z${p.zone}`, hinge, [p.half.x * 2, p.half.y * 2, p.half.z * 2], local, mat);
+      }
+    }
+    if (this.opts.editor) return { root };
+    // Falls back (its top away from the shooter) about the hinge; rocks with a damped spring when hit.
+    let angle = 0;
+    let rock = 0;
+    let rockV = 0;
+    return {
+      root,
+      update: (a, _b, _now, dt) => {
+        const down = a <= 0;
+        const want = down ? TARGET_DOWN : 0;
+        // Down fast (a round knocks it over), up steadily (a spring pushing it back).
+        angle += (want - angle) * Math.min(1, dt * (down ? 16 : 7));
+        rockV += (-rock * 160 - rockV * 12) * dt;
+        rock += rockV * dt;
+        if (Math.abs(rock) < 1e-4 && Math.abs(rockV) < 1e-3) rock = rockV = 0;
+        hinge.rotation.x = -(angle + rock);
+      },
+      hit: (zone) => {
+        // Harder at the top (the head) than low down (the legs): a lever about the hinge.
+        rockV += zone === 1 ? 2.6 : zone === 2 ? 0.9 : 1.8;
+      },
+    };
   }
 
   /**

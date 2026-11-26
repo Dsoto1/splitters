@@ -146,7 +146,7 @@ export class PaletteBuilder {
       return grid;
     };
     // Objects tab order: doors first, then logic, movers, platforms, destructibles, traps.
-    for (const g of ['Doors & Gates', 'Logic & Triggers', 'Lifts & Movers', 'Platforms & Climbing', 'Destructibles', 'Traps & Hazards']) scenarioGrid('scenario', g);
+    for (const g of ['Doors & Gates', 'Logic & Triggers', 'Lifts & Movers', 'Platforms & Climbing', 'Destructibles', 'Practice', 'Traps & Hazards']) scenarioGrid('scenario', g);
     for (const g of ['Lights', 'Liquids']) scenarioGrid('lights', g);
     const pickups = new Map<string, HTMLElement>();
     const pickupGroup = (kind: string) => (kind === 'weapon' ? 'Weapons' : kind === 'ammo' || kind === 'throwable' ? 'Ammo & Grenades' : kind === 'health' || kind === 'armor' ? 'Health & Armour' : 'Power-ups & Gear');

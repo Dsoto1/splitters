@@ -4,7 +4,7 @@ import { boxQuat, dynamicBlockIds, envHalfSize, isBreakableProp, type Rot, type 
 import { placementShapes, type EnvWorldShape } from '../map/environment.ts';
 import { getEnvSpecies, isEnvModel } from '../content/environment.ts';
 import type RAPIER from '@dimforge/rapier3d-compat';
-import type { DestructibleModel, MapDocument, MapEntity, TrapKind } from '../map/schema.ts';
+import type { DestructibleModel, MapDocument, MapEntity, TargetEntity, TrapKind } from '../map/schema.ts';
 import type { Vec3 } from '../math.ts';
 import { PLAYER, TICK_RATE } from './constants.ts';
 import { ELECTRIC_FENCE } from '../map/border.ts';
@@ -219,6 +219,47 @@ export function destructibleBox(e: Extract<MapEntity, { kind: 'destructible' }>)
   return { center: localToWorld(entityPos(e), e.yaw, 0, (spec.lift ?? 0) + spec.half.y, 0), half: spec.half, yaw: e.yaw };
 }
 
+// ---------------------------------------------------------------- practice targets
+
+/**
+ * A Practice Target's steel (map/schema.ts TargetEntity), in its own frame (+Z faces the shooter, y up from its feet):
+ * the silhouette's head, body and legs plates (a player's height, 1.9 m) on a low stand, or a round plate (a square
+ * collider 0.5 m across) at chest height on a post. `zone` is the HitZone a round striking that part counts as (1 head,
+ * 0 body, 2 legs), as a player's hit boxes do.
+ */
+export const TARGET_PARTS: Record<TargetEntity['style'], readonly { zone: 0 | 1 | 2; center: Vec3; half: Vec3 }[]> = {
+  silhouette: [
+    { zone: 1, center: { x: 0, y: 1.72, z: 0 }, half: { x: 0.13, y: 0.16, z: 0.03 } },
+    { zone: 0, center: { x: 0, y: 1.2, z: 0 }, half: { x: 0.27, y: 0.36, z: 0.03 } },
+    { zone: 2, center: { x: 0, y: 0.5, z: 0 }, half: { x: 0.2, y: 0.34, z: 0.03 } },
+  ],
+  plate: [{ zone: 0, center: { x: 0, y: 1.35, z: 0 }, half: { x: 0.25, y: 0.25, z: 0.03 } }],
+};
+
+/** Where a target's steel stands (its parts' bounds) and each part as a turned box. */
+export function targetBoxes(e: TargetEntity): { box: OBox; parts: OBox[] } {
+  const parts = TARGET_PARTS[e.style];
+  const at = entityPos(e);
+  const boxes = parts.map((p) => ({ center: localToWorld(at, e.yaw, p.center.x, p.center.y, p.center.z), half: p.half, yaw: e.yaw }));
+  const top = Math.max(...parts.map((p) => p.center.y + p.half.y));
+  const bottom = Math.min(...parts.map((p) => p.center.y - p.half.y));
+  const w = Math.max(...parts.map((p) => p.half.x));
+  return { box: { center: localToWorld(at, e.yaw, 0, (top + bottom) / 2, 0), half: { x: w, y: (top - bottom) / 2, z: 0.03 }, yaw: e.yaw }, parts: boxes };
+}
+
+/** The zone of a target a round struck at `at` (world): the part nearest the point (head, body or legs). */
+export function targetZoneAt(e: TargetEntity, at: Vec3): 0 | 1 | 2 {
+  const parts = TARGET_PARTS[e.style];
+  const y = at.y - e.position[1];
+  let best = parts[0]!;
+  let gap = Infinity;
+  for (const p of parts) {
+    const d = Math.max(0, Math.abs(y - p.center.y) - p.half.y);
+    if (d < gap) [best, gap] = [p, d];
+  }
+  return best.zone;
+}
+
 /** Anything that can be shot apart: destructible entities and breakable solid props. */
 export interface Breakable {
   box: OBox;
@@ -240,6 +281,8 @@ export interface Breakable {
   glass?: GlassPane['kind'];
   /** A breakable wall section (sim/breakWalls.ts): the scenario indices of the window panes that shatter with it. */
   wall?: { glass: readonly number[] };
+  /** A Practice Target (TargetEntity): shots report to the shooter and knock it down (sim/scenario.ts targetHit). */
+  target?: TargetEntity;
 }
 
 /** A breakable wall section as a breakable: explosives only unless it says shots; bots keep treating it as a wall (it stays in the navmesh). */
@@ -297,6 +340,10 @@ export function breakableOf(e: MapEntity, dynamic?: ReadonlySet<string>, everyth
   if (isGlassBlock(e)) return glassBreakable({ box: blockOBox(e), kind: e.glass });
   if (e.kind === 'block' && e.behaviour === 'solid' && dynamic?.has(e.id)) {
     return { box: blockOBox(e), health: 1, explosiveOnly: false, blocksPaths: false, shootable: false };
+  }
+  if (e.kind === 'target') {
+    const { box, parts } = targetBoxes(e);
+    return { box, parts, health: 1, explosiveOnly: false, blocksPaths: false, target: e };
   }
   if (e.kind === 'destructible') {
     const spec = DESTRUCTIBLE_SPECS[e.model];

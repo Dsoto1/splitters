@@ -8,7 +8,7 @@
 export const MAP_FORMAT = 'tiletrigger.map';
 /** The format name maps were saved under while the game was called ChronoSplit; they load and are re-saved as MAP_FORMAT. */
 export const LEGACY_MAP_FORMAT = 'chronosplit.map';
-export const MAP_FORMAT_VERSION = 54;
+export const MAP_FORMAT_VERSION = 55;
 /**
  * The most entities a map holds (the schema's cap, RESOURCE_BUDGETS.entities, and SET_PIECE_PLAYED_MAX's for the map as
  * played): 8,192 since v48 (owner, 2026-11-18; 4,096 before). Entity indices travel as plain JSON numbers, so nothing in

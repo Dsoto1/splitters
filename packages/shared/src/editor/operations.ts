@@ -645,6 +645,8 @@ export const SCENARIO_PALETTE = [
   { key: 'flag', label: 'Flag Base', search: 'flag base ctf capture the flag team objective' },
   { key: 'hill', label: 'Hill', search: 'hill king of the hill koth zone objective control point' },
   { key: 'figure', label: 'Figure', search: 'figure character person animal statue bystander npc scenario retired classic old model pose stand cheer dance crouch' },
+  { key: 'target:silhouette', label: 'Practice Target', search: 'practice target silhouette steel popper range training shooting gallery dummy distance aim zero reports hits knock down' },
+  { key: 'target:plate', label: 'Steel Plate', search: 'practice target steel plate gong ring range training shooting gallery popper flick reports hits' },
   { key: 'hostage', label: 'Hostage', search: 'hostage rescue civilian objective counter strike cs' },
   { key: 'rescue', label: 'Rescue Zone', search: 'rescue zone hostage extraction objective' },
   { key: 'bombsite', label: 'Bomb Site', search: 'bomb site plant defuse objective counter strike cs a b' },
@@ -938,6 +940,9 @@ export function newScenarioEntity(key: ScenarioPaletteKey, position: [number, nu
       return { id: newId('hostage'), kind: 'hostage', position, yaw: 0 };
     case 'figure':
       return { id: newId('figure'), kind: 'figure', position, yaw, look: 'core.dale', pose: 'stand' };
+    case 'target:silhouette':
+    case 'target:plate':
+      return { id: newId('target'), kind: 'target', position, yaw, style: key === 'target:plate' ? 'plate' : 'silhouette', resetSeconds: 2 };
     case 'rescue':
       return { id: newId('rescue'), kind: 'rescue', position, radius: 4 };
     case 'bombsite': {
@@ -1159,7 +1164,7 @@ export const latestSector = (doc?: MapDocument): number => Math.max(1, ...(doc?.
 /** Breakthrough: the sector orders a map has, lowest first, each once. */
 export const sectorOrders = (doc: MapDocument): number[] => [...new Set(doc.entities.flatMap((e) => (e.kind === 'sector' ? [e.order] : [])))].sort((a, b) => a - b);
 
-const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Drop Carrier', mover: 'Mover', portal: 'Portal', zipline: 'Zipline', sector: 'Sector', objective: 'Objective', figure: 'Figure' };
+const KIND_LABELS: Record<MapEntity['kind'], string> = { spawn: 'Spawn', pickup: 'Pickup', door: 'Door', button: 'Button', destructible: 'Object', zone: 'Zone', trap: 'Trap', encounter: 'Encounter', prop: 'Prop', mount: 'Vehicle', pad: 'Jump Pad', block: 'Block', water: 'Water', flag: 'Flag Base', hill: 'Hill', ladder: 'Ladder', bombsite: 'Bomb Site', hostage: 'Hostage', rescue: 'Rescue Zone', light: 'Light', airplane: 'Drop Carrier', mover: 'Mover', portal: 'Portal', zipline: 'Zipline', sector: 'Sector', objective: 'Objective', figure: 'Figure', target: 'Practice Target' };
 
 /** An entity's kind as MapMaker names it: "Door", a trap's or object's own name, a prop's model name. */
 export function entityKindLabel(e: MapEntity): string {

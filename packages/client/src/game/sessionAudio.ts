@@ -710,6 +710,13 @@ export class SessionAudio {
         else if (e.trap !== 'mine') this.audio.play(`trap.${e.trap}` as SoundId, { at });
         break;
       }
+      case 'thit': {
+        // A Practice Target rings where it stands; your own hit also sounds the hit marker (a head hit its own), so a
+        // hit at 200 m, far past the ring's reach, still tells.
+        this.audio.play('impact.metal', { at: this.entityAt(ev.i, 1.2), gain: 0.9 });
+        if (ev.s === me) this.audio.play(ev.z === 1 ? 'ui.hit.head' : 'ui.hit');
+        break;
+      }
       case 'crack': {
         const pane = this.doc && glassAt(this.doc, ev.i);
         if (pane) this.audio.play('glass.crack', { at: pane.box.center });

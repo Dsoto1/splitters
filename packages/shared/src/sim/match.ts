@@ -4078,7 +4078,7 @@ export class Match {
       if (def.knockback) this.push(victim, dir, def.knockback);
     }
     for (const b of bodies) {
-      this.noteTargetHit(shooter, b.handle, this.boosted(shooter, def.damage) * falloffAt(falloff, b.dist), b.at);
+      this.noteTargetHit(shooter, b.handle, this.boosted(shooter, def.damage) * falloffAt(falloff, b.dist), b.at, gp);
       if (!this.damageMountBody(b.handle, this.boosted(shooter, def.damage), shooter, 'bullet', def.id)) this.scenario.damageBody(b.handle, this.boosted(shooter, def.damage), shooter.slot);
     }
     if (def.chain && struck.length) this.chainLightning(shooter, def, struck[0]!.slot, eye);
@@ -4823,7 +4823,8 @@ export class Match {
       // glass by their material (glass shatters, concrete barely chips).
       const owner = this.actor(b.owner) ?? null;
       const raw = owner ? this.boosted(owner, b.trig.damage * b.scale) : b.trig.damage * b.scale;
-      this.noteTargetHit(owner, wall.handle, raw * this.bulletFalloff(b, gunplayOf(getWeapon(b.trig.id)), wall.dist, len), at);
+      const wgp = gunplayOf(getWeapon(b.trig.id));
+      this.noteTargetHit(owner, wall.handle, raw * this.bulletFalloff(b, wgp, wall.dist, len), at, wgp);
       if (!this.damageMountBody(wall.handle, raw, owner, 'bullet', b.trig.id) && spec.destruction > 0) this.scenario.damageBody(wall.handle, raw * spec.destruction, b.owner);
       // Ricochet: only grazing hits on hard surfaces, at most once, and the round comes off weakened.
       const n = wall.normal;
@@ -6906,8 +6907,19 @@ export class Match {
     list.push([this.tick, amount, flags, at.x, at.y, at.z, key]);
   }
 
-  /** A round struck a body: on a target (a breakable board, crate or barrel), the shooter sees what it would do to a body. */
-  private noteTargetHit(owner: Combatant | null, handle: number, amount: number, at: Vec3): void {
+  /**
+   * A round struck a body: on a target (a breakable board, crate or barrel), the shooter sees what it would do to a body.
+   * A Practice Target (map v55) counts the zone it struck as a player's hit boxes do (`gp`: the weapon's head and legs
+   * multiples) and reports the hit to everyone (sim/scenario.ts targetHit: the shooter's readout, its ring and fall).
+   */
+  private noteTargetHit(owner: Combatant | null, handle: number, amount: number, at: Vec3, gp?: Gunplay): void {
+    const zone = this.scenario.targetZone(handle, at);
+    if (zone !== null) {
+      const n = amount * (gp ? zoneScale(gp, zone) : 1);
+      this.scenario.targetHit(handle, n, zone, owner?.slot ?? null, owner ? hypot(at.x - owner.move.pos.x, at.y - owner.move.pos.y, at.z - owner.move.pos.z) : 0);
+      if (owner?.kind === 'human') this.noteDealt(owner, n, 8 | (zone === 1 ? 1 : 0), at, -1 - handle);
+      return;
+    }
     if (owner?.kind === 'human' && this.scenario.shootableTarget(handle)) this.noteDealt(owner, amount, 8, at, -1 - handle);
   }
 

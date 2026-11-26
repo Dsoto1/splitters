@@ -41,6 +41,7 @@ export const OUTLINE_ENTITY_GROUPS: Record<MapEntity['kind'], string> = {
   destructible: 'Destructibles',
   encounter: 'NPC squads',
   figure: 'Figures',
+  target: 'Targets',
   mount: 'Vehicles',
   airplane: 'Drop routes',
   flag: 'Objectives',
@@ -53,7 +54,7 @@ export const OUTLINE_ENTITY_GROUPS: Record<MapEntity['kind'], string> = {
 };
 
 /** The order groups are listed in. */
-export const OUTLINE_GROUP_ORDER: readonly string[] = ['Tiles', 'Set pieces', 'Spawns', 'Objectives', 'Pickups', 'Vehicles', 'NPC squads', 'Figures', 'Props', 'Blocks', 'Doors', 'Climbing', 'Jump pads', 'Movers', 'Portals', 'Logic & triggers', 'Traps', 'Destructibles', 'Lights', 'Liquids', 'Drop routes'];
+export const OUTLINE_GROUP_ORDER: readonly string[] = ['Tiles', 'Set pieces', 'Spawns', 'Objectives', 'Pickups', 'Vehicles', 'NPC squads', 'Figures', 'Props', 'Blocks', 'Doors', 'Climbing', 'Jump pads', 'Movers', 'Portals', 'Logic & triggers', 'Traps', 'Destructibles', 'Targets', 'Lights', 'Liquids', 'Drop routes'];
 
 /** The level an entity stands on (as MapMaker's level filter counts it). */
 export const entityLevelOf = (e: MapEntity, levelHeight: number): number => Math.floor((e.position[1] + 0.5) / levelHeight);

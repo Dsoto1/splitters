@@ -9,7 +9,7 @@ import { breakthroughIssues } from './validateBreakthrough.ts';
 const KIND_LABEL: Record<TargetKind, string> = {
   door: 'door',
   button: 'button',
-  destructible: 'destructible, block or breakable prop',
+  destructible: 'destructible, block, practice target or breakable prop',
   zone: 'zone',
   trap: 'trap',
   pickup: 'pickup',
@@ -21,6 +21,7 @@ const KIND_LABEL: Record<TargetKind, string> = {
   variable: 'variable',
   timer: 'timer',
   objective: 'objective',
+  target: 'practice target',
 };
 
 /**

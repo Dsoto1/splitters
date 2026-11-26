@@ -164,6 +164,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // Absent = walls that never break, as before: v53 data is valid as is. The bump is for the other direction: an older
   // build would play the walls as solid without a word.
   [53, (doc) => ({ ...doc })],
+  // v54 -> v55: a new entity kind, `target` (a Practice Target: a steel target that reports hits and knocks down; owner,
+  // 2026-11-19: the Practice range). v54 data is valid as is. The bump is for the other direction: an older build
+  // refuses a v55 map outright instead of failing on an entity it has never heard of.
+  [54, (doc) => ({ ...doc })],
 ]);
 
 /** v50 -> v51: the `categories` pairs become one `category` (none when there were none). */

@@ -346,6 +346,7 @@ export function scenarioGroup(key: string): { pane: 'entities' | 'scenario' | 'l
   if (key.startsWith('light:')) return { pane: 'lights', group: 'Lights' };
   if (key.startsWith('encounter')) return { pane: 'npcs', group: 'Spawners' };
   if (key === 'figure') return { pane: 'npcs', group: 'Figures' };
+  if (key.startsWith('target:')) return { pane: 'scenario', group: 'Practice' };
   if (key.startsWith('door') || key === 'mover:portcullis' || key === 'mover:garage_door' || key === 'mover:bookcase') return { pane: 'scenario', group: 'Doors & Gates' };
   if (key.startsWith('mover:')) return { pane: 'scenario', group: 'Lifts & Movers' };
   if (key === 'button' || key.startsWith('zone') || key === 'portal' || key === 'block:field') return { pane: 'scenario', group: 'Logic & Triggers' };
