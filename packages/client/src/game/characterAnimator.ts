@@ -2051,6 +2051,25 @@ export class CharacterAnimator {
       // (This look's own `gripPistol`, GripTune: the gun moved in the shooting hand by this much, third person only.)
       const by = this.ch.grip?.gripPistol;
       const at = by ? [grip.grip[0] + by[0], grip.grip[1] + by[1], grip.grip[2] + by[2]] : grip.grip;
+      // This body's own pistol hold (the look's `whole.holdPistol`): the shooting hand moved from where the clips put
+      // it, along the aim, lower and out (negative: in toward the middle), for a build too wide for its support hand
+      // to reach across to the gun (Puddles Ironbill's round mech). The elbow keeps the clip's bend plane.
+      const ownP = this.ch.holdPistol;
+      if (ownP && this.ik > 0) {
+        const barrel = new Vector3(0, 0, 1).applyRotationQuaternion(aim);
+        const side = Vector3.Cross(new Vector3(0, 1, 0), barrel);
+        if (Vector3.Dot(side, pos(arms.r.upper).subtract(pos(arms.l.upper))) < 0) side.scaleInPlace(-1);
+        if (side.lengthSquared() > 1e-8) side.normalize();
+        const palm = palmWorld(arms.r);
+        const shoulder = pos(arms.r.upper);
+        const elbow = pos(arms.r.lower);
+        const pole = elbow.add(elbow.subtract(shoulder.add(palm).scale(0.5)));
+        const target = palm
+          .add(barrel.scale((ownP.forward ?? 0) * scale))
+          .add(new Vector3(0, -1, 0).applyRotationQuaternion(aim).scale((ownP.down ?? 0) * scale))
+          .add(side.scale((ownP.out ?? 0) * scale));
+        solveArm(space, arms.r, target, pole, this.ik);
+      }
       gripped = { rot: aim, pos: palmWorld(arms.r).add(knuckleLine(arms.r)).subtract(new Vector3(at[0]!, at[1]!, at[2]!).scale(scale).applyRotationQuaternion(aim)) };
     } else if (grip.style === 'long' && grip.shoulder) {
       const shoulder = pos(arms.r.upper);

@@ -10,7 +10,7 @@
   "nameTheme": "cat",
   "bio": "Undefeated in the ring, unbothered outside it. The mask stays on.",
   "body": "male",
-  "notes": "A new character (owner, 2026-11-25: \"A new white tiger\"). Drive intake of 2026-11-25 (\"white tiger luchador rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22).",
+  "notes": "A new character (owner, 2026-11-25: \"A new white tiger\"). Drive intake of 2026-11-25 (\"white tiger luchador rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22). Pistol hold (2026-11-26): broad shoulders put the support hand 6 cm short of the pistol, so the shooting hand holds it 5 cm in toward the middle (`fixes.holdPistol`).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -23,6 +23,7 @@
     "roughness": 0.6
   },
   "fixes": {
+    "holdPistol": { "out": -0.05 },
     "triangles": 11000,
     "headShare": 0.16,
     "handsShare": 0.1,

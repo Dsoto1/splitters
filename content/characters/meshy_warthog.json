@@ -11,7 +11,7 @@
   "bio": "Rides loud, dances louder.",
   "body": "male",
   "size": "large",
-  "notes": "Drive intake of 2026-11-25 (\"biker warthog funky 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22).",
+  "notes": "Drive intake of 2026-11-25 (\"biker warthog funky 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (standing rule: characters from the owner's Drive are their own Meshy creations, owner 2026-11-22). Pistol hold (2026-11-26): broad shoulders put the support hand 7 cm short of the pistol, so the shooting hand holds it 5 cm in toward the middle (`fixes.holdPistol`).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -24,6 +24,7 @@
     "roughness": 0.6
   },
   "fixes": {
+    "holdPistol": { "out": -0.05 },
     "triangles": 12000,
     "surface": "rebake",
     "headShare": 0.16,
