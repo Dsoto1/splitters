@@ -1388,6 +1388,8 @@ export class Hud {
   private card: { el: HTMLElement; refresh(final: boolean): void } | null = null;
   /** A scoreboard row was clicked (the pause menu's Match tab, the end-of-match board): that player's card (session: game/playerCard.ts). */
   onPlayerCard: ((slot: number, row: HTMLElement) => void) | null = null;
+  /** Whether a person is muted in chat on this device (the session's mute list), for the scoreboards' mark. */
+  isMuted: ((name: string) => boolean) | null = null;
   /** The roster entry of a slot (the player card reads who they are). */
   rosterOf(slot: number): RosterEntry | undefined {
     return this.roster.get(slot);
@@ -1425,6 +1427,7 @@ export class Hud {
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
+        ...(p && !p.bot && s.s !== localSlot && this.isMuted?.(p.name) ? { muted: true } : {}),
         color: this.nameColor(s.s, localSlot),
         sym: this.teamIndex(s.s),
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),

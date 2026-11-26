@@ -65,10 +65,24 @@ export function playerCardLines(p: PlayerCardSubject, hub: PublicCard | null | u
   };
 }
 
+/** A button on another person's card (chat's Mute, the host's Kick). */
+export interface PlayerCardAction {
+  id: string;
+  label: string;
+  title: string;
+  /** Pressed in (Mute while muted). */
+  on?: boolean;
+  danger?: boolean;
+  act: () => void;
+}
+
 export class PlayerCardView {
   readonly el: HTMLElement;
   private readonly img: HTMLImageElement;
   private readonly text: HTMLElement;
+  private readonly actionsEl: HTMLElement;
+  /** The buttons for a card's player (the session's: Mute, and Kick for whoever runs the match); none: no row. */
+  actions?: (p: PlayerCardSubject) => PlayerCardAction[];
   private subject: PlayerCardSubject | null = null;
   private hub: PublicCard | null | undefined = undefined;
   /** Bumped at each show: a late portrait or hub card for an earlier one is dropped. */
@@ -98,7 +112,9 @@ export class PlayerCardView {
     close.textContent = '×';
     close.title = 'Close';
     close.addEventListener('click', () => this.close());
-    this.el.append(this.img, this.text, close);
+    this.actionsEl = document.createElement('div');
+    this.actionsEl.className = 'plc-actions';
+    this.el.append(this.img, this.text, close, this.actionsEl);
     document.body.append(this.el);
     document.addEventListener('pointerdown', this.outside, true);
   }
@@ -162,6 +178,24 @@ export class PlayerCardView {
     const l = playerCardLines(p, this.hub);
     const tagCls = l.tag === '✓' ? 'acct in' : l.tag === 'GUEST' ? 'acct guest' : 'acct pick';
     this.el.dataset.kind = p.kind;
+    const acts = this.actions?.(p) ?? [];
+    this.actionsEl.hidden = !acts.length;
+    this.actionsEl.replaceChildren(
+      ...acts.map((a) => {
+        const b = document.createElement('button');
+        b.type = 'button';
+        b.id = a.id;
+        b.textContent = a.label;
+        b.title = a.title;
+        if (a.danger) b.className = 'danger';
+        if (a.on !== undefined) b.setAttribute('aria-pressed', String(a.on));
+        b.addEventListener('click', () => {
+          a.act();
+          this.draw();
+        });
+        return b;
+      }),
+    );
     this.text.innerHTML = `<div class="plc-who">${emblemSvg(this.hub?.emblem ?? p.emblem)}<b>${escapeHtml(p.name)}</b><i class="${tagCls}">${l.tag}</i></div>${l.sub ? `<div class="plc-sub">${escapeHtml(l.sub)}</div>` : ''}<div class="plc-match">${escapeHtml(l.match)}</div><div class="plc-career">${escapeHtml(l.career)}</div>${l.vouched ? `<div class="plc-vouched">${escapeHtml(l.vouched)}</div>` : ''}`;
   }
 

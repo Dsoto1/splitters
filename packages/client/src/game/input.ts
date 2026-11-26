@@ -1,7 +1,7 @@
 import { LookFilter, browserLookScale } from './lookFilter.ts';
 import { AimLatch, combatPrefs } from './combatPrefs.ts';
 import { CATEGORY_ACTIONS, bindAction, bindings as loadBindings, onBindingsChange, type Bindings } from './keyBindings.ts';
-import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT } from '@tiletrigger/shared';
+import { CLASS_SAY_BASE, ROULETTE_SAY_PICK, ROULETTE_SAY_REROLL, EMOTE_DANCE, PING, QUICK_MESSAGES, QUICK_MESSAGE_KEYS, BUTTON_ALT, BUTTON_CROUCH, BUTTON_FIRE, BUTTON_JUMP, BUTTON_MELEE, BUTTON_PRONE, BUTTON_RELOAD, BUTTON_RESPAWN, BUTTON_SPRINT, BUTTON_THROW, BUTTON_USE, BUTTON_USE_HOLD, BUTTON_ZOOM, BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT } from '@tiletrigger/shared';
 
 const MOUSE_SENSITIVITY = 0.0022;
 const MOUSE_PREF_KEY = 'tiletrigger.mouse';
@@ -128,6 +128,13 @@ export class InputState {
   private padOrderAt = 0;
   /** How the order wheel last closed, until the session reads it (as wheelClosed is for weapons). */
   private orderClosed: boolean | null = null;
+  /** How the quick-chat wheel last closed, until the session reads it (as orderClosed). */
+  private chatClosed: boolean | null = null;
+  /**
+   * Typing in the chat box (chatBox.ts): the keyboard is the box's, not the game's (keys held went up when it
+   * opened). The mouse and a controller still play.
+   */
+  typing = false;
   /** A quick message or emote to send with the next input. */
   private sayQueued = 0;
   /** Classes: how many classes there are (0: the match has none), and whether the class screen is open (L or ,): digits pick a class. */
@@ -185,7 +192,7 @@ export class InputState {
   /** Weapon wheel: whether it's open, and where it points (x right, y down; length up to 1). */
   wheelOpen = false;
   /** Which wheel is open: the weapon wheel or (Fireteams) the order wheel. Only one at a time. */
-  wheelKind: 'weapon' | 'order' = 'weapon';
+  wheelKind: 'weapon' | 'order' | 'chat' = 'weapon';
   readonly wheelAim = { x: 0, y: 0 };
   /** Set by the session each frame: whether the wheel may open now (alive, on foot). */
   canOpenWheel = true;
@@ -216,6 +223,8 @@ export class InputState {
     window.addEventListener(
       'keydown',
       (e) => {
+        // The chat box has the keyboard: it handles its own keys (Enter, Esc, Tab).
+        if (this.typing) return;
         if (e.code === 'Tab' || e.code === 'F3' || e.code === 'F5') e.preventDefault();
         // Safari otherwise acts on plain letter keys in play (e.g. the character/emoji picker).
         else if (this.locked && !e.metaKey && !e.ctrlKey && e.code !== 'Escape' && !/^F\d+$/.test(e.code)) e.preventDefault();
@@ -333,8 +342,12 @@ export class InputState {
         if (n <= this.classCount) this.chooseClass(n - 1);
         return;
       }
-      if (this.msgMenu) {
-        if (n <= QUICK_MESSAGES.length) this.sayQueued = n;
+    }
+    // The quick-message menu's keys (1-9, 0, - and =): a message.
+    if (this.msgMenu && !e.repeat) {
+      const q = (QUICK_MESSAGE_KEYS as readonly string[]).indexOf(code);
+      if (q >= 0) {
+        if (q < QUICK_MESSAGES.length) this.sayQueued = q + 1;
         this.msgMenu = false;
         return;
       }
@@ -554,14 +567,15 @@ export class InputState {
   }
 
   /** Open the weapon wheel, or (`kind` 'order') the order wheel, when the session allows it now. True if it opened. */
-  openWheel(by: 'key' | 'pad' | 'touch', kind: 'weapon' | 'order' = 'weapon'): boolean {
-    if (this.wheelOpen || !(kind === 'order' ? this.ordersOn : this.canOpenWheel)) return false;
+  openWheel(by: 'key' | 'pad' | 'touch', kind: 'weapon' | 'order' | 'chat' = 'weapon'): boolean {
+    if (this.wheelOpen || !(kind === 'order' ? this.ordersOn : kind === 'chat' ? this.chatOn : this.canOpenWheel)) return false;
     this.wheelOpen = true;
     this.wheelKind = kind;
     this.wheelBy = by;
     this.wheelAim.x = this.wheelAim.y = 0;
-    if (kind === 'order') {
-      this.orderClosed = null;
+    if (kind === 'order' || kind === 'chat') {
+      if (kind === 'order') this.orderClosed = null;
+      else this.chatClosed = null;
       this.msgMenu = false;
     } else this.wheelClosed = null;
     return true;
@@ -573,6 +587,7 @@ export class InputState {
     this.wheelOpen = false;
     this.wheelBy = null;
     if (this.wheelKind === 'order') this.orderClosed = pick;
+    else if (this.wheelKind === 'chat') this.chatClosed = pick;
     else this.wheelClosed = pick;
     this.wheelKind = 'weapon';
   }
@@ -582,6 +597,26 @@ export class InputState {
     const c = this.orderClosed;
     this.orderClosed = null;
     return c;
+  }
+
+  /** How the quick-chat wheel closed since last asked: true (send the line it points at), false (cancelled) or null. */
+  takeChatClose(): boolean | null {
+    const c = this.chatClosed;
+    this.chatClosed = null;
+    return c;
+  }
+
+  /** Quick chat may open now (set by the session each frame: quick messages on, in play or watching). */
+  chatOn = false;
+
+  /** The chat box opened (on) or closed: the keys held go up, so nothing keeps moving while you type. */
+  setTyping(on: boolean): void {
+    if (this.typing === on) return;
+    this.typing = on;
+    if (on) {
+      for (const k of [...this.keys]) if (!k.startsWith('Mouse')) this.keyUp(k);
+      this.msgMenu = false;
+    }
   }
 
   /** Send `say` (an order: fireteams.ts orderSay) with the next input. */
@@ -820,17 +855,19 @@ export class InputState {
     p.leanL = l.lean;
     if (r.switched) this.wheelSteps += 1;
     if (l.switched) this.wheelSteps -= 1;
-    // D-pad up: a tap pings; held (Fireteams, leading a squad), the order wheel (the right stick points, let go to give it).
-    if (!this.ordersOn) {
-      if (pressed(PAD.up)) this.sayQueued = PING;
-    } else {
-      if (pressed(PAD.up)) this.padOrderAt = performance.now();
-      if (down[PAD.up] && this.padOrderAt && !this.wheelOpen && performance.now() - this.padOrderAt >= WHEEL_HOLD_MS) this.openWheel('pad', 'order');
-      if (!down[PAD.up] && p.prev[PAD.up]) {
-        if (this.wheelOpen && this.wheelBy === 'pad' && this.wheelKind === 'order') this.closeWheel(true);
-        else if (this.padOrderAt && performance.now() - this.padOrderAt < WHEEL_HOLD_MS) this.sayQueued = PING;
-        this.padOrderAt = 0;
-      }
+    // D-pad up: a tap pings; held, the quick-chat wheel, or (Fireteams, leading a squad) the order wheel (the right
+    // stick points, let go to send or give it).
+    const upWheel = this.ordersOn ? 'order' : 'chat';
+    if (pressed(PAD.up)) {
+      // (With no wheel to hold for, the ping goes at once.)
+      if (this.ordersOn || this.chatOn) this.padOrderAt = performance.now();
+      else this.sayQueued = PING;
+    }
+    if (down[PAD.up] && this.padOrderAt && !this.wheelOpen && performance.now() - this.padOrderAt >= WHEEL_HOLD_MS && !this.openWheel('pad', upWheel)) this.padOrderAt = 0;
+    if (!down[PAD.up] && p.prev[PAD.up]) {
+      if (this.wheelOpen && this.wheelBy === 'pad' && (this.wheelKind === 'order' || this.wheelKind === 'chat')) this.closeWheel(true);
+      else if (this.padOrderAt && performance.now() - this.padOrderAt < WHEEL_HOLD_MS) this.sayQueued = PING;
+      this.padOrderAt = 0;
     }
     if (pressed(PAD.down)) this.respawnQueued = true;
     // LB: hold to aim a throw, let go to throw (like G).

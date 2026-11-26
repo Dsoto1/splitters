@@ -84,6 +84,8 @@ export const BIND_ACTIONS: readonly BindAction[] = [
   { id: 'quickMessage', label: 'Quick messages · hold: orders (fireteam lead)', group: 'comms', places: ['foot', 'spectate'], keys: ['KeyB', ''] },
   { id: 'ping', label: 'Ping', group: 'comms', places: ['foot'], keys: ['KeyT', ''] },
   { id: 'dance', label: 'Dance', group: 'comms', places: ['foot'], keys: ['KeyN', ''] },
+  { id: 'chat', label: 'Chat (type a line; Tab in the box: team or all)', group: 'comms', places: ALL_PLAY, keys: ['Enter', ''], note: 'Online, when the host relays chat. Enter sends, Esc closes.' },
+  { id: 'teamChat', label: 'Team chat', group: 'comms', places: ALL_PLAY, keys: ['KeyP', ''] },
   // Vehicles
   { id: 'vehicleUp', label: 'Brake · climb (aircraft) · jump out (plane)', group: 'vehicles', places: ['vehicle'], keys: ['Space', ''] },
   { id: 'vehicleDown', label: 'Descend (aircraft) · duck where you stand', group: 'vehicles', places: ['vehicle'], keys: ['KeyC', ''] },
@@ -108,7 +110,7 @@ export const BIND_ACTIONS: readonly BindAction[] = [
 /** Keys that keep their job and can't be bound: shown on the page as fixed. */
 export const FIXED_KEYS: readonly [string, string][] = [
   ['Pause · back', 'Esc'],
-  ['Pick in an open menu (quick messages, classes, Roulette)', '1–9'],
+  ['Pick in an open menu (quick messages, classes, Roulette)', '1–9 · 0 - = (quick messages)'],
   ['Performance overlay', 'F3'],
   ['Fullscreen', 'F11 · Alt+Enter'],
 ];

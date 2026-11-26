@@ -95,8 +95,13 @@ export interface PlayerInput {
   sp?: 1;
 }
 
-/** Quick messages players can send (keys 1-6 while the quick-message menu is open). */
-export const QUICK_MESSAGES = ['Follow me!', 'Need backup!', 'Enemy spotted!', 'On my way!', 'Thanks!', 'Nice shot!', 'Hold here!'] as const;
+/**
+ * Quick messages players can send (QUICK_MESSAGE_KEYS while the quick-message menu is open, or the quick-chat wheel):
+ * `PlayerInput.say` is the index + 1. New lines go on the end (older hosts drop numbers past their own list).
+ */
+export const QUICK_MESSAGES = ['Follow me!', 'Need backup!', 'Enemy spotted!', 'On my way!', 'Thanks!', 'Nice shot!', 'Hold here!', 'Need ammo!', 'Defend A!', 'Defend B!', 'Fall back!', 'Sorry!'] as const;
+/** The quick-message menu's keys, in QUICK_MESSAGES order (key codes; shown as 1-9, 0, - and =). */
+export const QUICK_MESSAGE_KEYS = ['Digit1', 'Digit2', 'Digit3', 'Digit4', 'Digit5', 'Digit6', 'Digit7', 'Digit8', 'Digit9', 'Digit0', 'Minus', 'Equal'] as const;
 /** QUICK_MESSAGES numbers that are also orders to your team's bots. */
 export const SAY_FOLLOW = 1;
 export const SAY_HOLD = 7;
