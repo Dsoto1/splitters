@@ -56,6 +56,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/practice-range-1126` · dec1d708 · 45834298500 (the Practice range and the Practice Target, map format v55; touches e2e/run.mjs and flowMap.mjs flow lists, test_coverage.json, frontEnd.ts Quick Play foot, main.ts playRange)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -145,7 +146,7 @@ Everything else keeps its place below these.
 - S · B · **Breakable walls: a mark in MapMaker's 3D view** showing which walls break (owner, 2026-11-26, "go recs"; today only the inspector shows it).
 - M · B · **The same simple pickers for the Rules tab and MapMaker's other settings** (owner, 2026-11-19, "5a" on the pickers' questions): plain tick-boxes, switches, steppers and chips instead of long dropdowns and "More…" bins, as in Bot types and Teams. After the pickers land.
 - M · B · **The pause menu's Host tab is Match Setup itself** (owner, 2026-11-19, "a": "if we are able to restart the entire thing from the pause we should just have all the other options too. ex. Spawn on Teammates is not present"): the Host tab uses Match Setup's own panels (Match setup, Bots & AI, Rules, Presets), so every setting there appears in the pause menu and new ones arrive by themselves; each is marked *now* (bots, skill, switches like Ranks & badges) or *at restart* (teams, score, time, spawn rules); one button says what it will do ("Apply now" / "Restart with these"); kick/ban and the rotation stay. Right after the Rules-tab pickers (shared parts).
-- M · B · **Practice range** (owner, 2026-11-19, "A" on the lead's list of gaps): a quiet map to try every weapon, the scopes (after the sights pass) and slide and peek, with targets at marked distances; built in MapMaker. With the weapons intake and sights pass.
+- M · B · **Practice range** (**built 2026-11-26 on `wip/practice-range-1126`, green, Ready to land**; owner, 2026-11-19, "A" on the lead's list of gaps): a quiet map to try every weapon, the scopes (after the sights pass) and slide and peek, with targets at marked distances; built in MapMaker. With the weapons intake and sights pass.
 - M · B · **Retire the Kenney Nature Kit** (owner, 2026-11-19, "2a"; after the nature swap): generated replacements first for its last props in use (Stone Campfire 7, Stone Pillar 6, Hanging Moss 4, Log Stack 3: the Log Stack stays until a generated woodpile exists, "1a"), swapped in MapMaker, then the kit leaves the build with load-time aliases like the Quaternius nature pack (`map/natureAliases.ts`).
 - **Found in the notes, 2026-11-18** (owner "1": all added; "dont adjust queue priority too much", so these come after the lane B order above, ★ ones first):
   - M · B · ★ **Impact effects by material**: wood splinters, stone dust, metal sparks, each with its sound set (GUNPLAY_GAPS G1; with the surface-types data and the Sonniss sounds).
