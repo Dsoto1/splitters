@@ -128,6 +128,9 @@ Everything else keeps its place below these.
     - **Scary Larry** becomes a variant of **Freaky Frida** (owner, 2026-11-26).
     - **The goblins combined** (owner, 2026-11-26): Goblina the main look, Snikkit and Goblin Warlord her variants; Gorgle stays his own character (new model).
     - **Mummy Bot** moves to Machines (owner, 2026-11-26).
+    - **A Pirates row** with the owner's pirate uploads (owner, 2026-11-26; Scarlet Brinewell likely joins it).
+    - **Removed:** Sun Warrior (community CC0, not the owner's; the campaign's Aztec boss needs another look), King Aldric, Old King Halvard, Coffee Brown (Cleo Groovestone takes his place) (owner, 2026-11-26).
+    - **Periods:** Silas Coilwhisper with the Western characters; Astor Moonvale and Silencio with the Medieval ones (owner, 2026-11-26).
   - **The Hollow Pilgrim's glide stays as a movement style** (keep the code): the coming **snowman** glides like the baseball robot and the Hollow Pilgrim did.
   - **Vanguard's replacement is the dark hooded character** (the owner's upload; she): Vanguard's id and place kept, a fitting name if Vanguard's no longer fits; she **floats** like the baseball robot (legs still, no walk cycle). **The ghost character** (upload) floats the same way. Same glide/float style as the snowman.
   - **T-Treefitty gets a replacement model plus several variants** (owner, 2026-11-26; uploads coming or on the Drive): id and place kept; the variants work like the chimp's (one character, a variant picker; variants unlocked by challenges later, shipped unlocked until the unlock rules exist).
