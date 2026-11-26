@@ -22,6 +22,8 @@ export interface Transport {
   sendVote?(i: number): void;
   /** Your optic choices changed mid-match (opticPrefs.ts): the whole list (hosts that don't know it ignore it). */
   sendOptics?(op: Record<string, string>): void;
+  /** A line of text chat (`team`: to your team only): only when the welcome said the host relays it (`ch`). */
+  sendChat?(x: string, team: boolean): void;
   /** Deliver snapshots waiting merged (SnapshotCoalescer) now: the session calls it as a frame begins. */
   flush?(): void;
   /** Host commands and admin logins (dedicated servers; the host's own browser match runs them directly). */

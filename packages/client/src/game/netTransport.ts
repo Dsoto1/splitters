@@ -107,6 +107,10 @@ export class NetTransport implements Transport {
     this.send({ t: 'optics', op });
   }
 
+  sendChat(x: string, team: boolean): void {
+    this.send({ t: 'chat', x, ...(team ? { tm: 1 as const } : {}) });
+  }
+
   sendCommand(msg: Extract<ClientMessage, { t: 'host' | 'admin' }>): void {
     if (msg.t === 'admin') rememberAdminToken(this.url, msg.token);
     this.send(msg);

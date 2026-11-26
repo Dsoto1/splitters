@@ -41,6 +41,7 @@ import {
   VOTE_SECONDS,
   mapPlayerCaps,
 } from '@tiletrigger/shared';
+import { CHAT_SYSTEM, ChatRelay, chatHears } from '@tiletrigger/shared/chat';
 import { Zipper } from '@tiletrigger/shared/peerZip';
 import { openNavStore } from './navCache.ts';
 import { perfOn } from './perfSwitches.ts';
@@ -245,6 +246,8 @@ export class MatchHost {
   private readonly joins = new KeyedLimiter({ perMinute: FRIEND_JOINS_PER_MINUTE, burst: FRIEND_JOINS_PER_MINUTE });
   /** Browser keys the host banned (this game only). */
   private readonly banned = new Set<string>();
+  /** Text chat's gate (net/chat.ts): per sender limits, the word filter. */
+  private readonly chat = new ChatRelay();
   private hidden = false;
   private factsSent = '';
   /**
@@ -341,7 +344,7 @@ export class MatchHost {
     if (!cp && this.opts.spectate) bots.spectate(me.slot, control.fill);
     this.onMatch?.(match, me, mod);
 
-    this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState(), spectate: 1, ts: 1 });
+    this.sink.local({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: me.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules, sc: match.scenario.fullState(), spectate: 1, ts: 1, ch: 1 });
     this.sink.local({ t: 'roster', players: match.roster() });
     this.sink.local({ t: 'host', state: control.state() });
     // A vote carried over from the old host: on screen here at once (closed: the page travels to its winner).
@@ -560,6 +563,37 @@ export class MatchHost {
   /** This browser's own player asks to switch team at their next spawn (Match.switchTeam; a msg event answers). */
   switchTeam(i?: number): void {
     if (this.match && this.me) this.match.switchTeam(this.me.slot, i);
+  }
+
+  /** This browser's own player's line of text chat (the chat box): through the same gate as a friend's. */
+  chatLocal(x: string, toTeam: boolean): void {
+    if (this.me) this.relayChat(this.me.slot, x, toTeam, null);
+  }
+
+  /** The team a slot plays for (null: free-for-all, or out of play spectating). */
+  private teamOf(slot: number | null): string | null {
+    return slot !== null && this.match?.teams ? (this.match.slots[slot]?.faction ?? null) : null;
+  }
+
+  /**
+   * A line of text chat (docs/MULTIPLAYER_PROTOCOL.md section 28) from `slot` (a friend's link `from`, or null: this
+   * browser's player): through the gate (limits, filter), then to everyone, or to the sender's team. A refused
+   * line's reason goes back to the sender alone. Friends' lines pass through here and nowhere else.
+   */
+  private relayChat(slot: number, raw: string, toTeam: boolean, from: number | null): void {
+    if (!this.match || this.stopped) return;
+    const verdict = this.chat.say(slot, raw);
+    if (!verdict.ok) {
+      if (!verdict.why) return;
+      const why: ServerMessage = { t: 'chat', s: CHAT_SYSTEM, x: verdict.why };
+      return from === null ? this.sink.local(why) : this.sink.send(from, JSON.stringify(why));
+    }
+    const team = this.teamOf(slot);
+    const tm = toTeam && !!team;
+    const msg: ServerMessage = { t: 'chat', s: slot, x: verdict.text, ...(tm ? { tm: 1 as const } : {}) };
+    if (this.me && chatHears(tm, team, this.teamOf(this.me.slot))) this.sink.local(msg);
+    const text = JSON.stringify(msg);
+    for (const r of this.remotes.values()) if (r.slot !== null && chatHears(tm, team, this.teamOf(r.slot))) this.sink.send(r.id, text);
   }
 
   /** This browser's own player's optic choices changed (pause menu → Settings → Optic): everyone gets the roster again. */
@@ -801,7 +835,7 @@ export class MatchHost {
       match.setOptics(player.slot, msg.op);
       player.account = !!r.account?.name;
       this.sink.guest(id, player.slot);
-      this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1, ts: 1 } satisfies ServerMessage));
+      this.sink.send(id, JSON.stringify({ t: 'welcome', protocol: PROTOCOL_VERSION, slot: player.slot, maxSlots: MAX_PLAYER_SLOTS, tickRate: TICK_RATE, snapshotInterval: SNAPSHOT_INTERVAL_TICKS, map: this.map, rules: match.rules, sc: match.scenario.fullState(), spectate: 1, ts: 1, ch: 1 } satisfies ServerMessage));
       if (back) this.announce({ t: 'notice', text: `${name} is back` });
       this.rosterToAll();
       // Between matches: the vote as it stands.
@@ -821,6 +855,7 @@ export class MatchHost {
       if (match.setOptics(r.slot, msg.op)) this.rosterToAll();
     }
     else if (msg.t === 'vote' && r.slot !== null) this.castVote(r.slot, msg.i);
+    else if (msg.t === 'chat' && r.slot !== null) this.relayChat(r.slot, msg.x, msg.tm === 1, id);
     else if (msg.t === 'ready' && r.slot !== null) {
       r.loaded = true;
       match.ready(r.slot);
@@ -847,6 +882,7 @@ export class MatchHost {
     if (!r) return;
     this.remotes.delete(id);
     if (r.slot === null || this.stopped || !this.control) return;
+    this.chat.forget(r.slot);
     if (this.vote?.forget(r.slot)) this.voteToAll();
     this.control.bots.hold(r.slot, 'dropped', r.account ? `sub:${r.account.sub}` : r.pk ? `pk:${r.pk}` : null, this.control.fill);
     this.sink.guest(r.id, null);
@@ -1044,6 +1080,7 @@ export class MatchHost {
   }
 
   private leave(r: Remote): void {
+    if (r.slot !== null) this.chat.forget(r.slot);
     if (r.slot !== null && this.control && !this.stopped) this.control.bots.leave(r.slot, this.control.fill);
     r.slot = null;
     this.sink.guest(r.id, null);
@@ -1101,6 +1138,8 @@ export type ToSimHost =
   | { k: 'team'; i?: number }
   /** The page's own player's optic choices (opticPrefs.ts), changed mid-match. */
   | { k: 'optics'; op: Record<string, string> }
+  /** The page's own player's line of text chat (`tm`: to their team). */
+  | { k: 'chat'; x: string; tm?: 1 }
   | { k: 'cmd'; cmd: Exclude<HostCommand, { c: 'map' } | RotationCommand> }
   /** The map rotation's next map and mode (the page keeps the rotation), for the end-of-match scoreboard. */
   | { k: 'upnext'; next: { map: string; mode: GameMode } | null }
@@ -1204,6 +1243,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.switchTeam(m.i);
     case 'optics':
       return host.setOptics(m.op);
+    case 'chat':
+      return host.chatLocal(m.x, m.tm === 1);
     case 'cmd': {
       const error = host.command(m.cmd);
       // A refused command: the host's panel shows why (as a dedicated server would tell it).
