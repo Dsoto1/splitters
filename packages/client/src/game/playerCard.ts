@@ -84,6 +84,8 @@ export class PlayerCardView {
   /** The buttons for a card's player (the session's: Mute, and Kick for whoever runs the match); none: no row. */
   actions?: (p: PlayerCardSubject) => PlayerCardAction[];
   private subject: PlayerCardSubject | null = null;
+  /** The row the open card sits beside (placed again as it grows: its portrait, its buttons). */
+  private row: HTMLElement | null = null;
   private hub: PublicCard | null | undefined = undefined;
   /** Bumped at each show: a late portrait or hub card for an earlier one is dropped. */
   private shown = 0;
@@ -139,6 +141,7 @@ export class PlayerCardView {
         if (this.shown !== shown) return;
         this.img.src = src;
         this.img.hidden = false;
+        this.place(this.row);
       },
       () => undefined,
     );
@@ -147,8 +150,10 @@ export class PlayerCardView {
         if (this.shown !== shown || !this.subject) return;
         this.hub = card && card.username.toLowerCase() === p.username!.toLowerCase() ? card : null;
         this.draw();
+        this.place(this.row);
       });
     }
+    this.row = row;
     this.draw();
     this.el.hidden = false;
     this.place(row);

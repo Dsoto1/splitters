@@ -16636,7 +16636,6 @@ async function chatFlow(browser) {
   await bob.keyboard.up('w');
   await bob.keyboard.type('ow hello Alice');
   check(!walked, 'chat: a key typed in the box does not move the player');
-  await pic(bob, 'open-typing');
   await bob.keyboard.press('Enter');
   check(await sees(alice, 'Bob: wow hello Alice'), `chat: Alice reads Bob's line (${await lines(alice)})`);
   const closed = await bob.evaluate(() => !window.__cs.chatBox.open && !window.__cs.input.typing);
@@ -16645,6 +16644,13 @@ async function chatFlow(browser) {
   const bad = 'fuvg'.replace(/[a-z]/g, (c) => String.fromCharCode(((c.charCodeAt(0) - 84) % 26) + 97));
   await bob.evaluate((x) => window.__cs.transport.sendChat(`well ${x} happens`, false), bad);
   check(await sees(alice, 'well **** happens'), `chat: the host masks a filtered word (${await lines(alice)})`);
+  // Alice's box open over the lines so far (the picture), then Esc closes it without sending.
+  await alice.keyboard.press('Enter');
+  await alice.keyboard.type('on my way');
+  await pic(alice, 'open');
+  await alice.keyboard.press('Escape');
+  const esc = await alice.evaluate(() => ({ open: window.__cs.chatBox.open, typing: window.__cs.input.typing, pause: !document.getElementById('pause').hidden }));
+  check(!esc.open && !esc.typing && !esc.pause, `chat: Esc closes the box without sending or pausing (${JSON.stringify(esc)})`);
 
   // Quick messages: the menu (B) and its keys past 9 (here 8, "Need ammo!"), into the chat log.
   await alice.keyboard.press('b');
