@@ -162,3 +162,64 @@ Provenance: Meshy, owned.
   - "RebelCommanderRigged" (2026-11-25)  -> character meshy_rebelcommander (look Col. Josiah Beaumont)
   - "VietnamSoldierRigged" (2026-11-25)  -> character meshy_vietnamsoldier (look Pfc. Danny Okerlund)
   - "VCScoutRigged" (2026-11-25)  -> character meshy_vcscout (look Lien Vo)
+
+- The owner's Drive characters uploaded 2026-11-25 evening to 2026-11-26 03:00 UTC (the same kind of download, pack
+  meshy-owned; the owner's own Meshy creations). Built by tools/content/prepare-meshy-characters.mjs. The models the
+  replacements replaced no longer ship.
+
+  - "pirate remeshed 15k" (2026-11-25)  -> character meshy_pirate (look Cap'n Rusty Barnacle), its new model
+  - "cal rigged" (2026-11-26)  -> character meshy_dale (look Cal), its new model
+  - "grandpa chains rigged" (2026-11-26)  -> character meshy_grandpa_chains (look Grandpa Chains), its new model
+  - "hazmat joe rigged" (2026-11-26)  -> character meshy_hazmat (look Hazmat Joe), its new model
+  - "french chef rigged" (2026-11-26)  -> character meshy_chef (look Chef Basile), its new model
+  - "Rigged Teddy Bear" (2026-11-25)  -> character meshy_teddy (look Teddy), its new model
+  - "Brother Silencio Rigged" (2026-11-26)  -> character meshy_monk (look Brother Silencio), its new model
+  - "rigged bonejack" (2026-11-26)  -> character meshy_bonejack (look Bonejack), its new model
+  - "shaka mpande rigged" (2026-11-26)  -> character meshy_ashwalker (look Shaka Mpande), its new model
+  - "officer mackie rigged" (2026-11-26)  -> character meshy_pruitt (look Sgt. Mackie), its new model
+  - "bum rourke rigged" (2026-11-26)  -> character meshy_rourke (look Rourke)
+  - "AbeLincolnRigged" (2026-11-26)  -> character meshy_abe (look Honest Abe), its new model
+  - "orange engineer rigged" (2026-11-26)  -> character meshy_orangeengineer (look Orange Suit Engineer), its new model
+  - "biker girl rigged" (2026-11-26)  -> character meshy_bikergirl (look Biker Gang Girl), its new model
+  - "fish butcher rigged" (2026-11-26)  -> character meshy_butcher (look The Butcher), its new model
+  - "old timer rigged" (2026-11-26)  -> character meshy_oldtimer (look Old Timer), its new model
+  - "ash tribal rigged" (2026-11-26)  -> character meshy_ashtribal (look Kato Emberline)
+  - "zulu warrior rigged" (2026-11-26)  -> character meshy_zuluwarrior (look Themba Ironspear)
+  - "FranklinRigged" (2026-11-26)  -> character meshy_franklin (look Poor Richard)
+  - "WashingtonRigged" (2026-11-26)  -> character meshy_washington (look General Cherrytree)
+  - "TeddyRooseveltRigged" (2026-11-26)  -> character meshy_roosevelt (look The Rough Rider)
+  - "AlbertEinsteinRigged" (2026-11-26)  -> character meshy_einstein (look Prof. Quanta)
+  - "TS2 Wizard Rigged" (2026-11-26)  -> character meshy_ts2wizard (look Astor Moonvale)
+  - "Ancient Ankh Mummy" (2026-11-25)  -> character meshy_ankhmummy (look Nebka the Unwrapped)
+  - "rigged female pirate" (2026-11-26)  -> character meshy_femalepirate (look Scarlet Brinewell)
+  - "afro pi rigged" (2026-11-26)  -> character meshy_afropi (look Clyde Groovestone)
+  - "radish man rigged" (2026-11-26)  -> character meshy_radishman (look Rad Rootley)
+  - "Rigged Wind Up Robot" (2026-11-25)  -> character meshy_windupbot (look Tik Winderly)
+  - "Rigged Brick Man" (2026-11-25)  -> character meshy_brickman (look Bricksby)
+  - "Rigged Cymbal Monkey" (2026-11-25)  -> character meshy_cymbalmonkey (look Clangers)
+  - "Rigged Jack In The Box" (2026-11-25)  -> character meshy_jackinthebox (look Jolly Springjack)
+  - "Rigged Rag Doll" (2026-11-25)  -> character meshy_ragdoll (look Patchwork Polly)
+  - "Office Female Rigged" (2026-11-25)  -> character meshy_officeworker (look Marla Quarterly)
+  - "Hoodie Guy Rigged" (2026-11-25)  -> character meshy_hoodieguy (look Dez Kickley)
+  - "Karen Rigged" (2026-11-25)  -> character meshy_karen (look Linda Refundsworth)
+  - "Salaryman Rigged" (2026-11-25)  -> character meshy_salaryman (look Hiro Overtime)
+  - "Templar Knight Rigged" (2026-11-25)  -> character meshy_templar (look Ser Godric Vale)
+  - "Gothic Kaiser Rigged" (2026-11-25)  -> character meshy_gothickaiser (look Kaiser Ironhelm)
+  - "Lionheart Rigged" (2026-11-25)  -> character meshy_lionheart (look Ser Aldous Lionmane)
+  - "Muslim Warlord Rigged" (2026-11-25)  -> character meshy_emir (look Emir Tariq Falconsword)
+  - "bass diver 3d" (2026-11-25)  -> character meshy_bassdiver (look Bassley Deepwell)
+  - "GermanParatrooperRemesh15k" (2026-11-25)  -> character meshy_germanpara (look Gefr. Otto Brandt)
+  - "ParatrooperRigged" (2026-11-25)  -> character meshy_paratrooper (look Sgt. Mickey Callahan)
+  - "USGruntRigged" (2026-11-25)  -> character meshy_usgrunt (look Pvt. Hank Dowling)
+  - "eagle ace rigged" (2026-11-25)  -> character meshy_eagleace (look Ace Featherstone)
+  - "raven noir rigged" (2026-11-25)  -> character meshy_ravennoir (look Corvin Blackquill)
+  - "ts chimp aviator rigged" (2026-11-25)  -> character meshy_chimp (look Ziggy Bananas)
+  - "ts chimp egyptian rigged" (2026-11-25)  -> character meshy_chimp_egyptian (look Egyptian Ziggy), variant "Egyptian"
+  - "ts chimp aztec rigged" (2026-11-25)  -> character meshy_chimp_aztec (look Aztec Ziggy), variant "Aztec"
+  - "ts chimp roman rigged" (2026-11-25)  -> character meshy_chimp_roman (look Roman Ziggy), variant "Roman"
+  - "ts chimp cowboy rigged" (2026-11-25)  -> character meshy_chimp_cowboy (look Cowboy Ziggy), variant "Cowboy"
+  - "ts chimp ninja rigged" (2026-11-25)  -> character meshy_chimp_ninja (look Ninja Ziggy), variant "Ninja"
+  - "ts chimp vietnam soldier rigged" (2026-11-25)  -> character meshy_chimp_vietnam (look Vietnam Soldier Ziggy), variant "Vietnam Soldier"
+  - "ts chimp disco operative rigged" (2026-11-25)  -> character meshy_chimp_disco (look Disco Operative Ziggy), variant "Disco Operative"
+  - "ts chimp cyber commando rigged" (2026-11-25)  -> character meshy_chimp_cyber (look Cyber Commando Ziggy), variant "Cyber Commando"
+  - "ts chimp scrapper rigged" (2026-11-25)  -> character meshy_chimp_scrapper (look Scrapper Ziggy), variant "Scrapper"

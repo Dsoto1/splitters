@@ -1663,3 +1663,39 @@ standing on the map in a pose (Standing, Cheering, Dancing, Crouching), empty-ha
 and set dressing. The inspector's Character list is the roster by group. Looks only: no collision and no part in play
 (stand it on a block or a prop to make it solid). The game and MapMaker draw it with the same character library
 (`ScenarioVisuals.figure`). No NPC squad wears a chosen look.
+
+## Characters of 2026-11-26 (owner)
+
+The owner's Drive uploads of 2026-11-25 evening to 2026-11-26 03:00 UTC (rigged and animated Meshy downloads, Mixamo
+joint names; Meshy, owned), built as the 11-25 batches were (11k triangles, the 2048 KTX2 colour pipeline; grips from
+the auto-fit; portraits captured). Names of new characters are the lead's (the owner can rename any); the download's
+label is in each manifest's notes.
+
+- **Replacements: new model, id, name and place kept:** Bonejack, Shaka Mpande (`core.ashwalker`: "shaka mpande"),
+  Honest Abe, Cal, Teddy, Cap'n Rusty Barnacle ("pirate remeshed 15k"), Brother Silencio, Sgt. Mackie ("officer
+  mackie"), Orange Suit Engineer, Chef Basile ("french chef"), The Butcher ("fish butcher"), Grandpa Chains, Biker Gang
+  Girl, Old Timer and Hazmat Joe. The models they replaced no longer ship.
+- **Rourke is back** (`core.rourke`, removed 2026-11-25): the owner's own model ("bum rourke"), his old id, name and
+  place; `RETIRED_LOOKS` no longer maps him.
+- **New:** see `content/characters/` (orders 224–253) and docs/STORY_CAMPAIGN.md, "Characters by sector".
+- **The Playhouse** (`playhouse`, a collection after Animalia, like the Chrono Crew): the toys (wind-up robot, brick
+  man, cymbal monkey, jack-in-the-box, rag doll) and the radish man; each keeps its group for bots and Roulette. Teddy
+  keeps his place in Horrors & Creatures.
+
+### Variants: the chimp (owner, 2026-11-26)
+
+"A chimp character with 10 variants, unlocked through challenges." One character, **Ziggy Bananas** (`core.chimp`), with
+ten looks, one per era: Aviator (the base), Egyptian, Aztec, Roman, Cowboy, Ninja, Vietnam Soldier, Disco Operative,
+Cyber Commando and Scrapper. Each look is its own manifest and model:
+- the base names its own label (`variant`); every other look names the base (`variantOf: "core.chimp"`) and its label,
+  and keeps the base's group, collection, tier and body (the checker holds this);
+- Character Select shows one tile (the base's); its details panel has the **variant picker**, a button per look: a
+  click shows that look, Choose takes it, and the tile wears Chosen for any of them (`lookVariants` in looks.ts);
+- a variant is never an automatic pick (random, bots' rotation, Roulette: `pickableLooks`), but any list of the
+  roster (the bot manager, MapMaker's Figures) can name one;
+- **locks:** each look is its own unlock through `characterUnlocked` (shared campaign/unlocks.ts), so with
+  `CHARACTER_LOCKS_ON` off (now) all ten are open; once the unlock-by-play rules exist, each variant's challenge unlocks
+  its look id (a locked one shows dimmed with a lock on the picker). The eras match the sectors (docs/CAMPAIGN_GDD.md):
+  Egyptian the Sunken Dynasty, Aztec the Jade Empire, Roman the Iron Republic, Cowboy the Last Frontier, Vietnam
+  Soldier and Aviator the Wars, Disco Operative Urban Breakdown, Cyber Commando Neon Tomorrow, Scrapper After the End,
+  Ninja open.
