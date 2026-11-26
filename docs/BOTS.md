@@ -1275,6 +1275,10 @@ players (`bots/brain.ts` `inCover`):
   leaned eye, and aims at a leaning target's real head and chest (`bots/aim.ts`, the hit shapes with the lean). The
   match keeps a bot's lean off walls as it does a player's.
 
+**Dodge-step and combat roll (2026-11-25): bots don't use them** (GUNPLAY_SPEC section 27). The simpler choice: a bot
+under fire already strafes and jinks on its own, and a roll would lower its gun mid-fight. They take a player's dodge as
+any other movement (they aim at where the body is; a roll's body is at crouch height).
+
 ## Snipers (Bot AI Phase B)
 
 The sniper role plays like a sniper (`bots/sniper.ts`; BOT_AI_PLAN.md Phase B item 5; the owner: "camping in tucked

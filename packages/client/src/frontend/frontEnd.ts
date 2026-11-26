@@ -3660,6 +3660,7 @@ export class FrontEnd {
       ['Reload / next weapon', 'X / Y'],
       ['Previous / next weapon', 'D-pad left / right'],
       ['Lean (while aiming)', 'Hold LT + D-pad left / right'],
+      ['Dodge-step · crouched: combat roll (while aiming)', 'Hold LT + B'],
       ['Weapon wheel (right stick points, let go to switch)', 'Hold Y'],
       ['Use / throw', 'RB / hold LB'],
       ['Sprint / ping', 'L3 / D-pad up'],
@@ -3676,6 +3677,7 @@ export class FrontEnd {
       ['Fire (drag it to aim while firing)', 'Fire'],
       ['Aim down sights (hold or toggle: Aim above)', 'Aim'],
       ['Quick melee · reload · use · throw', 'Melee · Reload · Use · Throw'],
+      ['Dodge-step · crouched or sprinting: combat roll', 'Dodge'],
       ['Weapon wheel', 'Weapons'],
       ['Pause', 'II (top left)'],
     ]);

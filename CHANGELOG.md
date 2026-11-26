@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Dodge-step and combat roll.** Press **V** (a controller: **B while aiming**; touch: **Dodge**) for a quick step the way you're moving (back, with no direction), or, crouched or sprinting, a combat roll of about 3 m with the gun lowered. Both use stamina (a step less than a slide, a roll more) and share the slide's short cooldown; the first-person view never flips. The second trigger's spare V key moved to Dodge (middle mouse stays; Options → Controls can give it another).
 - **New models for Cyber Lion, Croakley, Greyfang, Gorilla G and Boglurker** (same names and places); **Lion in a Suit is now Kesi Tallgrass**, a safari lioness; Elephant Warrior is now **Ellis Velvetrope** (a bouncer), Hyena Warrior **Rollo Splitworth** (a bowler) and Juice **Puddles Ironbill** (a duck in a mech), each with a new model.
 - **Seven new characters:** El Zarpazo (a white tiger luchador), Tetl Stonewarden (a basalt temple guardian, Legends), Rocco Tickwell (a K9, joins the Chrono Crew), and for the history wars Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund and Lien Vo (Soldiers).
 - **Chrono Crew:** Blix Orrin moves to Outer Space; the crew's 14th place shows as Unknown until the story unlocks it.

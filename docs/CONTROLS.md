@@ -14,11 +14,12 @@ from it, and **Options → Controls** rebinds them.
 | | Sprint (through a scope: hold breath) | Shift |
 | | Crouch (toggle) / prone (toggle) | C / Z |
 | | Lean left / right (held) | **Q / E** (were ` and Left Alt) |
+| | **Dodge** (a dodge-step; crouched or sprinting, a combat roll; both on stamina) | **V** (2026-11-25; was the second trigger's alternative) |
 | | Third person | H |
 | | Look (touchpad, keyboard) | arrow keys |
 | Combat | Fire | Left mouse · **Left Alt** (was F) |
 | | Aim down sights / scope | Right mouse · **`** (was X) |
-| | Second trigger | Middle mouse · V |
+| | Second trigger | Middle mouse (its V went to Dodge, 2026-11-25) |
 | | Quick melee | Side mouse button · Y |
 | | Reload | R |
 | | Throw grenade or mine (hold to aim) | G (also the class ability) |
@@ -52,6 +53,7 @@ from it, and **Options → Controls** rebinds them.
 | Next weapon / weapon wheel (right stick points) | Tap Y / hold Y |
 | Previous / next weapon | D-pad left / right (not aiming) |
 | **Lean left / right (held)** | **D-pad left / right while LT aims** (held or toggled) |
+| **Dodge-step; crouched, a combat roll** | **B while LT aims** (held or toggled; at once, never a crouch) |
 | Use, get in or out (hold: resupply) | RB |
 | Throw (hold to aim) | LB |
 | Sprint | L3 |
@@ -67,7 +69,11 @@ Lean and weapon switch share the d-pad, told apart by where the press began: pre
 it is held and the aim lasts (letting go of LT stops the lean and never switches a weapon); pressed without the aim it is a
 weapon switch, made when the d-pad is let go, unless the aim began meanwhile (d-pad first, then LT: nothing happens). Keys
 and pad combine (both sides: upright). B is told apart the same way: a tap crouches when let go, a hold of 0.4 s goes prone
-at once. In a vehicle B ducks at once.
+at once; pressed while aiming it is Dodge at once (a dodge-step, or crouched a combat roll; sprinting can't aim, so a
+sprint's roll is the keyboard's and touch's). In a vehicle B ducks at once.
+
+**Touch** has a **Dodge** button in the action cluster (`game/touchControls.ts`): a dodge-step the way the pad points;
+crouched or sprinting, a combat roll.
 
 A connected pad whose browser mapping isn't `standard` (some third-party, wired Xbox 360 or Switch Pro pads) is ignored; with no
 standard pad connected, a message says so once per pad (`InputState.checkPadMapping`, also on `gamepadconnected`).
@@ -113,6 +119,6 @@ fire), hold R3 (fire mode). Menu and View are taken (above).
 ## Tests
 
 `packages/client/test/keyBindings.test.ts` (defaults, clashes, swap, the stored diff, the migration),
-`hintKey.test.ts`, `padInput.test.ts` (the d-pad lean and its edges, B crouch and prone), `inputWheel.test.ts` (Tab hold and tap, Q/E lean, F use, vehicle keys, a live rebind); e2e `offline`
+`hintKey.test.ts`, `padInput.test.ts` (the d-pad lean and its edges, B crouch and prone, B while aiming dodges), `inputWheel.test.ts` (Tab hold and tap, Q/E lean, F use, V dodge once a press, vehicle keys, a live rebind); e2e `offline`
 (`weaponKeysChecks`: X, Tab, Q/E lean; `controlsPageChecks`: the page, keyboard-only rebind, clash and swap, Reset, a
 mouse button, phone width; `CONTROLS_PICS=<dir>` takes its pictures).

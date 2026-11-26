@@ -82,6 +82,22 @@ describe('weapon wheel input', () => {
     input.dispose();
   });
 
+  it('V is Dodge: sent once per press (a key held sends it no more), not in a vehicle', async () => {
+    const { BUTTON_DODGE, BUTTON_ALT } = await import('@tiletrigger/shared');
+    const input = await make();
+    key('keydown', 'KeyV');
+    const first = input.sample().buttons;
+    expect(first & BUTTON_DODGE).toBe(BUTTON_DODGE);
+    expect(first & BUTTON_ALT).toBe(0);
+    expect(input.sample().buttons & BUTTON_DODGE).toBe(0);
+    key('keyup', 'KeyV');
+    input.inVehicle = true;
+    key('keydown', 'KeyV');
+    expect(input.sample().buttons & BUTTON_DODGE).toBe(0);
+    key('keyup', 'KeyV');
+    input.dispose();
+  });
+
   it('Q and E lean, held; F uses; in a vehicle Space and C are the vehicle\'s keys', async () => {
     const { BUTTON_LEAN_LEFT, BUTTON_LEAN_RIGHT, BUTTON_USE, BUTTON_USE_HOLD } = await import('@tiletrigger/shared');
     const input = await make();

@@ -65,6 +65,9 @@ export interface RemotePose {
   sprinting?: boolean;
   /** Sliding (PlayerSnapshot.sd). */
   sliding?: boolean;
+  /** A dodge-step (1) or combat roll (2) under way, and its ticks so far, blended between snapshots (PlayerSnapshot.dg). */
+  dodge?: 1 | 2;
+  dodgeTicks?: number;
   /** Leaning (peek), in steps, blended between snapshots (PlayerSnapshot.ln; + right, sim/moves.ts LEAN.steps full). */
   lean?: number;
   /** Aiming through a magnified optic, as the host says (PlayerSnapshot.zm; hosts older than the field never say it). */
@@ -250,6 +253,7 @@ export class Interpolator {
         ...(pb.sn ? { stance: pb.sn } : {}),
         ...(pb.sr ? { sprinting: true } : {}),
         ...(pb.sd ? { sliding: true } : {}),
+        ...(pb.dg ? { dodge: pb.dg[0] === 2 ? 2 : 1, dodgeTicks: from.dg && from.dg[0] === pb.dg[0] && from.dg[1] <= pb.dg[1] ? from.dg[1] + (pb.dg[1] - from.dg[1]) * blend : pb.dg[1] * blend } : {}),
         ...((from.ln ?? 0) || pb.ln ? { lean: (from.ln ?? 0) + ((pb.ln ?? 0) - (from.ln ?? 0)) * blend } : {}),
         ...(pb.zm ? { scoped: true } : {}),
         ...(pb.dw ? { pair: true } : {}),
