@@ -78,6 +78,8 @@ export const ROULETTE_DATA = {
     legends: 'core.spear',
     animals: 'core.smg',
     toys: 'core.bubble_blaster',
+    pirates: 'core.flintlock_pistol',
+    holiday: 'core.flare_gun',
     machines: 'core.laser_rifle',
     horror: 'core.sawed_off',
   },

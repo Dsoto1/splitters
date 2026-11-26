@@ -113,8 +113,9 @@ describe('character manifests', () => {
     expect(rigid([pack])).toBe('');
     expect(rigid([{ joint: 'spine_03', box: [-0.1, 0.6, -0.15, 0.1, 0.8, -0.04] }])).toBe('');
     for (const bad of [[], [{ ...pack, joint: 'spine_09' }], [{ ...pack, box: [0.1, 0.6, -0.15, -0.1, 0.8, -0.04] }], [{ ...pack, box: [[0, 0, 0]] }], [{ ...pack, blend: 0.5 }], [{ ...pack, except: '(' }], [{ ...pack, wings: true }], pack]) expect(rigid(bad), JSON.stringify(bad)).toMatch(/fixes.skin.rigid/);
-    const starfarer = buildSpec(list.find((m) => m.id === 'meshy_darkastronaut'));
-    expect(starfarer.skin.rigid[0]).toMatchObject({ joint: 'spine_03', except: '^Head$' });
+    // (Starfarer's pack was the one in use until the owner's new model replaced it, 2026-11-26: the spec still carries one.)
+    const packed = buildSpec({ ...good, fixes: { ...good.fixes, skin: { rigid: [pack] } } });
+    expect(packed.skin.rigid[0]).toMatchObject({ joint: 'spine_03', except: '^Head$' });
   });
 
   it('move with the default clip set, name another, or opt out with a reason', () => {

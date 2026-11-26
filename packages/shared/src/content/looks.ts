@@ -217,7 +217,7 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   // in their time order.
   ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'], // famous real people, by period
   ['core.aztecjaguar', 'core.eagleclan', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
-  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.ts2wizard', 'core.monk'], // Medieval and the Crusades (owner, 2026-11-26: Astor Moonvale and Brother Silencio with them)
+  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.ts2wizard', 'core.ansel'], // Medieval and the Crusades (owner, 2026-11-26: Astor Moonvale and Brother Silencio with them)
   ['core.abyssalhunter', 'core.celestialknight', 'core.magmajuggernaut', 'core.mystic'], // owner, 2026-11-26: Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine together
   ['core.dustycolt', 'core.outlawranger', 'core.snakeshaman'], // the Wild West (owner, 2026-11-26: Silas Coilwhisper with them)
   ['core.shaka', 'core.zuluwarrior', 'core.kato'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
@@ -421,6 +421,7 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   'core.racer': 'core.dale', // The Racer -> Cal
   'core.sophisticate': 'core.afropi', // Velvet Vance -> Cleo Groovestone
   'core.steamrider': 'core.bikergirl', // Rosa Rivets -> Biker Gang Girl
+  'core.starvoyager': 'core.astronaut', // Star Voyager -> Spacewalker (the owner's two astronaut uploads replace the three)
   'core.shade': 'core.crewphase',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.

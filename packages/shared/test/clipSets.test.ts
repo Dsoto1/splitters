@@ -19,7 +19,7 @@ describe('clip sets', () => {
 
   it('the offered looks: the modular ones and every walking whole body move with clips', () => {
     expect(clipSetOf(decodeLook(encodeLook({ body: 'male', parts: [...MODULAR_PARTS_MALE], hair: ['hair_simpleparted'], colorways: [], skin: null, hairColor: '#8a6a50' }))!)).toBe(DEFAULT_CLIP_SET);
-    expect(clipSetOf(CORE_LOOKS.find((l) => l.id === 'core.wwiisoldier')!)).toBe(DEFAULT_CLIP_SET);
+    expect(clipSetOf(CORE_LOOKS.find((l) => l.id === 'core.paratrooper')!)).toBe(DEFAULT_CLIP_SET);
     expect(clipSetOf(CORE_LOOKS.find((l) => l.id === 'core.rollerbot')!)).toBeNull();
     // An opted-out look says why in its manifest (clipsWhy); the rest have a set.
     for (const l of CORE_LOOKS) if (l.locomotion !== 'roll' && l.clips !== false) expect(clipSetOf(l), l.id).toBeTruthy();

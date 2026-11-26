@@ -49,8 +49,6 @@ const PORTRAIT_VIEWS: Record<string, PortraitView> = {
   'core.grizzelda': { from: [0.2, -0.35, 1], aim: [0, -0.08, 0.03], zoom: 1.1 },
   // Lancer Mei's tall helmet puts the face at the bottom: aim down onto it, a little closer.
   'core.mei': { aim: [0, -0.1, 0], zoom: 0.85 },
-  // Rattles holds its head tilted to one side: wider, the aim onto the face.
-  'core.rattles': { aim: [-0.05, 0, 0], zoom: 1.25 },
 };
 
 /** Creatures framed on the top share of their body instead of whole (owner, 2026-11-03: "zoom in on the imp thumbnail"). */

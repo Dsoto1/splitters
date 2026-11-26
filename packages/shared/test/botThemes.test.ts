@@ -105,7 +105,7 @@ describe('bot name themes: the lists', () => {
     expect(lookTheme('core.bigbab')).toBe('monkey');
     expect(lookTheme('core.femalepirate')).toBe('pirate');
     expect(lookTheme('core.knight')).toBe('knight');
-    expect(lookTheme('core.grunt68')).toBe('soldier');
+    expect(lookTheme('core.paratrooper')).toBe('soldier');
     expect(lookTheme('core.shambler')).toBe('undead');
     expect(lookTheme('npc:trooper')).toBe('soldier');
     // A retired look: its replacement's; a design of yours: none.
@@ -120,7 +120,7 @@ describe('bot names: what a bot is called', () => {
     expect(botNameFor('core.chimpanzee', none)).toBe('Chester Knuckleby');
     const taken = new Set(['chester knuckleby']);
     expect(botNameFor('core.chimpanzee', (n) => taken.has(n.toLowerCase()))).toBe(NAME_THEMES.find((t) => t.id === 'monkey')!.names[0]);
-    expect(botNameFor('core.grunt68', (n) => n === "Grunt '68")).toMatch(/^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. /);
+    expect(botNameFor('core.azuresentinel', (n) => n === 'Azure Sentinel')).toMatch(/^(Pvt|Pfc|Cpl|Sgt|SSgt|Lt|Capt|Maj|Col)\. /);
   });
 
   it('falls back to the general list: a design of yours, a theme run out; then numbered', () => {
@@ -223,7 +223,7 @@ describe('bot characters: soldiers only', () => {
     expect(validBotCast(['soldiers', 'nope', 'pirate', 'soldiers', 7])).toEqual(['soldiers', 'legends']);
     expect(validBotCast('soldiers')).toEqual([]);
     expect(castLooks(['nope']).length).toBe(PICKABLE_LOOKS.length);
-    expect(castAllows(['soldiers'], 'core.grunt68')).toBe(true);
+    expect(castAllows(['soldiers'], 'core.paratrooper')).toBe(true);
     expect(castAllows(['soldiers'], 'core.chimpanzee')).toBe(false);
     expect(castAllows(['monkey'], 'core.bigbab')).toBe(true);
     expect(castAllows([], 'core.chimpanzee')).toBe(true);
@@ -239,7 +239,7 @@ describe('bot characters: soldiers only', () => {
     expect(castOfTypes(BOT_TYPES.map((t) => t.id))).toEqual([]);
     expect(foldBotCast(['robot', 'alien', 'agents'])).toEqual(['agency', 'space', 'machines']);
     // Army or Agency alone; Soldiers & Spies is both.
-    expect(castAllows(['army'], 'core.grunt68')).toBe(true);
+    expect(castAllows(['army'], 'core.paratrooper')).toBe(true);
     expect(castAllows(['army'], 'core.stealthop')).toBe(false);
     expect(castAllows(['agency'], 'core.stealthop')).toBe(true);
     expect(castAllows(['soldiers'], 'core.stealthop')).toBe(true);
@@ -247,10 +247,10 @@ describe('bot characters: soldiers only', () => {
     // Retired ids (saved setups, maps, server rules) read as what they went into (2026-11-17): Agents & Spies is
     // Agency (the same characters), Creatures is in Horrors & Creatures.
     expect(validBotCast(['agents', 'creatures', 'horror', 'pirate'])).toEqual(['agency', 'legends', 'horror']);
-    expect(castAllows(['agents'], 'core.zhao')).toBe(true);
-    expect(castAllows(['agents'], 'core.grunt68')).toBe(false);
+    expect(castAllows(['agents'], 'core.stealthop')).toBe(true);
+    expect(castAllows(['agents'], 'core.paratrooper')).toBe(false);
     expect(castAllows(['creatures'], 'core.snikkit')).toBe(true);
-    expect(castAllows(['creatures'], 'core.rattles')).toBe(true);
+    expect(castAllows(['creatures'], 'core.bonejack')).toBe(true);
     expect(botCastLabel(['agents'])).toBe('Spies');
     // Match setup: absent the map's, [] all.
     const map = yard(['soldiers']);
@@ -296,7 +296,7 @@ describe('bot characters: soldiers only', () => {
     expect(validateMap({ ...map, botCast: ['soldiers', 'dinosaurs'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(true);
     expect(validateMap({ ...map, botCast: ['soldiers'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(false);
     expect(validateMap({ ...map, botCast: ['army', 'agents', 'creatures'] }).some((i) => i.code === 'bots.cast_unknown')).toBe(false);
-    expect(lookGroup('core.grunt68')).toBe('soldiers');
+    expect(lookGroup('core.paratrooper')).toBe('soldiers');
     expect(lookGroup('core.astronaut')).toBe('space');
   });
 });

@@ -172,7 +172,7 @@ describe('signature loadouts', () => {
 
   it('the knight a spear, a soldier a rifle, an alien a ray gun; a look without its own takes its group’s', () => {
     expect(signatureOf('core.knight')).toBe('core.spear');
-    expect(signatureOf('core.grunt68')).toBe('core.rifle');
+    expect(signatureOf('core.shaka')).toBe('core.rifle');
     expect(signatureOf('core.visitor')).toBe('core.laser_rifle');
     // Every look on the roster has one, its own or its group's.
     for (const l of CORE_LOOKS) {
@@ -187,11 +187,11 @@ describe('signature loadouts', () => {
     // Military has no spears: its main gun (the assault rifle).
     expect(signatureWeapon('core.knight', false, getWeaponSet('military'))).toBe('core.rifle');
     expect(signatureWeapon('core.visitor', false, getWeaponSet('scifi'))).toBe('core.laser_rifle');
-    expect(signatureWeapon('core.grunt68', false, getWeaponSet('scifi'))).toBe('core.plasma');
+    expect(signatureWeapon('core.shaka', false, getWeaponSet('scifi'))).toBe('core.plasma');
     expect(signatureWeapon('core.knight', false, null)).toBeNull();
     // A jackpot's better one (and it too as the set allows).
-    expect(signatureWeapon('core.grunt68', true, getWeaponSet('standard'))).toBe('core.lmg');
-    expect(signatureWeapon('core.grunt68', true, getWeaponSet('military'))).toBe('core.lmg');
+    expect(signatureWeapon('core.shaka', true, getWeaponSet('standard'))).toBe('core.lmg');
+    expect(signatureWeapon('core.shaka', true, getWeaponSet('military'))).toBe('core.lmg');
     expect(signatureWeapon('core.visitor', true, getWeaponSet('military'))).toBe('core.rifle');
   });
 

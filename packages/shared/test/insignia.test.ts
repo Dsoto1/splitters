@@ -61,7 +61,7 @@ describe('rank insignia (soldiers only)', () => {
 describe('Army bots go by rank', () => {
   it('names an Army bot by rank and surname, Agency and everyone else by their own name first', () => {
     const none = () => false;
-    expect(nameRank(botNameFor('core.tacticalsoldier', none))).not.toBeNull();
+    expect(nameRank(botNameFor('core.azuresentinel', none))).not.toBeNull();
     expect(botNameFor('core.ember', none)).toBe('Flt. Lt. Ember');
     expect(botNameFor('core.stealthop', none)).toBe('Stealth Operative');
     expect(botNameFor('core.chimpanzee', none)).toBe('Chester Knuckleby');

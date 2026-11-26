@@ -7626,47 +7626,6 @@
     }
    }
   },
-  "meshy_starvoyager": {
-   "hash": "6a2d9f3a81e84678",
-   "arms": {
-    "skin": "#a4a4a1",
-    "cloth": "#929392",
-    "trim": "#a4a4a4"
-   },
-   "grip": {
-    "gripLong": [
-     -0.02,
-     0.003,
-     -0.01
-    ],
-    "supportLong": [
-     0.014,
-     0.009,
-     0
-    ]
-   },
-   "keep": [],
-   "audit": {
-    "long": {
-     "pick": "auto",
-     "eR": 0.4,
-     "eL": 1.1,
-     "flags": [],
-     "outlier": false,
-     "auto": 1.06,
-     "none": 2.76
-    },
-    "pistol": {
-     "pick": "none",
-     "eR": 1.4,
-     "eL": 3.179,
-     "flags": [],
-     "outlier": false,
-     "auto": 4.166,
-     "none": 3.307
-    }
-   }
-  },
   "meshy_stealthop": {
    "hash": "b211ce260217ad56",
    "arms": {

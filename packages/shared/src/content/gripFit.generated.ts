@@ -177,7 +177,6 @@ export const GRIP_FITS: Readonly<Record<string, { grip?: GripTune; arms?: { skin
   'core.snowman': { arms: { skin: '#3a3530', cloth: '#4a4d50', trim: '#2a2b2c' } },
   'core.spacemarine': { grip: { gripLong: [-0.011, 0.022, -0.007], supportLong: [0.038, -0.004, 0], gripPistol: [0.005, -0.002, -0.008], supportPistol: [-0.018, 0.009, 0.008] }, arms: { skin: '#3d403c', cloth: '#582122', trim: '#371415' } },
   'core.spaceminer': { arms: { skin: '#3a3530', cloth: '#4a4d50', trim: '#2a2b2c' } },
-  'core.starvoyager': { grip: { gripLong: [-0.02, 0.003, -0.01], supportLong: [0.014, 0.009, 0] }, arms: { skin: '#a4a4a1', cloth: '#929392', trim: '#a4a4a4' } },
   'core.stealthop': { grip: { gripLong: [-0.01, 0.002, -0.006], supportLong: [-0.002, 0.009, 0], gripPistol: [0.003, -0.003, 0.001], supportPistol: [-0.005, 0.012, -0.009] }, arms: { skin: '#52494d', cloth: '#3a3c40', trim: '#242528' } },
   'core.stranger': { arms: { skin: '#3a3530', cloth: '#4a4d50', trim: '#2a2b2c' } },
   'core.sunpriest': { grip: { gripLong: [0.005, -0.006, -0.014], supportLong: [0.002, -0.034, 0], gripPistol: [0.011, -0.002, -0.004], supportPistol: [0.054, -0.018, 0.02] }, arms: { skin: '#876a48', cloth: '#8b6d3f', trim: '#564427' } },

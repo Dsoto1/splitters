@@ -28,8 +28,8 @@ describe("Character Select's groups", () => {
     }
     const branch = (b: string) => CORE_LOOKS.filter((l) => l.branch === b).map((l) => l.id);
     // Agents & Spies became Agency (2026-11-17); the soldiers Army.
-    expect(branch('agency')).toEqual(expect.arrayContaining(['core.stealthop', 'core.zhao', 'core.resolvesoldier']));
-    expect(branch('army')).toEqual(expect.arrayContaining(['core.grunt68', 'core.wwiisoldier', 'core.warriorsentinel', 'core.tacticalsoldier']));
+    expect(branch('agency')).toEqual(expect.arrayContaining(['core.stealthop', 'core.resolvesoldier']));
+    expect(branch('army')).toEqual(expect.arrayContaining(['core.paratrooper', 'core.usgrunt', 'core.vietnamsoldier', 'core.repguard']));
     expect(lookBranch('npc:trooper')).toBe('agency');
     expect(lookBranch('npc:gunner')).toBe('army');
   });
@@ -57,31 +57,32 @@ describe("Character Select's groups", () => {
 
   it('sorts what each character is', () => {
     const at = (g: string) => CORE_LOOKS.filter((l) => l.group === g).map((l) => l.id);
-    expect(at('horror')).toEqual(expect.arrayContaining(['core.shambler', 'core.rattles', 'core.bonejack', 'core.punkin']));
+    expect(at('horror')).toEqual(expect.arrayContaining(['core.undeadsoldier', 'core.bonejack', 'core.anubis', 'core.gargoyle']));
     expect(at('animals')).toEqual(expect.arrayContaining(['core.bandit', 'core.koala', 'core.shiba']));
-    expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.abe', 'core.anubis']));
-    expect(at('folk')).toEqual(expect.arrayContaining(['core.aldric', 'core.merrow', 'core.hazmat']));
+    expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.abe', 'core.trex', 'core.khan']));
+    expect(at('folk')).toEqual(expect.arrayContaining(['core.afropi', 'core.radishman', 'core.hazmat', 'core.bronzer']));
     // Creatures merged into Horrors & Creatures, Agents & Spies into Soldiers & Spies (2026-11-17).
-    expect(at('horror')).toEqual(expect.arrayContaining(['core.snikkit', 'core.trex', 'core.grizzelda']));
+    expect(at('horror')).toEqual(expect.arrayContaining(['core.snikkit', 'core.gorgle', 'core.grizzelda']));
     expect(at('machines')).toEqual(expect.arrayContaining(['core.emeraldrobot', 'core.t350', 'core.botboy']));
     expect(at('space')).toEqual(expect.arrayContaining(['core.visitor', 'core.astronaut', 'core.spacemarine']));
-    expect(at('soldiers')).toEqual(expect.arrayContaining(['core.stealthop', 'core.zhao']));
+    expect(at('soldiers')).toEqual(expect.arrayContaining(['core.stealthop', 'core.repguard']));
   });
 
   it("the owner's moves of 2026-11-17", () => {
     const group = (name: string) => CORE_LOOKS.find((l) => l.name === name)?.group;
-    expect(group('Shadow Enforcer')).toBe('space');
     expect(group('Scary Larry')).toBe('horror');
     // Teddy moved again on 2026-11-26, to the Toys row (owner).
     expect(group('Teddy')).toBe('toys');
   });
 
-  it('Character Select keeps Spud Marshal with the astronauts; Astronaut Explorer is retired (2026-11-24)', () => {
+  it('Character Select keeps the astronauts in Outer Space; Astronaut Explorer (2026-11-24) and Star Voyager (2026-11-26) are retired', () => {
     const roster = CORE_LOOKS.map((l) => ({ name: l.name, group: l.group ?? 'mine', sortAs: l.sortAs }));
     const space = characterSections(roster).find((s) => s.id === 'space')!.looks.map((l) => l.name);
     const at = (n: string) => space.indexOf(n);
     expect(at('Astronaut Explorer')).toBe(-1);
-    expect(at('Spud Marshal')).toBeLessThan(at('Beanie Alien'));
+    expect(at('Star Voyager')).toBe(-1);
+    expect(at('Spacewalker')).toBeGreaterThan(-1);
+    expect(at('Starfarer')).toBeGreaterThan(-1);
   });
 
   it('Character Select lists the owner\'s neighbours side by side, in one list (CHARACTER_NEIGHBOURS)', () => {
@@ -97,8 +98,8 @@ describe("Character Select's groups", () => {
 
   it("the owner's categories, in order (Roster Board, 2026-11-14/15; merged 2026-11-17)", () => {
     expect(CHARACTER_GROUPS.map((g) => `${g.id}:${g.label}`)).toEqual([
-      'soldiers:Soldiers & Spies', 'folk:Everyday Folk', 'space:Outer Space', 'legends:Legends',
-      'animals:Animalia', 'toys:Toys', 'machines:Machines', 'horror:Horrors & Creatures',
+      'soldiers:Soldiers & Spies', 'folk:Everyday Folk', 'space:Outer Space', 'legends:Legends', 'pirates:Pirates',
+      'animals:Animalia', 'toys:Toys', 'holiday:Holiday', 'machines:Machines', 'horror:Horrors & Creatures',
     ]);
     // Uncle Bao and the Rusty Mech are off the roster; a saved choice plays the nearest kept look.
     for (const id of ['core.unclebao', 'core.rustymech']) expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
@@ -108,8 +109,8 @@ describe("Character Select's groups", () => {
 
   it('the Gas Mask Engineer is gone (owner, 2026-11-21): a saved choice or bot set plays Grunt \'68', () => {
     expect(CORE_LOOKS.some((l) => l.id === 'core.gasmaskengineer')).toBe(false);
-    expect(RETIRED_LOOKS['core.gasmaskengineer']).toBe('core.grunt68');
-    expect(validLookId('core.gasmaskengineer')).toBe('core.grunt68');
+    expect(RETIRED_LOOKS['core.gasmaskengineer']).toBe('core.vietnamsoldier');
+    expect(validLookId('core.gasmaskengineer')).toBe('core.vietnamsoldier');
     expect(PICKABLE_LOOKS.some((l) => l.id === 'core.gasmaskengineer')).toBe(false);
   });
 
@@ -138,11 +139,11 @@ describe("Character Select's groups", () => {
     expect(getLook('core.magmajuggernaut').group).toBe('legends');
   });
 
-  it('the chimp is one character with ten variant looks (owner, 2026-11-26): the base first, the rest off automatic picks', () => {
+  it('the chimp is one character with eleven variant looks (owner, 2026-11-26; Chester Knuckleby the eleventh that evening): the base first, the rest off automatic picks', () => {
     const v = lookVariants(CORE_LOOKS, 'core.chimp');
-    expect(v).toHaveLength(10);
+    expect(v).toHaveLength(11);
     expect(v[0]!.id).toBe('core.chimp');
-    expect(new Set(v.map((l) => l.variant)).size).toBe(10);
+    expect(new Set(v.map((l) => l.variant)).size).toBe(11);
     // From any of its looks, the same list; a look with none has none.
     expect(lookVariants(CORE_LOOKS, 'core.chimp_roman').map((l) => l.id)).toEqual(v.map((l) => l.id));
     expect(lookVariants(CORE_LOOKS, 'core.dale')).toEqual([]);

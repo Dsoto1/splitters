@@ -170,7 +170,6 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.snikkit': 'core.snikkit.webp?v=9664ee09fa',
   'core.spacemarine': 'core.spacemarine.webp?v=129ff72241',
   'core.sprout': 'core.sprout.webp?v=ac68ec9d96',
-  'core.starvoyager': 'core.starvoyager.webp?v=a4ce91e43c',
   'core.stealthop': 'core.stealthop.webp?v=d3b858716f',
   'core.sunpriest': 'core.sunpriest.webp?v=7d9a2cfea0',
   'core.synthwaveeel': 'core.synthwaveeel.webp?v=7aba8da10a',

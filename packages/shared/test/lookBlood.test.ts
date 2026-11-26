@@ -25,17 +25,18 @@ describe('blood by character', () => {
   it('by group, then by hand', () => {
     // Machines bleed oil; people red.
     for (const l of CORE_LOOKS.filter((x) => x.whole && x.group === 'machines')) expect(lookBlood(l.id), l.id).toBe('oil');
-    for (const l of CORE_LOOKS.filter((x) => x.whole && (x.group === 'soldiers' || x.group === 'folk'))) expect(lookBlood(l.id), l.id).toBe('red');
+    // (Bronzer, a statue, bleeds stone dust in Everyday Folk since 2026-11-26.)
+    for (const l of CORE_LOOKS.filter((x) => x.whole && (x.group === 'soldiers' || x.group === 'folk') && x.id !== 'core.bronzer')) expect(lookBlood(l.id), l.id).toBe('red');
     // Every alien is green or blue (the space people are red).
     for (const l of CORE_LOOKS.filter((x) => x.whole && x.nameTheme === 'alien')) expect(['green', 'blue'], l.id).toContain(lookBlood(l.id));
     expect(lookBlood('core.astronaut')).toBe('red');
-    expect(lookBlood('core.rattles')).toBe('bone');
+    expect(lookBlood('core.undeadsoldier')).toBe('bone');
     expect(lookBlood('core.bonejack')).toBe('bone');
     expect(lookBlood('core.ragdoll')).toBe('spirit');
     expect(lookBlood('core.crewdemolitions')).toBe('oil');
     expect(lookBlood('core.groaner')).toBe('red');
     // The owner's answers (2026-11-18).
-    for (const id of ['core.alienbiker', 'core.potatomarshal', 'core.spacemarine']) expect(lookBlood(id), id).toBe('blue');
+    for (const id of ['core.spacemarine']) expect(lookBlood(id), id).toBe('blue');
     expect(lookBlood('core.bronzer')).toBe('stone');
     // Retired looks bleed as the look they play (Rotter, removed, plays Dredge Marrow).
     expect(lookBlood('core.rotter')).toBe(lookBlood('core.abyssalhunter'));

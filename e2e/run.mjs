@@ -13934,10 +13934,10 @@ async function charactersFlow(browser, part = 0) {
   check(bodyMisses.length === 0, `full-body first person: palms on the gun's grip and handguard (${bodyMisses.join('; ') || 'all within 2 cm'})`);
   // Third person, strafing and backing up while firing: the hips turn toward the motion and the shoulders stay square
   // to the aim (they used to wind about 140 degrees off it), the hands on the gun. Two whole bodies (Cal and
-  // the WWII soldier), both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
+  // the WW2 paratrooper, Sgt. Mickey Callahan, since WWII Infantry was removed 2026-11-26), both on the default clip set (its walk/run legs, the running shot on the upper body, the backward shooting
   // walk), and the rolling Baseball Robot, which has none (it glides on the rig's idle).
   const strafes = [];
-  for (const look of ['core.dale', 'core.wwiisoldier']) {
+  for (const look of ['core.dale', 'core.paratrooper']) {
     await page.evaluate((l) => window.__grips.pose(l, 'core.rifle', 'third'), look);
     const shoulderYaw = () =>
       page.evaluate(() => {
@@ -14384,7 +14384,7 @@ async function farBodies(browser) {
   // Then known looks on the same runners (not the deck's draw): Hyena Warrior's far copy was drawn 15-30% short on CI
   // (HANDOFF, "Flaky e2e checks"), then large, small and animal bodies. Each far copy stands as tall as its full body
   // in the same pose (the lowest of the frames), and is skinned on the full body's skeleton (one pose for both).
-  const looks = ['core.hyena', 'core.alienbiker', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.zencapybara', 'core.knight', 'core.croakley'];
+  const looks = ['core.hyena', 'core.spacemarine', 'core.trex', 'core.coachtortoise', 'core.abe', 'core.zencapybara', 'core.knight', 'core.croakley'];
   await sim(page, (m, _me, [slots, looks]) => slots.forEach((s, i) => {
     const c = m.combatants().find((x) => x.slot === s);
     if (c && looks[i] && c.look !== looks[i]) m.swapLook(c, looks[i]);

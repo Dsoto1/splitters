@@ -46,7 +46,7 @@ describe('campaign data (content/campaign.json)', () => {
     const jade = d.sectors.find((s) => s.classification === 'historical')!;
     expect(jade.name).toBe('The Jade Empire');
     // Owner, 2026-11-25: Balam Nightclaw, Talon Skycrest, the Sun Warrior and Aurelio in the boss encounter.
-    expect([jade.boss.character, ...jade.boss.companions].sort()).toEqual(['core.aztecjaguar', 'core.eagleclan', 'core.goldenwarrior', 'core.sunpriest']);
+    expect([jade.boss.character, ...jade.boss.companions].sort()).toEqual(['core.aztecjaguar', 'core.basaltguardian', 'core.eagleclan', 'core.sunpriest']);
     expect(d.convergences).toHaveLength(1);
     expect(d.convergences[0]!.sectors.every((s) => d.sectors.some((x) => x.id === s))).toBe(true);
     // Placeholders until the owner names them.

@@ -174,6 +174,8 @@ enemies where enemy markers are shown; hidden as the arrow is, under smoke or a 
 | Animalia (`animals`) | paw | Pup | Cub | Scout | Tracker | Hunter | Stalker | Prowler | Alpha | Apex, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
 | Everyday Folk (`folk`; also a design of yours) | plain chevron | Rookie | Regular | Local | Pro | Ace | Star | Hero | Superstar | Icon |
 | Toys (`toys`, 2026-11-26) | toy brick | Wind-Up | Tin Toy | Plaything | Favourite | Best-Seller | Collectible | Keepsake | Heirloom | Toy of the Year |
+| Pirates (`pirates`, 2026-11-26) | anchor | Deckhand | Powder Monkey | Rigger | Gunner | Boatswain | Quartermaster | First Mate | Captain | Pirate King |
+| Holiday (`holiday`, 2026-11-26) | gift | Guest | Reveller | Caroler | Merrymaker | Host | Toastmaster | Grand Marshal | Guest of Honour | Holiday Legend |
 
 The first and last titles are the owner's ("as written is fine"); the steps between are the lead's (the Toys' nine all
 the lead's, 2026-11-26). **A name's own title gives way** (owner, 2026-11-26: "so they dont duplicate and instead actually
@@ -1742,3 +1744,48 @@ Cyber Commando and Scrapper. Each look is its own manifest and model:
   owner's "Dark Hooded Entity": she (`body: female`), spirit blood, and she **floats** (`locomotion: roll`, the glide
   the Baseball Robot has and The Hollow Pilgrim had: legs still, no walk cycle, leaning into her motion). The
   community futuristic warrior (and its grafted hands, handgraft.mjs) no longer ships.
+
+### The 11-26 round (c): the evening's owner calls (2026-11-26)
+
+- **New rows:** **Pirates** (`pirates`, after Legends): Cap'n Ezra Blackwake (the "pirate remeshed 15k" captain), Mr.
+  Gideon Tarr (the first mate) and Scarlet Brinewell (from Legends). **Holiday** (`holiday`, after Toys): Kris
+  Kringleton (Santa), Hazel Hexley (the witch), Jingle Tinsel (the elf), Chilly Flakesworth (the snowman, who glides:
+  `locomotion: roll`), Uncle Spangle (Uncle Sam), Punkin (the pumpkin scarecrow on Punkin's id), Gobbles Plymouth (the
+  turkey pilgrim) and Hopsworth Eggleton (the Easter bunny). Each row is a bot type, has a Roulette fallback (the
+  flintlock pistol, the flare gun) and its own rank titles and mark (the table above).
+- **Variant characters** (like the chimp's; each look keeps its id, so a saved pick plays that look on the picker; a
+  variant may have a body of its own): Dog Tag Doyle the skeleton (Desert Storm, the base; WW2: Grinning Gus's id;
+  Vietnam: Zombie Soldier A's; Biker: Spiked Skeleton Biker's; Civil War: Bugler Bonesby, new; Pirate: Bonejack), Dez
+  Kickley (Hiro, Marla and Linda: the four zombies), Goblina (Snikkit, Goblin Warlord), Ziggy Bananas (Chester
+  Knuckleby), Teddy (Patchwork Polly), Freaky Frida (Scary Larry) and Ryker Voss, the space mercenary (Prison, the
+  base; Space Hunter, Gladiator, Smuggler, Wasteland).
+- **MapMaker only** (`npcOnly`: placed as figures and a map's own bots, off Character Select, the bots' automatic
+  picks, bot types and Roulette; a saved pick plays `NPC_ONLY_PLAYS`'s look): Groaner, Shambler and Fearsome Undead
+  (Dez), Sir Galloway (Ser Godric Vale) and Ser Brannock (Ser Aldous Lionmane). Zombies mode's zombies wear the three
+  and Dez's four (`ZOMBIE_LOOKS`).
+- **New models on the old ids:** Gorgle (the creature goblin), Count Bonesworth (the crypt vampire), the skeletons,
+  Punkin, Imperial Guard and Lancer Mei (the dynasty pair, to Legends with the Khan), The Visitor (the classic grey
+  alien), Spacewalker and Starfarer (the classic and future astronauts), Botboy (the astro boy robot, a normal robot's
+  size), Emerald Robot (the scout robot), Field Medic Automaton (the sci-fi medic robot), Barnaby Bruin (the noble
+  bear), Octo Buddy (the streetwear octopus) and Pink Mantis (the pink-suit mantis, to Animalia).
+- **New characters:** The Pale Stranger, Mujina (the faceless spirit) and Grimspire (the gargoyle) in Horrors;
+  Astrid Stormbrand and Ulf Ravenshield (the vikings, with Sigrun Frostmane), the Khan of the Steppes (with Imperial
+  Guard and Lancer Mei), Valeria Sandstorm and Imperator Laurel (the gladiators), Ser Aurelian Dawnshield (the
+  paladin, with the medieval knights) in Legends; Sgt. Samir Haddad (the Republican Guard, by Desert Storm) in Soldiers
+  & Spies; Ryker Voss, Dusty Orebeck (the space mining engineer) and Zorp Gleebix (the abnormal alien) in Outer
+  Space. Names are ours; the famous real people have made-up names (the Khan, Imperator Laurel).
+- **Removed completely** (RETIRED_LOOKS to a current look, no chains; Roulette, the campaign, the classic bot set and
+  Zombies to current looks): Rattles, Warrior of the Skies, Sun Warrior, King Aldric, Old King Halvard, Coffee Brown
+  (Cleo Groovestone takes his place), Warrior Sentinel, Steampunk Warrior, Mister Lanky (Rad Rootley takes his place),
+  Merrow the Wise (Astor Moonvale), Alien Biker, Reef Wanderer, Alien Encounter, Spud Marshal, Beanie Alien, Shadow
+  Enforcer, Star Voyager (Spacewalker), Virtua Soldier, Tactical Soldier, Pemberton, Sentinel in Green, WWII Infantry,
+  Customs Agent Zhao, Grunt '68 (Pfc. Danny Okerlund), Desert Ranger (Pvt. Hank Dowling), Spike Scavenger, The
+  Prospector, The Racer, Velvet Vance, Rosa Rivets, and the queued Plains Scout and Lurcher.
+- **Moves:** Cool Hands Rex to Legends; Anoobys to Horrors with the Egypt ones; Mummy Bot to Machines; Pink Mantis to
+  Animalia; Bronzer to Everyday Folk. Side by side (`CHARACTER_NEIGHBOURS`): Silas Coilwhisper with the Wild West,
+  Astor Moonvale and Brother Silencio with the medieval knights, Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg
+  and Madame Zephyrine together.
+- **Licences:** The Dapper, Baseball Robot, CRT Robot, Seetah J. Chloth and Bronzer are the owner's own (Meshy,
+  owned; the owner, 2026-11-26).
+- **Kato Emberline** is `core.kato` (`meshy_kato`); `core.ashwalker` and `core.ashtribal` play him.
+

@@ -20,6 +20,11 @@ made only on a commit that passed CI on a check branch.
 - **The Veiled Vanguard** takes Luther Vanguard's place: a dark hooded figure who floats instead of walking.
 - **T-TreeFitty has a new model and six looks** (Original, Disco, Lifeguard, Tourist, Tutu, Suit) on his variant picker.
 - **Pvt. Pete Plastic bleeds green.**
+- **Two new Character Select rows: Pirates and Holiday** (Santa, a witch, an elf, a gliding snowman, Uncle Sam, the pumpkin scarecrow, a turkey pilgrim and the Easter bunny), each with its own ranks.
+- **More characters with looks to pick:** the skeleton soldiers (six eras, the pirate skeleton too), Dez's four zombies, Goblina's goblins, Ziggy with Chester, Teddy with Patchwork Polly, Frida with Scary Larry, and a new space mercenary with five looks.
+- **New characters:** vikings, a Khan, gladiators and an emperor, a paladin, a Republican Guard sergeant, a space miner, an alien, a pale stranger, a faceless spirit and a gargoyle.
+- **New models** for Gorgle, Count Bonesworth, The Visitor, the astronauts, Botboy, Emerald Robot, Field Medic Automaton, Barnaby Bruin, Octo Buddy, Pink Mantis, Imperial Guard and Lancer Mei.
+- **Groaner, Shambler, Fearsome Undead, Sir Galloway and Ser Brannock are MapMaker characters now** (figures and a map's own bots), not picks; **31 older characters are removed** (a saved pick plays a near one).
 - **Ranks:** the Toys have their own nine titles and a toy-brick badge, and with ranks on a name's own title (Det., Dr., Sarge, Sir, Capt. …) gives way to the rank instead of doubling up.
 - **Chat in online matches.** Enter types a line to everyone, I to your team (Tab switches in the box); the host holds back floods and masks rude words. **Quick chat** has more lines (Need ammo!, Defend A!, Defend B!, Fall back!, Sorry!: B, then 1-9, 0, - or =), a wheel on a controller (hold d-pad up) and on touch (Chat), and shows in the chat log. **Mute** anyone from their card (click their name on the pause menu's scoreboard), remembered on your device; whoever runs the match can **Kick** from the same card.
 - **Bullet holes on breakable props.** Crates, barrels and every solid prop on an 'Everything breaks' map keep the holes you put in them (wood, metal and stone each their own look), and the holes go when the prop breaks.
