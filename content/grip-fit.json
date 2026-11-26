@@ -1574,57 +1574,48 @@
    }
   },
   "meshy_boxduck": {
-   "hash": "890f3c2076139e90",
+   "hash": "1369ba1ecf575ae3",
    "arms": {
-    "skin": "#554623",
-    "cloth": "#2c2a21",
-    "trim": "#1b1a14"
+    "skin": "#534723",
+    "cloth": "#2c2b1f",
+    "trim": "#1a1a1a"
    },
    "grip": {
     "gripLong": [
-     -0.009,
-     -0.013,
-     -0.025
+     -0.005,
+     -0.015,
+     -0.022
     ],
     "supportLong": [
      0.09,
-     -0.09,
+     -0.058,
      0
-    ],
-    "gripPistol": [
-     -0.008,
-     0.017,
-     -0.004
-    ],
-    "supportPistol": [
-     0.09,
-     -0.073,
-     0.081
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 1.812,
-     "eL": 20.006,
+     "eR": 1.412,
+     "eL": 3.705,
      "flags": [],
-     "outlier": true,
-     "auto": 13.816,
-     "none": 17.045
+     "outlier": false,
+     "hand": 4.404,
+     "auto": 3.635,
+     "none": 7.249
     },
     "pistol": {
-     "pick": "auto",
-     "eR": 3.212,
-     "eL": 28.202,
+     "pick": "none",
+     "eR": 4.41,
+     "eL": 26.405,
      "flags": [
       "open",
       "off",
       "through"
      ],
      "outlier": true,
-     "auto": 29.133,
-     "none": 29.831
+     "auto": 30.179,
+     "none": 29.253
     }
    }
   },
