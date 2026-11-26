@@ -1650,21 +1650,16 @@ portraits captured). Names of new characters are the lead's (the owner can renam
   (Army): Capt. Elias Harrowgate (`core.unionofficer`) and Col. Josiah Beaumont (`core.rebelcommander`) for the Civil
   War, Pfc. Danny Okerlund (`core.vietnamsoldier`) and Lien Vo (`core.vcscout`) for Vietnam.
 
-### Retired to MapMaker (owner, 2026-11-25)
+### Retired: removed; Figures use roster characters (owner, 2026-11-26)
 
-A replaced character's old model **of the owner's own** is not deleted: it is **retired to MapMaker**. Its manifest is
-copied to a new id (`<id>_classic`, look `core.<look>_classic`, named "Classic …") with `use: "figure"`, and its built
-files and lock entries are renamed to that id (no rebuild). A `figure` manifest is on no roster: not on Character
-Select, never a bot's, a random or a Roulette pick, and `getLook` / `validLookId` don't give it (a saved or typed id
-falls back as an unknown one does); it needs no grip fit or portrait. The generated table lists them in
-`WHOLE_BODY_FIGURE_LOOKS` (looks.ts `RETIRED_FIGURE_LOOKS`). **The owner's own models only** (owner, 2026-11-25: "i dont
-want to support them and they are not my models"; the manifest checker refuses `use: figure` on a community model): a
-retired model that isn't the owner's is removed entirely. All nine models replaced on 2026-11-25 were community models
-(Meshy Community CC0), so they were removed and no figure look ships yet.
+"I would prefer to use what we will have (over 200 characters)": every retired character is removed completely, the
+owner's own included (manifest, model, arms, portrait, lock, provenance, grip fit). `RETIRED_LOOKS` is a mapping only
+(an old id → a current roster look) so saved picks, setups and maps that name one still load (Linktifa's modular body
+stays drawable as the Designer's base, `NPC_KEPT_LOOKS`). The nine models replaced on 2026-11-25 were not kept, and
+Brutus Hornbeck (`meshy_rhinojuggernaut`, plays as Gorilla G) went on 2026-11-26.
 
-MapMaker places them, and anyone on the roster, with the **Figure** (NPCs tab, "Figures"; map format v53,
-`FigureEntity` in map/schema.ts): a character standing on the map in a pose (Standing, Cheering, Dancing, Crouching),
-empty-handed, at the look's body size, for scenarios and set dressing. The inspector's Character list has the retired
-looks first (when there are any), then the roster by group. Looks only: no collision and no part in play (stand it on a
-block or a prop to make it solid). The game and MapMaker draw it with the same character library (`figureLook` resolves
-a retired id; `ScenarioVisuals.figure`). No NPC squad wears a retired look (owner, 2026-11-25: not wanted).
+MapMaker's **Figure** (NPCs tab, "Figures"; map format v53, `FigureEntity` in map/schema.ts) places a roster character
+standing on the map in a pose (Standing, Cheering, Dancing, Crouching), empty-handed, at its body size, for scenarios
+and set dressing. The inspector's Character list is the roster by group. Looks only: no collision and no part in play
+(stand it on a block or a prop to make it solid). The game and MapMaker draw it with the same character library
+(`ScenarioVisuals.figure`). No NPC squad wears a chosen look.

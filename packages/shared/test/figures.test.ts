@@ -1,44 +1,27 @@
 import { describe, expect, it } from 'vitest';
 import {
   CORE_LOOKS,
-  FIGURE_LOOK_CHOICES,
   MAP_FORMAT_VERSION,
   MapEntity,
-  PICKABLE_LOOKS,
-  RETIRED_FIGURE_LOOKS,
+  NPC_KEPT_LOOKS,
+  RETIRED_LOOKS,
   SCENARIO_PALETTE,
-  figureLook,
   getLook,
-  isBotLook,
   migrateMapDocument,
   newScenarioEntities,
-  validLookId,
   vacantCollectionPlaces,
 } from '../src/index.ts';
 
-// Characters retired to MapMaker and the Figure that wears them (owner, 2026-11-25: "All replacements can be retired to
-// the mapmaker for use in other creations such as scenarios"; map format v53).
-describe('characters retired to MapMaker (the owner\'s own models only)', () => {
-  const ids = RETIRED_FIGURE_LOOKS.map((l) => l.id);
-
-  it('are on no roster: not Character Select\'s, a bot\'s, a random or a saved pick', () => {
-    expect(new Set(ids).size).toBe(ids.length);
-    for (const id of ids) {
-      expect(CORE_LOOKS.some((l) => l.id === id)).toBe(false);
-      expect(PICKABLE_LOOKS.some((l) => l.id === id)).toBe(false);
-      expect(isBotLook(id)).toBe(false);
-      expect(getLook(id).id).not.toBe(id);
-      expect(validLookId(id)).not.toBe(id);
+// MapMaker's Figure (map format v53): a roster character standing on the map in a pose. Retired characters are removed
+// (owner, 2026-11-26), so a Figure wears roster looks only; an old id in RETIRED_LOOKS draws as its mapping.
+describe('the Figure\'s looks', () => {
+  it('a retired id is a mapping only, to a roster look', () => {
+    for (const [from, to] of Object.entries(RETIRED_LOOKS)) {
+      expect(CORE_LOOKS.some((l) => l.id === from), from).toBe(false);
+      // (Linktifa stays drawable as the Designer's base: NPC_KEPT_LOOKS.)
+      if (!NPC_KEPT_LOOKS.has(from)) expect(getLook(from).id, from).toBe(getLook(to).id);
     }
-  });
-
-  it('a Figure wears them, and anyone on the roster; an unknown look draws as the default', () => {
-    for (const id of ids) expect(figureLook(id).id).toBe(id);
-    expect(figureLook('core.cyberlion').id).toBe('core.cyberlion');
-    expect(figureLook('core.nobody').id).toBe(getLook('core.nobody').id);
-    const { roster, retired } = FIGURE_LOOK_CHOICES();
-    expect(retired).toBe(RETIRED_FIGURE_LOOKS);
-    expect(roster).toBe(CORE_LOOKS);
+    expect(getLook('core.rhinojuggernaut').id).toBe('core.gorillag');
   });
 });
 

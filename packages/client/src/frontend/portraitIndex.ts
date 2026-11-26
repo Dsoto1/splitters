@@ -151,7 +151,6 @@ export const SHIPPED_PORTRAITS: Readonly<Record<string, string>> = {
   'core.rattles': 'core.rattles.webp?v=d642a4ba8e',
   'core.rebelcommander': 'core.rebelcommander.webp?v=8df823b180',
   'core.resolvesoldier': 'core.resolvesoldier.webp?v=993582c66a',
-  'core.rhinojuggernaut': 'core.rhinojuggernaut.webp?v=9c7b2e4df0',
   'core.ricochet': 'core.ricochet.webp?v=2aa2eded45',
   'core.rollerbot': 'core.rollerbot.webp?v=f9f486fd0f',
   'core.scamp': 'core.scamp.webp?v=a42db47895',

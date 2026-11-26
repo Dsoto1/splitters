@@ -153,7 +153,6 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   { id: 'core.zencapybara', name: 'Master Bodhi', body: 'male', head: '', parts: ['meshy_zencapybara'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'critter' },
   { id: 'core.crewquartermaster', name: 'Mags Petrov', body: 'female', head: '', parts: ['meshy_crewquartermaster'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_f' }, group: 'space', collection: 'chrono', nameTheme: 'soldier' },
   { id: 'core.crewchronomage', name: 'Lyra Vantis', body: 'female', head: '', parts: ['meshy_crewchronomage'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_f' }, group: 'space', collection: 'chrono', nameTheme: 'wizard' },
-  { id: 'core.rhinojuggernaut', name: 'Brutus Hornbeck', body: 'male', head: '', parts: ['meshy_rhinojuggernaut'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m', hold: { out: -0.15 } }, group: 'animals', nameTheme: 'critter' },
   { id: 'core.graffitiraccoon', name: 'Tag Malone', body: 'male', head: '', parts: ['meshy_graffitiraccoon'], hair: [], colorways: [], skin: null, hairColor: null, size: 'small', whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'raccoon' },
   { id: 'core.mantisshrimp', name: 'Ryo Snapclaw', body: 'male', head: '', parts: ['meshy_mantisshrimp'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'critter' },
   { id: 'core.gladiatorrooster', name: 'Maximus Cluckworth', body: 'male', head: '', parts: ['meshy_gladiatorrooster'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'animals', nameTheme: 'critter' },
@@ -196,9 +195,6 @@ export const WHOLE_BODY_NPC_LOOKS: readonly CharacterLook[] = [
   { id: 'core.bossvoid', name: 'The Unhour', body: 'male', head: '', parts: ['meshy_bossvoid'], hair: [], colorways: [], skin: null, hairColor: null, size: 'large', whole: { arms: 'ranger_arms_m' }, group: 'space', tier: 'experimental', nameTheme: 'alien' },
   { id: 'core.bossinquisitor', name: 'Inquisitor Vesk Tockley', body: 'male', head: '', parts: ['meshy_bossinquisitor'], hair: [], colorways: [], skin: null, hairColor: null, whole: { arms: 'ranger_arms_m' }, group: 'space', tier: 'experimental', nameTheme: 'alien' },
 ];
-
-/** Characters retired to MapMaker (`use: figure`; owner, 2026-11-25): on no roster, never a bot's, a random or a Roulette pick; MapMaker's Figure can wear them. */
-export const WHOLE_BODY_FIGURE_LOOKS: readonly CharacterLook[] = [];
 
 /** Their one-line bios (character select). */
 export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
@@ -351,7 +347,6 @@ export const WHOLE_BODY_BIOS: Readonly<Record<string, string>> = {
   'core.zencapybara': 'Calm under fire. Calm under everything.',
   'core.crewquartermaster': 'Has a spare for everything, and a receipt for the spare.',
   'core.crewchronomage': 'Rewinds a bad round. Never tells you how many times.',
-  'core.rhinojuggernaut': 'Doors are a suggestion. Walls are a slightly firmer suggestion.',
   'core.graffitiraccoon': 'Signs every wall on the map before the match is over.',
   'core.mantisshrimp': 'Punches faster than a bullet. Brought a gun anyway.',
   'core.gladiatorrooster': 'Wakes the whole arena at dawn, then wins it.',

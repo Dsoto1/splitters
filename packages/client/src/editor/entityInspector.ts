@@ -80,10 +80,10 @@ import {
   type MoverMode,
   type ObjectiveEntity,
   CHARACTER_GROUPS,
-  FIGURE_LOOK_CHOICES,
+  CORE_LOOKS,
+  getLook,
   FIGURE_POSES,
   FIGURE_POSE_LABELS,
-  figureLook,
   type FigurePose,
 } from '@tiletrigger/shared';
 import { envRendererOn } from '../environment/envFlag.ts';
@@ -481,23 +481,21 @@ export class EntityInspector {
         break;
       }
       case 'figure': {
-        // Every look on the roster, by group, then the characters retired to MapMaker (looks.ts RETIRED_FIGURE_LOOKS).
+        // Every character on the roster, by group (owner, 2026-11-26: retired characters are removed, not kept for MapMaker).
         const sel = document.createElement('select');
         sel.id = 'ed-insp-figure-look';
-        const { roster, retired } = FIGURE_LOOK_CHOICES();
         const group = (label: string, looks: readonly { id: string; name: string }[]) => {
           const g = document.createElement('optgroup');
           g.label = label;
           for (const l of [...looks].sort((a, b) => a.name.localeCompare(b.name))) g.append(new Option(l.name, l.id, false, l.id === e.look));
           if (g.children.length) sel.append(g);
         };
-        group('Retired to MapMaker', retired);
-        for (const g of CHARACTER_GROUPS) group(g.label, roster.filter((l) => l.group === g.id));
-        if (![...sel.options].some((o) => o.selected)) sel.prepend(new Option(`${figureLook(e.look).name} (unknown look: drawn as this)`, e.look, true, true));
+        for (const g of CHARACTER_GROUPS) group(g.label, CORE_LOOKS.filter((l) => l.group === g.id));
+        if (![...sel.options].some((o) => o.selected)) sel.prepend(new Option(`${getLook(e.look).name} (unknown look: drawn as this)`, e.look, true, true));
         sel.addEventListener('change', () => update('Set figure', { look: sel.value }));
         el.append(row('Character', sel));
         choose('Pose', FIGURE_POSES.map((p) => [p, FIGURE_POSE_LABELS[p]] as const), e.pose, (v) => ({ pose: v as FigurePose }));
-        el.append(small('A character standing here in a pose, for scenarios and set dressing: anyone on the roster, or a character retired to MapMaker (old models the owner replaced). Looks only: players walk through it; stand it on a block or a prop to make it solid.'));
+        el.append(small('A character standing here in a pose, for scenarios and set dressing: anyone on the roster. Looks only: players walk through it; stand it on a block or a prop to make it solid.'));
         break;
       }
       case 'hostage':

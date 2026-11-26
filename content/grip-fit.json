@@ -6862,60 +6862,6 @@
     }
    }
   },
-  "meshy_rhinojuggernaut": {
-   "hash": "2b53e44812013e48",
-   "arms": {
-    "skin": "#383838",
-    "cloth": "#383735",
-    "trim": "#232221"
-   },
-   "grip": {
-    "gripLong": [
-     0.004,
-     0.022,
-     0.046
-    ],
-    "supportLong": [
-     0.09,
-     -0.046,
-     0
-    ],
-    "gripPistol": [
-     0.025,
-     -0.037,
-     0.032
-    ],
-    "supportPistol": [
-     0.09,
-     -0.001,
-     0.09
-    ]
-   },
-   "keep": [],
-   "audit": {
-    "long": {
-     "pick": "auto",
-     "eR": 0.05,
-     "eL": 6.501,
-     "flags": [],
-     "outlier": true,
-     "auto": 3.951,
-     "none": 9.524
-    },
-    "pistol": {
-     "pick": "auto",
-     "eR": 1.741,
-     "eL": 28.543,
-     "flags": [
-      "open",
-      "off"
-     ],
-     "outlier": true,
-     "auto": 24.867,
-     "none": 29.989
-    }
-   }
-  },
   "meshy_ricochet": {
    "hash": null,
    "arms": {

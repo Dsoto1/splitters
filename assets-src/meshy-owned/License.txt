@@ -95,7 +95,7 @@ Provenance: Meshy, owned.
 
   - "crew quartermaster rigged" (2026-11-22)  -> character meshy_crewquartermaster (look Mags Petrov)
   - "crew chrono mage rigged" (2026-11-22)  -> character meshy_crewchronomage (look Lyra Vantis)
-  - "armored rhino juggernaut 15k" (2026-11-22)  -> character meshy_rhinojuggernaut (look Brutus Hornbeck)
+  - "armored rhino juggernaut 15k" (2026-11-22)  -> character meshy_rhinojuggernaut (look Brutus Hornbeck), removed 2026-11-26 (owner: retired characters are removed), no longer shipped
   - "raccoon hacker game ready" (2026-11-22)  -> character meshy_raccoonhacker (look Zero Ringtail) until 2026-11-22, when it became Bandit's model: character meshy_bandit (look Bandit)
   - "graffiti raccoon 3d" (2026-11-22)  -> character meshy_graffitiraccoon (look Tag Malone)
   - "mantis shrimp samurai 15k" (2026-11-22)  -> character meshy_mantisshrimp (look Ryo Snapclaw)

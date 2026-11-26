@@ -153,7 +153,6 @@ export const WHOLE_BODY_BLOOD: Readonly<Record<string, BloodKind>> = {
   'core.zencapybara': 'red',
   'core.crewquartermaster': 'red',
   'core.crewchronomage': 'red',
-  'core.rhinojuggernaut': 'red',
   'core.graffitiraccoon': 'red',
   'core.mantisshrimp': 'blue',
   'core.gladiatorrooster': 'red',

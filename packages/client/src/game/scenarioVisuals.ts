@@ -64,7 +64,7 @@ import {
   type WorldBox,
   type Vec3,
   BODY_SIZES,
-  figureLook,
+  getLook,
   type FigurePose,
 } from '@tiletrigger/shared';
 import { BT_COLORS, createBombsiteModel, createFlagBase, createFlagModel, createHillModel, createSectorModel, createTargetModel } from './flagVisuals.ts';
@@ -602,7 +602,7 @@ export class ScenarioVisuals {
   onFigureReady: (() => void) | null = null;
 
   /**
-   * A Figure (FigureEntity): the character it wears, at the look's body size, playing its pose's clip over and over. The
+   * A Figure (FigureEntity): the roster character it wears, at the look's body size, playing its pose's clip over and over. The
    * character arrives a moment after the map (its files load once per look); in MapMaker a small base ring shows where it
    * stands until then and stays under it.
    */
@@ -614,7 +614,7 @@ export class ScenarioVisuals {
       ring.position.y = 0.02;
       ring.material = this.mat('figureBase', '#c9a26b', { spec: 0.05 });
     }
-    const look = figureLook(e.look);
+    const look = getLook(e.look);
     const clip = FIGURE_POSE_CLIPS[e.pose] ?? 'idle';
     void (async () => {
       const lib = this.characters ?? (this.characters = new (await import('../content/characters.ts')).CharacterLibrary(this.scene));
