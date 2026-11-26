@@ -151,6 +151,7 @@ export const BOT_TYPES = [
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
   { id: 'animals', label: 'Animalia' },
+  { id: 'toys', label: 'Toys' },
   { id: 'machines', label: 'Machines' },
   { id: 'horror', label: 'Horrors' },
 ] as const;

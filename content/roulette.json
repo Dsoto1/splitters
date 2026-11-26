@@ -8,7 +8,6 @@
     "core.hyena": "core.battle_axe",
     "core.elder": "core.spear",
     "core.visitor": "core.laser_rifle",
-    "core.biscuit": "core.bubble_blaster",
     "core.ember": "core.burst_rifle",
     "core.barnacle": "core.hand_cannon",
     "core.t350": "core.lmg",
@@ -99,6 +98,7 @@
     "agency": "core.machine_pistol",
     "legends": "core.spear",
     "animals": "core.smg",
+    "toys": "core.bubble_blaster",
     "machines": "core.laser_rifle",
     "horror": "core.sawed_off"
   },

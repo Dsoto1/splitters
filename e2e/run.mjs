@@ -12464,7 +12464,7 @@ async function storyFlow(browser) {
   // The match's end reports a win: the map is won, once (a second win changes nothing).
   await page.evaluate(() => (window.__storyResult('win'), window.__storyResult('win')));
   const saved = await page.evaluate(() => JSON.parse(localStorage.getItem('tiletrigger.campaign')));
-  check(JSON.stringify(saved?.maps) === '["jade_empire/jungle_steps"]' && JSON.stringify(saved?.characters) === '["core.monkeyspirit"]', `a Story win completes the map once and unlocks its character (${JSON.stringify(saved)})`);
+  check(JSON.stringify(saved?.maps) === '["jade_empire/jungle_steps"]' && JSON.stringify(saved?.characters) === '["core.chimp_aztec"]', `a Story win completes the map once and unlocks its character (${JSON.stringify(saved)})`);
   await menu();
   await page.click('#nav-story');
   await page.click('#story-sector-jade_empire');
@@ -13898,7 +13898,7 @@ async function charactersFlow(browser, part = 0) {
   await page.goto(`${CLIENT}/?mode=grips&test=1`);
   await page.waitForFunction(() => window.__grips, null, { timeout: T(60000) });
   const misses = [];
-  for (const look of ['core.dale', 'core.biscuit', 'core.grizzelda']) {
+  for (const look of ['core.dale', 'core.shiba', 'core.grizzelda']) {
     for (const weapon of ['core.rifle', 'core.singularity', 'core.lmg', 'core.flamethrower']) {
       await page.evaluate(([l, w]) => window.__grips.pose(l, w, 'first'), [look, weapon]);
       const m = await page.evaluate(() => window.__grips.miss());
@@ -14046,7 +14046,7 @@ async function drawnHands(page) {
   const badHand = (d, far = 0.09) => !d || d.r === null || d.r > far || d.aheadR < 0.6 || d.sideR < 0.6 || (d.palmL !== null && d.palmL < 0);
   const fmtHand = (d) => (d ? `${(d.r * 100).toFixed(0)} cm, along ${d.aheadR.toFixed(2)}, palm in ${d.sideR.toFixed(2)}, support palm ${d.palmL === null ? '-' : d.palmL.toFixed(2)}` : 'none');
   const drawnMisses = [];
-  for (const look of ['core.dapper', 'core.biscuit', 'core.dale', 'core.galloway']) {
+  for (const look of ['core.dapper', 'core.shiba', 'core.dale', 'core.galloway']) {
     for (const weapon of ['core.pistol', 'core.rifle', 'core.grapple']) {
       for (const view of ['body', 'first', 'third']) {
         await page.evaluate(([l, w, v]) => window.__grips.pose(l, w, v), [look, weapon, view]);

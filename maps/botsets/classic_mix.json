@@ -12,7 +12,7 @@
     { "name": "Doctor Umber", "look": "core.mei" },
     { "name": "Spoke", "look": "core.dale" },
     { "name": "Gloam", "look": "core.dale", "skill": "hard" },
-    { "name": "Tibbs", "look": "core.biscuit" },
+    { "name": "Tibbs", "look": "core.tuxedocat" },
     { "name": "Ferro", "look": "core.grunt68" },
     { "name": "Lady Ash", "look": "core.mei", "skill": "hard" },
     { "name": "Nub", "look": "core.grizzelda", "skill": "easy" },

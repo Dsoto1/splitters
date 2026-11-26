@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, lookVariants, pickableLooks, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, lookVariants, pickableLooks, CHARACTER_GROUP_LABELS, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { BRANCHES, COLLECTIONS, GROUPS, readManifests } from '../../../tools/content/character-manifests.mjs';
 
@@ -58,7 +58,7 @@ describe("Character Select's groups", () => {
   it('sorts what each character is', () => {
     const at = (g: string) => CORE_LOOKS.filter((l) => l.group === g).map((l) => l.id);
     expect(at('horror')).toEqual(expect.arrayContaining(['core.shambler', 'core.rattles', 'core.bonejack', 'core.punkin']));
-    expect(at('animals')).toEqual(expect.arrayContaining(['core.bandit', 'core.biscuit', 'core.shiba']));
+    expect(at('animals')).toEqual(expect.arrayContaining(['core.bandit', 'core.koala', 'core.shiba']));
     expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.abe', 'core.anubis']));
     expect(at('folk')).toEqual(expect.arrayContaining(['core.aldric', 'core.merrow', 'core.hazmat']));
     // Creatures merged into Horrors & Creatures, Agents & Spies into Soldiers & Spies (2026-11-17).
@@ -97,7 +97,7 @@ describe("Character Select's groups", () => {
   it("the owner's categories, in order (Roster Board, 2026-11-14/15; merged 2026-11-17)", () => {
     expect(CHARACTER_GROUPS.map((g) => `${g.id}:${g.label}`)).toEqual([
       'soldiers:Soldiers & Spies', 'folk:Everyday Folk', 'space:Outer Space', 'legends:Legends',
-      'animals:Animalia', 'machines:Machines', 'horror:Horrors & Creatures',
+      'animals:Animalia', 'toys:Toys', 'machines:Machines', 'horror:Horrors & Creatures',
     ]);
     // Uncle Bao and the Rusty Mech are off the roster; a saved choice plays the nearest kept look.
     for (const id of ['core.unclebao', 'core.rustymech']) expect(CORE_LOOKS.some((l) => l.id === id), id).toBe(false);
@@ -154,13 +154,27 @@ describe("Character Select's groups", () => {
     expect(pickableLooks([{ id: 'a' }, { id: 'b', variantOf: 'a' }]).map((l) => l.id)).toEqual(['a']);
   });
 
-  it('the Playhouse (owner, 2026-11-26): the toys get a section of their own after Animalia; they keep their groups', () => {
+  it('the Toys row (owner, 2026-11-26): the toy soldiers and the batch\'s toys, after Animalia', () => {
     const ids = characterSections(CORE_LOOKS.filter((l) => !l.variantOf).map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine' }))).map((s) => s.id);
-    expect(ids.indexOf('playhouse')).toBe(ids.indexOf('animals') + 1);
-    expect(CHARACTER_COLLECTIONS.find((c) => c.id === 'playhouse')?.label).toBe('The Playhouse');
-    const toys = CORE_LOOKS.filter((l) => l.collection === 'playhouse');
-    expect(toys.map((l) => l.id).sort()).toEqual(['core.brickman', 'core.cymbalmonkey', 'core.jackinthebox', 'core.ragdoll', 'core.windupbot']);
-    for (const t of toys) expect(t.group, t.id).toBeTruthy();
+    expect(ids.indexOf('toys')).toBe(ids.indexOf('animals') + 1);
+    expect(CHARACTER_GROUP_LABELS.toys).toBe('Toys');
+    const toys = CORE_LOOKS.filter((l) => l.group === 'toys');
+    expect(toys.map((l) => l.id).sort()).toEqual(['core.brickman', 'core.cymbalmonkey', 'core.greenarmy', 'core.jackinthebox', 'core.ragdoll', 'core.teddy', 'core.toysoldier', 'core.windupbot']);
+    for (const t of toys) expect(t.branch, t.id).toBeUndefined();
+  });
+
+  it('like histories sit side by side, the famous real people together in Legends (owner, 2026-11-26)', () => {
+    const sections = characterSections(CORE_LOOKS.filter((l) => !l.variantOf).map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine', ...(l.sortAs ? { sortAs: l.sortAs } : {}) })));
+    for (const list of CHARACTER_NEIGHBOURS) {
+      const sec = sections.find((s) => s.looks.some((l) => l.id === list[0]))!;
+      for (const id of list) expect(getLook(id).id, id).toBe(id);
+      for (const id of list) expect(sec.looks.some((l) => l.id === id), `${id} in ${sec.id}`).toBe(true);
+      const at = sec.looks.findIndex((l) => l.id === list[0]);
+      expect(sec.looks.slice(at, at + list.length).map((l) => l.id)).toEqual([...list]);
+    }
+    const legends = sections.find((s) => s.id === 'legends')!.looks.map((l) => l.id);
+    const famous = ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'];
+    expect(legends.slice(legends.indexOf(famous[0]!), legends.indexOf(famous[0]!) + 5)).toEqual(famous);
   });
 
   it("retired looks that aren't the owner's own models are gone entirely, and every removed one plays one of the owner's own (owner, 2026-11-25)", () => {

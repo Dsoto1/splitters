@@ -150,6 +150,8 @@ export const CHARACTER_GROUPS = [
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
   { id: 'animals', label: 'Animalia' },
+  // Owner, 2026-11-26: the toys get a row of their own (the Playhouse sector's local allies come from it).
+  { id: 'toys', label: 'Toys' },
   { id: 'machines', label: 'Machines' },
   { id: 'horror', label: 'Horrors & Creatures' },
 ] as const;
@@ -178,7 +180,7 @@ export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_G
  * whatever their tier (an experimental one stays out of automatic picks, but not out of its collection's section).
  * `collection` in a manifest; the checker's list (COLLECTIONS in character-manifests.mjs) matches this one.
  */
-export const CHARACTER_COLLECTIONS = [{ id: 'chrono', label: 'Chrono Crew', after: 'space' }, { id: 'playhouse', label: 'The Playhouse', after: 'animals' }] as const satisfies readonly { id: string; label: string; after: CharacterGroup }[];
+export const CHARACTER_COLLECTIONS = [{ id: 'chrono', label: 'Chrono Crew', after: 'space' }] as const satisfies readonly { id: string; label: string; after: CharacterGroup }[];
 /**
  * Places in a collection kept for a character the story unlocks (owner, 2026-11-25): until the look is unlocked
  * (campaign progress `characters`), Character Select shows an "Unknown" tile in its place. The Chrono Crew's 14th is
@@ -204,9 +206,24 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   ['core.undeadsoldier', 'core.zombiesoldier2', 'core.zombiesoldier1'], // Dog Tag Doyle, Grinning Gus, Zombie Soldier A
   ['core.groaner', 'core.shambler', 'core.fearsomeundead'], // Groaner, Shambler, Fearsome Undead
   ['core.rattles', 'core.bonesworth'], // Rattles, Count Bonesworth
-  ['core.mummybot', 'core.pharaoh'], // Mummy Bot, Pharaoh Mummy Warrior
+  ['core.mummybot', 'core.pharaoh', 'core.ankhmummy'], // Egypt: Mummy Bot, Pharaoh Mummy Warrior, Nebka the Unwrapped
   ['core.aldric', 'core.halvard'], // King Aldric, Old King Halvard
   ['core.imperialguard', 'core.mei'], // Imperial Guard, Lancer Mei
+  // Owner, 2026-11-26: like histories side by side within each row, and the well-known real people together in Legends
+  // in their time order.
+  ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'], // famous real people, by period
+  ['core.aztecjaguar', 'core.eagleclan', 'core.snakeshaman', 'core.goldenwarrior', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
+  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.celestialknight'], // Medieval and the Crusades
+  ['core.frostviking', 'core.frostvalkyrie'], // the Norse
+  ['core.barnacle', 'core.femalepirate'], // pirates
+  ['core.dustycolt', 'core.outlawranger', 'core.prospector'], // the Wild West
+  ['core.ashwalker', 'core.zuluwarrior', 'core.ashtribal'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
+  ['core.galloway', 'core.brannock'], // knights: Sir Galloway, Ser Brannock
+  ['core.unionofficer', 'core.rebelcommander'], // the Civil War
+  ['core.wwiisoldier', 'core.paratrooper', 'core.germanpara'], // WW2
+  ['core.vietnamsoldier', 'core.grunt68', 'core.vcscout'], // Vietnam
+  ['core.officeworker', 'core.salaryman', 'core.karen', 'core.hoodieguy'], // the city's dead
+  ['core.toysoldier', 'core.greenarmy'], // toy soldiers
 ];
 
 function withNeighbours<T extends { id?: string }>(sorted: T[]): T[] {
@@ -354,6 +371,9 @@ export const RETIRED_LOOKS: Readonly<Record<string, string>> = {
   // Owner, 2026-11-04: off the roster (files and manifests kept): their source models weren't in a T-pose, so their
   // hands can't be fixed. (Removed entirely 2026-11-25; the otter NPC role is drawn as Ottis Crema.)
   'core.otter': 'core.baristaotter',
+  // Owner, 2026-11-26: removed completely; a saved pick plays a near look of the owner's own.
+  'core.biscuit': 'core.tuxedocat', // Biscuit -> Sterling Purrcival
+  'core.monkeyspirit': 'core.chimpanzee', // Kiko Banyan -> Chester Knuckleby
   'core.shade': 'core.crewphase',
   // Owner, 2026-11-05 ("Remove Briggs and Hollis"): off the roster (files and manifests kept); a saved choice plays
   // the closest soldier kept.

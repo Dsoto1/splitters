@@ -52,9 +52,9 @@ const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
 /** A character's tier (CHARACTER_TIERS in packages/shared/src/content/looks.ts; a test keeps them equal): left out, core. */
 export const TIERS = ['core', 'experimental'];
-export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'machines', 'horror'];
+export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'animals', 'toys', 'machines', 'horror'];
 /** Character Select's collections (CHARACTER_COLLECTIONS in looks.ts, a test keeps them equal): a section of its own for a set of characters, whatever their tier; `collection` in a manifest. */
-export const COLLECTIONS = ['chrono', 'playhouse'];
+export const COLLECTIONS = ['chrono'];
 /** Soldiers & Spies' sub-designators (`branch`; CHARACTER_BRANCHES in looks.ts, a test keeps them equal): every character in `soldiers` names one, no other does. */
 export const BRANCHES = { army: 'soldiers', agency: 'soldiers' };
 /** What a character bleeds (`blood`; BLOOD_KINDS in looks.ts, a test keeps them equal): every built manifest names one (docs/CHARACTERS.md, "Blood"). */

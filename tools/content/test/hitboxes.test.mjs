@@ -35,7 +35,7 @@ function ray(from, to) {
 
 describe('head spheres where the heads are drawn', () => {
   // A small look (1.40 m), a large one (2.12 m) and hunched ones (heads low and ahead of the feet).
-  for (const look of ['core.biscuit', 'core.abe', 'core.hyena', 'core.croakley']) {
+  for (const look of ['core.shiba', 'core.abe', 'core.hyena', 'core.croakley']) {
     it(`${look}: a shot at its drawn head is a head shot, from the front and either side`, async () => {
       const { reg } = await pointsOf(subject(look));
       const head = centroid(reg.head);
@@ -81,7 +81,7 @@ describe('head spheres where the heads are drawn', () => {
 
 describe('zones come from the shape a ray meets', () => {
   it('head sphere: head; torso and arms: body; thighs and shins: legs, standing, crouching and prone', () => {
-    for (const look of ['core.dale', 'core.abe', 'core.biscuit']) {
+    for (const look of ['core.dale', 'core.abe', 'core.shiba']) {
       const { box } = lookHitbox(look);
       for (const [stance, s] of [[0, box.stand], [1, box.crouch ?? box.stand], [2, box.prone ?? box.stand]]) {
         const body = { feet: { x: 0, y: 0, z: 0 }, yaw: 0, stance, scale: 1, box };

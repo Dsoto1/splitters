@@ -1206,59 +1206,6 @@
     }
    }
   },
-  "meshy_bassdiver": {
-   "hash": "4a68cf5dca508dca",
-   "arms": {
-    "skin": "#40372c",
-    "cloth": "#6a492e",
-    "trim": "#422d1d"
-   },
-   "grip": {
-    "gripLong": [
-     0.018,
-     -0.006,
-     0.006
-    ],
-    "supportLong": [
-     0.009,
-     -0.005,
-     0
-    ],
-    "gripPistol": [
-     0.019,
-     -0.02,
-     0.009
-    ],
-    "supportPistol": [
-     0.09,
-     -0.013,
-     0.09
-    ]
-   },
-   "keep": [],
-   "audit": {
-    "long": {
-     "pick": "auto",
-     "eR": 0.55,
-     "eL": 1.2,
-     "flags": [],
-     "outlier": false,
-     "auto": 1.27,
-     "none": 3.432
-    },
-    "pistol": {
-     "pick": "auto",
-     "eR": 1.3,
-     "eL": 15.019,
-     "flags": [
-      "off"
-     ],
-     "outlier": true,
-     "auto": 13.311,
-     "none": 21.145
-    }
-   }
-  },
   "meshy_beaniealien": {
    "hash": "34f73829835e7fab",
    "arms": {
@@ -1972,57 +1919,6 @@
      "outlier": false,
      "auto": 2.014,
      "none": 3.211
-    }
-   }
-  },
-  "meshy_cat": {
-   "hash": null,
-   "arms": {
-    "skin": "#c1bebc",
-    "cloth": "#7c7a7b",
-    "trim": "#9a9290"
-   },
-   "grip": {
-    "gripLong": [
-     -0.03,
-     0.029,
-     -0.014
-    ],
-    "supportLong": [
-     -0.023,
-     0.024,
-     0
-    ],
-    "gripPistol": [
-     -0.009,
-     0.013,
-     -0.013
-    ],
-    "supportPistol": [
-     -0.007,
-     0.024,
-     0.005
-    ]
-   },
-   "keep": [],
-   "audit": {
-    "long": {
-     "pick": "auto",
-     "eR": 0.2,
-     "eL": 1.6,
-     "flags": [],
-     "outlier": false,
-     "auto": 1.16,
-     "none": 8.54
-    },
-    "pistol": {
-     "pick": "auto",
-     "eR": 2.512,
-     "eL": 3.115,
-     "flags": [],
-     "outlier": true,
-     "auto": 4.381,
-     "none": 6.56
     }
    }
   },
@@ -6938,57 +6834,6 @@
      "outlier": false,
      "auto": 1.59,
      "none": 3.378
-    }
-   }
-  },
-  "meshy_monkeyspirit": {
-   "hash": "ec0faffa2d4ebb2b",
-   "arms": {
-    "skin": "#a97757",
-    "cloth": "#684d28",
-    "trim": "#a06824"
-   },
-   "grip": {
-    "gripLong": [
-     0.007,
-     -0.01,
-     -0.012
-    ],
-    "supportLong": [
-     0.002,
-     -0.03,
-     0
-    ],
-    "gripPistol": [
-     0.009,
-     -0.002,
-     -0.003
-    ],
-    "supportPistol": [
-     -0.001,
-     -0.008,
-     -0.017
-    ]
-   },
-   "keep": [],
-   "audit": {
-    "long": {
-     "pick": "auto",
-     "eR": 0.25,
-     "eL": 0,
-     "flags": [],
-     "outlier": false,
-     "auto": 0.25,
-     "none": 4.116
-    },
-    "pistol": {
-     "pick": "auto",
-     "eR": 1.65,
-     "eL": 1,
-     "flags": [],
-     "outlier": false,
-     "auto": 2.25,
-     "none": 3.905
     }
    }
   },

@@ -22,10 +22,10 @@ describe('profiles', () => {
   it('keeps Story campaign progress, merged by union so no device takes wins away, kept across restarts', () => {
     const dir = temp();
     const store = new ProfileStore(dir);
-    store.update('a', { campaign: { maps: ['jade_empire/jungle_steps'], characters: ['core.monkeyspirit'] } });
+    store.update('a', { campaign: { maps: ['jade_empire/jungle_steps'], characters: ['core.chimp_aztec'] } });
     // Another device that never saw that win sends its own.
     const p = store.update('a', { campaign: { maps: ['lockdown/runway_nine'], sectors: [], convergences: [], characters: ['core.tacticalsoldier'] } });
-    expect(p.campaign).toEqual({ maps: ['jade_empire/jungle_steps', 'lockdown/runway_nine'], sectors: [], convergences: [], characters: ['core.monkeyspirit', 'core.tacticalsoldier'] });
+    expect(p.campaign).toEqual({ maps: ['jade_empire/jungle_steps', 'lockdown/runway_nine'], sectors: [], convergences: [], characters: ['core.chimp_aztec', 'core.tacticalsoldier'] });
     store.flush();
     expect(new ProfileStore(dir).get('a').campaign.maps).toEqual(['jade_empire/jungle_steps', 'lockdown/runway_nine']);
     expect(() => store.update('a', { campaign: { maps: 'all' } })).toThrow(/campaign/);
