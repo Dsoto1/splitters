@@ -1139,7 +1139,8 @@ export class Hud {
     }
     // (Drawn again each time: the keys it names follow Options → Controls.)
     if (open && el.hidden !== false) {
-      el.innerHTML = `<b>Quick message</b>${messages.map((m, i) => `<div><kbd>${i + 1}</kbd> ${escapeHtml(m)}</div>`).join('')}<small>1 &amp; 7 also order your team's bots · ${escapeHtml(hintKey('ping'))}: ping · ${escapeHtml(hintKey('dance'))}: dance · ${escapeHtml(hintKey('quickMessage'))}: close</small>`;
+      const keys = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '0', '-', '='];
+      el.innerHTML = `<b>Quick message</b><div class="msg-cols">${messages.map((m, i) => `<div><kbd>${keys[i] ?? ''}</kbd> ${escapeHtml(m)}</div>`).join('')}</div><small>1 &amp; 7 also order your team's bots · ${escapeHtml(hintKey('ping'))}: ping · ${escapeHtml(hintKey('dance'))}: dance · ${escapeHtml(hintKey('quickMessage'))}: close · ${escapeHtml(hintKey('chat'))}: type</small>`;
     }
     el.hidden = !open;
   }
@@ -1388,6 +1389,8 @@ export class Hud {
   private card: { el: HTMLElement; refresh(final: boolean): void } | null = null;
   /** A scoreboard row was clicked (the pause menu's Match tab, the end-of-match board): that player's card (session: game/playerCard.ts). */
   onPlayerCard: ((slot: number, row: HTMLElement) => void) | null = null;
+  /** Whether a person is muted in chat on this device (the session's mute list), for the scoreboards' mark. */
+  isMuted: ((name: string) => boolean) | null = null;
   /** The roster entry of a slot (the player card reads who they are). */
   rosterOf(slot: number): RosterEntry | undefined {
     return this.roster.get(slot);
@@ -1425,6 +1428,7 @@ export class Hud {
         bot: !!p?.bot,
         ...(p && !p.bot ? (p.acct ? { who: 'acct' as const } : people > 1 ? { who: 'guest' as const } : {}) : {}),
         ...(inParty && p && !p.bot && p.py === myParty ? { party: true } : {}),
+        ...(p && !p.bot && s.s !== localSlot && this.isMuted?.(p.name) ? { muted: true } : {}),
         color: this.nameColor(s.s, localSlot),
         sym: this.teamIndex(s.s),
         cls: cls === undefined ? '' : (CLASS_DEFS[CLASS_IDS[cls] ?? 'rocketeer']?.name ?? ''),

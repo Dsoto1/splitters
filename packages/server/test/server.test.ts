@@ -204,6 +204,30 @@ describe('dedicated server', () => {
     expect(server.match.combatants()).toHaveLength(3);
   });
 
+  it('relays text chat: cleaned and filtered to everyone, a flood held back with a word to the sender only', async () => {
+    server = await startServer({ port: 0, map: room, botFill: 0, seed: 7, startGate: false });
+    const a = new TestClient(server.port, 'Alice');
+    const b = new TestClient(server.port, 'Bob');
+    const wa = await a.waitFor('welcome');
+    await b.waitFor('welcome');
+    expect(wa.ch).toBe(1);
+    // ROT13 of the filter's word (net/chatWords.ts keeps them so).
+    const bad = 'shpx'.replace(/[a-z]/g, (c) => String.fromCharCode(((c.charCodeAt(0) - 84) % 26) + 97));
+    a.ws.send(JSON.stringify({ t: 'chat', x: `gg\u200b ${bad} lag` }));
+    const got = await b.waitFor('chat', (m) => m.s === wa.slot);
+    expect(got).toEqual({ t: 'chat', s: wa.slot, x: 'gg **** lag' });
+    await a.waitFor('chat', (m) => m.s === wa.slot);
+    // No teams here: team chat is all chat (no `tm`).
+    a.ws.send(JSON.stringify({ t: 'chat', x: 'team?', tm: 1 }));
+    expect(await b.waitFor('chat', (m) => m.x === 'team?')).toEqual({ t: 'chat', s: wa.slot, x: 'team?' });
+    for (let i = 0; i < 6; i++) a.ws.send(JSON.stringify({ t: 'chat', x: `spam ${i}` }));
+    const slow = await a.waitFor('chat', (m) => m.s === -1);
+    expect(slow.x).toMatch(/slow down/i);
+    await new Promise((r) => setTimeout(r, 300));
+    expect(b.messages.filter((m) => m.t === 'chat' && m.x.startsWith('spam'))).toHaveLength(2);
+    expect(b.messages.some((m) => m.t === 'chat' && m.s === -1)).toBe(false);
+  });
+
   it('rejects mismatched protocol versions', async () => {
     server = await startServer({ port: 0, map: room, botFill: 0 });
     const ws = new WebSocket(`ws://127.0.0.1:${server.port}`);

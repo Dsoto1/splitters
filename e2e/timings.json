@@ -81,6 +81,8 @@
     "weaponmanager": 45,
     "testrange": 150,
     "captions": 220,
-    "crashreport": 40
+    "crashreport": 40,
+    "chat": 280,
+    "chathost": 200
   }
 }
