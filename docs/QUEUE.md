@@ -56,7 +56,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/chars-1126b` · 052503c7 · 45878803823 (the 11-26 character round (b): Kato/Shaka, ranks and titled names, Pete Plastic's green blood, The Veiled Vanguard, T-TreeFitty and five looks, Fishy Fred's pistol hand)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -222,6 +221,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- 2026-11-26 · B · Character round (b): Kato on Ashwalker's place and Shaka his own, ranks and titled names (Toys ranks, no doubled titles), Pete Plastic's green blood, The Veiled Vanguard (floats), T-TreeFitty's new model and 5 looks, Fishy Fred's pistol hand (train `check/train-20261126-200214`, green 92915b43, run 45888074167). The evening's changes follow on `wip/chars-1126c`.
 - **2026-11-26** train check/train-20261126-183134 (2977e41, run 45876659947; hostcontrols and teams passed on the one re-run), landed by the splitters lead: bots no longer walk into propped-open door leaves (`wip/door-bots-1126`): each open leaf plus 0.5 m is cut out of the navmesh after erosion, so routes go round it (every map); st_johns nav-audit 0 traps, islands unchanged.
 - 2026-11-26 · B · Simple pickers for the Rules tab and MapMaker's Map settings: chips, switches and steppers instead of long dropdowns (green 55e580d6, run 45864736617; landed alone, only docs since). Owner answers (2026-11-26, "recs, 4b"): theme dropdowns stay, Sky lists stay, Character sizes keeps its two chips; long team layouts: see Easy wins.
 - 2026-11-26 · B · The owner's 11-26 character batch: a Toys row, like histories side by side, famous people in Legends, 13 characters removed, Fishy Fred (bass diver) and Puddles Backspin (tennis duck), Dredge Marrow to Legends (train `check/train-20261126-153856`, green d94e9847, run 45851233622; checked green at fccaf16f, run 45846429054).
