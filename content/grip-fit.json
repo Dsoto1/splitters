@@ -1568,45 +1568,53 @@
    }
   },
   "meshy_boxduck": {
-   "hash": "1369ba1ecf575ae3",
+   "hash": "9b899fcb0dace334",
    "arms": {
-    "skin": "#534723",
-    "cloth": "#2c2b1f",
-    "trim": "#1a1a1a"
+    "skin": "#df8f12",
+    "cloth": "#edab16",
+    "trim": "#ba911f"
    },
    "grip": {
     "gripLong": [
-     -0.005,
-     -0.015,
-     -0.022
+     -0.013,
+     -0.041,
+     -0.002
+    ],
+    "supportLong": [
+     0.036,
+     -0.022,
+     0
+    ],
+    "gripPistol": [
+     0.002,
+     -0.018,
+     0.018
+    ],
+    "supportPistol": [
+     0.09,
+     -0.026,
+     0.058
     ]
    },
-   "keep": [
-    "supportLong"
-   ],
+   "keep": [],
    "audit": {
     "long": {
-     "pick": "hand",
-     "eR": 1.412,
-     "eL": 3.705,
+     "pick": "auto",
+     "eR": 1.75,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "hand": 4.404,
-     "auto": 3.635,
-     "none": 7.249
+     "auto": 1.75,
+     "none": 8.117
     },
     "pistol": {
-     "pick": "none",
-     "eR": 4.41,
-     "eL": 26.405,
-     "flags": [
-      "open",
-      "off",
-      "through"
-     ],
+     "pick": "auto",
+     "eR": 2.2,
+     "eL": 6.435,
+     "flags": [],
      "outlier": true,
-     "auto": 30.179,
-     "none": 29.253
+     "auto": 6.061,
+     "none": 8.851
     }
    }
   },
@@ -4440,31 +4448,31 @@
    }
   },
   "meshy_fishyfred": {
-   "hash": "7041f47379933ec6",
+   "hash": "0dbe3634be41815d",
    "arms": {
-    "skin": "#b85348",
-    "cloth": "#947c5a",
-    "trim": "#615b3f"
+    "skin": "#40372c",
+    "cloth": "#6a492e",
+    "trim": "#422d1d"
    },
    "grip": {
     "gripLong": [
-     -0.002,
      0.018,
-     -0.006
+     -0.006,
+     0.006
     ],
     "supportLong": [
-     -0.013,
-     0.008,
+     0.009,
+     -0.005,
      0
     ],
     "gripPistol": [
-     0,
-     0.002,
-     -0.004
+     0.019,
+     -0.02,
+     0.008
     ],
     "supportPistol": [
      0.09,
-     -0.007,
+     -0.008,
      0.09
     ]
    },
@@ -4472,22 +4480,23 @@
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 1.05,
+     "eR": 0.55,
      "eL": 1.2,
      "flags": [],
      "outlier": false,
-     "hand": 6.431,
-     "auto": 1.77,
-     "none": 4.739
+     "auto": 1.27,
+     "none": 3.432
     },
     "pistol": {
      "pick": "auto",
-     "eR": 2.25,
-     "eL": 7.779,
-     "flags": [],
+     "eR": 1.3,
+     "eL": 15.621,
+     "flags": [
+      "off"
+     ],
      "outlier": true,
-     "auto": 6.917,
-     "none": 7.34
+     "auto": 13.673,
+     "none": 17.651
     }
    }
   },

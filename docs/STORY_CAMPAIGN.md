@@ -47,8 +47,8 @@ into its data):
 - **Urban Breakdown, 2026-11-26:** Cleo Groovestone (`core.afropi`), Rad Rootley (`core.radishman`) and Rourke; and a
   city of the dead: Marla Quarterly (`core.officeworker`), Dez Kickley (`core.hoodieguy`), Linda Refundsworth
   (`core.karen`) and Hiro Overtime (`core.salaryman`), four zombies (Horrors & Creatures).
-- **The Playhouse, 2026-11-26:** its own Character Select section (docs/CHARACTERS.md): Tik Winderly, Bricksby, Clangers,
-  Jolly Springjack and Patchwork Polly.
+- **The Playhouse, 2026-11-26:** its local allies come from Character Select's Toys row (docs/CHARACTERS.md): Cpl.
+  Tinwhistle, Pvt. Pete Plastic, Teddy, Tik Winderly, Bricksby, Clangers, Jolly Springjack and Patchwork Polly.
 - **The chimp, Ziggy Bananas (`core.chimp`), 2026-11-26:** ten variant looks, one per era, each unlocked by a challenge
   in its sector once the unlock rules exist (docs/CHARACTERS.md, "Variants").
 

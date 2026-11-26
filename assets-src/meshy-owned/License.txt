@@ -134,7 +134,7 @@ Provenance: Meshy, owned.
   - "AztecJaguarRemesh15k" (2026-11-25)  -> character meshy_aztecjaguar (look Balam Nightclaw)
   - "OutlawRangerRigged" (2026-11-25)  -> character meshy_outlawranger (look Cutter McCrae)
   - "desert rally fennec 15k" (2026-11-25)  -> character meshy_fennec (look Fenn Dustwhirl)
-  - "monkey spirit rigged" (2026-11-25)  -> character meshy_monkeyspirit (look Kiko Banyan)
+  - "monkey spirit rigged" (2026-11-25)  -> character meshy_monkeyspirit (look Kiko Banyan): removed 2026-11-26 (owner), no longer shipped
   - "vegas dealer blobfish 15k" (2026-11-25)  -> character meshy_blobfish (look Deuce Droopwell)
   - "espresso barista otter 15k" (2026-11-25)  -> character meshy_baristaotter (look Ottis Crema)
   - "biker warthog funky 15k" (2026-11-25)  -> character meshy_warthog (look Boogie Tuskworth)
@@ -207,7 +207,8 @@ Provenance: Meshy, owned.
   - "Gothic Kaiser Rigged" (2026-11-25)  -> character meshy_gothickaiser (look Kaiser Ironhelm)
   - "Lionheart Rigged" (2026-11-25)  -> character meshy_lionheart (look Ser Aldous Lionmane)
   - "Muslim Warlord Rigged" (2026-11-25)  -> character meshy_emir (look Emir Tariq Falconsword)
-  - "bass diver 3d" (2026-11-25)  -> character meshy_bassdiver (look Bassley Deepwell)
+  - "bass diver 3d" (2026-11-25)  -> character meshy_fishyfred (look Fishy Fred), its new model
+  - "petite scrappy tennis duck 15k" (2026-11-26)  -> character meshy_boxduck (look Puddles Backspin, was Puddles Ironbill), its new model
   - "GermanParatrooperRemesh15k" (2026-11-25)  -> character meshy_germanpara (look Gefr. Otto Brandt)
   - "ParatrooperRigged" (2026-11-25)  -> character meshy_paratrooper (look Sgt. Mickey Callahan)
   - "USGruntRigged" (2026-11-25)  -> character meshy_usgrunt (look Pvt. Hank Dowling)
