@@ -38,7 +38,7 @@ export const MESHY_TASKS = {
 const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
-const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'plugs', 'lod', 'normalSize', 'hold', 'grip', 'skin', 'fingers', 'rejoint']);
+const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'plugs', 'lod', 'normalSize', 'hold', 'holdPistol', 'grip', 'skin', 'fingers', 'rejoint']);
 /** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
 const LOCOMOTION = new Set(['roll']);
 /** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
@@ -224,6 +224,12 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
     const h = x.hold;
     need(h && typeof h === 'object' && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.hold: { forward, down, out } (metres at a 1.8 m body)');
     for (const k of ['forward', 'down', 'out']) need(h?.[k] === undefined || (typeof h[k] === 'number' && Math.abs(h[k]) <= 0.15), `fixes.hold.${k}: metres (−0.15–0.15)`);
+  }
+  if (x.holdPistol !== undefined) {
+    // This body's own pistol hold: its shooting hand moved from where the clips put it (characterAnimator placeWeapon).
+    const h = x.holdPistol;
+    need(h && typeof h === 'object' && Object.keys(h).length > 0 && Object.keys(h).every((k) => k === 'forward' || k === 'down' || k === 'out'), 'fixes.holdPistol: { forward, down, out } (metres at a 1.8 m body; out negative: in toward the middle)');
+    for (const k of ['forward', 'down', 'out']) need(h?.[k] === undefined || (typeof h[k] === 'number' && Math.abs(h[k]) <= 0.3), `fixes.holdPistol.${k}: metres (−0.3–0.3)`);
   }
   if (x.grip !== undefined) {
     // This look's own hands and arms on a gun (GripTune in packages/shared/src/content/looks.ts).
@@ -462,7 +468,9 @@ const universalArms = (m) => `ranger_arms_${m.body === 'female' ? 'f' : 'm'}`;
 function lookLine(m) {
   const fp = m.firstPerson ?? {};
   const own = fp.arms === 'own';
-  const hold = m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '';
+  const hold =
+    (m.fixes?.hold ? `, hold: { ${Object.entries(m.fixes.hold).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '') +
+    (m.fixes?.holdPistol ? `, holdPistol: { ${Object.entries(m.fixes.holdPistol).map(([k, v]) => `${k}: ${v}`).join(', ')} }` : '');
   // The manifest's own grip (hand-set offsets the audit kept, its curls and rolls); the fitted offsets and the arms'
   // colours are in gripFit.generated.ts, loaded with the first character (kept out of the menu's first script).
   const grip = m.fixes?.grip ? `, grip: { ${Object.entries(m.fixes.grip).map(([k, v]) => `${k}: ${Array.isArray(v) ? `[${v.join(', ')}]` : v}`).join(', ')} }` : '';

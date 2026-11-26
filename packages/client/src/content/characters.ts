@@ -131,6 +131,8 @@ export interface CharacterInstance {
   hands: { l?: HandData; r?: HandData };
   /** This body's own long-gun hold against everyone's (model metres at a 1.8 m body; the look's `whole.hold`). */
   hold?: { forward?: number; down?: number; out?: number };
+  /** This body's own pistol hold: the shooting hand moved from where the clips put it (the look's `whole.holdPistol`). */
+  holdPistol?: { forward?: number; down?: number; out?: number };
   /** This body's own hands and arms on a gun against everyone's (the look's `whole.grip`, GripTune). */
   grip?: GripTune;
   /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle. */
@@ -273,6 +275,7 @@ export class CharacterLibrary {
     let body: CharacterInstance['body'];
     let hands: CharacterInstance['hands'] = {};
     let hold: CharacterInstance['hold'];
+    let holdPistol: CharacterInstance['holdPistol'];
     let grip: CharacterInstance['grip'];
     let locomotion: CharacterInstance['locomotion'];
     let clipLoops: CharacterInstance['clipLoops'];
@@ -332,6 +335,7 @@ export class CharacterLibrary {
       }
       if (!spec.armsOnly) {
         hold = look.whole?.hold;
+        holdPistol = look.whole?.holdPistol;
         // The fitted offsets under the manifest's own (hand-set ones the audit kept, curls, rolls).
         grip = fit?.grip || look.whole?.grip ? { ...fit?.grip, ...look.whole?.grip } : undefined;
         locomotion = look.locomotion;
@@ -455,6 +459,7 @@ export class CharacterLibrary {
       body,
       hands,
       ...(hold ? { hold } : {}),
+      ...(holdPistol ? { holdPistol } : {}),
       ...(grip ? { grip } : {}),
       ...(locomotion ? { locomotion } : {}),
       ...(clipLoops ? { clipLoops } : {}),
