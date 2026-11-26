@@ -160,6 +160,10 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // retired to MapMaker). v52 data is valid as is. The bump is for the other direction: an older build refuses a v53 map
   // outright instead of failing on an entity it has never heard of.
   [52, (doc) => ({ ...doc })],
+  // v53 -> v54: breakable walls (sim/breakWalls.ts): a placed tile's and a set piece placement's optional `breakWalls`.
+  // Absent = walls that never break, as before: v53 data is valid as is. The bump is for the other direction: an older
+  // build would play the walls as solid without a word.
+  [53, (doc) => ({ ...doc })],
 ]);
 
 /** v50 -> v51: the `categories` pairs become one `category` (none when there were none). */

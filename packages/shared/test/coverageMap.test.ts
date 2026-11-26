@@ -8,7 +8,7 @@
 // (metadata.testOnly): no list offers it.
 import { readdirSync, readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
-import { CORE_ITEMS, EDGE_STYLES, EXTRA_POWERUPS, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, builtInSetPieces, coreCatalog, loadMap, playableModes, propAlias, raceTrack, type MapDocument } from '../src/index.ts';
+import { CORE_ITEMS, EDGE_STYLES, EXTRA_POWERUPS, GLASS_KINDS, MOUNT_MODELS, MapEntity, STYLE_PACKS, builtInSetPieces, coreCatalog, loadMap, playableModes, propAlias, raceTrack, wallSections, type MapDocument } from '../src/index.ts';
 import { KIT_TILES } from '../src/content/kitTiles.generated.ts';
 import { SCENARIO_PALETTE, newScenarioEntities } from '../src/editor/operations.ts';
 
@@ -52,6 +52,15 @@ describe('the coverage map', () => {
     expect(missing(EDGE_STYLES.filter((s) => s !== 'auto'), edges)).toEqual([]);
     const glass = new Set([...map.classicStructure.tiles.flatMap((t) => Object.values(t.glass ?? {})), ...map.entities.flatMap((e) => ('glass' in e && typeof e.glass === 'string' ? [e.glass] : []))]);
     expect(missing(GLASS_KINDS, glass)).toEqual([]);
+  });
+
+  it('has breakable walls: one side alone (explosives only) and a whole piece that shots break too, glass with it', () => {
+    const marked = map.classicStructure.tiles.filter((t) => t.breakWalls);
+    expect(marked.some((t) => t.breakWalls!.sides?.length && !t.breakWalls!.shots)).toBe(true);
+    expect(marked.some((t) => !t.breakWalls!.sides && t.breakWalls!.shots)).toBe(true);
+    const sections = wallSections(map);
+    expect(sections.length).toBeGreaterThanOrEqual(2);
+    expect(sections.some((s) => s.glass.length)).toBe(true);
   });
 
   it('has a prop of every prop pack', () => {

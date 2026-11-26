@@ -1,6 +1,11 @@
+import { breakWallPanel } from './breakWallPanel.ts';
 import { perfOn } from '../game/perfSwitches.ts';
 import {
   buildOccupancy,
+  edgeKey,
+  localSide,
+  setBreakSideCommand,
+  sideBreaks,
   CEILING_LABELS,
   CEILINGS,
   CORE_PROPS,
@@ -174,6 +179,8 @@ export class Inspector {
       const parts = [...this.app.expansion.partOf].filter(([, piece]) => piece === pieces[0]).map(([id]) => id);
       const tunnel = parts.length ? tunnelPanel(doc, parts, (label, cmd) => this.app.run(label, cmd), pieces[0], () => this.app.doc) : null;
       if (tunnel) el.append(tunnel);
+      const breakWalls = breakWallPanel(doc, [], pieces, (label, cmd) => this.app.run(label, cmd));
+      if (breakWalls) el.append(breakWalls);
     } else if (tiles.length === 1 && entities.length === 0 && !pieces.length) {
       this.tileInspector(el, doc.classicStructure.tiles.find((x) => x.id === tiles[0])!);
     } else if (entities.length === 1 && tiles.length === 0 && !pieces.length) {
@@ -191,6 +198,8 @@ export class Inspector {
       if (tileOpts) el.append(tileOpts);
       const tunnel = tiles.length ? tunnelPanel(doc, tiles, (label, cmd) => this.app.run(label, cmd), undefined, () => this.app.doc) : null;
       if (tunnel) el.append(tunnel);
+      const breakWalls = breakWallPanel(doc, tiles, pieces, (label, cmd) => this.app.run(label, cmd));
+      if (breakWalls) el.append(breakWalls);
       // Groups (MapMaker overhaul Phase 3 item 3): its name and Ungroup, or Group.
       el.append(groupSection(this.groupHost));
       // Box-selected pieces can become a set piece of their own.
@@ -257,9 +266,17 @@ export class Inspector {
           apply();
         });
         glass.addEventListener('change', apply);
+        // Breakable (format v54; sim/breakWalls.ts): a blast opens this wall.
+        const key = edgeKey(def.cells[0]!, localSide(side, t.rotation));
+        const breaks = document.createElement('input');
+        breaks.type = 'checkbox';
+        breaks.id = `ed-break-side-${side}`;
+        breaks.title = 'Breakable: a blast opens this wall (Breakable walls below)';
+        breaks.checked = sideBreaks(t, key);
+        breaks.addEventListener('change', () => this.app.run(breaks.checked ? 'Make wall breakable' : 'Make wall solid', setBreakSideCommand(this.app.doc, t.id, key, breaks.checked)));
         const pair = document.createElement('span');
         pair.className = 'ed-wall-pick';
-        pair.append(sel, glass);
+        pair.append(sel, glass, breaks);
         el.append(row({ N: 'North', E: 'East', S: 'South', W: 'West' }[side], pair));
       }
     } else el.append(small('Use the Walls & Openings tool (O) to change any side of this piece.'));
@@ -268,6 +285,8 @@ export class Inspector {
     if (tileOpts) el.append(tileOpts);
     const tunnel = tunnelPanel(doc, [t.id], (label, cmd) => this.app.run(label, cmd), undefined, () => this.app.doc);
     if (tunnel) el.append(tunnel);
+    const breakWalls = breakWallPanel(doc, [t.id], [], (label, cmd) => this.app.run(label, cmd));
+    if (breakWalls) el.append(breakWalls);
     this.upperFloorsPanel(el, t);
     if (def && dressable(def)) this.dressPanel(el, t);
     const h3 = document.createElement('h3');

@@ -217,7 +217,8 @@ export class PhysicsWorld {
       desc.setCollisionGroups(sh.blocks === 'all' ? WORLD_COLLIDER_GROUPS : SHOTS_ONLY_COLLIDER_GROUPS);
       this.staticShapes.set(this.world.createCollider(desc).handle, { sourceId: sh.sourceId, surface: sh.surface });
     }
-    for (const b of mergeBoxes(boxes)) {
+    // Breakable walls collide through the scenario (sim/breakWalls.ts: ScenarioBodies), so they can go.
+    for (const b of mergeBoxes(boxes.some((x) => x.breakWall !== undefined) ? boxes.filter((x) => x.breakWall === undefined) : boxes)) {
       const hx = (b.max[0] - b.min[0]) / 2;
       const hy = (b.max[1] - b.min[1]) / 2;
       const hz = (b.max[2] - b.min[2]) / 2;
