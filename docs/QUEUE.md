@@ -52,6 +52,7 @@ Everything else keeps its place below these.
   2. ~~`wip/chars-1125b`~~ landed 2026-11-26 (the owner's 11-25 batch: replacements with the old models as MapMaker Figures (map format v53), El Zarpazo, Tetl Stonewarden, Rocco Tickwell (crew 14th place vacant until the Inquisitor), Civil War and Vietnam soldiers, renames, Blix to Space);
   3. `wip/no-designer-1125` (the Character Designer and custom characters removed).
   If lane A runs out before landing them, lane B takes them over from their Ready-to-land lines and HANDOFF claims.
+- **Lane A keeps working while its week lasts (owner, 2026-11-26: ~10% left, "save and save often"):** one helper at a time on lane A's own list (step 2), pushing its wip branch at every milestone so lane B can pick it up mid-way from its HANDOFF claim: first the weapon holds still off, then bullet holes on breakable props.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
