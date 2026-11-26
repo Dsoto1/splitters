@@ -5206,11 +5206,11 @@
    }
   },
   "meshy_koala": {
-   "hash": "22b1bb65e2be4921",
+   "hash": "071d7946bd32fdae",
    "arms": {
-    "skin": "#737271",
-    "cloth": "#848181",
-    "trim": "#525050"
+    "skin": "#717170",
+    "cloth": "#828080",
+    "trim": "#514f4f"
    },
    "grip": {
     "gripLong": [
@@ -5222,39 +5222,31 @@
      0.01,
      -0.025,
      0
-    ],
-    "gripPistol": [
-     0.014,
-     0.011,
-     -0.009
-    ],
-    "supportPistol": [
-     0.047,
-     -0.004,
-     -0.008
     ]
    },
-   "keep": [],
+   "keep": [
+    "gripPistol",
+    "supportPistol"
+   ],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.25,
+     "eR": 0.15,
      "eL": 0,
      "flags": [],
      "outlier": false,
-     "auto": 0.25,
+     "auto": 0.15,
      "none": 4.024
     },
     "pistol": {
-     "pick": "auto",
-     "eR": 2.85,
-     "eL": 2.383,
-     "flags": [
-      "through"
-     ],
-     "outlier": true,
-     "auto": 7.28,
-     "none": 10.201
+     "pick": "hand",
+     "eR": 2.45,
+     "eL": 3.639,
+     "flags": [],
+     "outlier": false,
+     "hand": 4.633,
+     "auto": 7.11,
+     "none": 10.258
     }
    }
   },
