@@ -58,7 +58,8 @@ function humans(rules = RULES) {
   return { match, a, b, forts, ta, tb: 1 - ta };
 }
 
-const CAST = ['core.dale', 'core.mei', 'core.barnaby', 'core.greyfang', 'core.imperialguard', 'core.zombiesoldier1'];
+// (2026-11-26: Lancer Mei, Barnaby Bruin, Imperial Guard and Zombie Soldier A got new models; six untouched ones instead.)
+const CAST = ['core.dale', 'core.basile', 'core.oldtimer', 'core.greyfang', 'core.hazmat', 'core.butcher'];
 
 describe('Fort Wars', () => {
   it('is offered on any map with flag bases for both teams', () => {

@@ -236,7 +236,8 @@ describe('Capture the Flag with bots', () => {
     if (!loaded.ok) throw new Error('bunker_cross failed to load');
     expect(playableModes(loaded.map)).toContain('core.ctf');
     const match = new Match(loaded.map, { ...rulesForMode(loaded.map, 'core.ctf'), scoreLimit: 0, timeLimitSeconds: 0 }, 42);
-    for (let i = 0; i < 8; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal);
+    // Every bot in one look (Cal): a new body anywhere in the roster's rotation reshuffles a match this long (2026-11-26).
+    for (let i = 0; i < 8; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal, false, { look: 'core.dale' });
     const seen = new Set<string>();
     for (let t = 0; t < 5 * 60 * TICK_RATE && !seen.has('capture'); t++) for (const e of match.step()) if (e.e === 'flag') seen.add(e.a);
     match.destroy();
