@@ -360,7 +360,7 @@ breakable glass blocks, back 4 s after they are shot out, and a bulletproof
 panel stands after the tank). The older *Window pane* destructible still works
 for maps that place panes by hand, and is drawn with the same glass.
 
-### Breakable walls (format v53; `sim/breakWalls.ts`)
+### Breakable walls (format v54; `sim/breakWalls.ts`)
 
 A piece's walls can be made breakable in MapMaker's inspector (owner, 2026-11-16, the destructible environment's
 step (b); built 2026-11-25): **Breakable walls** for the selected tiles and set pieces (every wall of them), or a tick

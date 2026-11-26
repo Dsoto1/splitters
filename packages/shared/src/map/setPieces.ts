@@ -375,7 +375,7 @@ export function setPieceParts(p: SetPiecePlacement, def: SetPieceDefinition, the
         if (own && own.family !== p.family && catalog.familiesOf(t.tile).some((d) => d.familyOf!.family === p.family)) t.family = p.family;
         else if (own && own.family === p.family) delete t.family;
       }
-      // Breakable walls (format v53): every wall of every tile part, as the placement says.
+      // Breakable walls (format v54): every wall of every tile part, as the placement says.
       if (p.breakWalls) t.breakWalls = { ...p.breakWalls };
       if (paint && !('material' in paint)) {
         const s = { ...t.surfaces };

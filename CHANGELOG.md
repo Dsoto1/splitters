@@ -7,7 +7,12 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
-- **Breakable walls.** In MapMaker, mark a piece's walls (or one side, or every wall of a set piece) breakable, with their health and whether shots break them too (explosives only by default): in play a blast leaves a ragged hole you can shoot, see and walk through, back next round (map format v53).
+- **Breakable walls.** In MapMaker, mark a piece's walls (or one side, or every wall of a set piece) breakable, with their health and whether shots break them too (explosives only by default): in play a blast leaves a ragged hole you can shoot, see and walk through, back next round (map format v54).
+- **New models for Cyber Lion, Croakley, Greyfang, Gorilla G and Boglurker** (same names and places); **Lion in a Suit is now Kesi Tallgrass**, a safari lioness; Elephant Warrior is now **Ellis Velvetrope** (a bouncer), Hyena Warrior **Rollo Splitworth** (a bowler) and Juice **Puddles Ironbill** (a duck in a mech), each with a new model.
+- **Seven new characters:** El Zarpazo (a white tiger luchador), Tetl Stonewarden (a basalt temple guardian, Legends), Rocco Tickwell (a K9, joins the Chrono Crew), and for the history wars Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund and Lien Vo (Soldiers).
+- **Chrono Crew:** Blix Orrin moves to Outer Space; the crew's 14th place shows as Unknown until the story unlocks it.
+- **MapMaker: Figures.** NPCs → Figures places a character standing in a pose (standing, cheering, dancing, crouching) for scenarios and set dressing: anyone on the roster.
+- **Brutus Hornbeck is removed** (a saved pick plays Gorilla G).
 - **St. Jasper's dorm bunks sit snug in the room's corner**, the footlocker at the open end (the Bunk Bed with Footlocker piece, every dorm room).
 - **Switching weapon cancels a throw you're aiming**: the grenade or mine stays in your pocket, nothing leaves your hand.
 - **The Blaster X-42's bolts leave a mark**: a small orange energy splash and a scorch where they land, a hit puff on bodies, their own crackle; nails, arrows, darts, discs, shards, the healing slime and the freeze blast land with an impact of their own too (calm with Reduce flashing on).

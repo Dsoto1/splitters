@@ -5,7 +5,7 @@ import type { OBox } from './scenarioDefs.ts';
 import { cachedWindowPanes } from './glass.ts';
 
 /**
- * Breakable walls (format v53; docs/BUILDING_KIT.md, "Breakable walls"): the walls of placed pieces a map maker marked
+ * Breakable walls (format v54; docs/BUILDING_KIT.md, "Breakable walls"): the walls of placed pieces a map maker marked
  * breakable (a tile's `breakWalls`, every tile of a set piece with one). Each is a section: one cell side's wall, or
  * both faces of a wall between two pieces (map/geometry.ts breakWallEdges). Play leaves a section's boxes out of the
  * level's collision and drawing: the scenario collides with them (they go when the wall breaks), and draws them apart.

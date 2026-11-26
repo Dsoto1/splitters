@@ -4,7 +4,7 @@ import type { BreakWalls, MapDocument, SetPiecePlacement, TilePlacement } from '
 import type { EditCommand } from './commands.ts';
 
 /**
- * MapMaker's breakable walls (format v53; shared sim/breakWalls.ts): the inspector marks every wall of the selected
+ * MapMaker's breakable walls (format v54; shared sim/breakWalls.ts): the inspector marks every wall of the selected
  * tiles and set pieces breakable (or one side of a tile), sets how much a wall takes, and whether shots break it too.
  * One undo step each.
  */

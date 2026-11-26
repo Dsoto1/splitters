@@ -20,7 +20,7 @@ const stateOf = (match: Match, i: number) => match.scenario.fullState().es?.find
 /** Whether a ray along +x from x = 1 at chest height, beside the doorway, reaches x = 7 (through the wall at x = 4). */
 const through = (match: Match, z = 2.5, y = 1.2) => match.physics.raycastWorld({ x: 1, y, z }, { x: 1, y: 0, z: 0 }, 6) === null;
 
-describe('breakable walls (map format v53)', () => {
+describe('breakable walls (map format v54)', () => {
   it('a wall between two pieces is one section, whichever side is marked, with both faces in it', () => {
     for (const map of [twoRooms({ breakWalls: { sides: ['0,0,0:E'] } }), twoRooms({}, { breakWalls: { sides: ['0,0,0:W'] } })]) {
       const s = wallSections(map);

@@ -95,7 +95,7 @@ Provenance: Meshy, owned.
 
   - "crew quartermaster rigged" (2026-11-22)  -> character meshy_crewquartermaster (look Mags Petrov)
   - "crew chrono mage rigged" (2026-11-22)  -> character meshy_crewchronomage (look Lyra Vantis)
-  - "armored rhino juggernaut 15k" (2026-11-22)  -> character meshy_rhinojuggernaut (look Brutus Hornbeck)
+  - "armored rhino juggernaut 15k" (2026-11-22)  -> character meshy_rhinojuggernaut (look Brutus Hornbeck), removed 2026-11-26 (owner: retired characters are removed), no longer shipped
   - "raccoon hacker game ready" (2026-11-22)  -> character meshy_raccoonhacker (look Zero Ringtail) until 2026-11-22, when it became Bandit's model: character meshy_bandit (look Bandit)
   - "graffiti raccoon 3d" (2026-11-22)  -> character meshy_graffitiraccoon (look Tag Malone)
   - "mantis shrimp samurai 15k" (2026-11-22)  -> character meshy_mantisshrimp (look Ryo Snapclaw)
@@ -141,3 +141,24 @@ Provenance: Meshy, owned.
   - "miami vice detective duck 15k" (2026-11-25)  -> character meshy_detectiveduck (look Det. Drake Montego)
   - "sleepy koala 3d" (2026-11-25)  -> character meshy_koala (look Napsworth)
   - "elder tomo rigged" (2026-11-25)  -> character meshy_elder (look Elder Tomo), his new model (the community "Elder T-pose" it replaced is no longer shipped)
+
+- The owner's Drive characters uploaded 2026-11-25 afternoon (the same kind of download, pack meshy-owned; owner,
+  2026-11-25: all are the owner's own Meshy creations). Built by tools/content/prepare-meshy-characters.mjs. The community
+  models they replaced no longer ship.
+
+  - "futuristic cyber lion 15k" (2026-11-25)  -> character meshy_cyberlion (look Cyber Lion), its new model
+  - "safari scout lioness 15k" (2026-11-25)  -> character meshy_lionsuit (look Kesi Tallgrass, was Lion in a Suit), its new model
+  - "jungle commando croakley 15k" (2026-11-25)  -> character meshy_croakley (look Croakley), its new model
+  - "bouncer elephant 15k" (2026-11-25)  -> character meshy_elephantwarrior (look Ellis Velvetrope, was Elephant Warrior), its new model
+  - "bowling hyena 15k" (2026-11-25)  -> character meshy_hyena (look Rollo Splitworth, was Hyena Warrior), its new model
+  - "wolf ronin rigged" (2026-11-25)  -> character meshy_greyfang (look Greyfang), its new model
+  - "circus strongman gorilla 15k" (2026-11-25)  -> character meshy_gorillag (look Gorilla G), its new model
+  - "duck mech fps rigged" (2026-11-25)  -> character meshy_boxduck (look Puddles Ironbill, was Juice), its new model
+  - "boglurker game ready" (2026-11-25)  -> character meshy_toad (look Boglurker), its new model
+  - "white tiger luchador rigged" (2026-11-25)  -> character meshy_whitetiger (look El Zarpazo)
+  - "BasaltGuardianRigged" (2026-11-25)  -> character meshy_basaltguardian (look Tetl Stonewarden)
+  - "crew k9 anthro rigged" (2026-11-25)  -> character meshy_crewk9 (look Rocco Tickwell), Chrono Crew
+  - "UnionOfficerRigged" (2026-11-25)  -> character meshy_unionofficer (look Capt. Elias Harrowgate)
+  - "RebelCommanderRigged" (2026-11-25)  -> character meshy_rebelcommander (look Col. Josiah Beaumont)
+  - "VietnamSoldierRigged" (2026-11-25)  -> character meshy_vietnamsoldier (look Pfc. Danny Okerlund)
+  - "VCScoutRigged" (2026-11-25)  -> character meshy_vcscout (look Lien Vo)

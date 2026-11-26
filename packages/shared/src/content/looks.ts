@@ -163,6 +163,15 @@ export const isCharacterGroup = (x: unknown): x is CharacterGroup => CHARACTER_G
  * `collection` in a manifest; the checker's list (COLLECTIONS in character-manifests.mjs) matches this one.
  */
 export const CHARACTER_COLLECTIONS = [{ id: 'chrono', label: 'Chrono Crew', after: 'space' }] as const satisfies readonly { id: string; label: string; after: CharacterGroup }[];
+/**
+ * Places in a collection kept for a character the story unlocks (owner, 2026-11-25): until the look is unlocked
+ * (campaign progress `characters`), Character Select shows an "Unknown" tile in its place. The Chrono Crew's 14th is
+ * the Inquisitor, Vesk Tockley (`core.bossinquisitor`), who joins when the story completes (docs/STORY_CAMPAIGN.md). The
+ * unlock itself, and his roster place once unlocked, come with the campaign's rules.
+ */
+export const COLLECTION_RESERVED_PLACES: Readonly<Record<string, readonly string[]>> = { chrono: ['core.bossinquisitor'] };
+/** A collection's places still kept for a locked character: one "Unknown" tile each. */
+export const vacantCollectionPlaces = (collection: string, unlocked: readonly string[]): string[] => (COLLECTION_RESERVED_PLACES[collection] ?? []).filter((id) => !unlocked.includes(id));
 export type CharacterCollection = (typeof CHARACTER_COLLECTIONS)[number]['id'];
 export const isCharacterCollection = (x: unknown): x is CharacterCollection => CHARACTER_COLLECTIONS.some((c) => c.id === x);
 

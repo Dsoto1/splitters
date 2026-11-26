@@ -3,23 +3,20 @@
   "kind": "character",
   "use": "player",
   "order": 139,
-  "name": "Lion in a Suit",
+  "name": "Kesi Tallgrass",
   "look": "core.lionsuit",
   "group": "animals",
   "blood": "red",
   "nameTheme": "cat",
-  "bio": "Runs the boardroom and the savanna. Today he's here to close a deal.",
-  "body": "male",
-  "notes": "Drive intake of 2026-11-13 (\"Lion in Suit T Pose\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Core since 2026-11-14 (the owner, after looking at the twelve of 2026-11-13: promote all twelve). Name and bio are ours (the name suggested by the owner's session, 2026-11-14; the owner can rename it). Licence: Meshy Community, CC0 per the owner (CLAUDE.md, Content rules: Meshy models the owner shares are Meshy Community CC0 unless the owner says they made them).",
+  "bio": "Knows every trail on the savanna, and every trail you left.",
+  "body": "female",
+  "notes": "Lion in a Suit became Kesi Tallgrass (owner, 2026-11-25: \"The lions are getting replaced respectively (one becomes lioness safari)\"; name and bio ours, the owner can rename her). New model 2026-11-25 (owner: \"many are replacements for what we currently have\"; id and place kept, as Thornweaver's and Anoobys's swaps). Lion in a Suit's model until 2026-11-25 (\"Lion in Suit T Pose\", Meshy Community CC0) no longer ships (a community model, not the owner's: owner, 2026-11-25, only the owner's own retired models stay as MapMaker figures). Drive intake of 2026-11-25 (\"safari scout lioness 15k\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-25: \"all are the owner's own Meshy creations\"; standing rule since 2026-11-22).",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "Lion in Suit T Pose"
-    },
-    "date": "2026-11-13",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-25",
     "url": null,
-    "file": "^Meshy_AI_Lion_in_Suit_T_Pose_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_safari_scout_lioness_15k_\\d+_animated_mixamo_All_animation\\.glb$"
   },
   "finish": {
     "metallic": 0.1,

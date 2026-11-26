@@ -266,7 +266,7 @@ export class Inspector {
           apply();
         });
         glass.addEventListener('change', apply);
-        // Breakable (format v53; sim/breakWalls.ts): a blast opens this wall.
+        // Breakable (format v54; sim/breakWalls.ts): a blast opens this wall.
         const key = edgeKey(def.cells[0]!, localSide(side, t.rotation));
         const breaks = document.createElement('input');
         breaks.type = 'checkbox';

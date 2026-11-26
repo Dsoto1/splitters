@@ -186,7 +186,7 @@ export const GLASS_KIND_LABELS: Record<GlassKind, string> = { breakable: 'Breaka
 export const Rotation = z.union([z.literal(0), z.literal(1), z.literal(2), z.literal(3)]);
 
 /**
- * Breakable walls (format v53; sim/breakWalls.ts): a placed piece's walls a blast (or, with `shots`, gunfire too) can
+ * Breakable walls (format v54; sim/breakWalls.ts): a placed piece's walls a blast (or, with `shots`, gunfire too) can
  * break into a ragged hole, back at the next round. A wall between two pieces is one wall: it breaks if either side
  * is marked. Facaded pieces and see-through sides (fences, bars) never break.
  */
@@ -234,7 +234,7 @@ export const TilePlacement = z.object({
    * take one (geometry.ts `canAddFloor`); others are ignored.
    */
   upperFloors: z.array(LocalCellKey).max(256).optional(),
-  /** Breakable walls (format v53): which of its walls a blast breaks, how tough they are, whether shots do too. */
+  /** Breakable walls (format v54): which of its walls a blast breaks, how tough they are, whether shots do too. */
   breakWalls: BreakWalls.optional(),
   /** Room options on rooms that take them (catalog `configurable`); absent fields leave the tile as designed. */
   options: z
@@ -750,6 +750,27 @@ export const HostageEntity = EntityBase.extend({
   yaw: Yaw,
 });
 
+/**
+ * How a Figure stands (FigureEntity): the rig's rest pose, cheering, dancing or crouched. Each plays that clip over and
+ * over (empty-handed).
+ */
+export const FIGURE_POSES = ['stand', 'cheer', 'dance', 'crouch'] as const;
+export type FigurePose = (typeof FIGURE_POSES)[number];
+export const FIGURE_POSE_LABELS: Record<FigurePose, string> = { stand: 'Standing', cheer: 'Cheering', dance: 'Dancing', crouch: 'Crouching' };
+
+/**
+ * A figure (v53; owner, 2026-11-25: characters "retired to the mapmaker for use in other creations such as
+ * scenarios"): a character standing on the map in a pose, for scenarios and set dressing: a look from the roster or one
+ * retired to MapMaker (looks.ts FIGURE_LOOKS). Looks only: no collision, no part in play (a block or a prop under it
+ * makes it solid). An unknown look draws as the default.
+ */
+export const FigureEntity = EntityBase.extend({
+  kind: z.literal('figure'),
+  yaw: Yaw,
+  look: z.string().min(1).max(64).default('core.dale'),
+  pose: z.enum(FIGURE_POSES).default('stand'),
+});
+
 /** Hostage mode: where rescuers bring hostages out. */
 export const RescueEntity = EntityBase.extend({
   kind: z.literal('rescue'),
@@ -872,7 +893,7 @@ export const ZiplineEntity = EntityBase.extend({
   sag: z.number().min(0).max(0.1).default(0.03),
 });
 
-export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity, SectorEntity, ObjectiveEntity]);
+export const MapEntity = z.discriminatedUnion('kind', [SpawnEntity, PickupEntity, DoorEntity, ButtonEntity, DestructibleEntity, ZoneEntity, TrapEntity, EncounterEntity, PropEntity, MountEntity, PadEntity, BlockEntity, WaterEntity, FlagEntity, HillEntity, LadderEntity, BombsiteEntity, HostageEntity, RescueEntity, LightEntity, AirplaneEntity, MoverEntity, PortalEntity, ZiplineEntity, SectorEntity, ObjectiveEntity, FigureEntity]);
 
 export const RELATIONS = ['ally', 'neutral', 'enemy'] as const;
 
@@ -1314,7 +1335,7 @@ export const SetPiecePlacement = z.object({
    * that don't come in it are left as they are.
    */
   family: z.string().regex(/^[a-z][a-z0-9_]*$/).max(32).optional(),
-  /** (Format v53) every wall of its tile parts breakable (BreakWalls without `sides`), as a placed tile's `breakWalls`. */
+  /** (Format v54) every wall of its tile parts breakable (BreakWalls without `sides`), as a placed tile's `breakWalls`. */
   breakWalls: BreakWalls.omit({ sides: true }).optional(),
   /**
    * Small per-placement tweaks: a role's value, parts left out (by index), and (format v41) paint on single parts by
@@ -1485,6 +1506,7 @@ export type BombsiteEntity = z.infer<typeof BombsiteEntity>;
 export type SectorEntity = z.infer<typeof SectorEntity>;
 export type ObjectiveEntity = z.infer<typeof ObjectiveEntity>;
 export type HostageEntity = z.infer<typeof HostageEntity>;
+export type FigureEntity = z.infer<typeof FigureEntity>;
 export type RescueEntity = z.infer<typeof RescueEntity>;
 export type LightEntity = z.infer<typeof LightEntity>;
 export type AirplaneEntity = z.infer<typeof AirplaneEntity>;

@@ -1,7 +1,7 @@
 import { BREAK_WALL_HEALTH, breakWallState, setBreakWallsCommand, type EditCommand, type MapDocument } from '@tiletrigger/shared';
 
 /**
- * The inspector's Breakable walls (format v53; shared sim/breakWalls.ts): for the selected tiles and set pieces,
+ * The inspector's Breakable walls (format v54; shared sim/breakWalls.ts): for the selected tiles and set pieces,
  * "Breakable walls" (every wall of them; ticked when all are, half when some are), how much a wall takes, and
  * whether shots break it too (explosives only otherwise). The tile inspector adds a tick per side (inspector.ts).
  */
