@@ -49,13 +49,12 @@ Everything else keeps its place below these.
 - **Lead: lane B's splitters22 again (owner, 2026-11-26: "lane b will need to be primary, it has a lot of usage left"; lane A has about 12% of its week left).** Lane B runs the trains, keeps this file and HANDOFF, takes new work (the owner's next character batch with the chimp's 10 variants first, then step 2 of "The plan"; lane A's items too while lane A is low).
 - **Lane A ("splitters", lead until 2026-11-26) only finishes what is running, in this landing order** (each touches the character tables, so one at a time, each merging main before its landing):
   1. ~~`wip/fixes-20261126`~~ landed 2026-11-26 (fix batch: dorm bunk, pointer-lock crash 1d50cff7, cancel a throw, X-42 and projectile impacts, 11 characters and the non-owned retired looks removed);
-  2. `wip/chars-1125b` (the owner's 11-25 batch: replacements with the old models as MapMaker Figures (map format v53), El Zarpazo, Tetl Stonewarden, Rocco Tickwell (crew 14th place vacant until the Inquisitor), Civil War and Vietnam soldiers, renames, Blix to Space);
+  2. ~~`wip/chars-1125b`~~ landed 2026-11-26 (the owner's 11-25 batch: replacements with the old models as MapMaker Figures (map format v53), El Zarpazo, Tetl Stonewarden, Rocco Tickwell (crew 14th place vacant until the Inquisitor), Civil War and Vietnam soldiers, renames, Blix to Space);
   3. `wip/no-designer-1125` (the Character Designer and custom characters removed).
   If lane A runs out before landing them, lane B takes them over from their Ready-to-land lines and HANDOFF claims.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/chars-1125b` · db3b4d02 · 45732322277 (the owner's 16 characters of 11-25 afternoon on KTX2: 9 new models, Kesi Tallgrass, Ellis Velvetrope, Rollo Splitworth, Puddles Ironbill; 7 new incl. Rocco Tickwell; Blix Orrin to Space, the crew's 14th place an Unknown tile for the Inquisitor; Brutus Hornbeck removed; MapMaker Figures with roster characters, map format v53)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -180,6 +179,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-26** `wip/chars-1125b` (green db3b4d02, run 45732322277), landed alone by the splitters lead: the owner's 11-25 batch at 2048: replacements (Cyber Lion, Kesi Tallgrass, Croakley, Ellis Velvetrope, Rollo Splitworth, Greyfang, Gorilla G, Puddles Ironbill, Boglurker), new El Zarpazo, Tetl Stonewarden, Rocco Tickwell, Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund, Lien Vo; Blix Orrin to Space, the crew's 14th place "Unknown" until the Inquisitor; retired characters removed completely (Brutus Hornbeck too); MapMaker Figures with roster characters (map format v53).
 - **2026-11-26** `wip/fixes-20261126` (green af5d9611, run 45723372345), landed alone by the splitters lead: fix batch 11-26: dorm bunks snug in the corner with the footlocker at the open end; pointer-lock crash 1d50cff7; switching weapon cancels an aimed throw; impacts for every no-splash projectile (the X-42's orange splash, scorch and impact sound; calm under Reduce flashing); 11 characters and 18 non-owned retired looks removed (saved picks map to the owner's own looks); goblin → Goblina, otter sniper → Ottis Crema, Strongman → Ignatius Slagg.
 - **2026-11-25** `wip/doors-fit-1125` (green 67058d8d, run 45718330599; main merged by the lead's helper, coverage pieces re-placed through MapMaker), landed alone by the splitters lead: doors that fit themselves (lane B; map format v52): a placed door cuts a matching opening through both faces of its wall, whatever it's built from.
 - **2026-11-25** train check/train-20261125-210903 (49890fc, run 45701672711; hostcontrols flake passed on its one re-run), landed by the splitters lead: seamless tunnels (`wip/tunnel-seamless-1125`, lane B): textures run on across turned and tilted tunnel blocks, the kit's joints on the lattice, a Stair Tunnel in every family.
