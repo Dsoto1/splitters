@@ -56,6 +56,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/chars-1126b` · 052503c7 · 45878803823 (the 11-26 character round (b): Kato/Shaka, ranks and titled names, Pete Plastic's green blood, The Veiled Vanguard, T-TreeFitty and five looks, Fishy Fred's pistol hand)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**

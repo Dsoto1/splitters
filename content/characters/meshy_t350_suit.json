@@ -1,0 +1,37 @@
+{
+  "id": "meshy_t350_suit",
+  "kind": "character",
+  "use": "player",
+  "order": 268,
+  "name": "Suit T-TreeFitty",
+  "look": "core.t350_suit",
+  "group": "machines",
+  "blood": "oil",
+  "nameTheme": "robot",
+  "bio": "Built to sweep floors for $3.50/hr. Upgraded itself to sweep arenas.",
+  "body": "male",
+  "size": "large",
+  "variant": "Suit",
+  "variantOf": "core.t350",
+  "notes": "T-TreeFitty's Suit variant (owner, 2026-11-26: T-TreeFitty's replacement plus variants, like the chimp's). Drive intake of 2026-11-26 (\"Skinny T1000 Suit Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_Skinny_T1000_Suit_Rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.5,
+    "roughness": 0.45
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}
