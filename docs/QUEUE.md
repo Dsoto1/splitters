@@ -55,6 +55,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/chars-1125b` · db3b4d02 · 45732322277 (the owner's 16 characters of 11-25 afternoon on KTX2: 9 new models, Kesi Tallgrass, Ellis Velvetrope, Rollo Splitworth, Puddles Ironbill; 7 new incl. Rocco Tickwell; Blix Orrin to Space, the crew's 14th place an Unknown tile for the Inquisitor; Brutus Hornbeck removed; MapMaker Figures with roster characters, map format v53)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
