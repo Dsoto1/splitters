@@ -298,13 +298,18 @@ export class HostPanel {
     return out;
   }
 
-  /** The restart's changes in words, the score and time with what they'll be ("score 16", "time 15 min", "spawn on teammates"). */
-  private restartPhrases(e: MatchSetup, keys: readonly (keyof MatchSetup)[]): string[] {
+  /** The restart's changes in words: score and time with what they'll be, a switch on or off ("score 16", "spawn on teammates off"). */
+  private restartPhrases(b: MatchSetup, e: MatchSetup, keys: readonly (keyof MatchSetup)[]): string[] {
     const rest = keys.filter((k) => !['scoreLimit', 'scoreAuto', 'minutes', 'timeAuto'].includes(k));
+    // A switch: its value, or (back to its standard, unset) the other way from before.
+    const on = (k: keyof MatchSetup): string => {
+      const v = typeof e[k] === 'boolean' ? e[k] : typeof b[k] === 'boolean' ? !b[k] : null;
+      return v === null ? '' : v ? ' on' : ' off';
+    };
     return [
       ...(keys.includes('scoreLimit') || keys.includes('scoreAuto') ? [`score ${e.scoreLimit}`] : []),
       ...(keys.includes('minutes') || keys.includes('timeAuto') ? [`time ${e.minutes ? `${e.minutes} min` : '∞'}`] : []),
-      ...changeWords(rest),
+      ...new Set(rest.map((k) => `${changeWords([k])[0]}${on(k)}`)),
     ];
   }
 
@@ -340,7 +345,7 @@ export class HostPanel {
       this.applySetup(s, e, c);
     });
     const live = this.livePhrases(s, b, e, c.live);
-    const text = !any ? 'No changes' : restart ? `${[...live, ...this.restartPhrases(e, c.restart)].join(', ')}: the match starts over with them` : live.join(', ');
+    const text = !any ? 'No changes' : restart ? `${[...live, ...this.restartPhrases(b, e, c.restart)].join(', ')}: the match starts over with them` : live.join(', ');
     const what = el('span', { class: 'hc-changes', id: 'hc-changes', textContent: text, title: text });
     this.foot.replaceChildren(resume, apply, what, this.status);
   }

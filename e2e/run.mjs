@@ -17312,7 +17312,7 @@ async function hostcontrolsFlow(browser) {
       apply.click();
       return { ...said, armed: apply.textContent };
     });
-    check(ask.label === 'Restart with these' && ask.changes === 'kill streaks: the match starts over with them' && ask.armed === 'Click again to restart', `Restart with these says what it does, and asks first with a friend in (${JSON.stringify(ask)})`);
+    check(ask.label === 'Restart with these' && ask.changes === 'kill streaks off: the match starts over with them' && ask.armed === 'Click again to restart', `Restart with these says what it does, and asks first with a friend in (${JSON.stringify(ask)})`);
     await host.evaluate(() => document.getElementById('hc-apply').click());
     const fresh = await simWait(host, (m) => m.rules.killstreaks === false && m.combatants().some((c) => c.kind === 'human' && c.name === 'Friend'), null, T(90000));
     const friendBack = await friend.waitForFunction(() => window.__cs?.map === 'phase0_arena' && window.__cs.local && document.getElementById('menu').hidden, null, { timeout: T(60000) }).then(() => true, () => false);
