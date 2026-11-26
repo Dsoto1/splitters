@@ -648,6 +648,21 @@ export function botTypePicker(o: { value: readonly string[] | undefined; mapCast
   return wrap;
 }
 
+/**
+ * A rule's on/off switch (the Rules tab, MapMaker's settings): just the switch, the row beside it naming it
+ * (`label` its accessible name). `id`: the checkbox; greyed and inert with `disabled`.
+ */
+export function ruleSwitch(id: string, label: string, on: boolean, onToggle: (on: boolean) => void, disabled?: string | null): HTMLElement {
+  const box = evenSwitch(id, on, onToggle, '', '');
+  const input = box.querySelector('input')!;
+  input.setAttribute('aria-label', label);
+  input.disabled = !!disabled;
+  box.classList.add('rule-switch');
+  box.lastElementChild?.remove();
+  delete box.dataset.tip;
+  return box;
+}
+
 /** A labelled on/off switch for a bot option (Ranks & badges, Themed names): `id` the checkbox. */
 export function optionSwitch(id: string, label: string, tip: string, on: boolean, onToggle: (on: boolean) => void): HTMLElement {
   const box = evenSwitch(id, on, onToggle, label, tip);
@@ -656,28 +671,25 @@ export function optionSwitch(id: string, label: string, tip: string, on: boolean
 }
 
 /**
- * Weather (map/weather.ts): the map's own or one of the host's choices. `value`: undefined the map's own; `mapLabel`:
- * the map's weather in a few words (shown in the "Map" option).
+ * Weather (map/weather.ts): the map's own or one of the host's choices, as chips (owner, 2026-11-19, "5a": no long
+ * drop-downs). `value`: undefined the map's own; `mapLabel`: the map's weather in a few words (on the "Map" chip).
+ * IDs: `${id}` the row, each chip's data-value ('map' for the map's own).
  */
-export function weatherSelect(value: string | undefined, mapLabel: string, onChange: (v: string | undefined) => void, id?: string): HTMLSelectElement {
-  const sel = el('select', { ...(id ? { id } : {}) });
-  sel.append(el('option', { value: 'map', textContent: `Map (${mapLabel})` }));
-  for (const w of WEATHER_CHOICES) sel.append(el('option', { value: w, textContent: WEATHER_PRESETS[w].label }));
-  sel.value = isWeatherChoice(value) ? value : 'map';
-  sel.addEventListener('change', () => onChange(sel.value === 'map' ? undefined : sel.value));
-  return sel;
+export function weatherSelect(value: string | undefined, mapLabel: string, onChange: (v: string | undefined) => void, id?: string): HTMLElement {
+  const box = choice([['map', `Map (${mapLabel})`], ...WEATHER_CHOICES.map((w) => [w, WEATHER_PRESETS[w].label] as const)], isWeatherChoice(value) ? value : 'map', (v) => onChange(v === 'map' ? undefined : v), id);
+  box.classList.add('wrap');
+  return box;
 }
 
 /**
- * Weapon set (sim/weaponSets.ts): the map's default or any set, each option's line on hover. `value`: undefined the
- * map's default; `mapSet`: the map's own (its name in the "Map default" option, so the setup shows what it is).
+ * Weapon set (sim/weaponSets.ts): the map's default or any set, as chips, each one's line on hover. `value`: undefined
+ * the map's default; `mapSet`: the map's own (its name on the "Map" chip, so the setup shows what it is).
+ * IDs: `${id}` the row, each chip's data-value ('map' for the map's default).
  */
-export function weaponSetSelect(value: string | undefined, mapSet: string, onChange: (v: string | undefined) => void, id?: string, disabled?: boolean): HTMLSelectElement {
-  const sel = el('select', { ...(id ? { id } : {}), disabled: !!disabled });
+export function weaponSetSelect(value: string | undefined, mapSet: string, onChange: (v: string | undefined) => void, id?: string, disabled?: string | null): HTMLElement {
   const own = getWeaponSet(mapSet);
-  sel.append(el('option', { value: 'map', textContent: `Map default (${own.name})`, title: own.blurb }));
-  for (const s of weaponSetList()) sel.append(el('option', { value: s.id, textContent: s.name, title: s.blurb }));
-  sel.value = isWeaponSetId(value) ? value : 'map';
-  sel.addEventListener('change', () => onChange(sel.value === 'map' ? undefined : sel.value));
-  return sel;
+  const box = choice([['map', `Map (${own.name})`], ...weaponSetList().map((w) => [w.id, w.name] as const)], isWeaponSetId(value) ? value : 'map', (v) => onChange(v === 'map' ? undefined : v), id, disabled);
+  box.classList.add('wrap');
+  for (const b of box.querySelectorAll<HTMLElement>('button')) if (!b.title) b.title = (b.dataset.value === 'map' ? own : getWeaponSet(b.dataset.value!)).blurb;
+  return box;
 }

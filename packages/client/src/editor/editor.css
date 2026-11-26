@@ -28,6 +28,12 @@ select, #editor input[type='number'] { font: inherit; padding: 5px 6px; border-r
 
 :is(#ed-inspector, #ed-ms-body) .row { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin: 6px 0; }
 :is(#ed-inspector, #ed-ms-body) .row > span { color: var(--muted); }
+/* A setting picked from chips (mapProperties.ts chips()): its name over the chips, which wrap; small in the narrow dock. */
+:is(#ed-inspector, #ed-ms-body) .row.stack { flex-direction: column; align-items: stretch; gap: 4px; }
+:is(#ed-inspector, #ed-ms-body) .tabs .tab { padding: 4px 8px; font-size: 11px; border-color: var(--line); }
+:is(#ed-inspector, #ed-ms-body) .tabs .tab.on { border-color: rgba(0, 209, 255, 0.6); }
+:is(#ed-inspector, #ed-ms-body) .stepper button { padding: 2px 8px; }
+:is(#ed-inspector, #ed-ms-body) .stepper input[type='number'] { width: 44px; font-size: 14px; }
 :is(#ed-inspector, #ed-ms-body) input[type='number'] { width: 70px; }
 :is(#ed-inspector, #ed-ms-body) input[type='text'], :is(#ed-inspector, #ed-ms-body) textarea { font: inherit; width: 100%; padding: 6px; border-radius: 6px; border: 1px solid rgba(142, 162, 192, 0.28); background: var(--deep-space); color: var(--fg); }
 :is(#ed-inspector, #ed-ms-body) .buttons { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
