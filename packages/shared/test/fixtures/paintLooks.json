@@ -53,6 +53,7 @@
 "maps/pantry_raid.json":{"faces":"acd14ca631fe11a6","ground":null},
 "maps/pharaohs_reach.json":{"faces":"db778fd1c1887f3c","ground":null},
 "maps/phase0_arena.json":{"faces":"c4c7d59aab676218","ground":null},
+"maps/practice_range.json":{"faces":"0ff886c71f12f9cf","ground":"b4941bedc8c9561d"},
 "maps/primeval_park.json":{"faces":"11111fe0455c09d8","ground":"b7a6c9f9ab1d17b4"},
 "maps/pump_tower.json":{"faces":"dd9583103d0a6db1","ground":null},
 "maps/qasr_medina.json":{"faces":"eafcfb435e422af7","ground":null},
