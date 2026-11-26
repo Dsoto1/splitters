@@ -8264,12 +8264,13 @@ async function destructionChecks(browser) {
       const view = window.__cs.view;
       const node = view.props.get(window.__crateIndex);
       const c = node.getAbsolutePosition();
-      const eye = { x: c.x - 4, y: c.y + 0.5, z: c.z + 0.1 };
-      // Where a round along +x first meets the crate (the view's own surface test), as the host's round would stop.
+      // From above (its neighbours stand beside it): where a round straight down first meets its top (the view's own
+      // surface test), as the host's round would stop.
+      const eye = { x: c.x + 0.1, y: c.y + 5, z: c.z + 0.1 };
       let to = null;
-      for (let d = 2; d < 4.5 && !to; d += 0.05) if (view.surfaceStruck(eye, { x: eye.x + d, y: eye.y, z: eye.z })) to = { x: eye.x + d, y: eye.y, z: eye.z };
+      for (let d = 2; d < 5 && !to; d += 0.05) if (view.surfaceStruck(eye, { x: eye.x, y: eye.y - d, z: eye.z })) to = { x: eye.x, y: eye.y - d, z: eye.z };
       if (!to) return { found: false };
-      for (let i = 0; i < 3; i++) view.landRound({ eye, to: { ...to, y: to.y + i * 0.08 }, victim: null, zone: 0, strength: 1 });
+      for (let i = 0; i < 3; i++) view.landRound({ eye: { ...eye, x: eye.x + i * 0.08 }, to: { ...to, x: to.x + i * 0.08 }, victim: null, zone: 0, strength: 1 });
       const mesh = node.getChildMeshes().find((m) => m.name.endsWith('_holes'));
       return { found: true, holes: view.impacts.propHolesOn(node), instances: mesh?.thinInstanceCount ?? 0, underRoot: mesh?.parent === node, batched: view.propBatches.copyState(node).drawnHere };
     });
