@@ -62,7 +62,19 @@ import {
   type SkyId
 } from '@tiletrigger/shared';
 import { botManager } from '../frontend/botManager.ts';
-import { botTypePicker } from '../frontend/setupControls.ts';
+import { botTypePicker, choice, ruleSwitch, stepper, type ChoiceOption } from '../frontend/setupControls.ts';
+
+/**
+ * A setting picked from a few choices, as chips under its name (owner, 2026-11-19, "5a": Match Setup's simple pickers
+ * in MapMaker's settings too, no drop-downs). IDs: `id` the chips, each one's data-value.
+ */
+function chips<T extends string>(label: string, id: string, options: readonly ChoiceOption<T>[], value: T, onPick: (v: T) => void): HTMLElement {
+  const box = choice(options, value, onPick, id);
+  box.classList.add('wrap');
+  const r = row(label, box);
+  r.classList.add('stack');
+  return r;
+}
 import { BOT_SET_PRESETS } from '../playlists.ts';
 import { cardShotSection, type CardShotHost } from './cardShot.ts';
 import type { EditorApp } from './editorApp.ts';
@@ -157,21 +169,14 @@ export class MapProperties {
    */
   renderWeaponSet(el: HTMLElement): void {
     const now = mapWeaponSet(this.app.doc);
-    const pick = document.createElement('select');
-    pick.id = 'ed-prop-weapons';
-    for (const s of weaponSetList()) {
-      const o = new Option(s.name, s.id, false, s.id === now);
-      o.title = s.blurb;
-      pick.append(o);
-    }
-    pick.title = getWeaponSet(now).blurb;
-    pick.addEventListener('change', () => {
-      const after = pick.value === 'standard' ? null : pick.value;
+    const pick = chips('Weapon set', 'ed-prop-weapons', weaponSetList().map((w) => [w.id, w.name] as const), now, (v) => {
+      const after = v === 'standard' ? null : v;
       if (after !== (this.app.doc.weaponSet ?? null)) this.app.run('Weapon set', { kind: 'setWeaponSet', before: this.app.doc.weaponSet ?? null, after });
     });
+    for (const b of pick.querySelectorAll<HTMLElement>('button')) b.title = getWeaponSet(b.dataset.value!).blurb;
     const hint = small(`${getWeaponSet(now).blurb} Hosts can pick another set (Play → Match setup → Weapons, the pause menu's Host tab).`);
     hint.id = 'ed-prop-weapons-hint';
-    el.append(row('Weapon set', pick), hint);
+    el.append(pick, hint);
   }
 
   /**
@@ -198,15 +203,13 @@ export class MapProperties {
     const head = document.createElement('h3');
     head.textContent = `Teams · ${teamLayoutLabel(sizes)}`;
     el.append(head);
-    const presets = document.createElement('select');
-    presets.id = 'ed-team-preset';
-    presets.append(new Option('Presets…', ''));
-    for (const p of TEAM_PRESETS) presets.append(new Option(`${teamLayoutLabel(p)} (${p.reduce((a, b) => a + b, 0)} players)`, p.join(',')));
-    presets.addEventListener('change', () => presets.value && set('Set teams', presets.value.split(',').map(Number)));
-    el.append(row('Layout', presets));
+    // Layouts as chips (the one in use lit), each team's size a stepper: Match Setup's Teams picker.
+    const presets = chips('Layout', 'ed-team-preset', TEAM_PRESETS.map((p) => [p.join(','), teamLayoutLabel(p)] as const), sizes.join(','), (v) => set('Set teams', v.split(',').map(Number)));
+    for (const b of presets.querySelectorAll<HTMLElement>('button')) b.title = `${b.dataset.value!.split(',').reduce((a, n) => a + Number(n), 0)} players`;
+    el.append(presets);
     const teams = mapTeams(doc, sizes.length);
     teams.forEach((t, i) => {
-      const input = numberInput(sizes[i] ?? 1, 1, (v) => set('Set team size', sizes.map((s, j) => (j === i ? Math.max(1, Math.min(48, Math.round(v))) : s))));
+      const input = stepper({ value: sizes[i] ?? 1, min: 1, max: 48, label: `${t.name} size`, onChange: (v) => set('Set team size', sizes.map((s, j) => (j === i ? v : s))) });
       input.dataset.team = t.id;
       const label = document.createElement('span');
       label.innerHTML = `<span style="color:${t.color}">●</span> ${escapeHtml(t.name)}`;
@@ -326,12 +329,9 @@ export class MapProperties {
     color.id = 'ed-blood-color';
     color.value = b.color;
     color.addEventListener('change', () => set({ ...b, color: color.value }));
-    const amount = document.createElement('select');
-    amount.id = 'ed-blood-amount';
     const labels: Record<(typeof BLOOD_AMOUNTS)[number], string> = { off: 'None', light: 'Light', heavy: 'Heavy' };
-    for (const a of BLOOD_AMOUNTS) amount.append(new Option(labels[a], a, false, a === b.amount));
-    amount.addEventListener('change', () => set({ ...b, amount: amount.value as BloodSettings['amount'] }));
-    el.append(row('Colour', color), row('Amount', amount));
+    const amount = chips('Amount', 'ed-blood-amount', BLOOD_AMOUNTS.map((a) => [a, labels[a]] as const), b.amount, (v) => set({ ...b, amount: v }));
+    el.append(row('Colour', color), amount);
     const swatches = document.createElement('div');
     swatches.className = 'ed-row-buttons';
     for (const [label, hex] of [['Red', '#8a0b0b'], ['Alien', '#3f9b1f'], ['Oil', '#1b1b1f'], ['Ichor', '#d7b21a'], ['Coolant', '#2a7fd0']] as const) {
@@ -353,23 +353,18 @@ export class MapProperties {
     el.append(head);
     const p: MapPhysics = this.app.doc.physics ?? { gravity: 1, fallDamage: false };
     const set = (after: MapPhysics) => this.app.run('Change physics', { kind: 'setPhysics', before: this.app.doc.physics, after: after.gravity === 1 && !after.fallDamage ? null : after });
-    const gravity = document.createElement('select');
-    gravity.id = 'ed-gravity';
-    for (const [v, label] of [[0.25, 'Moon (¼)'], [0.5, 'Low (½)'], [0.75, 'Light (¾)'], [1, 'Normal'], [1.5, 'Heavy (1½×)'], [2, 'Crushing (2×)']] as const) gravity.append(new Option(label, String(v), false, Math.abs(p.gravity - v) < 0.01));
-    gravity.addEventListener('change', () => set({ ...p, gravity: Number(gravity.value) }));
-    const fall = document.createElement('select');
-    fall.id = 'ed-fall-damage';
-    fall.append(new Option('Off', 'off', false, !p.fallDamage), new Option('On', 'on', false, p.fallDamage));
-    fall.addEventListener('change', () => set({ ...p, fallDamage: fall.value === 'on' }));
-    el.append(row('Gravity', gravity), row('Fall damage', fall));
+    const GRAVITIES = [[0.25, 'Moon (¼)'], [0.5, 'Low (½)'], [0.75, 'Light (¾)'], [1, 'Normal'], [1.5, 'Heavy (1½×)'], [2, 'Crushing (2×)']] as const;
+    const g = GRAVITIES.find(([v]) => Math.abs(p.gravity - v) < 0.01)?.[0];
+    const gravity = chips('Gravity', 'ed-gravity', GRAVITIES.map(([v, label]) => [String(v), label] as const), g === undefined ? '' : String(g), (v) => set({ ...p, gravity: Number(v) }));
+    const fall = ruleSwitch('ed-fall-damage', 'Fall damage', !!p.fallDamage, (on) => set({ ...p, fallDamage: on }));
+    el.append(gravity, row('Fall damage', fall));
     el.append(small('Gravity changes jumps, falls and jump-pad arcs. With fall damage on, drops past about 5 m hurt and about 16 m kill (jump pads, ladders and water are safe). Match settings can override both.'));
     // Glass: when shattered panes come back.
-    const back = document.createElement('select');
-    back.id = 'ed-glass-respawn';
     const now = this.app.doc.glass?.respawnSeconds ?? null;
-    for (const [v, label] of [[null, 'Next round'], [15, 'After 15 s'], [30, 'After 30 s'], [60, 'After 1 min'], [120, 'After 2 min']] as const) back.append(new Option(label, v === null ? '' : String(v), false, now === v));
-    back.addEventListener('change', () => this.app.run('Glass respawn', { kind: 'setGlass', before: this.app.doc.glass ?? null, after: back.value ? { respawnSeconds: Number(back.value) } : null }));
-    el.append(row('Broken glass returns', back));
+    const back = chips('Broken glass returns', 'ed-glass-respawn', ([[null, 'Next round'], [15, '15 s'], [30, '30 s'], [60, '1 min'], [120, '2 min']] as const).map(([v, label]) => [v === null ? '' : String(v), label] as const), now === null ? '' : String(now), (v) =>
+      this.app.run('Glass respawn', { kind: 'setGlass', before: this.app.doc.glass ?? null, after: v ? { respawnSeconds: Number(v) } : null }),
+    );
+    el.append(back);
   }
 
   // ---------------------------------------------------------------- boundary
@@ -381,17 +376,14 @@ export class MapProperties {
     head.textContent = 'Boundary';
     el.append(head);
     const b = doc.bounds;
-    const style = document.createElement('select');
-    style.id = 'ed-bounds-style';
-    for (const [v, label] of BOUNDARY_CHOICES) style.append(new Option(label, v, false, (b?.style ?? '') === v));
     const set = (label: string, after: MapDocument['bounds']) => this.app.run(label, { kind: 'setBounds', before: this.app.doc.bounds, after });
-    style.addEventListener('change', () => {
-      if (!style.value) return set('Remove boundary', null);
+    const style = chips('Walls', 'ed-bounds-style', BOUNDARY_CHOICES, b?.style ?? '', (v) => {
+      if (!v) return set('Remove boundary', null);
       const fit = b ?? fitBounds(this.app.doc, BOUNDARY_MARGIN);
       if (!fit) return this.app.toast('Build something first: the boundary fits round the map', true);
-      set('Set boundary', { min: fit.min, max: fit.max, style: style.value as BoundaryStyle, height: b?.height ?? BOUNDARY_HEIGHT });
+      set('Set boundary', { min: fit.min, max: fit.max, style: v as BoundaryStyle, height: b?.height ?? BOUNDARY_HEIGHT });
     });
-    el.append(row('Walls', style));
+    el.append(style);
     if (b) {
       const fitBtn = button('Fit to map', () => {
         const fit = fitBounds(this.app.doc, BOUNDARY_MARGIN);
@@ -478,15 +470,10 @@ export class MapProperties {
    */
   private categoriesSection(): HTMLElement {
     const doc = this.app.doc;
-    const pick = document.createElement('select');
-    pick.id = 'ed-prop-category';
-    for (const c of MAP_CATEGORIES) if (c.id !== 'custom') pick.append(new Option(c.label, c.id, false, (doc.metadata.category ?? DEFAULT_MAP_CATEGORY) === c.id));
-    pick.addEventListener('change', () => {
-      const to = pick.value as MapCategoryId;
+    const r = chips('Category', 'ed-prop-category', MAP_CATEGORIES.filter((c) => c.id !== 'custom').map((c) => [c.id as MapCategoryId, c.label] as const), doc.metadata.category ?? DEFAULT_MAP_CATEGORY, (to: MapCategoryId) => {
       const label = MAP_CATEGORIES.find((c) => c.id === to)?.label ?? to;
       this.app.run(`Category: ${label}`, { kind: 'setMetadata', before: { category: this.app.doc.metadata.category }, after: { category: to } });
     });
-    const r = row('Category', pick);
     r.title = `Where Match Setup lists the map: one tab. ${MAP_CATEGORIES.filter((c) => c.id !== 'custom').map((c) => `${c.label}: ${c.blurb}`).join(' ')} Custom (players' own and community maps) is worked out, not picked.`;
     return r;
   }
@@ -572,11 +559,9 @@ export class MapProperties {
     // Note pins (MapMaker overhaul Phase 3 item 7): every note, to go to or delete.
     el.append(this.app.notes.section());
     group('gameplay', 'Gameplay');
-    const mode = document.createElement('select');
     const current = doc.metadata.supportedModes[0] ?? 'core.deathmatch';
-    for (const [id, label] of MAIN_MODES) mode.append(new Option(label, id, false, id === current));
     // The main mode (the map's pick, what TEST plays) changes; the modes it also offers stay.
-    mode.addEventListener('change', () => this.app.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: withMainMode([mode.value, ...doc.metadata.supportedModes.slice(1)], mode.value) } }));
+    const mode = chips('Mode', 'ed-prop-mode', MAIN_MODES, current, (v) => this.app.run('Change mode', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: withMainMode([v, ...doc.metadata.supportedModes.slice(1)], v) } }));
     const teams = mapTeams(doc);
     const help: Record<string, string> = {
       'core.coop': 'Co-op: all players (and bots) team up against the NPC squads. Logic ends the mission with "players win" or "players lose".',
@@ -593,8 +578,8 @@ export class MapProperties {
     };
     // Maps with flag bases or hills also offer those modes in the Arcade, whatever the main mode is.
     const extra = playableModes(doc).filter((m) => m !== current && m !== 'core.elim');
-    if (extra.length) help[mode.value] = `${help[mode.value] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
-    el.append(row('Mode', mode), small(help[mode.value] ?? ''));
+    if (extra.length) help[current] = `${help[current] ?? ''} Also playable here: ${extra.map((m) => MODE_LABELS[m]).join(', ')}.`;
+    el.append(mode, small(help[current] ?? ''));
     if (hasRemovedMode(doc.metadata.supportedModes)) el.append(removedModesRow(doc.metadata.supportedModes, (next) => this.app.run('Drop Race from the modes', { kind: 'setMetadata', before: { supportedModes: doc.metadata.supportedModes }, after: { supportedModes: next } })));
     // Modes the map offers besides its main one (the rest follow from its pieces: flag bases, hills, sectors...).
     const also = document.createElement('div');
@@ -627,11 +612,7 @@ export class MapProperties {
     this.renderMapBots(el);
     this.renderPlayerCaps(el);
     // Destructible environment (v36): every solid prop can be shot apart (natural rocks stay; a prop marked Unbreakable stays).
-    const destruction = document.createElement('input');
-    destruction.type = 'checkbox';
-    destruction.id = 'ed-prop-destruction';
-    destruction.checked = !!doc.metadata.destruction;
-    destruction.addEventListener('change', () => this.app.run(destruction.checked ? 'Everything breaks' : 'Only breakable pieces break', { kind: 'setMetadata', before: { destruction: doc.metadata.destruction }, after: { destruction: destruction.checked || undefined } }));
+    const destruction = ruleSwitch('ed-prop-destruction', 'Everything breaks', !!doc.metadata.destruction, (on) => this.app.run(on ? 'Everything breaks' : 'Only breakable pieces break', { kind: 'setMetadata', before: { destruction: doc.metadata.destruction }, after: { destruction: on || undefined } }));
     const destructionRow = row('Everything breaks', destruction);
     destructionRow.title = 'Every solid prop can be shot apart, not only crates, barrels and the like. Natural rocks, walls, floors, terrain and doors stay; mark a prop Unbreakable to keep it. Broken pieces come back at the next round.';
     el.append(destructionRow);
@@ -669,31 +650,21 @@ export class MapProperties {
 
     // The map's tier (map/qualityGates.ts; owner, 2026-11-11): experimental maps are listed under their own heading and
     // left out of Quick Play, playlists and official rotations; a map goes to core only when its gates pass.
-    const tier = document.createElement('select');
-    tier.id = 'ed-prop-tier';
-    for (const t of MAP_TIERS) tier.append(new Option(MAP_TIER_LABELS[t], t, false, mapTier(doc.metadata) === t));
     const gates = [
       { id: 'loads', label: 'No problems to fix', pass: !this.app.issues.some((i) => i.severity === 'error'), note: `${this.app.issues.filter((i) => i.severity === 'error').length} problem(s) in the list` },
       ...mapGates(doc),
     ];
     const failed = gates.filter((g) => !g.pass);
-    tier.addEventListener('change', () => {
-      const to = tier.value as MapTier;
+    const tierRow = chips('Tier', 'ed-prop-tier', MAP_TIERS.map((t) => [t, MAP_TIER_LABELS[t]] as const), mapTier(doc.metadata), (to: MapTier) => {
       if (to === 'core' && failed.length) {
-        tier.value = 'experimental';
         return this.app.toast(`Not core yet: ${failed.map((g) => `${g.label.toLowerCase()} (${g.note})`).join('; ')}`, true);
       }
       this.app.run(to === 'core' ? 'Promote to core' : 'Make experimental', { kind: 'setMetadata', before: { tier: doc.metadata.tier }, after: { tier: to === 'core' ? undefined : to } });
     });
-    const tierRow = row('Tier', tier);
     tierRow.title = 'Experimental: listed under its own heading, left out of Quick Play, playlists and official rotations. Core: every quality gate must pass';
     el.append(tierRow, small(failed.length ? `Quality gates: ${failed.map((g) => `${g.label.toLowerCase()}: ${g.note}`).join('; ')}. (The navigation audit and a bots-only match are run by pnpm quality-gates.)` : 'Quality gates: these pass. The navigation audit and a bots-only match are run by pnpm quality-gates.'));
     // A map for the tests (maps/test_coverage.json): no map list, template list, rotation or host picker offers it.
-    const testOnly = document.createElement('input');
-    testOnly.type = 'checkbox';
-    testOnly.id = 'ed-prop-testonly';
-    testOnly.checked = !!doc.metadata.testOnly;
-    testOnly.addEventListener('change', () => this.app.run(testOnly.checked ? 'Mark as test map' : 'Unmark test map', { kind: 'setMetadata', before: { testOnly: doc.metadata.testOnly }, after: { testOnly: testOnly.checked || undefined } }));
+    const testOnly = ruleSwitch('ed-prop-testonly', 'Test map', !!doc.metadata.testOnly, (on) => this.app.run(on ? 'Mark as test map' : 'Unmark test map', { kind: 'setMetadata', before: { testOnly: doc.metadata.testOnly }, after: { testOnly: on || undefined } }));
     const testRow = row('Test map', testOnly);
     testRow.title = 'A map for the automated tests: hidden from the map lists, templates, rotations and the host picker';
     el.append(testRow);

@@ -14,6 +14,7 @@ import {
   type MapWeather,
   type Precipitation,
 } from '@tiletrigger/shared';
+import { choice } from '../frontend/setupControls.ts';
 
 /**
  * Map properties → Time of day and Weather (MapMaker overhaul Phase 5; map format v34). The time slider and the
@@ -106,10 +107,8 @@ export function skyWeatherSection(host: SkyWeatherHost): HTMLElement {
 
   // ---- weather
   const w = mapWeather(doc);
-  const fall = document.createElement('select');
-  fall.id = 'ed-weather-fall';
-  for (const p of PRECIPITATION) fall.append(new Option(FALL_LABELS[p], p, false, p === w.fall));
-  fall.addEventListener('change', () => host.run(`Weather: ${FALL_LABELS[fall.value as Precipitation]}`, setWeatherCommand(host.current(), { fall: fall.value as Precipitation })));
+  // Chips, not a drop-down (owner, 2026-11-19, "5a"): ids `ed-weather-fall`, each one's data-value.
+  const fall = choice(PRECIPITATION.map((p) => [p, FALL_LABELS[p]] as const), w.fall, (p: Precipitation) => host.run(`Weather: ${FALL_LABELS[p]}`, setWeatherCommand(host.current(), { fall: p })), 'ed-weather-fall');
   wrap.append(line('Weather', fall));
   const live = (key: 'amount' | 'wind' | 'fog', label: string, id: string, tip: string) => {
     const s = slider(id, Math.round(w[key] * 100), 100, 5);

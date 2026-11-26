@@ -59,13 +59,11 @@ async function tagOne(id, file, want) {
   // (Clicked in the page: right after an import a software-drawn frame can keep Playwright's own click waiting.)
   await page.evaluate(() => document.getElementById('ed-map-settings')?.hidden !== false && document.getElementById('ed-title').click());
   await page.waitForSelector('#ed-prop-category', { state: 'attached', timeout: 180000 });
-  // One pick (one undoable step, as by hand): the select's change.
+  // One pick (one undoable step, as by hand): the category's chip.
   await page.evaluate((v) => {
-    const sel = document.getElementById('ed-prop-category');
-    sel.scrollIntoView({ block: 'center' });
-    if (sel.value === v) return;
-    sel.value = v;
-    sel.dispatchEvent(new Event('change', { bubbles: true }));
+    const chip = document.querySelector(`#ed-prop-category [data-value="${v}"]`);
+    chip.scrollIntoView({ block: 'center' });
+    if (!chip.classList.contains('on')) chip.click();
   }, want);
   const now = await page.evaluate(() => window.__editor.doc.metadata.category ?? 'modern');
   if (now !== want) throw new Error(`${id}: MapMaker holds ${now}, wanted ${want}`);

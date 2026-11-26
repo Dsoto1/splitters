@@ -2265,10 +2265,10 @@ async function editorLayoutChecks(browser) {
   await page.waitForFunction((t) => window.__editor.doc.classicStructure.theme === t, otherTheme, { timeout: T(5000) }).catch(() => {});
   const general = { theme: (await doc()).classicStructure.theme, undo: await undoLabel() };
   await page.click('#ed-undo');
-  await page.selectOption('#ed-gravity', '0.5');
+  await page.click('#ed-gravity [data-value="0.5"]');
   const gameplay = { gravity: (await doc()).physics?.gravity, undo: await undoLabel() };
   await page.click('#ed-undo');
-  await page.selectOption('#ed-blood-amount', 'heavy');
+  await page.click('#ed-blood-amount [data-value="heavy"]');
   const presentation = { blood: (await doc()).blood?.amount, undo: await undoLabel() };
   await page.click('#ed-undo');
   await page.click('#ed-prop-testonly');
@@ -4017,7 +4017,7 @@ async function editorSkyWeatherChecks(browser) {
   await page.click('.ed-tod-preset[data-hours="22"]');
   await shot('time-night');
   // Weather: rain, harder, windy, fog; each one step, drawn in the view.
-  await page.selectOption('#ed-weather-fall', 'rain');
+  await page.click('#ed-weather-fall [data-value="rain"]');
   const slide = (id, v) =>
     page.evaluate(([id, v]) => {
       const s = document.getElementById(id);
@@ -7279,8 +7279,7 @@ async function sceneryFlow(browser) {
   const bd = await page.evaluate(() => ({ sky: window.__editor.doc.backdrop?.sky, mesh: window.__editor.view.scene.meshes.some((m) => m.name === 'backdrop_sky') }));
   check(bd.sky === 'sunset' && bd.mesh, `MapMaker sets the map's sky (${bd.sky})`);
   await openMapSettings(page);
-  await page.click('#ed-blood-amount');
-  await page.selectOption('#ed-blood-amount', 'heavy');
+  await page.click('#ed-blood-amount [data-value="heavy"]');
   await page.click('.ed-row-buttons button:has-text("Alien")');
   const blood = await page.evaluate(() => window.__editor.doc.blood);
   check(blood?.color === '#3f9b1f' && blood?.amount === 'heavy', `MapMaker sets the map's blood (${JSON.stringify(blood)})`);
@@ -9160,7 +9159,7 @@ async function customSetupFlow(browser) {
 
 /**
  * Weapon sets (docs/WEAPON_SETS_PLAN.md; sim/weaponSets.ts). Sandgate's own default is Military (its Map properties):
- * Match setup names it ("Map default (Military)") and its facts show it; the match spawns you with a knife, a pistol
+ * Match setup names it ("Map (Military)") and its facts show it; the match spawns you with a knife, a pistol
  * and an assault rifle (the bots too) and its weapon pickups hold Military weapons; the pause menu's Host tab switches
  * the set at once (the pickups now, your next life's loadout). Match setup's own choice, Chaos, saved with the setup,
  * gives a new oddball each life (dealt from a deck shuffled from the seed and your slot) and the life's grenade (dealt the same way). MapMaker's Map properties
@@ -9194,9 +9193,9 @@ async function weaponsetsFlow(browser) {
   };
   const setupState = (p) =>
     p.evaluate(() => ({
-      options: [...document.querySelectorAll('#arcade-weapons option')].map((o) => o.value),
-      first: document.querySelector('#arcade-weapons option')?.textContent,
-      value: document.getElementById('arcade-weapons')?.value,
+      options: [...document.querySelectorAll('#arcade-weapons [data-value]')].map((o) => o.dataset.value),
+      first: document.querySelector('#arcade-weapons [data-value]')?.textContent,
+      value: document.querySelector('#arcade-weapons .on')?.dataset.value,
       fact: document.getElementById('setup-weapons-fact')?.textContent ?? null,
       chips: document.getElementById('setup-rule-chips')?.textContent ?? '',
       saved: JSON.parse(localStorage.getItem('cs.arcade') ?? '{}').weaponSet ?? null,
@@ -9224,7 +9223,7 @@ async function weaponsetsFlow(browser) {
   // The map's own default: Military.
   await openWeapons(page);
   const offered = await setupState(page);
-  check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map default (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
+  check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
   // The sets' weapon lists, from the content the game builds them from (a set that gains a weapon needs no edit here).
   const setWeapons = (id) => JSON.parse(readFileSync(fileURLToPath(new URL('../content/weapon-sets.json', import.meta.url)), 'utf8')).sets.find((s) => s.id === id).weapons;
   const MILITARY = setWeapons('military');
@@ -9250,12 +9249,10 @@ async function weaponsetsFlow(browser) {
   // The pause menu's Host tab: the same choice, applied at once.
   await page.evaluate(() => (document.getElementById('host-controls').open = true));
   await page.waitForSelector('#hc-weapons', { state: 'attached', timeout: T(10000) });
-  const tab = await page.evaluate(() => ({ value: document.getElementById('hc-weapons').value, first: document.querySelector('#hc-weapons option')?.textContent, n: document.querySelectorAll('#hc-weapons option').length }));
-  check(tab.value === 'map' && tab.first === 'Map default (Military)' && tab.n === 7, `the Host tab offers the weapon set, on the map's default (${JSON.stringify(tab)})`);
+  const tab = await page.evaluate(() => ({ value: document.querySelector('#hc-weapons .on')?.dataset.value, first: document.querySelector('#hc-weapons [data-value]')?.textContent, n: document.querySelectorAll('#hc-weapons [data-value]').length }));
+  check(tab.value === 'map' && tab.first === 'Map (Military)' && tab.n === 7, `the Host tab offers the weapon set, on the map's default (${JSON.stringify(tab)})`);
   await page.evaluate(() => {
-    const s = document.getElementById('hc-weapons');
-    s.value = 'scifi';
-    s.dispatchEvent(new Event('change'));
+    document.querySelector('#hc-weapons [data-value="scifi"]').click();
     document.getElementById('hc-apply')?.click();
   });
   const swapped = await simWait(page, (m, _me, ids) => m.weaponSet?.id === 'scifi' && m.pickups.filter((p) => p.item.effect.kind === 'weapon').every((p) => ids.includes(p.item.effect.weapon)), SCIFI, T(10000));
@@ -9268,18 +9265,16 @@ async function weaponsetsFlow(browser) {
   const page2 = await ctx.newPage();
   page2.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
   await openWeapons(page2);
-  await page2.selectOption('#arcade-weapons', 'chaos');
+  await page2.click('#arcade-weapons [data-value="chaos"]');
   await page2.waitForFunction(() => document.getElementById('setup-weapons-fact')?.textContent === 'Chaos weapons', null, { timeout: T(5000) }).catch(() => {});
   const picked = await setupState(page2);
   check(picked.saved === 'chaos' && picked.value === 'chaos' && picked.fact === 'Chaos weapons' && /Chaos weapons/.test(picked.chips), `picking Chaos saves it with the setup, and the setup says so (${JSON.stringify(picked)})`);
   if (shots) {
-    // The choice drawn open (a list showing every option) for the picture, then back to a drop-down. Scrolled to
-    // until it is in view (the setup can redraw over a first scroll).
+    // The chips in view for the picture. Scrolled to until they are in view (the setup can redraw over a first scroll).
     await page2
       .waitForFunction(
         () => {
           const s = document.getElementById('arcade-weapons');
-          s.size = s.options.length;
           const r = s.getBoundingClientRect();
           if (r.top > 0 && r.bottom < innerHeight) return true;
           s.scrollIntoView({ block: 'center' });
@@ -9290,7 +9285,6 @@ async function weaponsetsFlow(browser) {
       )
       .catch(() => {});
     await page2.screenshot({ path: `${shots}/weapon-sets-setup.png` });
-    await page2.evaluate(() => (document.getElementById('arcade-weapons').size = 0));
   }
   await page2.click('#arcade-start');
   await started(page2);
@@ -9320,12 +9314,12 @@ async function weaponsetsFlow(browser) {
   await newMap(ed, 96);
   await openMapSettings(ed);
   await ed.waitForSelector('#ed-prop-weapons', { timeout: T(10000) });
-  const field = await ed.evaluate(() => ({ value: document.getElementById('ed-prop-weapons').value, options: [...document.querySelectorAll('#ed-prop-weapons option')].map((o) => o.value), set: window.__editor.doc.weaponSet ?? null }));
+  const field = await ed.evaluate(() => ({ value: document.querySelector('#ed-prop-weapons .on')?.dataset.value, options: [...document.querySelectorAll('#ed-prop-weapons [data-value]')].map((o) => o.dataset.value), set: window.__editor.doc.weaponSet ?? null }));
   check(field.value === 'standard' && field.options.join() === 'standard,military,scifi,medieval,chaos,mixed' && field.set === null, `MapMaker's Map properties offer a weapon set, Standard by default (${JSON.stringify(field)})`);
-  await ed.selectOption('#ed-prop-weapons', 'scifi');
+  await ed.click('#ed-prop-weapons [data-value="scifi"]');
   // (The inspector redraws on MapMaker's next frame: slow under software rendering.)
   await ed.waitForFunction(() => window.__editor.doc.weaponSet === 'scifi' && /pulse pistol/.test(document.getElementById('ed-prop-weapons-hint')?.textContent ?? ''), null, { timeout: T(15000) }).catch(() => {});
-  const chosen = await ed.evaluate(() => ({ set: window.__editor.doc.weaponSet, value: document.getElementById('ed-prop-weapons')?.value, hint: document.getElementById('ed-prop-weapons-hint')?.textContent ?? '' }));
+  const chosen = await ed.evaluate(() => ({ set: window.__editor.doc.weaponSet, value: document.querySelector('#ed-prop-weapons .on')?.dataset.value, hint: document.getElementById('ed-prop-weapons-hint')?.textContent ?? '' }));
   check(chosen.set === 'scifi' && chosen.value === 'scifi' && /pulse pistol/.test(chosen.hint), `picking Sci-fi sets the map's default (${JSON.stringify(chosen)})`);
   if (shots) {
     await ed.evaluate(() => document.getElementById('ed-prop-weapons')?.scrollIntoView({ block: 'center' }));
@@ -11512,7 +11506,7 @@ async function trafficFlow(browser) {
   await openMapSettings(page);
   await page.evaluate(() => window.__editor.run('Old modes', { kind: 'setMetadata', before: { supportedModes: window.__editor.doc.metadata.supportedModes }, after: { supportedModes: ['core.race', 'core.tdm'] } }));
   await page.waitForSelector('#ed-prop-drop-race', { state: 'attached', timeout: T(5000) });
-  const raceOffered = await page.evaluate(() => !!document.querySelector('option[value="core.race"]'));
+  const raceOffered = await page.evaluate(() => !!document.querySelector('option[value="core.race"], #ed-prop-mode [data-value="core.race"]'));
   await page.evaluate(() => document.getElementById('ed-prop-drop-race').click());
   const dropped = await page.evaluate(() => window.__editor.doc.metadata.supportedModes.join(','));
   check(!raceOffered && dropped === 'core.tdm', `Map properties doesn't offer Race and drops it from an old map's modes (offered ${raceOffered}, now ${dropped})`);
