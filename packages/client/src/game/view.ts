@@ -175,7 +175,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
 import { LoadOrder, useLoadOrder } from '../content/loadOrder.ts';
-import { bodyDrawable, contextLossCount, noteBodiesBack, noteContextLost, noteContextRestored } from './contextLosses.ts';
+import { bodyDrawable, contextLossCount, contextLossLine, noteBodiesBack, noteContextLost, noteContextRestored } from './contextLosses.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { seatDrawnYaw } from './riderPlacement.ts';
@@ -3677,15 +3677,15 @@ export class GameView {
   /** Since when the characters' maps are being rebuilt after a lost context came back (null: not now). */
   private restoringSince: number | null = null;
 
-  /** After a lost context (tests): still waiting on characters' maps, how many wait, and how many bodies are in. */
-  contextState(): { restoring: boolean; rebuilding: number; bodies: number; losses: number } {
+  /** After a lost context (tests): still waiting on characters' maps, how many wait, how many bodies are in, and the report's line. */
+  contextState(): { restoring: boolean; rebuilding: number; bodies: number; losses: number; line: string } {
     let rebuilding = 0;
     let bodies = 0;
     for (const a of this.avatars.values()) {
       if (a.rebuilding) rebuilding++;
       if (a.anim) bodies++;
     }
-    return { restoring: this.restoringSince !== null, rebuilding, bodies, losses: contextLossCount() };
+    return { restoring: this.restoringSince !== null, rebuilding, bodies, losses: contextLossCount(), line: contextLossLine() };
   }
 
   /**

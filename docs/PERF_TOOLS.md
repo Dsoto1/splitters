@@ -77,6 +77,21 @@ What to look for: if `render` is large but `shadows` and `post` are small, the c
 **Copy performance report** (same menu) gives the last minute as text, now with the same split (avg,
 slowest 5 %, worst per system) and the counts.
 
+A `context` line (fix batch of 2026-11-27, `game/contextLosses.ts`) says whether the page's WebGL context was lost
+(a GPU reset, or out of video memory), each time with its UTC time, how long until it came back and how long until
+every character was drawn again:
+
+```
+context   WebGL context lost 1 time: at 18:02:11 UTC, back after 1.5 s, characters drawn again after 3.2 s
+```
+
+After a restore Babylon rebuilds every buffer, shader and texture, but the KTX2 maps are transcoded again from their
+files first, and a mesh whose maps aren't in isn't drawn at all: characters vanished until then. Their capsules
+stand in now (`GameView.contextRestored`, `bodyDrawable`), as while their files first load. Two things of ours that
+Babylon can't rebuild are made again there: the level's bullet holes (a partial thin-instance update leaves Babylon
+only that part, or nothing, to rebuild from: `ImpactVisuals.restored`) and the static shadow cache's own depth copy
+(`ShadowCache.restored`). The arsenal e2e flow loses and restores the context and reads the line.
+
 Two more lines (fix 3a and 3d of `docs/PERF_MAPMAKER_TRACE_2026-11-15.md`, the worn-down tab):
 
 ```

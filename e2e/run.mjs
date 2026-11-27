@@ -9937,7 +9937,7 @@ async function arsenalFlow(browser) {
   await page.evaluate(() => document.querySelector('#pause [data-tab="settings"]')?.click());
   await page.$eval('#perf-report', (b) => b.click());
   const report = await page.$eval('#perf-report-text', (e) => e.value);
-  check(/performance report/.test(report) && /^Frames +\d+ over/m.test(report) && /^GPU /m.test(report), `the pause menu copies a performance report (${report.split('\n')[0]})`);
+  check(/performance report/.test(report) && /^Frames +\d+ over/m.test(report) && /^GPU /m.test(report) && /^context +WebGL context not lost$/m.test(report), `the pause menu copies a performance report, with its context line (${report.split('\n')[0]}; ${report.split('\n').find((l) => l.startsWith('context'))})`);
   await page.keyboard.press('F3');
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
@@ -10230,16 +10230,9 @@ async function arsenalFlow(browser) {
     const back = await page.waitForFunction(() => !window.__cs.view.scene.getEngine()._contextWasLost, null, { timeout: T(20000) }).then(() => true, () => false);
     const redrawn = back && (await page.waitForFunction(() => !window.__cs.view.contextState().restoring, null, { timeout: T(60000) }).then(() => true, () => false));
     const state = await page.evaluate(() => window.__cs.view.contextState());
-    // (The report is copied while the overlay measures: a first click turns it on when it is off, the next copies.)
-    await page.evaluate(() => document.querySelector('#pause [data-tab="settings"]')?.click());
-    await page.$eval('#perf-report-text', (e) => (e.value = ''));
-    await page.$eval('#perf-report', (b) => b.click());
-    if (!(await page.$eval('#perf-report-text', (e) => e.value))) {
-      await page.waitForFunction(() => /frame split/.test(document.getElementById('perf')?.textContent ?? ''), null, { timeout: T(15000) }).catch(() => {});
-      await page.$eval('#perf-report', (b) => b.click());
-    }
-    const line = (await page.$eval('#perf-report-text', (e) => e.value)).split('\n').find((l) => l.startsWith('context')) ?? '';
-    check(wentAway && back && redrawn && state.bodies > 0 && state.rebuilding === 0 && /WebGL context lost 1 time: .*back after .*characters drawn again after/.test(line), `after a lost WebGL context comes back every character is drawn again, and the performance report says so (lost ${wentAway}, back ${back}, redrawn ${redrawn}, ${JSON.stringify(state)}; "${line}")`);
+    // (The report's line as the report writes it: the report itself was copied above, with its "not lost" line.)
+    const line = state.line;
+    check(wentAway && back && redrawn && state.bodies > 0 && state.rebuilding === 0 && /WebGL context lost 1 time: .*back after .*characters drawn again after/.test(line), `after a lost WebGL context comes back every character is drawn again, and the performance report's context line says so (lost ${wentAway}, back ${back}, redrawn ${redrawn}, ${JSON.stringify(state)}; "${line}")`);
   }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
