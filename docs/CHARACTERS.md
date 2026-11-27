@@ -1746,6 +1746,22 @@ Cyber Commando and Scrapper. Each look is its own manifest and model:
   Soldier and Aviator the Wars, Disco Operative Urban Breakdown, Cyber Commando Neon Tomorrow, Scrapper After the End,
   Ninja open.
 
+### Random bots wear variant looks (owner, 2026-11-27: "random variants for bots")
+
+A random bot dealt a character with variant looks wears one of that character's looks at random, the base included,
+and looks a player must unlock (Patchwork Polly) too:
+- **a character counts once:** the match's deal (`botLookOrder` over `castLooks`) is still of base looks, so Ziggy with
+  eleven looks is no likelier than anyone; the bot then wears one of the character's looks (`castVariants` in
+  botThemes.ts: `lookVariants`, core tier, no MapMaker-only looks), each as likely (`botVariantPick` in looks.ts);
+- **the same for everyone:** the pick is from the match seed and the bot's slot, so host and dedicated server agree;
+  clients get the variant id in the roster like any look and preload it;
+- **seed 1** (tests, `?test=1`) keeps the base, as the deal keeps roster order;
+- one bot a character while the pool lasts (the deal steps past characters other bots wear, by `lookBase`); a recast
+  keeps a bot in a variant of a character still allowed; a variant the bot-characters setting leaves out (a
+  Soldier-named zombie under Zombies & Skeletons) stays out;
+- names and sizes follow the look worn (Cowboy Ziggy is named Cowboy Ziggy and is small like Ziggy).
+Hand-picked bots (bot sets), Roulette and Random characters are unchanged. Tests: shared `botVariants.test.ts`.
+
 ### The 11-26 round (b): T-TreeFitty's looks, The Veiled Vanguard (owner, 2026-11-26)
 
 - **T-TreeFitty** (`core.t350`, id and place kept) is the owner's "Skinny T1000" now, with five variant looks like the

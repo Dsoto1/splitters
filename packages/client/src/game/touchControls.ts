@@ -1,6 +1,22 @@
 import type { InputState } from './input.ts';
 import { TOUCH_LAYOUT_EVENT, applyTouchLayout, touchLayout } from './touchLayout.ts';
 
+/** What the context buttons need to know, once a frame (session.ts). */
+export interface TouchContext {
+  /** Something to use in reach: a door, a button, a vehicle, an ammo box, a zipline (or getting out of a seat). */
+  use: boolean;
+  /** The gun in hand isn't full and there are rounds to load (or it is reloading). */
+  reload: boolean;
+  /** A grenade or other throwable in hand. */
+  throw: boolean;
+}
+
+/** A context button that has been wanted this recently (ms) stays: no blinking in and out at the edge of a door's reach. */
+const CONTEXT_LINGER_MS = 600;
+/** The first match on a phone points to the size settings once (localStorage). */
+const TOUCH_NOTE_KEY = 'tiletrigger.touchNote';
+const TOUCH_NOTE_MS = 7000;
+
 /** The pad's middle (this share of its radius) is the jump button; holding it this long crouches instead. */
 const PAD_CENTRE = 0.32;
 const LONG_PRESS_MS = 380;
@@ -19,13 +35,15 @@ const DEADZONE = 0.12;
  *
  *   left        the movement pad; its middle jumps (tap) or crouches (hold);
  *               pushed past its rim forward, you sprint
- *   right half  drag to look
+ *   elsewhere   drag to look (all the screen the pad and buttons leave free)
  *   Fire        hold to fire; drag it to aim while firing
  *   Aim         aim down the sights: held, or a tap to aim and another to stop (Aim: Hold / Toggle,
  *               combatPrefs.ts; Toggle by default on touch)
  *   Melee       a punch, kick or swing (Y)
  *   Dodge       a dodge-step the way the pad points; crouched or sprinting, a combat roll (V)
  *   Reload, Use (E: vehicles, doors, pickups), Throw (hold to aim, let go), Weapons (the wheel), Orders
+ *   (Reload, Use and Throw show only when they can act: a gun not full, something in reach, a grenade in hand;
+ *   they fade in and out, docs/MOBILE_AUDIT.md round 3)
  *   (Fireteams' order wheel, while you lead a squad), pause
  *   scorebar    tap to show the scoreboard, tap again to hide it
  *
@@ -46,11 +64,15 @@ export class TouchControls {
   /** The scorebar's tap target (proposal 6 in docs/MOBILE_AUDIT.md). */
   private readonly scoresBtn: HTMLButtonElement;
   private readonly joinBtn: HTMLButtonElement;
+  /** The context buttons, and when each was last wanted (performance.now()). */
+  private readonly context: { key: keyof TouchContext; btn: HTMLButtonElement; at: number }[];
+  private note: HTMLDivElement | null = null;
+  private noted = false;
 
   constructor(
     private readonly input: InputState,
     parent: HTMLElement,
-    private readonly hooks: { pause: () => void },
+    private readonly hooks: { pause: () => void; tips?: boolean },
   ) {
     const signal = this.abort.signal;
     this.el = document.createElement('div');
@@ -78,6 +100,13 @@ export class TouchControls {
     const reload = btn('tc-reload', 'Reload', 'Reload');
     const use = btn('tc-use', 'Use', 'Use: vehicles, doors, pickups');
     const thrw = btn('tc-throw', 'Throw', 'Hold to aim a throw, let go to throw');
+    // Shown when they can act (update): until the first frame says so, out of the way.
+    this.context = [
+      { key: 'use', btn: use, at: -1e9 },
+      { key: 'reload', btn: reload, at: -1e9 },
+      { key: 'throw', btn: thrw, at: -1e9 },
+    ];
+    for (const c of this.context) c.btn.classList.add('tc-idle');
     this.wheelBtn = btn('tc-wheel', 'Weapons', 'Weapon wheel');
     this.ordersBtn = btn('tc-orders', 'Orders', 'Squad orders (the order wheel)');
     this.ordersBtn.hidden = true;
@@ -327,6 +356,7 @@ export class TouchControls {
   setActive(on: boolean): void {
     if (this.el.hidden === !on) return;
     this.el.hidden = !on;
+    if (on) this.showNote();
     // Paused: the scoreboard a tap opened closes (the pause menu shows the scores).
     if (!on && this.input.scoreboardPinned) this.input.toggleScoreboard();
   }
@@ -337,8 +367,42 @@ export class TouchControls {
     if (w && this.joinBtn.hidden === w.join) this.joinBtn.hidden = !w.join;
   }
 
-  /** Once a frame: the toggle buttons show their state. */
-  update(): void {
+  /**
+   * The first match on a phone: one line pointing to the button settings, for a few seconds (never again after).
+   * Only where the match shows first-time tips (not in browser tests unless they ask).
+   */
+  private showNote(): void {
+    if (this.noted || !this.hooks.tips) return;
+    this.noted = true;
+    try {
+      if (localStorage.getItem(TOUCH_NOTE_KEY)) return;
+      localStorage.setItem(TOUCH_NOTE_KEY, '1');
+    } catch {
+      return;
+    }
+    const note = div('tc-note');
+    note.setAttribute('role', 'status');
+    note.textContent = 'Buttons too big or small? Options → Controls → Touch';
+    this.el.append(note);
+    this.note = note;
+    window.setTimeout(() => note.classList.add('gone'), TOUCH_NOTE_MS);
+    window.setTimeout(() => (note.remove(), this.note === note && (this.note = null)), TOUCH_NOTE_MS + 600);
+  }
+
+  /**
+   * Once a frame: the toggle buttons show their state, and the context buttons (Use, Reload, Throw) show when they can
+   * act. A button held down stays until let go; one wanted a moment ago stays a little longer (no flicker at a
+   * door's edge); they fade (CSS), never flash.
+   */
+  update(ctx?: TouchContext): void {
+    if (ctx) {
+      const now = performance.now();
+      for (const c of this.context) {
+        if (ctx[c.key]) c.at = now;
+        const idle = now - c.at > CONTEXT_LINGER_MS && !c.btn.classList.contains('on');
+        if (c.btn.classList.contains('tc-idle') !== idle) c.btn.classList.toggle('tc-idle', idle);
+      }
+    }
     this.aimBtn.classList.toggle('on', this.input.aimShown && this.input.locked);
     this.scoresBtn.classList.toggle('on', this.input.scoreboardPinned);
     this.wheelBtn.classList.toggle('on', this.input.wheelOpen && this.input.wheelKind === 'weapon');

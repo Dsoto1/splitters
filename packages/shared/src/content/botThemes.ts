@@ -5,7 +5,7 @@
  * keep its random bots to some groups and/or themes (MapDocument.botCast), and the host can change it
  * (MatchRules.botCast).
  */
-import { CHARACTER_BRANCHES, CHARACTER_GROUPS, CORE_LOOKS, PICKABLE_LOOKS, RETIRED_LOOKS, pickableLooks, type CharacterGroup, type CharacterLook } from './looks.ts';
+import { CHARACTER_BRANCHES, CHARACTER_GROUPS, CORE_LOOKS, PICKABLE_LOOKS, RETIRED_LOOKS, characterTier, lookVariants, pickableLooks, type CharacterGroup, type CharacterLook } from './looks.ts';
 
 /**
  * Every name theme's id and label, by kind of creature. IDs never change (maps and server rules name them); never
@@ -135,6 +135,21 @@ export function castLooksFrom(roster: readonly CharacterLook[], cast: BotCast | 
   if (!cast?.length) return pool;
   const out = pool.filter((l) => cast.some((x) => castHas(x, l, themeOf(l))));
   return out.length ? out : pool;
+}
+
+/**
+ * The looks a random bot dealt `base` may wear under a bot-characters setting (owner, 2026-11-27: "random variants
+ * for bots"): the character's looks, the base first (lookVariants), core tier, no MapMaker-only ones; a look a player
+ * unlocks (Patchwork Polly) too. A variant the setting leaves out (a Soldier-named zombie under Zombies & Skeletons)
+ * stays out, unless the setting fits none of the roster (castLooks' fallback: every look). Just the base for a
+ * character without variants.
+ */
+export function castVariants(cast: BotCast | undefined, base: string): readonly CharacterLook[] {
+  const own = builtInLook(base);
+  const looks = lookVariants(CORE_LOOKS, base).filter((l) => characterTier(l) === 'core' && !l.npcOnly);
+  if (!looks.length) return own ? [own] : [];
+  if (!cast?.length || !castAllows(cast, base)) return looks;
+  return looks.filter((l) => l.id === base || castAllows(cast, l.id));
 }
 
 // ---------------------------------------------------------------- bot types (Match Setup's tick-boxes)

@@ -26,7 +26,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 
 /** Every flow in e2e/run.mjs (run.mjs refuses to start if they differ). */
 export const FLOWS = [
-  'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
+  'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'iphone', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'colourvision', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
   'firstperson', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'dodgeroll', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'practicerange', 'crashreport', 'captions', 'chat', 'chathost',
 ];
@@ -187,7 +187,9 @@ const RULES = [
   // The rest of the client, by area.
   // Phones and tablets (on-screen controls, touch detection) and the weapon wheel.
   // (Fireteams' order wheel is the weapon wheel's ring, and has an Orders button on a phone.)
-  [/^packages\/client\/src\/(touchDevice|game\/(touchControls|touchLayout|weaponWheel|wheelCategories|weaponRequest))\.ts$/, ['mobile', 'offline', 'fireteams'], ['client']],
+  [/^packages\/client\/src\/(touchDevice|game\/(touchControls|touchLayout|weaponWheel|wheelCategories|weaponRequest))\.ts$/, ['mobile', 'iphone', 'offline', 'fireteams'], ['client']],
+  // Phones, round 3 (docs/MOBILE_AUDIT.md): no zoom, the Add to Home Screen line, the tab's live match and its rejoin.
+  [/^packages\/client\/src\/(phone|liveMatch)\.ts$/, ['iphone', 'mobile', 'online'], ['client']],
   // Phones' lamps (the tile mask, Room lights, the indoor fill on Low) and the kill feed's lines (docs/MOBILE_AUDIT.md).
   [/^packages\/client\/src\/game\/(clusteredLights|roomLights|indoorFill|feedLimit)\.ts$/, ['mobile', 'offline', ...FLASHING_FLOWS, 'setpieces'], ['client']],
   // (Every flow that opens Map settings: the coverage map's flow checks its Test map box there.)
@@ -216,7 +218,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/(chatBox|chatMute)\.ts$/, ['chat', 'chathost'], ['client']],
   [/^packages\/client\/src\/audio\//, ['offline', 'captions'], ['client']],
   [/^packages\/client\/src\/game\/(hostPanel|hostSetup|pauseMenu)\.ts$/, ['offline', 'weaponsets', 'hostgame', 'hostcontrols', 'party', 'lobby', 'dedicatedhost'], ['client']],
-  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost'], ['client']],
+  [/^packages\/client\/src\/game\/(peerLink|relay|hub|lan|netTransport|joinCode|party|mapVoteHud)\.ts$/, ['online', 'iphone', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost'], ['client']],
   // Community maps (docs/COMMUNITY_MAPS.md): your map library (MapMaker's Open…, Match setup's Your maps), the hub's
   // picks and reports, the host's end-of-match report.
   [/^packages\/client\/src\/localMaps\.ts$/, ['community', 'editor', 'lobby'], ['client']],

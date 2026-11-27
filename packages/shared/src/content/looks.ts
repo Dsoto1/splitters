@@ -802,6 +802,28 @@ export function botLookFrom(roster: readonly Pick<CharacterLook, 'id' | 'tier'>[
 /** A stable look for a Player Bot, spread across the core roster, in roster order (a match deals its own: botLookOrder). */
 export const lookForBot = (index: number): string => botLookFrom(PICKABLE_LOOKS, index);
 
+/** A look's base character: the base a variant names in `variantOf`, else the look itself (a base, a look without variants, an unknown id). */
+let variantBases: Map<string, string> | undefined; // built on first use
+export const lookBase = (id: string): string => (variantBases ??= new Map(ALL_LOOKS.filter((l) => l.variantOf).map((l) => [l.id, l.variantOf!]))).get(id) ?? id;
+
+/**
+ * Which of a character's looks a random bot wears (owner, 2026-11-27: "random variants for bots"): one of `looks`
+ * (the character's looks, the base first: lookVariants), each as likely, from the match seed and the bot's slot, so
+ * host and dedicated host agree. Seed 1 (tests and `?test=1`) keeps the base, as botLookOrder keeps the roster order.
+ */
+export function botVariantPick<T extends { id: string }>(looks: readonly T[], seed: number, slot: number): string | undefined {
+  if (looks.length < 2 || seed === 1) return looks[0]?.id;
+  let h = (Math.imul(seed | 0, 0x85ebca6b) ^ Math.imul(slot + 1, 0xc2b2ae35) ^ 0x27d4eb2f) >>> 0;
+  for (let i = 0; i < looks[0]!.id.length; i++) h = Math.imul(h ^ looks[0]!.id.charCodeAt(i), 0x01000193) >>> 0;
+  // murmur3's finaliser, so neighbouring slots and seeds land far apart.
+  h ^= h >>> 16;
+  h = Math.imul(h, 0x85ebca6b) >>> 0;
+  h ^= h >>> 13;
+  h = Math.imul(h, 0xc2b2ae35) >>> 0;
+  h ^= h >>> 16;
+  return looks[(h >>> 0) % looks.length]!.id;
+}
+
 /**
  * The order a match deals random bots' looks from a pool (owner, 2026-11-16: "make sure they are indeed random and
  * not the first 60+ in the list"): a shuffle seeded by the match seed, so host and dedicated host deal the same cast

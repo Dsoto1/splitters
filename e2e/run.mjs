@@ -6619,9 +6619,9 @@ async function mobileFlow(browser) {
   check(display.includes('low') && display.includes('performance'), `a phone starts on Low graphics and the Performance render scale (${display.join(', ')})`);
   await page.tap('.opt-nav button[data-tab="controls"]');
   check(await page.isVisible('.opt-sub:has-text("Touch")'), 'Options → Controls lists the touch controls on a phone');
-  // The touch layout (docs/MOBILE_AUDIT.md, proposal 3): size, opacity, left-handed and Aim, which a phone toggles by default.
+  // The touch layout (docs/MOBILE_AUDIT.md, proposal 3): size (Small on a phone until picked: round 3), opacity, left-handed and Aim, which a phone toggles by default.
   const touchOpts = await page.evaluate(() => ({ size: document.getElementById('opt-touch-size')?.value, opacity: document.getElementById('opt-touch-opacity')?.value, left: document.getElementById('opt-touch-left')?.checked, aim: document.getElementById('opt-touch-aim')?.value }));
-  check(touchOpts.size === 'medium' && touchOpts.opacity === '1' && touchOpts.left === false && touchOpts.aim === 'toggle', `Options → Controls → Touch: button size, opacity, left-handed and Aim (Toggle on a phone) (${JSON.stringify(touchOpts)})`);
+  check(touchOpts.size === 'small' && touchOpts.opacity === '1' && touchOpts.left === false && touchOpts.aim === 'toggle', `Options → Controls → Touch: button size, opacity, left-handed and Aim (Toggle on a phone) (${JSON.stringify(touchOpts)})`);
   await page.screenshot({ path: `${ARTIFACTS}/mobile-options.png` });
   await mobileCharacterSelect(page);
 
@@ -6770,6 +6770,188 @@ async function mobileFlow(browser) {
   await mobileLamps(browser);
 }
 
+/**
+ * An iPhone in Safari (docs/MOBILE_AUDIT.md, round 3; the owner's tester, 2026-11-27): the sizes a page gets with
+ * Safari's bars showing (the visible viewport, not the screen), touch and an iPhone's user agent, the notch and home
+ * bar as safe-area insets (CDP). The manifest and Apple's tags are served (Add to Home Screen opens full screen); the
+ * Add to Home Screen line shows once and stays dismissed; the safe areas apply; a double tap doesn't zoom, on the menu or
+ * in play; Small buttons by default; Use, Reload and Throw come and go with what they can do; look works anywhere free;
+ * upright asks to turn the phone; "Leave this game?" before a reload; a solo match says it can't be rejoined, and an
+ * online one is rejoined after page.reload() with the same place.
+ */
+const IPHONE_UA = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_1 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.1 Mobile/15E148 Safari/604.1';
+/** iPhone 13/14 with Safari's bars: 390 × 664 upright, 750 × 340 sideways (the screen 390 × 844); the SE 375 × 548. */
+const IPHONE_SIDEWAYS = { width: 750, height: 340 };
+async function iphoneContext(browser, viewport = IPHONE_SIDEWAYS, screen = { width: 844, height: 390 }) {
+  return browser.newContext({ viewport, screen, hasTouch: true, isMobile: true, deviceScaleFactor: 2, userAgent: IPHONE_UA });
+}
+
+async function iphoneFlow(browser) {
+  const ctx = await iphoneContext(browser);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  const cdp = await ctx.newCDPSession(page);
+  // Sideways, the notch on the left and the home bar along the bottom.
+  const inset = await cdp.send('Emulation.setSafeAreaInsetsOverride', { insets: { left: 47, right: 47, bottom: 21 } }).then(() => true, (e) => e.message);
+  const touch = (type, points, timestamp) => cdp.send('Input.dispatchTouchEvent', { type, touchPoints: points, ...(timestamp ? { timestamp } : {}) });
+  const doubleTap = async (x, y) => {
+    const t0 = Date.now() / 1000;
+    await touch('touchStart', [{ x, y, id: 90 }], t0);
+    await touch('touchEnd', [], t0 + 0.05);
+    await touch('touchStart', [{ x, y, id: 91 }], t0 + 0.15);
+    await touch('touchEnd', [], t0 + 0.2);
+  };
+  const scale = () => page.evaluate(() => window.visualViewport?.scale ?? 1);
+
+  // The manifest, its icons and Apple's tags.
+  await page.goto(`${CLIENT}/`);
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  const head = await page.evaluate(async () => {
+    const meta = (n) => document.querySelector(`meta[name="${n}"]`)?.content ?? null;
+    const href = document.querySelector('link[rel="manifest"]')?.getAttribute('href');
+    const res = href ? await fetch(href) : null;
+    const man = res?.ok ? await res.json().catch(() => null) : null;
+    const icons = man ? await Promise.all([...man.icons.map((i) => i.src), document.querySelector('link[rel="apple-touch-icon"]')?.getAttribute('href')].map((u) => fetch(u).then((r) => (r.ok && /image\/png/.test(r.headers.get('content-type') ?? '') ? 'ok' : `${u} ${r.status}`)))) : [];
+    return { viewport: meta('viewport'), capable: meta('apple-mobile-web-app-capable'), bar: meta('apple-mobile-web-app-status-bar-style'), theme: meta('theme-color'), display: man?.display, override: man?.display_override, orientation: man?.orientation, name: man?.name, icons };
+  });
+  check(/viewport-fit=cover/.test(head.viewport ?? '') && /maximum-scale=1/.test(head.viewport ?? ''), `the viewport covers the notch and doesn't scale (${head.viewport})`);
+  check(head.display === 'fullscreen' && head.override?.includes('standalone') && head.orientation === 'landscape' && head.name === 'Tile Trigger' && head.icons.length === 4 && head.icons.every((i) => i === 'ok'), `the web app manifest is served: full screen, landscape, its icons (${JSON.stringify(head)})`);
+  check(head.capable === 'yes' && head.bar === 'black-translucent' && !!head.theme, `Apple's Home Screen tags (${JSON.stringify({ capable: head.capable, bar: head.bar, theme: head.theme })})`);
+  // Safe areas: the menu's screens keep clear of the notch.
+  check(inset === true, `the browser takes safe-area insets (${inset})`);
+  const menuInset = await page.evaluate(() => getComputedStyle(document.querySelector('#menu .screens > .screen')).left);
+  check(menuInset === '47px', `the menu keeps clear of the notch (its screens start ${menuInset} in)`);
+  // The Add to Home Screen line: shown on an iPhone in Safari, dismissed, and not again.
+  const tip = await page.waitForSelector('#home-tip', { timeout: T(5000) }).then(() => page.evaluate(() => document.getElementById('home-tip').textContent), () => null);
+  check(/Add to Home Screen/.test(tip ?? ''), `an iPhone in Safari gets the Add to Home Screen line (${tip})`);
+  await page.waitForFunction(() => !document.getElementById('boot') || document.getElementById('boot').classList.contains('done'), null, { timeout: T(20000) }).catch(() => {});
+  await page.screenshot({ path: `${ARTIFACTS}/iphone-menu.png` });
+  if (tip) await page.tap('#home-tip button');
+  check(await page.waitForFunction(() => !document.getElementById('home-tip'), null, { timeout: T(3000) }).then(() => true, () => false), 'its × dismisses it');
+  // No zoom from a double tap on the menu.
+  await doubleTap(200, 200);
+  await page.evaluate(() => new Promise((r) => setTimeout(r, 400))); // wait-ok: a double-tap zoom animates over a few hundred ms
+  check((await scale()) === 1, `a double tap on the menu doesn't zoom (scale ${await scale()})`);
+
+  // A solo match: its controls, buttons and screens.
+  await page.goto(`${CLIENT}/?offline=training_range&test=1&god=1&bots=1&sim=main&leaveprompt=1`);
+  await page.waitForFunction(() => window.__cs?.local?.inventory?.size > 1 && window.__cs.phase() !== 'waiting' && window.__cs.phase() !== 'countdown', null, { timeout: T(60000) });
+  check(await page.evaluate(() => !document.getElementById('home-tip')), 'the Add to Home Screen line stays dismissed');
+  await fight(page, true);
+  await playWithoutMouse(page);
+  await page.waitForFunction(() => !document.getElementById('touch-ui').hidden, null, { timeout: T(5000) }).catch(() => {});
+  const lay = await page.evaluate(() => {
+    const r = (s) => document.querySelector(s).getBoundingClientRect();
+    return { scale: getComputedStyle(document.documentElement).getPropertyValue('--tc-scale').trim(), padL: r('#touch-ui .tc-pad').left, fireR: r('#touch-ui .tc-fire').right, look: r('#touch-ui .tc-look'), w: innerWidth, h: innerHeight };
+  });
+  check(lay.scale === '0.85', `a phone gets Small buttons by default (--tc-scale ${lay.scale})`);
+  check(lay.padL >= 47 + 17 && lay.fireR <= lay.w - 47 - 10, `the pad and Fire keep clear of the notch on both sides (pad left ${lay.padL}, Fire right ${Math.round(lay.fireR)} of ${lay.w})`);
+  check(lay.look.left <= 0 && lay.look.right >= lay.w && lay.look.height >= lay.h, `look takes all the free screen (${JSON.stringify(lay.look)})`);
+  // The context buttons: a full gun hides Reload; firing brings it in; a grenade brings Throw; standing by the buggy, Use.
+  const shown = () => page.evaluate(() => Object.fromEntries(['use', 'reload', 'throw'].map((k) => [k, !document.querySelector(`#touch-ui .tc-${k}`).classList.contains('tc-idle')])));
+  await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    window.__throwKind = me.throwable?.kind ?? 'frag';
+    me.throwable = null;
+  });
+  const idle = await page.waitForFunction(() => ['use', 'reload', 'throw'].every((k) => document.querySelector(`#touch-ui .tc-${k}`).classList.contains('tc-idle')), null, { timeout: T(5000) }).then(() => true, () => false);
+  const idleLook = await page.evaluate(() => ({ opacity: getComputedStyle(document.querySelector('#touch-ui .tc-reload')).opacity, events: getComputedStyle(document.querySelector('#touch-ui .tc-reload')).pointerEvents }));
+  check(idle && idleLook.events === 'none', `with a full gun, no grenade and nothing in reach, Use, Reload and Throw are faded out of the way (${JSON.stringify({ ...(await shown()), ...idleLook })})`);
+  await page.screenshot({ path: `${ARTIFACTS}/iphone-play-quiet.png` });
+  const fire = await page.locator('#touch-ui .tc-fire').boundingBox();
+  const mag = await page.evaluate(() => window.__cs.local.inventory.get(window.__cs.local.held)?.[0]);
+  await touch('touchStart', [{ x: fire.x + fire.width / 2, y: fire.y + fire.height / 2, id: 3 }]);
+  await page.waitForFunction((m) => window.__cs.local.inventory.get(window.__cs.local.held)?.[0] < m, mag, { timeout: T(8000) }).catch(() => {});
+  await touch('touchEnd', []);
+  const reloadIn = await page.waitForFunction(() => !document.querySelector('#touch-ui .tc-reload').classList.contains('tc-idle'), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(reloadIn, `firing a round brings Reload in (${JSON.stringify(await shown())})`);
+  await page.evaluate(() => (window.__match.slots[window.__cs.slot].throwable = { kind: window.__throwKind, count: 2 }));
+  const throwIn = await page.waitForFunction(() => !document.querySelector('#touch-ui .tc-throw').classList.contains('tc-idle'), null, { timeout: T(5000) }).then(() => true, () => false);
+  check(throwIn, `a grenade in hand brings Throw in (${JSON.stringify(await shown())})`);
+  await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    const m = window.__match.mounts.filter((x) => x.def.id === 'troop_buggy' && x.alive).sort((a, b) => Math.hypot(a.pos.x - me.move.pos.x, a.pos.z - me.move.pos.z) - Math.hypot(b.pos.x - me.move.pos.x, b.pos.z - me.move.pos.z))[0];
+    me.move = { pos: { x: m.pos.x + 2.5, y: m.pos.y + 0.3, z: m.pos.z }, velY: 0, grounded: false };
+  });
+  const useIn = await page.waitForFunction(() => !document.querySelector('#touch-ui .tc-use').classList.contains('tc-idle'), null, { timeout: T(8000) }).then(() => true, () => false);
+  check(useIn, `standing by the buggy brings Use in (${JSON.stringify(await shown())}; prompt ${await page.evaluate(() => document.getElementById('prompt').textContent)})`);
+  await page.screenshot({ path: `${ARTIFACTS}/iphone-play-context.png` });
+  // Walk away from it and spend the grenades: Use and Throw go again.
+  await page.evaluate(() => {
+    const me = window.__match.slots[window.__cs.slot];
+    me.move = { pos: { x: me.move.pos.x + 30, y: me.move.pos.y + 0.3, z: me.move.pos.z }, velY: 0, grounded: false };
+    me.throwable = null;
+  });
+  const gone = await page.waitForFunction(() => ['use', 'throw'].every((k) => document.querySelector(`#touch-ui .tc-${k}`).classList.contains('tc-idle')), null, { timeout: T(8000) }).then(() => true, () => false);
+  check(gone, `away from the buggy and out of grenades, Use and Throw fade out again (${JSON.stringify(await shown())})`);
+  // Look from the left half too (above the pad): all the free screen turns the view.
+  const yaw = await page.evaluate(() => window.__cs.input.yaw);
+  await touch('touchStart', [{ x: 160, y: 90, id: 20 }]);
+  for (let i = 1; i <= 8; i++) await touch('touchMove', [{ x: 160 + i * 18, y: 90, id: 20 }]);
+  await touch('touchEnd', []);
+  check(await page.waitForFunction((y) => Math.abs(window.__cs.input.yaw - y) > 0.2, yaw, { timeout: T(5000) }).then(() => true, () => false), 'a drag on the left half (off the pad) turns the view');
+  // A double tap in play: no zoom.
+  await doubleTap(lay.w * 0.55, lay.h * 0.4);
+  await page.evaluate(() => new Promise((r) => setTimeout(r, 400))); // wait-ok: a double-tap zoom animates over a few hundred ms
+  check((await scale()) === 1, `a double tap in play doesn't zoom (scale ${await scale()})`);
+  // Upright: the turn-sideways screen (iPhone 13/14 with the bars, then the SE).
+  for (const [w, h, label] of [[390, 664, 'iPhone 13/14'], [375, 548, 'iPhone SE']]) {
+    await page.setViewportSize({ width: w, height: h });
+    const up = await page.waitForFunction(() => getComputedStyle(document.getElementById('touch-rotate')).display !== 'none', null, { timeout: T(3000) }).then(() => true, () => false);
+    check(up, `${label} upright (${w}x${h}) shows "Turn your phone sideways"`);
+    await page.screenshot({ path: `${ARTIFACTS}/iphone-upright-${w}x${h}.png` });
+  }
+  await page.setViewportSize(IPHONE_SIDEWAYS);
+  // "Leave this game?" before a reload; then, the solo match gone, the menu says it can't be rejoined.
+  let asked = null;
+  page.once('dialog', (d) => {
+    asked = d.type();
+    void d.accept();
+  });
+  await page.evaluate(() => history.replaceState(null, '', '/?leaveprompt=1'));
+  await page.reload();
+  await page.waitForFunction(() => window.__front, null, { timeout: T(30000) });
+  check(asked === 'beforeunload', `a reload in a match asks "Leave this game?" first (${asked})`);
+  const said = await page.waitForFunction(() => /can't be rejoined/.test(document.getElementById('menu')?.textContent ?? '') && document.getElementById('menu').textContent.match(/[^.]*can't be rejoined/)[0], null, { timeout: T(15000) }).then((h) => h.jsonValue(), () => null);
+  check(!!said, `after the reload the menu says a solo match can't be rejoined (${said})`);
+  check(errors.length === 0, `iPhone: no page errors (${errors.join('; ')})`);
+  await ctx.close();
+  await iphoneRejoin(browser);
+}
+
+/** An online match on an iPhone: page.reload() goes straight back in, with the same place (docs/MOBILE_AUDIT.md, round 3). */
+async function iphoneRejoin(browser) {
+  const ctx = await iphoneContext(browser);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(e.message));
+  await page.goto(`${CLIENT}/?autojoin&name=Rita&server=ws://127.0.0.1:${SERVER_PORT}`);
+  await page.waitForFunction(() => window.__cs?.local && window.__cs.roster()?.length, null, { timeout: T(45000) });
+  const mine = () => page.evaluate(() => {
+    const me = window.__cs.roster()?.find((p) => p.slot === window.__cs.slot);
+    const sc = window.__cs.scores().find((x) => x.s === window.__cs.slot);
+    return { slot: window.__cs.slot, name: me?.name, kills: sc?.k ?? 0, deaths: sc?.d ?? 0 };
+  });
+  // A score to keep: the server's bots usually find a player standing still within a few seconds.
+  await page.waitForFunction(() => (window.__cs.scores().find((x) => x.s === window.__cs.slot)?.d ?? 0) > 0, null, { timeout: T(30000) }).catch(() => {});
+  const before = await mine();
+  const kept = await page.evaluate(() => sessionStorage.getItem('tiletrigger.liveMatch'));
+  check(/"kind":"server"/.test(kept ?? ''), `the tab remembers its online match (${kept})`);
+  // The reload lands on the plain address: no ?autojoin, the tab's memory alone brings it back.
+  await page.evaluate(() => history.replaceState(null, '', '/'));
+  await page.reload();
+  const banner = await page.waitForFunction(() => document.getElementById('reconnect')?.textContent ?? '', null, { timeout: T(20000) }).then((h) => h.jsonValue(), () => null);
+  check(/Rejoining your match/.test(banner ?? '') && /Cancel/.test(banner ?? ''), `the reload goes straight to "Rejoining your match…" with Cancel (${banner})`);
+  await page.screenshot({ path: `${ARTIFACTS}/iphone-rejoining.png` });
+  const back = await page.waitForFunction(() => window.__cs?.local && window.__cs.roster()?.length && !document.getElementById('reconnect'), null, { timeout: T(45000) }).then(() => true, () => false);
+  const after = back ? await mine() : null;
+  check(back && after.slot === before.slot && after.name === before.name && after.kills >= before.kills && after.deaths >= before.deaths, `after page.reload() the player is back in the same match, in the same place with the score kept (${JSON.stringify({ before, after })})`);
+  await page.screenshot({ path: `${ARTIFACTS}/iphone-rejoined.png` });
+  check(errors.length === 0, `iPhone rejoin: no page errors (${errors.join('; ')})`);
+  await ctx.close();
+}
+
 /** The phone sizes the menus are checked at (docs/MOBILE_AUDIT.md, proposals 2 and 4): upright and sideways. */
 const PHONE_SIZES = [[360, 780, 'small phone'], [412, 915, 'Pixel-like'], [384, 832, 'S25+-like']];
 
@@ -6801,7 +6983,7 @@ async function mobileTouchLayout(browser) {
     const look = r('#touch-ui .tc-look');
     return { w: innerWidth, padL: pad.left, padW: pad.width, fireR: fire.right, fireW: fire.width, lookR: look.right, opacity: getComputedStyle(document.querySelector('#touch-ui .tc-fire')).opacity, left: document.documentElement.classList.contains('tc-left') };
   });
-  check(lay.left && lay.padL > lay.w / 2 && lay.fireR < lay.w / 2 && lay.lookR <= lay.w / 2 + 1 && lay.fireW > 92 * 1.15 && Number(lay.opacity) === 0.5, `left-handed, Large, 50 %: the pad on the right, Fire on the left and bigger, look on the left half, drawn at half strength (${JSON.stringify(lay)})`);
+  check(lay.left && lay.padL > lay.w / 2 && lay.fireR < lay.w / 2 && lay.lookR >= lay.w - 1 && lay.fireW > 92 * 1.15 && Number(lay.opacity) === 0.5, `left-handed, Large, 50 %: the pad on the right, Fire on the left and bigger, look on all the free screen, drawn at half strength (${JSON.stringify(lay)})`);
   for (const [w, h, label] of [[915, 412, 'Pixel 7'], [832, 384, 'S25+ 832x384'], [658, 320, 'S9+ 658x320']]) {
     await page.setViewportSize({ width: w, height: h });
     await page.waitForFunction(([w, h]) => innerWidth === w && innerHeight === h, [w, h], { timeout: T(5000) }).catch(() => {});
@@ -17824,7 +18006,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, iphone: iphoneFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

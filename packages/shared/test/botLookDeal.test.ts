@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { DEFAULT_RULES, PICKABLE_LOOKS, botLookOrder, castLooks, initPhysics, lookTheme, validateBotSet, type MapDocument } from '../src/index.ts';
+import { DEFAULT_RULES, PICKABLE_LOOKS, botLookOrder, castLooks, initPhysics, lookBase, lookTheme, validateBotSet, type MapDocument } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -45,8 +45,9 @@ describe('random bots: a per-match deal of looks', () => {
     expect(ROSTER.length).toBeGreaterThanOrEqual(60);
     const list = botsOf(filled(31_337, 60));
     expect(list).toHaveLength(60);
-    expect(new Set(list.map((c) => c.look)).size).toBe(60);
-    for (const c of list) expect(ROSTER).toContain(c.look);
+    expect(new Set(list.map((c) => lookBase(c.look))).size).toBe(60);
+    // Each a character of the roster (a bot may wear one of its variant looks: botVariants.test.ts).
+    for (const c of list) expect(ROSTER).toContain(lookBase(c.look));
   });
 
   it('the spread covers the roster, not one end of it', () => {
@@ -56,8 +57,8 @@ describe('random bots: a per-match deal of looks', () => {
     const seen = new Set<string>();
     for (let seed = 2; seed < 42; seed++) {
       for (const c of botsOf(filled(seed * 7919, 12))) {
-        parts[Math.floor(ROSTER.indexOf(c.look) / quarter)]!++;
-        seen.add(c.look);
+        parts[Math.floor(ROSTER.indexOf(lookBase(c.look)) / quarter)]!++;
+        seen.add(lookBase(c.look));
       }
     }
     const total = parts.reduce((a, b) => a + b, 0);
@@ -65,7 +66,7 @@ describe('random bots: a per-match deal of looks', () => {
     for (const p of parts) expect(p / total).toBeLessThan(0.4);
     expect(seen.size).toBeGreaterThan(ROSTER.length * 0.9);
     // One match too: its 12 bots are not the first 12 of the roster.
-    const one = botsOf(filled(555, 12)).map((c) => ROSTER.indexOf(c.look));
+    const one = botsOf(filled(555, 12)).map((c) => ROSTER.indexOf(lookBase(c.look)));
     expect(Math.max(...one)).toBeGreaterThan(24);
   });
 
@@ -85,11 +86,11 @@ describe('random bots: a per-match deal of looks', () => {
     control.apply({ c: 'bots', cast: ['legends', 'machines'] });
     const pool = castLooks(['legends', 'machines']).map((l) => l.id);
     const list = botsOf(match);
-    for (const c of list) expect(pool).toContain(c.look);
-    expect(new Set(list.map((c) => c.look)).size).toBe(Math.min(list.length, pool.length));
+    for (const c of list) expect(pool).toContain(lookBase(c.look));
+    expect(new Set(list.map((c) => lookBase(c.look))).size).toBe(Math.min(list.length, pool.length));
     control.apply({ c: 'bots', cast: ['soldiers'] });
     const soldiers = castLooks(['soldiers']).map((l) => l.id);
-    for (const c of botsOf(match)) expect(soldiers).toContain(c.look);
-    expect(new Set(botsOf(match).map((c) => c.look)).size).toBe(Math.min(list.length, soldiers.length));
+    for (const c of botsOf(match)) expect(soldiers).toContain(lookBase(c.look));
+    expect(new Set(botsOf(match).map((c) => lookBase(c.look))).size).toBe(Math.min(list.length, soldiers.length));
   });
 });
