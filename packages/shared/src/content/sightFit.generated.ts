@@ -42,7 +42,7 @@ export const SIGHT_FITS: Readonly<Record<string, SightFit>> = {
 
 /** The weapons without a sight fit, and why (they keep the placement they had: view.ts). */
 export const SIGHT_EXCLUDED: Readonly<Record<string, string>> = {
-  'core.arc_caster': 'no sights on the model: a flat-topped kit gun',
+  'core.arc_caster': 'no iron sights: its own scope tube stands on its top: aims through the tube, its window in content/optics.json',
   'core.arena_disc': 'no sights on the model: a flat-topped disc launcher',
   'core.baseball_bat': 'melee or a tool: no aiming down sights',
   'core.battle_axe': 'melee or a tool: no aiming down sights',

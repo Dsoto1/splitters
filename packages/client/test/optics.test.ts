@@ -13,9 +13,10 @@ import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
  * made here too, after a look at the gun on the sight sheet (`?mode=sights`).
  */
 const CARRIES: Record<OpticKindId, string[]> = {
-  irons: ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg'],
-  // The weapons intake's guns (owner, 2026-11-22, "2a"): the Woodland SMG on its top, the rest in their models' own sights.
-  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.twin_rifle', 'core.woodland_smg'],
+  // The Woodland SMG down its own iron sights (owner, 2026-11-27: a red dot stood on its rear sight, "two sights stacked").
+  irons: ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
+  // The weapons intake's guns (owner, 2026-11-22, "2a"): in their models' own sights.
+  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.twin_rifle'],
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
   scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman', 'core.nova6'],
   sniper: ['core.railgun', 'core.sniper'],
@@ -46,12 +47,11 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.machine_pistol': ['irons', 'reddot'],
   'core.laser_blaster': ['irons', 'reddot'],
   'core.bubble_blaster': ['reddot', 'holo'],
-  'core.arc_caster': ['holo', 'reddot'],
   'core.flak': ['holo', 'reddot'],
   'core.disc_launcher': ['holo', 'reddot'],
   'core.arena_disc': ['holo', 'reddot'],
-  'core.woodland_smg': ['reddot', 'irons', 'holo', 'x2'],
   // In the model's own sight (its window): the mark changes, nothing is built.
+  'core.arc_caster': ['holo', 'reddot'],
   'core.desert_carbine': ['reddot', 'holo'],
   'core.twin_rifle': ['reddot', 'holo'],
   'core.blaster_x42': ['reddot', 'holo'],
@@ -120,6 +120,44 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
       // The model's own optic draws the reticle its kind names.
       if (def.view.optic) expect(def.view.optic.reticle, id).toBe(OPTIC_KINDS[w.default].reticle);
     }
+  });
+
+  it('a gun shows its own sight or an added one, never both (owner, 2026-11-27, "two sights stacked")', () => {
+    // content/optics.json's `hasSight`: what each gun's model has of its own, read off it on the sight sheet.
+    const file = JSON.parse(readFileSync(new URL('../../../content/optics.json', import.meta.url), 'utf8')) as { weapons: Record<string, { hasSight?: string | false }> };
+    const built = (k: OpticKindId) => ['tube', 'frame', 'magtube'].includes(OPTIC_KINDS[k].housing);
+    const own = Object.keys(file.weapons).filter((id) => file.weapons[id]!.hasSight === 'optic').sort();
+    expect(own).toEqual(['core.arc_caster', 'core.battle_rifle', 'core.blaster_x42', 'core.crossbow', 'core.desert_carbine', 'core.lever_action', 'core.marksman', 'core.nova6', 'core.plasma', 'core.railgun', 'core.sniper', 'core.twin_rifle']);
+    for (const [id, e] of Object.entries(file.weapons)) {
+      expect(['optic', 'irons', false], `${id}: hasSight`).toContain(e.hasSight);
+      const w = WEAPON_OPTICS[id]!;
+      if (e.hasSight !== 'optic') {
+        expect(w.window, `${id}: a window is the model's own sight`).toBeUndefined();
+        continue;
+      }
+      for (const k of w.allowed) {
+        // Its own sight takes a red dot's or a holographic mark in its window; nothing is built on the gun.
+        if (built(k)) expect(!!w.window && OPTIC_KINDS[k].housing !== 'magtube', `${id}: a code-built ${k} on a gun with its own sight`).toBe(true);
+        const o = opticOf(getWeapon(id), k)!;
+        expect(builtHousing(o) && !o.window, `${id} ${k}: a housing would be built`).toBe(false);
+      }
+    }
+    // The two the owner saw: the Woodland SMG down its iron sights only, the Arc Caster through its own scope tube.
+    expect(WEAPON_OPTICS['core.woodland_smg']).toMatchObject({ default: 'irons', allowed: ['irons'] });
+    expect(WEAPON_OPTICS['core.arc_caster']!.window).toBeDefined();
+    expect(WEAPON_OPTICS['core.arc_caster']!.mount).toBeUndefined();
+  });
+
+  it('a saved pick a gun no longer offers falls back to its default', () => {
+    // A player who picked the Woodland SMG's red dot before 2026-11-27 aims down its iron sights; nothing is built.
+    expect(opticOf(getWeapon('core.woodland_smg'), 'reddot')!.id).toBe('irons');
+    expect(opticOf(getWeapon('core.woodland_smg'), 'x2')!.id).toBe('irons');
+    expect(opticChoices(getWeapon('core.woodland_smg'))).toEqual([]);
+    // The Arc Caster's red dot is its mark in the model's tube.
+    const arc = opticOf(getWeapon('core.arc_caster'), 'reddot')!;
+    expect(arc.id).toBe('reddot');
+    expect(arc.window).toBeDefined();
+    expect(arc.mount).toBeUndefined();
   });
 
   it('no gun\'s aimed zoom changed: each optic matches the zoom its gun already had', () => {
