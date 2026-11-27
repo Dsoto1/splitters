@@ -164,7 +164,7 @@ import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
-import { DROP_LIE_HEIGHT, PICKUP_HOVER, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
+import { DROP_LIE_HEIGHT, PICKUP_HOVER, dropFall, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
 import { PickupBatch } from './pickupBatch.ts';
 import { setGlow } from './glow.ts';
 import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel, lootOutlineAlpha, lootOutlineRadii } from './lootGlow.ts';
@@ -539,7 +539,9 @@ export class GameView {
   /** When pickups were last updated (ms; their glows ease by the time since). */
   private pickupsAt = 0;
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
-  private readonly drops = new Map<number, { root: TransformNode; item: string }>();
+  private readonly drops = new Map<number, { root: TransformNode; item: string; /** Height drawn (ground under it, or falling to it). */ y: number; vy: number }>();
+  /** When updateDrops last ran (ms). */
+  private dropsAt = 0;
   /** `at`: where the host has it (sampled); `stream`: a stream's piece, drawn from its shooter's muzzle (streamBlend.ts). */
   private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number; at: Vector3; stream?: StreamStart }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
@@ -4029,28 +4031,41 @@ export class GameView {
   }
 
   /**
-   * Weapons dropped by the fallen, as the latest snapshot lists them ([drop ID, item ID, x, y, z, yaw]): new ones
-   * appear lying on the ground, gone ones are removed.
+   * Weapons dropped by the fallen, as the latest snapshot lists them ([drop ID, item ID, x, y, z, yaw, and for a
+   * moment after it landed the height it fell from]): new ones appear and fall to where the server put them (a short
+   * fall under gravity, from where their owner died), one whose spot drops (what it lay on gone) falls to it, gone ones
+   * are removed. `now`: ms (performance.now()).
    */
-  updateDrops(drops: readonly (readonly [number, string, number, number, number, number])[]): void {
+  updateDrops(drops: readonly (readonly [number, string, number, number, number, number, number?])[], now = performance.now()): void {
     if (!drops.length && !this.drops.size) return;
+    const dt = Math.min(0.1, Math.max(0, (now - this.dropsAt) / 1000));
+    this.dropsAt = now;
     const live = new Set<number>();
-    for (const [id, item, x, y, z, yaw] of drops) {
+    for (const [id, item, x, y, z, yaw, from] of drops) {
       live.add(id);
-      const had = this.drops.get(id);
-      if (had && had.item === item) continue;
-      // Never the materials: they're shared (see updatePickups).
-      had?.root.dispose(false, false);
-      const root = createPickupVisual(this.scene, this.models, item, `drop_${id}`, true, true);
-      root.position.set(x, y + DROP_LIE_HEIGHT, z);
-      root.rotation.y = yaw;
-      this.drops.set(id, { root, item });
+      let d = this.drops.get(id);
+      if (!d || d.item !== item) {
+        // Never the materials: they're shared (see updatePickups).
+        d?.root.dispose(false, false);
+        const root = createPickupVisual(this.scene, this.models, item, `drop_${id}`, true, true);
+        root.rotation.y = yaw;
+        d = { root, item, y: from !== undefined && from > y ? from : y, vy: 0 };
+        this.drops.set(id, d);
+      }
+      // Falling to its spot (DROP_GRAVITY), or lying on it.
+      dropFall(d, y, dt);
+      d.root.position.set(x, d.y + DROP_LIE_HEIGHT, z);
     }
     for (const [id, d] of this.drops) {
       if (live.has(id)) continue;
       d.root.dispose(false, false);
       this.drops.delete(id);
     }
+  }
+
+  /** Dropped weapons' heights drawn now, above the ground they lie on (tests): [drop ID, y]. */
+  dropHeights(): [number, number][] {
+    return [...this.drops].map(([id, d]) => [id, d.y]);
   }
 
   /** Dropped weapons drawn now: [drop ID, item ID] (tests). */

@@ -76,7 +76,7 @@ import {
 import { dealPickup, rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
-import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
+import { DROP_CLIMB, DROP_FALL_TICKS, DROP_LIE_SECONDS, DROP_REACH, DROP_SETTLE_TICKS, DROP_SHORE, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
 import { eyePoint, eyeScaleOf, rollRaise, dodgeKindOf } from './moves.ts';
 import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
@@ -7035,10 +7035,10 @@ export class Match {
     const item = w && dropItem(w.def);
     if (!w || !item) return;
     const at = c.move.pos;
-    const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.5, z: at.z }, { x: 0, y: -1, z: 0 }, DROP_REACH);
-    if (!down) return;
+    const pos = this.dropSpot(at);
+    if (!pos) return;
     if (this.drops.length >= MAX_DROPS) this.drops.splice(0, this.drops.length - MAX_DROPS + 1);
-    this.drops.push({ id: this.nextDropId++, def: w.def, item, mag: w.mag, reserve: w.reserve, alt: w.alt, pos: { x: at.x, y: at.y + 0.5 - down.dist, z: at.z }, yaw: c.yaw, until: this.tick + Math.round(DROP_LIE_SECONDS * TICK_RATE) });
+    this.drops.push({ id: this.nextDropId++, def: w.def, item, mag: w.mag, reserve: w.reserve, alt: w.alt, pos, yaw: c.yaw, until: this.tick + Math.round(DROP_LIE_SECONDS * TICK_RATE), ...this.dropFall(at.y, pos.y) });
     // (The fallen's inventory stays as it was until they respawn with a fresh loadout: the rest is recycled.)
   }
 
@@ -7067,16 +7067,80 @@ export class Match {
     return true;
   }
 
-  /** Dropped weapons lying past their time go. */
+  /** A drop's fall (shown by clients for DROP_FALL_TICKS): from `from` down to `to`, when it fell any way. */
+  private dropFall(from: number, to: number): Pick<WeaponDrop, 'fromY' | 'fellAt'> {
+    return from - to > 0.05 ? { fromY: from, fellAt: this.tick } : {};
+  }
+
+  /** Vehicles' and turrets' boxes: a drop never lies on them (they drive off or go). */
+  private readonly mountBody = (handle: number): boolean => this.mounts.some((m) => m.body.handle === handle);
+
+  /**
+   * Where a weapon dropped at `at` lies (owner, 2026-11-27): on the first walkable top surface under the spot (a
+   * floor inside a building, the ground under a vehicle's seat, under a mid-air death), never on a vehicle or a
+   * turret; in water or with nothing under it (off the map), the nearest dry spot within DROP_SHORE that is in sight
+   * of the spot, about level with it; else null (no drop).
+   */
+  private dropSpot(at: Vec3): Vec3 | null {
+    const lies = (x: number, y: number, z: number, reach: number): Vec3 | null => {
+      const d = this.physics.dropGround({ x, y, z }, reach, this.mountBody);
+      if (d === null) return null;
+      const p = { x, y: y - d, z };
+      return this.liquids.length && liquidAt(this.liquids, { x, y: p.y + 0.15, z }) ? null : p;
+    };
+    const top = at.y + 0.5;
+    const under = lies(at.x, top, at.z, DROP_REACH);
+    if (under) return under;
+    // In water or over nothing: the nearest dry floor around, in sight and about level (a shore, the ledge fallen off).
+    const wet = this.liquids.length ? liquidAt(this.liquids, { x: at.x, y: at.y + 0.15, z: at.z }) : null;
+    const level = wet ? Math.max(at.y, wet.max.y) : at.y;
+    for (let r = 1; r <= DROP_SHORE; r++) {
+      let best: Vec3 | null = null;
+      let bestD = Infinity;
+      const n = 8 + r * 4;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const x = at.x + Math.cos(a) * r;
+        const z = at.z + Math.sin(a) * r;
+        const p = lies(x, level + DROP_CLIMB, z, DROP_CLIMB * 2);
+        if (!p || !this.physics.lineOfSight({ x: at.x, y: level + 0.6, z: at.z }, { x, y: p.y + 0.6, z })) continue;
+        const d = Math.abs(p.y - level);
+        if (d < bestD) {
+          best = p;
+          bestD = d;
+        }
+      }
+      if (best) return best;
+    }
+    return null;
+  }
+
+  /**
+   * Dropped weapons lying past their time go. Twice a second each is checked for what it lies on: gone (a crate
+   * broken, a door swung, a wall knocked down), it falls to what is under it now (or goes, with nothing).
+   */
   private stepDrops(): void {
     if (!this.drops.length) return;
+    if (this.tick % DROP_SETTLE_TICKS === 0) {
+      for (const d of this.drops) {
+        if (this.physics.dropGround({ x: d.pos.x, y: d.pos.y + 0.3, z: d.pos.z }, 0.45, this.mountBody) !== null) continue;
+        const pos = this.dropSpot({ x: d.pos.x, y: d.pos.y - 0.2, z: d.pos.z });
+        if (!pos) {
+          d.until = -1;
+          continue;
+        }
+        Object.assign(d, this.dropFall(d.pos.y, pos.y));
+        d.pos = pos;
+      }
+    }
     const keep = this.drops.filter((d) => d.until > this.tick);
     if (keep.length !== this.drops.length) this.drops.splice(0, this.drops.length, ...keep);
   }
 
   /** Dropped weapons lying now, for the snapshot (`dw`): [id, item ID, x, y, z, yaw]. */
-  dropSnapshots(): [number, string, number, number, number, number][] {
-    return this.drops.map((d) => [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw)]);
+  dropSnapshots(): ([number, string, number, number, number, number] | [number, string, number, number, number, number, number])[] {
+    // (A drop that just fell carries the height it fell from for a moment: clients show the fall.)
+    return this.drops.map((d) => (d.fromY !== undefined && d.fellAt !== undefined && this.tick - d.fellAt < DROP_FALL_TICKS ? [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw), r3(d.fromY)] : [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw)]));
   }
 
   /** Work out what a pickup rolls from (the weapon set, its own category, or the host's mix-up), and roll it afresh when that changed. */
