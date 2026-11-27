@@ -95,3 +95,10 @@ door wall widened to 3 m. It is set on (0, -9) first.
    onto the lane.
 5. The 7c double door: **(a) on (0, -9) in this step** (pick) / (b) on every Stair End Bay with that door
    (DeKoven south, Welles east) / (c) later.
+
+## Owner's answers (2026-11-27)
+1. The new **"Clock Tower, forward"** set piece (two cells deep, the tower half a cell out, a back hall behind), in the palette for any map; no format change.
+2. **Layout A**: the skyway runs on through the Carriageway's opened east side into the back hall, then the bathroom hall and Welles, at 4 m and 8 m.
+3. **Remove the Carriageway's swinging west door** (`setpiece_khjt0z69qh` part 2, `overrides.hide`); keep the propped one.
+4. Back hall's ground floor: not asked (default: closed).
+5. The **7c double door at the skyway's west end** (Stair End Bay at (0, -9), first floor), in this step.
