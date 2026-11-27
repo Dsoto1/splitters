@@ -22,6 +22,7 @@ import { PROP_CONTACTS } from '@tiletrigger/shared/propContacts';
 import { ScenarioVisuals, placeScenarioNode } from '../game/scenarioVisuals.ts';
 import { applyWorldGrade } from '../game/graphicsSettings.ts';
 import { MapStyler, boxVertexData } from '../mapMeshes.ts';
+import { BreakWallMarks } from './breakWallMarks.ts';
 import { buildRoadMeshes, disposeRoadMeshes } from '../roadMeshes.ts';
 import { buildGuideLines, buildPathMeshes, disposePathMeshes } from '../pathMeshes.ts';
 import { BackdropVisuals } from '../backdrop.ts';
@@ -92,6 +93,8 @@ export class EditorView {
   private weatherKey = '';
   /** The border along the boundary (live preview of the Border setting). */
   readonly border: BorderVisuals;
+  /** View → Breakable walls: the editor-only mark on walls that break (breakWallMarks.ts). */
+  readonly breakMarks: BreakWallMarks;
   private readonly foliage: FoliageVisuals;
   /** The ground as glass while a level below it is edited (groundGlass.ts). */
   private readonly glass: GroundGlass;
@@ -179,6 +182,7 @@ export class EditorView {
     this.models = new ModelLibrary(this.scene);
     this.city = new CityVisuals(this.models, 'edcity');
     this.border = new BorderVisuals(this.scene, this.styler, this.models);
+    this.breakMarks = new BreakWallMarks(this.scene);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.glass = new GroundGlass(this.scene);
     this.icons = new SmallIcons(this.scene, (mesh, id) => {
@@ -442,6 +446,7 @@ export class EditorView {
       this.guideLines = buildGuideLines(this.scene, doc, this.shownTerrain, 'edguide');
     }
     this.backdrop.build(doc, boxes);
+    this.breakMarks.update(boxes);
     this.showWeather(doc);
     this.border.update(doc, boxes);
     void this.city.setMap(visible);
@@ -527,6 +532,8 @@ export class EditorView {
     this.overlaps = mesh;
   }
 
+  private photoOn = false;
+
   /** What photoMode hid, to bring back. */
   private photoHidden: TransformNode[] = [];
 
@@ -538,6 +545,8 @@ export class EditorView {
   photoMode(on: boolean): void {
     for (const n of this.photoHidden) n.setEnabled(true);
     this.photoHidden = [];
+    this.photoOn = on;
+    this.breakMarks.setHidden(on || this.hiddenLayers.has('tile'));
     if (!on) return;
     const aids: (TransformNode | undefined)[] = [this.trace?.mesh, this.area.root, this.overlaps, this.brushRing, this.gizmo, this.gizmoHandle, this.ring, this.hover, this.ghost, this.faceHighlight, this.propGhost?.node, this.pieceGhost?.root, ...this.pieceMarks, ...this.outlines, ...this.pickBoxes, ...this.icons.meshes, this.scene.getMeshByName('measureLines') ?? undefined, ...this.scene.meshes.filter((m) => m.name.startsWith('edMapTest'))];
     for (const m of this.markers.values()) aids.push(m.ring, m.key === 'spawn' ? m.node : undefined);
@@ -805,6 +814,7 @@ export class EditorView {
   applyTileLayer(): void {
     const on = !this.hiddenLayers.has('tile');
     for (const m of [...this.mapMeshes, ...this.dimMeshes]) m.setEnabled(on);
+    this.breakMarks.setHidden(!on || this.photoOn);
   }
 
   /** Move gizmo at the selection: X red, Y green, Z blue, drawn over everything. Null hides it. */

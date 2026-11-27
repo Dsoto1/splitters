@@ -86,6 +86,17 @@ function modelLength(model: TransformNode): number {
 export const PICKUP_HOVER = 0.55;
 /** A dropped weapon lies on its side: its centre this high above the ground. */
 export const DROP_LIE_HEIGHT = 0.08;
+/** A dropped weapon falls to the ground under where its owner died at this (m/s²): a short fall, a few tenths of a second. */
+export const DROP_GRAVITY = 14;
+
+/** A dropped weapon's fall as drawn: its height `y` and speed down `vy`, moved on `dt` s toward the ground at `to`. */
+export function dropFall(d: { y: number; vy: number }, to: number, dt: number): void {
+  if (d.y > to) {
+    d.vy += DROP_GRAVITY * dt;
+    d.y = Math.max(to, d.y - d.vy * dt);
+  } else d.y = to;
+  if (d.y <= to) d.vy = 0;
+}
 
 const materials = new WeakMap<Scene, Map<string, StandardMaterial>>();
 

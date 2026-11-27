@@ -44,7 +44,6 @@ import {
   setupFamily,
   SKIES,
   SKY_IDS,
-  TEAM_PRESETS,
   teamLayoutLabel,
   TERRAIN_MATERIAL_LABELS,
   validBotCast,
@@ -81,6 +80,7 @@ import type { EditorApp } from './editorApp.ts';
 import { button, escapeHtml, numberInput, row, small, text } from './editorDom.ts';
 import { CARD_HIDDEN_KINDS, SHIPPED_IDS } from './editorParts.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
+import { teamLayoutChoices } from './teamLayouts.ts';
 import { ALSO_MODES, BOUNDARY_CHOICES, BOUNDARY_HEIGHT, BOUNDARY_MARGIN, MAIN_MODES } from './newMapSetup.ts';
 import { removedModesRow } from './removedModes.ts';
 import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';
@@ -203,9 +203,16 @@ export class MapProperties {
     const head = document.createElement('h3');
     head.textContent = `Teams · ${teamLayoutLabel(sizes)}`;
     el.append(head);
-    // Layouts as chips (the one in use lit), each team's size a stepper: Match Setup's Teams picker.
-    const presets = chips('Layout', 'ed-team-preset', TEAM_PRESETS.map((p) => [p.join(','), teamLayoutLabel(p)] as const), sizes.join(','), (v) => set('Set teams', v.split(',').map(Number)));
-    for (const b of presets.querySelectorAll<HTMLElement>('button')) b.title = `${b.dataset.value!.split(',').reduce((a, n) => a + Number(n), 0)} players`;
+    // The common layouts as chips (the one in use lit; an odd one the map was saved with first, lit), each team's
+    // size a stepper for any other mix: Match Setup's Teams picker.
+    const choices = teamLayoutChoices(sizes);
+    const presets = chips('Layout', 'ed-team-preset', choices.map((c) => [c.sizes.join(','), teamLayoutLabel(c.sizes)] as const), sizes.join(','), (v) => set('Set teams', v.split(',').map(Number)));
+    for (const b of presets.querySelectorAll<HTMLElement>('button')) {
+      const players = b.dataset.value!.split(',').reduce((a, n) => a + Number(n), 0);
+      const odd = choices.find((c) => c.odd && c.sizes.join(',') === b.dataset.value);
+      if (odd) b.dataset.odd = '1';
+      b.title = odd ? `This map's own layout: ${players} players (other mixes: the team steppers below)` : `${players} players`;
+    }
     el.append(presets);
     const teams = mapTeams(doc, sizes.length);
     teams.forEach((t, i) => {

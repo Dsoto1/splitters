@@ -728,8 +728,11 @@ export type ServerMessage =
       pk: string[];
       /** Random weapon pickups holding something other than what was placed: [pickup ID, item ID] (absent: none). */
       pw?: [string, string][];
-      /** Weapons dropped by the fallen (MatchRules.dropWeapons), lying now: [drop ID, item ID, x, y, z, yaw] (absent: none). */
-      dw?: [number, string, number, number, number, number][];
+      /**
+       * Weapons dropped by the fallen (MatchRules.dropWeapons), lying now: [drop ID, item ID, x, y, z, yaw] (absent:
+       * none), and for half a second after it landed the height it fell from (clients show the fall; older ones ignore it).
+       */
+      dw?: ([number, string, number, number, number, number] | [number, string, number, number, number, number, number])[];
       /** Ground hazards and fields (oil, fire, toxic clouds, goo, singularities), when any. */
       zn?: ZoneSnapshot[];
       /** Turrets, sentries and vehicles, when the map has any. */
