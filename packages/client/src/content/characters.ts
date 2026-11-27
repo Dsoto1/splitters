@@ -237,7 +237,7 @@ export class CharacterLibrary {
   /** A file's container: from the fetcher's bytes when there is one (its own fetch if that fails), else by URL. */
   private loadUrl(url: string, rootUrl: string): Promise<AssetContainer> {
     // A match's characters download before its other models (loadOrder.ts).
-    const byUrl = () => (this.order ? this.order.first(() => LoadAssetContainerAsync(url, this.scene, GLB)) : LoadAssetContainerAsync(url, this.scene, GLB));
+    const byUrl = () => (this.order ? this.order.first((bytesIn) => LoadAssetContainerAsync(url, this.scene, { ...GLB, onProgress: (e) => e.lengthComputable && e.loaded >= e.total && bytesIn() })) : LoadAssetContainerAsync(url, this.scene, GLB));
     if (!this.fetcher) return byUrl();
     return this.fetcher.get(url, 'now').then(
       (buf) => (this.fetcher?.take(url), LoadAssetContainerAsync(new Uint8Array(buf), this.scene, { ...GLB, rootUrl })),

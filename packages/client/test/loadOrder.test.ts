@@ -170,3 +170,19 @@ describe('LoadOrder: once the match has started', () => {
     expect(log).toEqual(['bot', 'gun1', 'newlook', 'gun2', 'gun3']);
   });
 });
+
+describe('LoadOrder: a character file holds the rest only while its bytes come in', () => {
+  it('its parse and transcode (bytesIn called) no longer hold the guns', async () => {
+    const order = new LoadOrder(1, () => 0);
+    const log: string[] = [];
+    order.hold(90000, 0);
+    let bytesIn!: () => void;
+    void order.first((b) => ((bytesIn = b), log.push('body'), new Promise(() => {})));
+    void order.other(download(log, 'gun1').start);
+    void order.other(download(log, 'gun2').start);
+    expect(log).toEqual(['body', 'gun1']);
+    bytesIn();
+    await flush();
+    expect(log).toEqual(['body', 'gun1', 'gun2']);
+  });
+});

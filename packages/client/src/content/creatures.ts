@@ -50,7 +50,7 @@ export class CreatureLibrary {
     let p = this.files.get(kind);
     if (!p) {
       const url = versioned(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`);
-      p = (this.order ? this.order.first(() => LoadAssetContainerAsync(url, this.scene, GLB)) : LoadAssetContainerAsync(url, this.scene, GLB)).then(freeIfSceneGone(this.scene));
+      p = (this.order ? this.order.first((bytesIn) => LoadAssetContainerAsync(url, this.scene, { ...GLB, onProgress: (e) => e.lengthComputable && e.loaded >= e.total && bytesIn() })) : LoadAssetContainerAsync(url, this.scene, GLB)).then(freeIfSceneGone(this.scene));
       this.files.set(kind, p);
     }
     return p;

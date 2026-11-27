@@ -65,20 +65,27 @@ export class LoadOrder {
     return this.waiting.length;
   }
 
-  /** A character file's download: it starts at once, and while it runs others are held (during a hold). */
-  first<T>(start: () => Promise<T>): Promise<T> {
-    if (this.settled) return start();
+  /**
+   * A character file's download: it starts at once, and while its bytes come in others are held (during a hold).
+   * `start` is handed `bytesIn`, to call once the file's bytes are all in (its parse and texture transcoding don't use
+   * the line: a slow machine's transcodes held the guns back half a minute); else the hold lasts till it settles.
+   */
+  first<T>(start: (bytesIn: () => void) => Promise<T>): Promise<T> {
+    if (this.settled) return start(() => {});
     this.firsts++;
-    let p: Promise<T>;
-    try {
-      p = start();
-    } catch (e) {
-      p = Promise.reject(e);
-    }
+    let counted = true;
     const done = () => {
+      if (!counted) return;
+      counted = false;
       this.firsts--;
       this.pump();
     };
+    let p: Promise<T>;
+    try {
+      p = start(done);
+    } catch (e) {
+      p = Promise.reject(e);
+    }
     p.then(done, done);
     return p;
   }

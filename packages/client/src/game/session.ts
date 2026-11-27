@@ -2553,11 +2553,20 @@ export class GameSession {
         this.map = loaded.map;
         this.hostPanel.setMap(loaded.map);
         // The characters' files first, from here (the map asks for its props and every gun as it builds): prepareMatch.
-        // The guns you start with go first among the guns (buildMap warms every gun after them).
+        // The match's own guns (what everyone starts with, the set's, the pickups') go with the map's props, ahead of
+        // the rest (buildMap warms every gun in the game after them): a bot whose gun was still waiting stood unarmed.
         this.view.loadOrder.hold(MATCH_CHARACTERS_FIRST_MS);
         {
           const set = weaponSetInPlay(msg.rules, loaded.map);
-          for (const id of set ? setSpawnWeapons(set, msg.rules) : msg.rules.startingWeapons) void this.view.models.load(getWeapon(id).view.model).catch(() => undefined);
+          const ids = new Set([...(set ? setSpawnWeapons(set, msg.rules) : msg.rules.startingWeapons), ...(set ? (setWeaponsInPlay(set, msg.rules) ?? []) : [])]);
+          for (const e of loaded.map.entities) {
+            if (e.kind !== 'pickup') continue;
+            const fx = getItem(e.item)?.effect;
+            const pool = setPickupPool(set, e, !!msg.rules.mixPickups);
+            if (fx?.kind === 'weapon' && !pool) ids.add(fx.weapon);
+            for (const item of pool ?? []) if (item.effect.kind === 'weapon') ids.add(item.effect.weapon);
+          }
+          for (const id of ids) void this.view.models.load(getWeapon(id).view.model, true).catch(() => undefined);
         }
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
