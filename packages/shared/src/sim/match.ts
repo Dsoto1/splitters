@@ -117,9 +117,9 @@ import { TrackDriver, type DrivenVehicle } from './trackDriver.ts';
 import { vehicleGuides, type Guide } from '../bots/guides.ts';
 import { ambientCarEntities, trackGeometry, type TrackGeometry } from '../map/track.ts';
 import { chargeIntoMelee } from './creatures.ts';
-import { DEFAULT_LOOK, botLookOrder, getLook } from '../content/looks.ts';
+import { DEFAULT_LOOK, botLookOrder, botVariantPick, getLook, lookBase } from '../content/looks.ts';
 import { BOT_NAMES, botNameFor } from '../content/botNames.ts';
-import { castLooks, validBotCast } from '../content/botThemes.ts';
+import { castLooks, castVariants, validBotCast } from '../content/botThemes.ts';
 import { NPC_DAMAGE_TO_PLAYERS, NPC_ID_BASE, NPC_ROLE_PROFILES, NPC_ROLE_SPECS, mapFactions, mapTeams, matchTeams, relation, validLookId } from './npc.ts';
 import {
   BULLET_LIFETIME, BULLET_SUBSTEPS, MATERIAL_BALLISTICS, MAX_PENETRATIONS, PENETRATION_MIN_ENERGY, penetrationLoss, MAX_RICOCHETS, NEAR_INSTANT_M,
@@ -1659,21 +1659,28 @@ export class Match {
   /**
    * A random bot's look for its slot: the match's own shuffle of the looks the bot-characters setting allows (all:
    * the whole core roster), each bot a different look until the pool runs out. The deal starts at the slot's place
-   * and steps past looks other random bots already wear (a set's hand picks and away players' bodies count too).
+   * and steps past characters other random bots already wear (a set's hand picks and away players' bodies count too).
+   * The deal is of characters (base looks: Ziggy with ten looks is no likelier than anyone); the bot then wears one of
+   * that character's looks, the base included, by the seed and its slot (botVariantPick; seed 1: the base).
    */
   botLook(slot: number): string {
     const cast = this.botCast;
     const key = cast.join(',');
     let order = this.botDeals.get(key);
     if (!order) this.botDeals.set(key, (order = botLookOrder(castLooks(cast), this.seed)));
+    // By character: a bot in Cowboy Ziggy wears Ziggy, so no other bot is dealt Ziggy while others are left.
     const worn = new Set<string>();
-    for (const c of this.combatants()) if (c.kind === 'bot' && c.slot !== slot) worn.add(c.ownLook ?? c.look);
+    for (const c of this.combatants()) if (c.kind === 'bot' && c.slot !== slot) worn.add(lookBase(c.ownLook ?? c.look));
     const start = slot % order.length;
+    let base = order[start]!;
     for (let k = 0; k < order.length; k++) {
       const id = order[(start + k) % order.length]!;
-      if (!worn.has(id)) return id;
+      if (!worn.has(id)) {
+        base = id;
+        break;
+      }
     }
-    return order[start]!;
+    return botVariantPick(castVariants(cast, base), this.seed, slot) ?? base;
   }
 
   /**
@@ -1685,7 +1692,8 @@ export class Match {
     const cast = this.botCast;
     const pool = castLooks(cast);
     for (const c of this.combatants()) {
-      if (c.kind !== 'bot' || c.away || c.botSet || pool.some((l) => l.id === c.look)) continue;
+      // A variant counts as its character (botLook): kept while its character, and that look of it, are allowed.
+      if (c.kind !== 'bot' || c.away || c.botSet || (pool.some((l) => l.id === lookBase(c.look)) && castVariants(cast, lookBase(c.look)).some((l) => l.id === c.look))) continue;
       c.look = this.botLook(c.slot);
       this.applyBodySize(c);
       c.name = name(c.look, c);
