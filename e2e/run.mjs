@@ -5945,7 +5945,7 @@ async function offlineFlow(browser) {
   // opens Character Select too). Sign-in lives there, not in the bottom bar.
   const navIds = await page.$$eval('#menu .nav button', (bs) => bs.map((b) => b.id));
   const badge = await page.evaluate(() => ({ text: document.querySelector('#profile-badge')?.textContent ?? '', footer: !!document.querySelector('.menu-footer #sign-in, .menu-footer #profile-link, .menu-footer .menu-links') }));
-  check(navIds.join() === 'nav-story,nav-quick,nav-play,nav-online,nav-mapmaker,nav-characters,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu is Story, Quick Play, Local, Online, then MapMaker, Characters, Options, beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
+  check(navIds.join() === 'nav-story,nav-quick,nav-play,nav-online,nav-mapmaker,nav-characters,nav-armory,nav-options' && /Profile/.test(badge.text) && /Guest/i.test(badge.text) && !badge.footer, `the main menu is Story, Quick Play, Local, Online, then MapMaker, Characters, Armory, Options, beside the Profile entry, and sign-in leaves the bottom bar (${navIds.join(', ')}; "${badge.text}")`);
   await page.click('#nav-characters');
   await page.waitForSelector('.char-grid', { timeout: T(10000) }).catch(() => {});
   const charsOpen = await page.isVisible('.char-grid');
