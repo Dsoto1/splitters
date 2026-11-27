@@ -153,6 +153,38 @@ is solid on a touch screen (the featured map's words showed through).
 Not changed: the pause menu (Aim is already there), drag-to-place for the touch buttons (later, as the proposal said),
 desktop layouts (the search, favourites and stars apart).
 
+## Round 3: iPhone (`wip/phones-3`, 2026-11-27)
+
+The owner's report (2026-11-27): a tester on an iPhone in Safari saw the browser bars and tabs, the touch buttons over
+half her screen, and every double tap zoomed in, so she refreshed and lost her match.
+
+Checked with Playwright at the sizes Safari leaves with its bars showing (the visible viewport, not the screen), touch
+and an iPhone user agent, the notch and home bar as safe-area insets (CDP `Emulation.setSafeAreaInsetsOverride`):
+iPhone 13/14 750 × 340 sideways and 390 × 664 upright, the SE 375 × 548 upright and 667 × 331 sideways, and the full
+844 × 390 a Home Screen launch gets. Pictures (device scale 2, before and after) in the helper's scratchpad `phones3/`,
+not kept; the e2e `iphone` flow saves its own (`iphone-*.png`).
+
+| What | Change | Check |
+|---|---|---|
+| **The whole screen** | A web app manifest (`public/manifest.webmanifest`: `display: fullscreen`, `standalone` as the fallback, landscape, the navy theme, 192/512/maskable icons in `public/icons/`), linked from index.html with `theme-color`, `apple-mobile-web-app-capable`, a `black-translucent` status bar and a touch icon: Add to Home Screen opens the game full screen, the only full screen an iPhone gives. The hub serves `.webmanifest` as `application/manifest+json`. | e2e `iphone`: the manifest and every icon are served, the tags are there. |
+| **Add to Home Screen line** | On an iPhone in its browser (not from the Home Screen), the menu shows "For full screen: Share → Add to Home Screen" once, calm, above the news bar; × dismisses it for good (`phone.ts`, localStorage). iPads and Android don't get it: their browsers have Fullscreen, entered on the first tap into a match as before. | e2e: shown, dismissed, still gone after a reload. |
+| **Safe areas** | `viewport-fit=cover`, so the 16 `env(safe-area-inset-*)` rules apply; the menu's screens and footer keep clear of the notch and home bar; the move pad sits at least the home bar's height up. | e2e: with 47 px insets, the menu's screens start 47 px in; pad and Fire clear of the notch. |
+| **Turn sideways** | The existing "Turn your phone sideways" screen in a match, checked at the iPhone sizes. | e2e: 390 × 664 and 375 × 548. |
+| **No zoom** | `maximum-scale=1, user-scalable=no`; `touch-action: manipulation` on every element (`:where()`, so each element's own `none` or scrolling wins); Safari's `gesturestart`/`gesturechange`/`gestureend`, `dblclick` and two-finger moves stopped; in play a second quick tap's default too (`phone.ts`, loaded on touch devices after the menu's first JS). Text boxes and lists keep theirs. | e2e: a double tap on the menu and in play leaves the page at scale 1. |
+| **"Leave this game?"** | A `beforeunload` prompt while in a match (not MapMaker's Test). Browser tests only with `&leaveprompt=1`. iPhone Safari ignores such prompts: rejoin is the answer there. | e2e: a reload in a match asks first. |
+| **Small buttons by default** | Until a player picks a size, a phone (screen's short side ≤ 540 px) gets Small and a tablet Medium (`touchLayout.ts defaultTouchSize`); the size is saved only once picked. Small keeps the 12 px text floor (labels drawn at 12 / scale) and the ammo panel clears the smaller Weapons ring (`html.tc-small`). | Unit tests; e2e `mobile` and `iphone`: Small at phone sizes, text ≥ 12 px, ammo over no button. |
+| **Buttons only when they matter** | Use shows with something to use in reach (the use prompt's own test: a door or button, a vehicle seat, an ammo box or Supply Buggy, a zipline, or getting out), Reload when the gun isn't full and has rounds (or is reloading), Throw with a grenade. They fade in and out over a quarter second (no flash, the same with Reduce flashing), stay while held, and linger 0.6 s so a door's edge doesn't blink them. Their places don't move. | e2e `iphone`: all three away at first; firing brings Reload, a grenade Throw, the buggy Use; away from it and out of grenades they go. |
+| **Look on all the free screen** | The look area is the whole screen under the pad and buttons (was the right half). | e2e: a drag on the left half turns the view. |
+| **The first match's line** | "Buttons too big or small? Options → Controls → Touch", once, under the scorebar for 7 s (only where first-time tips show). | Not pictured: first-time tips are off in browser tests. |
+| **Rejoin after a refresh** | The tab remembers its live online match in sessionStorage (`liveMatch.ts`: the server's URL or the join code and party; the place itself comes back by the browser's player key, already in localStorage). A reload or a return to the site in the same tab goes straight to "Rejoining your match…" with Cancel; in, it's the same place and score (the server's or the browser host's reclaim); if the match is gone or the place was given up (away over a minute), the menu says so. A solo match or one hosted in this tab can't be rejoined: the menu says so plainly. | Unit tests; e2e: after `page.reload()` on the plain address, "Rejoining your match…", then the same slot, name and score; a solo match's reload says it can't be rejoined. |
+
+Not changed:
+- **Aim stays its own button.** Folding it into Fire (aim while Fire is held, or a double tap) would make every shot an
+  aimed one or slow the first shot; it's an owner question (see HANDOFF).
+- **Desktop:** nothing changes there (the manifest and tags are inert; every rule is under `html.touch` or reads 0
+  insets).
+- **Later:** drag-to-place buttons, a first-match touch tutorial, saved solo matches.
+
 ## Proposals, ranked (impact / size)
 
 | # | Proposal | Impact | Size |

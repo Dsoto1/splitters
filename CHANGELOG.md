@@ -7,6 +7,10 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Phones: Add to Home Screen plays full screen.** The game installs as a web app (its own icon, landscape, no browser bars); an iPhone in Safari shows a one-time line saying how ("Share → Add to Home Screen").
+- **Phones: no more accidental zoom.** A double tap or a pinch no longer zooms the page, in menus or in a match; under a notch or beside the home bar the menus and controls keep clear of it.
+- **Phones: fewer, smaller buttons.** A phone starts on Small buttons (a size you pick wins); Use, Reload and Throw appear only when they can act (something in reach, a gun not full, a grenade in hand) and fade in and out; dragging anywhere off the buttons turns the view; the first match points to Options → Controls → Touch.
+- **A refresh no longer loses your online match.** Reloading the page (or coming back to the tab) during an online match goes straight to "Rejoining your match…" and back to your place and score; a match played in the tab itself (solo or hosted) says plainly it can't be rejoined, and the browser asks "Leave this game?" before a reload in a match.
 - **Mujina floats** like The Veiled Vanguard: no walk cycle, she glides.
 - **Random bots wear variant looks.** A bot dealt a character with variant looks (Ziggy's eras, Dog Tag Doyle's skeletons, T-TreeFitty's outfits…) wears one of them at random, the base look included; every character is still as likely as any other, and everyone in the match sees the same looks.
 - **Character Select loads characters faster.** Resting on a portrait starts fetching that character (and the ones beside it), so a pick is usually ready at once; while one still loads, the character shown stays and a thin calm bar under their feet fills, then fades as the new one appears.

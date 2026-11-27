@@ -32,7 +32,8 @@ import { PLAYLISTS, addToSuite, inSuite } from './playlists.ts';
 import { installFullscreenKeys } from './fullscreen.ts';
 import { crashContext, installCrashReports, watchGlContext } from './crashReport.ts';
 import { installInputMode } from './inputMode.ts';
-import { markTouchDevice } from './touchDevice.ts';
+import { isTouchDevice, markTouchDevice } from './touchDevice.ts';
+import { forgetLiveMatch, liveMatchOnLoad, rememberLiveMatch, type LiveMatch } from './liveMatch.ts';
 import { CALLBACK_PATH, handleAuthCallback } from './account.ts';
 import { myCareer, myEmblem, myFavClass, myRankPoints, myTitle, recordMatch } from './careerStats.ts';
 import { recordStoryWin } from './campaign/storyProgress.ts';
@@ -54,6 +55,8 @@ const params = new URLSearchParams(location.search);
 const TEST = testMode();
 // Phones and tablets: html.touch (bigger tap targets; the match shows on-screen controls).
 markTouchDevice();
+// …and, just after the menu's first JS, no page zoom and the iPhone's Add to Home Screen line (phone.ts).
+if (isTouchDevice()) void import('./phone.ts').then((m) => m.installPhone());
 // Browser tests drive the page at once: no start-up loading screen in test mode.
 if (TEST) finishBoot();
 if (TEST) {
@@ -672,6 +675,8 @@ class App {
   }
 
   private playLocalWith(m: MatchCode, map: Parameters<typeof rulesForMap>[0], rules: MatchRules, botFill: number, difficulty: 'easy' | 'normal' | 'hard', carry: CarryOver | undefined, hosting: Travel['hosting'], autoHost: boolean, extra: { restore?: MatchCheckpoint; greeting?: string; spectate?: boolean }): void {
+    // Played in this tab: a reload ends it, and the menu then says it can't be rejoined (liveMatch.ts).
+    rememberLiveMatch({ kind: 'local' });
     this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill, difficulty, botSet: this.botSet, rules, party: myParty(), rankPoints: myRankPoints(), ...((em, tt) => ({ ...(em ? { emblem: em } : {}), ...(tt ? { title: tt } : {}) }))(myEmblem(), myTitle()), ...(carry ? { carry } : {}), ...(extra.restore ? { restore: extra.restore } : {}), ...(extra.spectate ? { spectate: true } : {}), ...(TEST ? { test: TEST } : {}) }), {
       exitLabel: 'Leave match',
       exitOnF5: false,
@@ -682,6 +687,7 @@ class App {
       rotation: this.rotationOpts(),
       ...(extra.greeting ? { greeting: extra.greeting } : {}),
       onExit: (reason, travel) => {
+        forgetLiveMatch();
         // The host changed map (or the rotation moved on): the same rules, players and bot skill there (Host game friends follow).
         // Another map (the host's Change map, a rotation): no longer the Story stage.
         if (reason === 'travel') this.storyRun = null;
@@ -789,6 +795,8 @@ class App {
           window.clearTimeout(deadline);
           // Online → Join a friend's game offers it again for a while (back after closing the tab, say).
           rememberJoin(code, '');
+          // A reload of this tab comes straight back in (liveMatch.ts).
+          rememberLiveMatch({ kind: 'code', code, name, party: myParty() });
           this.reconnected();
           o.onReady?.();
         },
@@ -815,6 +823,8 @@ class App {
    */
   private async afterHost(m: MatchCode, code: string, name: string, gone: 'left' | 'dropped', end: SessionEnd, handoff: Handoff | null): Promise<void> {
     this.stopRejoin();
+    // (Back in, or with the successor, the join remembers the match again.)
+    forgetLiveMatch();
     const screen = new m.HostLeftScreen(end.board);
     const standby = handoff?.standby ?? null;
     if (gone === 'dropped') {
@@ -896,7 +906,11 @@ class App {
     void this.withMatch((m) => this.startSession(m, new m.NetTransport(url, name, this.front!.look), {
       exitLabel: 'Leave match',
       exitOnF5: false,
-      onReady: () => this.reconnected(),
+      onReady: () => {
+        // A reload of this tab comes straight back in (liveMatch.ts).
+        rememberLiveMatch({ kind: 'server', url, name });
+        this.reconnected();
+      },
       onExit: (reason, travel, how) => {
         // The server moved on to the next map of a chain: join it again in a moment, until it lets us in.
         if (reason === 'travel' && travel) return void this.followTravel(again);
@@ -911,7 +925,26 @@ class App {
    * to this browser, so we try again until then: at once when the network
    * comes back or the page is shown again, else every few seconds.
    */
-  private rejoin?: { until: number; tries: number; again: () => void; reason: string; timer?: number; tried?: number; following?: boolean };
+  private rejoin?: { until: number; tries: number; again: () => void; reason: string; timer?: number; tried?: number; following?: boolean; reload?: boolean };
+
+  /**
+   * The page was reloaded (or the site opened again in this tab) during an online match whose place is still held
+   * (liveMatch.ts): straight back in, with "Rejoining your match…" and Cancel; if the place or the match is gone, the
+   * menu says so (afterOnline).
+   */
+  async rejoinAfterReload(live: Extract<LiveMatch, { kind: 'server' | 'code' }>): Promise<void> {
+    await this.init();
+    if (live.kind === 'code') joinParty(live.party);
+    const name = live.name || this.front!.displayName || 'Player';
+    const again = live.kind === 'server' ? () => void this.playOnline(live.url, name) : () => void this.joinCode(live.code, name);
+    this.rejoin = { until: live.seen + RECONNECT_FOR_MS, tries: 1, again, reason: 'the page was reloaded', reload: true };
+    reconnectBanner('Rejoining your match…', () => {
+      this.stopRejoin();
+      forgetLiveMatch();
+      void this.showMenu('');
+    });
+    again();
+  }
 
   /**
    * The host or server moved on to the next map: join it again in a moment, and keep trying until its next match lets
@@ -931,18 +964,23 @@ class App {
     // to its next map) tries again. The game is gone (the host closed it): nothing to get back into (rejoinPolicy.ts).
     if (afterLinkEnds({ reason, how, rejoining: !!r, following: !!r?.following }) === 'menu') {
       this.stopRejoin();
+      forgetLiveMatch();
+      // After a reload: the match is gone (or turned us away), so the menu says that plainly.
+      if (r?.reload) return void this.showMenu(`Couldn't rejoin your match: ${reason ?? 'it has ended'}`);
       return void this.showMenu(reason ? `Disconnected: ${reason}` : '');
     }
     const now = Date.now();
     const state = r ?? (this.rejoin = { until: now + RECONNECT_FOR_MS, tries: 0, again, reason: reason! });
     if (now > state.until) {
       this.stopRejoin();
-      return void this.showMenu(`Disconnected: ${state.reason} (couldn't get back in)`);
+      forgetLiveMatch();
+      return void this.showMenu(state.reload ? "Couldn't rejoin your match: your place there has gone" : `Disconnected: ${state.reason} (couldn't get back in)`);
     }
     state.tries++;
     void this.showMenu('');
-    reconnectBanner(state.following ? `Following the host to the next map… (try ${state.tries})` : `Connection lost: reconnecting… (try ${state.tries})`, () => {
+    reconnectBanner(state.reload ? `Rejoining your match… (try ${state.tries})` : state.following ? `Following the host to the next map… (try ${state.tries})` : `Connection lost: reconnecting… (try ${state.tries})`, () => {
       this.stopRejoin();
+      forgetLiveMatch();
       this.front?.setStatus('');
     });
     const attempt = state.tries;
@@ -1027,6 +1065,16 @@ class App {
       },
     });
     this.session = session;
+    // "Leave this game?" before a reload or a closed tab, while in a match (not MapMaker's Test, which F5 leaves).
+    // Browser tests navigate away mid-match all the time: there only with &leaveprompt=1.
+    if (!o.exitOnF5 && (!navigator.webdriver || params.has('leaveprompt'))) {
+      const ask = (e: BeforeUnloadEvent) => {
+        if (this.session !== session) return void window.removeEventListener('beforeunload', ask);
+        e.preventDefault();
+        e.returnValue = '';
+      };
+      window.addEventListener('beforeunload', ask);
+    }
     return session;
   }
 }
@@ -1165,6 +1213,11 @@ else if (params.has('autojoin')) void app.init().then(() => app.playOnline(app.f
 else {
   // A reload of the tab while MapMaker (or its Test) was open goes back to MapMaker on that map, not to the menu.
   const resume = editorResumeOnReload();
+  // …and one during an online match goes straight back into it, while the place is held (liveMatch.ts).
+  const live = resume ? null : liveMatchOnLoad();
   if (resume) void app.openEditor(resume);
+  else if (live?.what === 'rejoin' && live.match.kind !== 'local') void app.rejoinAfterReload(live.match);
+  else if (live?.what === 'gone') void app.showMenu("Your last match's place has gone (it's kept about a minute)");
+  else if (live?.what === 'local') void app.showMenu("That match ran in this tab, so the reload ended it: solo and hosted matches can't be rejoined");
   else void app.showMenu();
 }

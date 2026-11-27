@@ -233,7 +233,7 @@ import { statusColor } from './arsenalVisuals.ts';
 import { InputState, saveMousePrefs } from './input.ts';
 import { CATEGORY_ACTIONS, hintKey } from './keyBindings.ts';
 
-import { TouchControls } from './touchControls.ts';
+import { TouchControls, type TouchContext } from './touchControls.ts';
 import { CategoryWheel, WeaponWheel, wheelEntries } from './weaponWheel.ts';
 import { ChatBox } from './chatBox.ts';
 import { MuteList } from './chatMute.ts';
@@ -488,6 +488,8 @@ export class GameSession {
   private canSwitchTeam = false;
   /** Out of play this frame: spectating, or dead in a running match. */
   private outOfPlay = false;
+  /** Something to use in reach (the use prompt's own test, updateScenarioHud): touch's Use button shows. */
+  private useHere = false;
   /** The latest shot that hit you: who fired it and from where (the kill cam looks there when the killer isn't in view). */
   private lastHitBy: { slot: number; from: Vec3; at: number } | null = null;
   /** Where the free camera may fly. */
@@ -1015,7 +1017,7 @@ export class GameSession {
     };
     // Phones and tablets: on-screen controls instead of pointer lock (touchControls.ts).
     if (isTouchDevice()) {
-      this.touch = new TouchControls(this.input, $('hud'), { pause: () => this.input.setTouchEngaged(false) });
+      this.touch = new TouchControls(this.input, $('hud'), { pause: () => this.input.setTouchEngaged(false), tips: this.opts.tips !== false });
       this.input.onEngage = () => {
         this.touch?.setActive(this.input.touchEngaged);
         this.updatePause();
@@ -2622,7 +2624,7 @@ export class GameSession {
         // Hosting since before the match had loaded (Host this map, a handoff, a map change): list it now that it can be.
         if (this.peerHost) this.updateListing();
         this.updateOnline();
-        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally, scope: () => ({ scoped: this.scopedNow, zoom: this.zoomLevel, fov: this.fov, breath: { ...this.breath }, eyeBox: { ...this.eyeBox }, glints: this.view.glints.shown }), roster: () => this.lastRoster, opticPick: () => this.drawOpticPick(), captions: () => this.captions.debug(), captionsHud: this.captions, chatBox: this.chatBox, mutes: this.mutes, chatHeard: () => this.chatHeard };
+        (window as unknown as { __cs: unknown }).__cs = { slot: this.slot, hud: this.hud, renderer: this.opts.rendererKind, local: this.local, view: this.view, input: this.input, wheel: this.wheel, orderWheel: this.orderWheel, squad: () => ({ led: this.squadLed, order: this.squadOrder, hud: this.squadHud.current }), mode: this.modeHud, transport: this.opts.transport, mounts: this.mounts, forts: this.forts, phase: () => this.phase, rideView: () => this.rideView, host: () => this.hostState, rules: () => this.rules, roulette: () => this.rouletteHud?.debug(), awards: () => this.awardsHud?.debug(), vote: () => this.voteHud?.debug() ?? null, showAwards: (aw: MatchAward[]) => this.awardsHud?.show(aw), heavyOverlay: () => this.hud.heavyOverlay(), lowHealth: () => ({ level: this.lowHealth.level, edge: this.hud.lowHealthOverlay().opacity, hold: this.holdUse ? { kind: this.holdUse.kind, done: this.holdUse.done, total: this.holdUse.total } : null }), rouletteGlow: () => this.rouletteHud?.glowOverlay() ?? null, rouletteHold: (on: boolean) => void (this.rouletteHud && (this.rouletteHud.hold = on)), jackpotGlow: () => this.testJackpot(), timeLeft: () => this.timeLeft, map: loaded.map.metadata.id, spec: () => this.specState(), spectate: (on: boolean) => this.setSpectating(on), thirdPerson: () => this.thirdPerson, tpAim: () => this.tpAim, viewTick: () => this.interp.renderTick(), lifeKills: this.lifeKills, damageNumbers: this.damageNumbers, spray: this.spray, career: () => this.careerTally, scope: () => ({ scoped: this.scopedNow, zoom: this.zoomLevel, fov: this.fov, breath: { ...this.breath }, eyeBox: { ...this.eyeBox }, glints: this.view.glints.shown }), roster: () => this.lastRoster, opticPick: () => this.drawOpticPick(), captions: () => this.captions.debug(), captionsHud: this.captions, chatBox: this.chatBox, mutes: this.mutes, chatHeard: () => this.chatHeard, scores: () => this.scores };
         this.opts.onReady?.();
         if (this.opts.greeting) this.hud.showMessage(this.opts.greeting, 6);
         void this.prepareMatch();
@@ -3417,6 +3419,19 @@ export class GameSession {
   }
 
   /** Objectives, timers, the Use prompt and the objective marker. */
+  /** Touch's context buttons (touchControls.ts): Use in reach of something, Reload when it would load, Throw with a grenade. */
+  private touchContext(local: LocalPlayer): TouchContext {
+    const alive = local.alive && !this.outOfPlay;
+    const def = this.seat ? undefined : weaponByCode(local.held);
+    const ammo = local.inventory.get(local.held);
+    const second = local.paired ? local.offs.get(local.held) : undefined;
+    const notFull = !!def && !!ammo && def.magazine > 0 && (ammo[0] < def.magazine || (!!second && second.mag < def.magazine));
+    // A melee weapon's barrel loaded from a reserve (the Battle Axe) reloads too.
+    const barrel = !!def && def.magazine === 0 && !!def.alt?.reload;
+    const reload = alive && !!def && (local.reloadTicks > 0 || (!!ammo && ammo[1] > 0 && (notFull || barrel)));
+    return { use: alive && (this.useHere || !!this.holdUse), reload, throw: alive && !this.seat && (local.throwable?.count ?? 0) > 0 };
+  }
+
   private updateScenarioHud(local: LocalPlayer, now: number): void {
     const map = this.map;
     const sc = this.scenario;
@@ -3444,6 +3459,8 @@ export class GameSession {
     const box = local.alive && !this.seat ? (this.ammoBoxes?.inReach(local.state.pos) ?? null) : null;
     const supply = local.alive && !this.seat && !box ? (this.mounts?.resupplyInReach(local.state.pos) ?? null) : null;
     const enter = local.alive && !this.seat && !supply && !box ? this.mounts?.enterable(local.state.pos) : null;
+    // (Touch's Use button: anything Use acts on here. A full vehicle or a locked door it can't, so it stays away.)
+    this.useHere = local.alive && (!!this.seat || local.state.zip !== undefined || target !== null || !!box || !!supply || !!enter || (!this.seat && !enter && local.ziplines.length > 0 && !!grabZipline(local.ziplines, local.state.pos, this.input.yaw, local.team())));
     let full: { def: { displayName: string } } | null = null;
     if (local.alive && this.seat) {
       const m = this.mounts?.mounts.get(this.seat[0]);
@@ -4036,7 +4053,7 @@ export class GameSession {
       this.updateWheel(local, building);
       this.updateOrderWheel(local);
       this.updateChatWheel(local);
-      this.touch?.update();
+      this.touch?.update(this.touch ? this.touchContext(local) : undefined);
       const wheel = this.input.takeWheel();
       // Through a scope the wheel steps between its zoom levels instead of switching weapons.
       if (wheel && this.scopedNow && local.weapon?.view.zoomFov) this.zoomLevel = stepZoom(this.zoomLevel, wheel, zoomSteps(local.weapon));

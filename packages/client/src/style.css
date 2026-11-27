@@ -103,6 +103,9 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 
 #menu { position: fixed; inset: 0; color: var(--text); background: radial-gradient(120% 90% at 70% 40%, rgba(11, 15, 26, 0) 0 40%, rgba(11, 15, 26, 0.65) 75%, rgba(11, 15, 26, 0.92)), linear-gradient(90deg, rgba(11, 15, 26, 0.92) 0 18%, rgba(11, 15, 26, 0.35) 45%, rgba(11, 15, 26, 0) 70%); }
 #menu .screen { position: absolute; inset: 0; padding: 34px 44px 70px; }
+/* Under a notch or beside the home bar (viewport-fit=cover, index.html): the screens keep clear; the backdrop runs on. */
+#menu .screens > .screen { left: env(safe-area-inset-left); right: env(safe-area-inset-right); bottom: env(safe-area-inset-bottom); }
+#menu .menu-footer { left: env(safe-area-inset-left); right: env(safe-area-inset-right); }
 .logo { margin: 0; font: italic 700 clamp(44px, 6.2vw, 86px)/0.95 var(--font-display); letter-spacing: -0.01em; transform: skewX(-8deg); text-transform: uppercase; filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.55)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.6)); user-select: none; }
 .logo .tile { white-space: pre;  background: linear-gradient(180deg, #ffffff 0 45%, #b8c6dd 55%, #e6f0ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .logo .trigger { background: linear-gradient(180deg, #ffd27a 0 35%, #ff8a2a 60%, #ff4d2e); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -161,7 +164,7 @@ button.cta:hover { background: #ffc46e; }
 #menu-status { position: absolute; left: 44px; bottom: 56px; color: var(--error); font-weight: 600; min-height: 1.2em; }
 #menu-status:empty { display: none; }
 /* Reconnecting after a lost connection (main.ts): a strip over the menu, with Cancel. */
-#reconnect { position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 50; display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 18px; background: var(--glass); border: 1px solid var(--orange); border-radius: 4px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); font: 600 15px var(--font-display); letter-spacing: 0.03em; color: var(--orange); }
+#reconnect { position: fixed; left: 50%; top: 18px; transform: translateX(-50%); z-index: 101; display: flex; align-items: center; gap: 14px; padding: 10px 14px 10px 18px; background: var(--glass); border: 1px solid var(--orange); border-radius: 4px; box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5); font: 600 15px var(--font-display); letter-spacing: 0.03em; color: var(--orange); }
 #reconnect button { padding: 5px 10px; font-size: 12px; }
 /* A friend's host left (game/hostLeft.ts): the last standings, what happened, what next. Over a loading match or the menu. */
 #host-left { position: fixed; inset: 0; z-index: 60; display: flex; align-items: center; justify-content: center; padding: 16px; background: rgba(4, 7, 14, 0.72); }
@@ -1984,6 +1987,9 @@ html.touch #chat-hint { display: none; }
 
 /* Phones and tablets (touchDevice.ts, html.touch): fingers, not a mouse. */
 html.touch { touch-action: manipulation; -webkit-tap-highlight-color: transparent; -webkit-user-select: none; user-select: none; }
+/* No double-tap zoom anywhere (touch-action isn't inherited, and Safari zooms where it's missing); every element's own
+   touch-action wins over this (:where has no weight): the controls' none, the lists' scrolling. phone.ts does the rest. */
+:where(html.touch) :where(*) { touch-action: manipulation; }
 html.touch body { overscroll-behavior: none; }
 html.touch #view { touch-action: none; }
 html.touch button, html.touch select, html.touch .tab { min-height: 40px; }
@@ -2036,18 +2042,29 @@ html.touch.tc-left #ammo { right: auto; left: calc(14px + env(safe-area-inset-le
 #touch-ui { position: fixed; inset: 0; z-index: 2; pointer-events: none; touch-action: none; font-family: var(--font-display); --pad: clamp(120px, 42vmin, 190px); }
 #touch-ui[hidden] { display: none; }
 #touch-ui > * { pointer-events: auto; touch-action: none; }
-#touch-ui .tc-look { position: absolute; top: 0; right: 0; bottom: 0; width: 50%; }
+/* Look: all the screen the pad and the buttons leave free (they sit above it). */
+#touch-ui .tc-look { position: absolute; inset: 0; }
 /* The layout (Options → Controls → Touch; game/touchLayout.ts): --tc-scale sizes the pad and the button cluster, --tc-opacity
    draws them lighter (a pressed one at full strength), html.tc-left swaps sides for left-handed play. */
 #touch-ui .tc-cluster { position: absolute; right: 0; bottom: 0; width: 310px; height: 240px; pointer-events: none; transform: scale(var(--tc-scale, 1)); transform-origin: bottom right; }
 #touch-ui .tc-cluster > .tc-btn { pointer-events: auto; right: calc(var(--x) + env(safe-area-inset-right)); }
 #touch-ui .tc-cluster > .tc-btn, #touch-ui .tc-pad { opacity: var(--tc-opacity, 1); }
 #touch-ui .tc-cluster > .tc-btn.on, #touch-ui .tc-pad:active { opacity: 1; }
-html.tc-left #touch-ui .tc-look { right: auto; left: 0; }
+/* The context buttons (Use, Reload, Throw) when they can't act: faded out and out of the way, easing in and out (no
+   flash: a quarter second's fade, the same with Reduce flashing on). */
+#touch-ui .tc-cluster > .tc-btn { transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s, background-color 0.08s; }
+#touch-ui .tc-cluster > .tc-btn.tc-idle { opacity: 0; transform: scale(0.85); pointer-events: none; visibility: hidden; transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s; }
+/* Small (drawn at 85 %): the labels keep the text floor (11.6 px as drawn, a little tighter to fit their circles). */
+html.tc-small #touch-ui .tc-cluster > .tc-btn:not(.tc-fire) { font-size: calc(11.6px / var(--tc-scale, 1)); letter-spacing: -0.04em; }
+/* Small (html.tc-small): the ammo panel (drawn full size) clears the smaller Weapons ring it would otherwise touch. */
+html.touch.tc-small #ammo { bottom: 196px; }
+/* The first match on a phone: one line pointing to the button settings, under the scorebar, fading out. */
+#touch-ui .tc-note { position: absolute; left: 50%; top: 74px; transform: translateX(-50%); max-width: calc(100vw - 260px); padding: 6px 12px; border-radius: 6px; background: rgba(11, 15, 26, 0.78); color: var(--text); font: 600 13px var(--font-display); letter-spacing: 0.02em; text-align: center; pointer-events: none; transition: opacity 0.5s ease; }
+#touch-ui .tc-note.gone { opacity: 0; }
 html.tc-left #touch-ui .tc-cluster { right: auto; left: 0; transform-origin: bottom left; }
 html.tc-left #touch-ui .tc-cluster > .tc-btn { right: auto; left: calc(var(--x) + env(safe-area-inset-left)); }
 html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-inset-right)); }
-#touch-ui .tc-pad { position: absolute; left: calc(18px + env(safe-area-inset-left)); bottom: 18px; width: calc(var(--pad) * var(--tc-scale, 1)); height: calc(var(--pad) * var(--tc-scale, 1)); border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.25), rgba(18, 24, 39, 0.5)); box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.18); }
+#touch-ui .tc-pad { position: absolute; left: calc(18px + env(safe-area-inset-left)); bottom: max(18px, env(safe-area-inset-bottom)); width: calc(var(--pad) * var(--tc-scale, 1)); height: calc(var(--pad) * var(--tc-scale, 1)); border-radius: 50%; background: radial-gradient(circle, rgba(18, 24, 39, 0.25), rgba(18, 24, 39, 0.5)); box-shadow: 0 0 0 1px rgba(230, 240, 255, 0.18); }
 #touch-ui .tc-pad.sprint { box-shadow: 0 0 0 2px var(--orange); }
 #touch-ui .tc-arm { position: absolute; width: 0; height: 0; border: 11px solid transparent; opacity: 0.55; }
 #touch-ui .tc-arm.up { left: 50%; top: 7%; margin-left: -11px; border-bottom-color: var(--text); border-top-width: 0; }
@@ -2091,6 +2108,12 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
   html.touch #touch-rotate b::before { content: '⟳'; display: block; font-size: 48px; font-style: normal; color: var(--cyan); }
   html.touch #touch-rotate small { color: var(--muted); font-size: 14px; }
 }
+/* An iPhone in Safari (phone.ts): the Add to Home Screen line, once, on the menu until dismissed: over the news bar, clear of the buttons. */
+#home-tip { position: fixed; z-index: 45; left: 50%; bottom: calc(4px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px); padding: 6px 6px 6px 14px; border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 8px; background: rgba(11, 15, 26, 0.9); color: var(--text); font: 600 13px var(--font-display); transition: opacity 0.3s ease; }
+#home-tip b { color: var(--cyan); font-weight: 700; }
+#home-tip button { min-width: 36px; min-height: 36px; padding: 0; font-size: 18px; line-height: 1; }
+#home-tip.gone { opacity: 0; }
+body:has(#menu[hidden]) #home-tip, body:has(.menu-footer:not([data-screen='home'])) #home-tip { display: none; }
 /* Options → Controls: a key you can rebind (the weapon wheel). */
 .key-bind-row { display: flex; align-items: center; gap: 8px; }
 .key-bind-grid { display: grid; grid-template-columns: repeat(2, minmax(0, auto) auto); align-items: center; gap: 6px 10px; }
