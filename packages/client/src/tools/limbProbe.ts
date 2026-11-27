@@ -92,22 +92,22 @@ export function restOfArms(ch: CharacterInstance): Map<string, Quaternion> {
 }
 
 /**
- * A joint's turn off its rest rotation, split into its twist about its own bone (`along`, its child's offset in its
- * own frame: a hand's toward its middle knuckle, a forearm's toward the wrist) and the swing left (the bend), degrees.
- * (d = rest⁻¹·local = swing·twist: the twist turns about the bone first, the swing then bends it.)
+ * A joint's turn off its rest rotation, split into its twist about a bone line `along` and the swing left (the bend),
+ * degrees. `own`: the line is the joint's own bone (its child's offset, in its own frame; d = rest⁻¹·local, the twist
+ * turning first); otherwise the bone it hangs from (its own offset from its parent, in the parent's frame;
+ * d = local·rest⁻¹: a hand's twist on its forearm, as the forearm's roll takes it off: characterAnimator shareTwist).
  */
-export function swingTwist(local: Quaternion, rest: Quaternion, along: Vector3): { bend: number; twist: number } {
-  const d = Quaternion.Inverse(rest).multiply(local);
+export function swingTwist(local: Quaternion, rest: Quaternion, along: Vector3, own: boolean): { bend: number; twist: number } {
+  const d = own ? Quaternion.Inverse(rest).multiply(local) : local.multiply(Quaternion.Inverse(rest));
   if (d.w < 0) d.scaleInPlace(-1);
   const axis = along.normalizeToNew();
   const p = d.x * axis.x + d.y * axis.y + d.z * axis.z;
-  let tw = new Quaternion(axis.x * p, axis.y * p, axis.z * p, d.w);
-  const l = tw.length();
-  tw = l < 1e-9 ? Quaternion.Identity() : tw.scale(1 / l);
+  const twist = 2 * Math.atan2(p, d.w);
+  // The swing's angle: the same whichever side the twist is taken off.
+  const tw = Quaternion.RotationAxis(axis, twist);
   const sw = d.multiply(Quaternion.Inverse(tw));
-  const deg = (q: Quaternion) => (2 * Math.acos(Math.min(1, Math.abs(q.w))) * 180) / Math.PI;
-  const sign = p * tw.w >= 0 ? 1 : -1;
-  return { bend: Math.round(deg(sw) * 10) / 10, twist: Math.round(sign * deg(tw) * 10) / 10 };
+  const deg = (r: number) => Math.round(((r * 180) / Math.PI) * 10) / 10;
+  return { bend: deg(2 * Math.acos(Math.min(1, Math.abs(sw.w)))), twist: deg(twist) };
 }
 
 /**
@@ -119,12 +119,12 @@ export function wristMeasures(ch: CharacterInstance, rest: Map<string, Quaternio
   const one = (s: 'l' | 'r') => {
     const hand = ch.joints.get(`hand_${s}`);
     const lower = ch.joints.get(`lowerarm_${s}`);
-    const knuckle = ch.joints.get(`middle_01_${s}`) ?? ch.joints.get(`index_01_${s}`);
     const rh = rest.get(`hand_${s}`);
     const rl = rest.get(`lowerarm_${s}`);
-    if (!hand?.rotationQuaternion || !lower?.rotationQuaternion || !rh || !rl || !knuckle) return null;
-    const w = swingTwist(hand.rotationQuaternion, rh, knuckle.position);
-    const f = swingTwist(lower.rotationQuaternion, rl, hand.position);
+    if (!hand?.rotationQuaternion || !lower?.rotationQuaternion || !rh || !rl) return null;
+    // The hand on its forearm, about the forearm's line; the forearm's roll about its own line.
+    const w = swingTwist(hand.rotationQuaternion, rh, hand.position, false);
+    const f = swingTwist(lower.rotationQuaternion, rl, hand.position, true);
     return { bend: w.bend, twist: w.twist, forearmTwist: f.twist };
   };
   const l = one('l');

@@ -2279,7 +2279,7 @@ export class CharacterAnimator {
             ? palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale, grip.style === 'long')
             : palmUnder(arms.l, point(gripped.pos, gripped.rot, [support[0], guardY + (tune?.supportLong?.[1] ?? 0), support[2]]), scale);
         solveArm(space, arms.l, supportPalm, pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
-        if (grip.style === 'long') shareTwist(space, arms.l, w);
+        if (grip.style === 'long') shareTwist(arms.l, w);
         const at = support;
         this.curl(space, arms.l, w * supportCurl(grip) * (tune?.curlL ?? 1), () => point(gripped!.pos, gripped!.rot, at));
       }
@@ -2677,7 +2677,7 @@ export class CharacterAnimator {
     if (pistol) pointThumb(space, arms.r, gunDir(gun, PISTOL.thumbR), w);
     if (supportAt && grip.support) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
-      if (grip.style === 'long') shareTwist(space, arms.l, w);
+      if (grip.style === 'long') shareTwist(arms.l, w);
       // A pistol's support fingers close round the front of the shooting hand's, no further, its thumb forward along
       // the frame.
       const cupAt = pistol ? { at: off(grip.support, PISTOL.supportWrap), out: gun.right } : undefined;
@@ -3407,7 +3407,7 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
   closeHand(space, arms.r, weight * (tune?.curlR ?? 1), point(gripPoint));
   if (supportAt && supportPoint) {
     solveArm(space, arms.l, supportAt, arms.l.upper.getAbsolutePosition().subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), weight);
-    if (grip.style === 'long') shareTwist(space, arms.l, weight);
+    if (grip.style === 'long') shareTwist(arms.l, weight);
     closeHand(space, arms.l, weight * supportCurl(grip) * (tune?.curlL ?? 1), point(supportPoint));
   }
 }
@@ -3419,31 +3419,36 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
  * forearm turns the hand mostly along its length (the two bones roll round each other), so the forearm takes this
  * share of the hand's twist off its rest, turned about its own line; the hand is then set back as it was (on the gun).
  */
-const FOREARM_TWIST_SHARE = 0.5;
-/** The hand's twist on its forearm off its rest (radians, about its own line toward the middle knuckle), or null. */
-function wristTwist(arm: Arm): number | null {
-  const q = arm.hand.rotationQuaternion;
-  if (!q || !arm.handRest || arm.knuckle.parent !== arm.hand) return null;
-  const d = Quaternion.Inverse(arm.handRest).multiply(q);
-  const a = arm.knuckle.position.normalizeToNew();
-  return 2 * Math.atan2(d.x * a.x + d.y * a.y + d.z * a.z, d.w);
+const FOREARM_TWIST_SHARE = 0.4;
+/** A hand's twist on its forearm off its rest (radians, about the forearm's line, in the forearm's frame), or null. */
+export function wristTwist(lower: TransformNode, hand: TransformNode, rest: Quaternion | undefined): number | null {
+  const q = hand.rotationQuaternion;
+  if (!q || !rest || hand.parent !== lower || hand.position.lengthSquared() < 1e-10) return null;
+  const d = q.multiply(Quaternion.Inverse(rest));
+  if (d.w < 0) d.scaleInPlace(-1);
+  const u = hand.position.normalizeToNew();
+  return 2 * Math.atan2(d.x * u.x + d.y * u.y + d.z * u.z, d.w);
 }
-function shareTwist(space: SkeletonSpace, arm: Arm, weight: number): void {
-  const share = FOREARM_TWIST_SHARE * (standShare > 0 ? 1 : 0) * weight;
-  const t = wristTwist(arm);
-  if (!share || t === null || Math.abs(t) < 0.05) return;
+/**
+ * The forearm rolled about its own line (toward the wrist) by `share` of the hand's twist, and the hand turned back
+ * by as much: the hand's place and turn in the world are unchanged, the twist is shared (both in the joints' own
+ * frames, so whichever way the skeleton is mirrored).
+ */
+export function shareWristTwist(lower: TransformNode, hand: TransformNode, rest: Quaternion | undefined, share: number): void {
+  const t = wristTwist(lower, hand, rest);
+  const lq = lower.rotationQuaternion;
+  const hq = hand.rotationQuaternion;
+  if (t === null || !lq || !hq) return;
+  const by = share * t;
+  if (Math.abs(by) < 1e-3) return;
+  const u = hand.position.normalizeToNew();
+  lq.multiplyInPlace(Quaternion.RotationAxis(u, by));
+  Quaternion.RotationAxis(u, -by).multiplyToRef(hq, hq);
+}
+function shareTwist(arm: Arm, weight: number): void {
+  if (standShare <= 0) return;
+  shareWristTwist(arm.lower, arm.hand, arm.handRest, FOREARM_TWIST_SHARE * weight);
   refreshArm(arm);
-  const hand = space.rot(arm.hand);
-  const lower = space.rot(arm.lower);
-  const line = space.pos(arm.hand).subtract(space.pos(arm.lower)).normalize();
-  // About the forearm's line one way or the other (the joint frames are mirrored): whichever leaves the wrist less twisted.
-  const by = (angle: number) => {
-    space.setRot(arm.lower, Quaternion.RotationAxis(line, angle).multiply(lower), 1);
-    refreshArm(arm);
-    space.setRot(arm.hand, hand, 1);
-    return Math.abs(wristTwist(arm) ?? 0);
-  };
-  if (by(share * t) > Math.abs(t)) by(-share * t);
 }
 
 /** The rotation taking direction `from` to direction `to`. */
