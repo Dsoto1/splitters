@@ -2054,8 +2054,8 @@ html.touch.tc-left #ammo { right: auto; left: calc(14px + env(safe-area-inset-le
    flash: a quarter second's fade, the same with Reduce flashing on). */
 #touch-ui .tc-cluster > .tc-btn { transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s, background-color 0.08s; }
 #touch-ui .tc-cluster > .tc-btn.tc-idle { opacity: 0; transform: scale(0.85); pointer-events: none; visibility: hidden; transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s; }
-/* The labels keep the 12 px floor whatever the cluster's scale (Small draws it at 85 %). */
-#touch-ui .tc-cluster > .tc-btn:not(.tc-fire) { font-size: calc(12px / var(--tc-scale, 1)); }
+/* Small (drawn at 85 %): the labels keep the text floor (11.6 px as drawn, a little tighter to fit their circles). */
+html.tc-small #touch-ui .tc-cluster > .tc-btn:not(.tc-fire) { font-size: calc(11.6px / var(--tc-scale, 1)); letter-spacing: -0.04em; }
 /* Small (html.tc-small): the ammo panel (drawn full size) clears the smaller Weapons ring it would otherwise touch. */
 html.touch.tc-small #ammo { bottom: 196px; }
 /* The first match on a phone: one line pointing to the button settings, under the scorebar, fading out. */
@@ -2108,12 +2108,12 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
   html.touch #touch-rotate b::before { content: '⟳'; display: block; font-size: 48px; font-style: normal; color: var(--cyan); }
   html.touch #touch-rotate small { color: var(--muted); font-size: 14px; }
 }
-/* An iPhone in Safari (phone.ts): the Add to Home Screen line, once, on the menu, until dismissed. */
-#home-tip { position: fixed; z-index: 45; left: 50%; bottom: calc(58px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px); padding: 6px 6px 6px 14px; border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 8px; background: rgba(11, 15, 26, 0.9); color: var(--text); font: 600 13px var(--font-display); transition: opacity 0.3s ease; }
+/* An iPhone in Safari (phone.ts): the Add to Home Screen line, once, on the menu until dismissed: over the news bar, clear of the buttons. */
+#home-tip { position: fixed; z-index: 45; left: 50%; bottom: calc(4px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px); padding: 6px 6px 6px 14px; border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 8px; background: rgba(11, 15, 26, 0.9); color: var(--text); font: 600 13px var(--font-display); transition: opacity 0.3s ease; }
 #home-tip b { color: var(--cyan); font-weight: 700; }
 #home-tip button { min-width: 36px; min-height: 36px; padding: 0; font-size: 18px; line-height: 1; }
 #home-tip.gone { opacity: 0; }
-body:has(#menu[hidden]) #home-tip { display: none; }
+body:has(#menu[hidden]) #home-tip, body:has(.menu-footer:not([data-screen='home'])) #home-tip { display: none; }
 /* Options → Controls: a key you can rebind (the weapon wheel). */
 .key-bind-row { display: flex; align-items: center; gap: 8px; }
 .key-bind-grid { display: grid; grid-template-columns: repeat(2, minmax(0, auto) auto); align-items: center; gap: 6px 10px; }
