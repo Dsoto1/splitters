@@ -88,4 +88,10 @@ Legend: **Replace** = the new model takes the existing gun's place (its rules, s
 | Tactical Rotary Minigun (Meshy_AI_tactical_rotary_minigun_3d_20261127…) | Replace | `lmg` (Spin Gun) |
 | Pneumatic Flechette Launcher (a newer file, 2026-11-27 20:14; use it, not the 11-22 one) | New gun | as #27 |
 
-Coming from the owner (2026-11-27): a new Nailgun, the Knife (uploaded, not yet seen in Drive), Grapple Hook versions and its ammo, Battle Axe, Spear. (the sharper-guns pass covers them meanwhile).
+| Tactical Combat Knife (textured, and an untextured `_generate` copy for colour variants) | Replace | `knife` |
+| Viking Battleaxe | Replace | `battle_axe` |
+| Mesoamerican Obsidian Spear | Replace | `spear` (held and thrown/stuck, as today) |
+| Steampunk Claw Grapple Gun, Loaded / Unloaded | Replace | `grapple` (Grapple Hook): the loaded model while the claw is in, the unloaded one once it's fired |
+| Deployed Grapple Hook, Long Cable | New model | the fired claw and its cable (the grapple's "ammo"), drawn where the hook bites |
+
+Coming from the owner: a new Nailgun. (the sharper-guns pass covers them meanwhile).
