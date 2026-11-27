@@ -56,6 +56,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/stjohns-14` · deb0d367 · run 46066243281 (St. John's step 14: Clock Tower, forward, the skyway through its back hall, the Carriageway's west door gone; the 7c double door left for its own step)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
