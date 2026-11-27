@@ -56,6 +56,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/chars-1126c` · e07ed802 · 45923080942 (the 11-26 evening character round: Pirates and Holiday rows, variant characters, MapMaker-only looks, 45 new and replacement models, 32 characters removed, Kato on core.kato)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
