@@ -56,7 +56,12 @@
     "core.runebreaker": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.laser_rifle": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo", "x2"] },
     "core.bubble_blaster": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo"] },
-    "core.singularity": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo"] },
+    "core.singularity": {
+      "hasSight": false,
+      "default": "reddot",
+      "allowed": ["reddot", "holo"],
+      "mount": { "at": [0, 0.15, -0.03], "reason": "the top rail (y 0.150 from z -0.11 to 0.34, a 0.8 cm nub at each end): the tool's rearmost flat stretch was the stock's top behind the grip, off the rail" }
+    },
     "core.sawed_off": { "hasSight": false, "default": "reddot", "allowed": ["reddot"] },
     "core.arc_caster": {
       "hasSight": "optic",
@@ -102,8 +107,8 @@
   },
   "none": {
     "core.rockets": "a tube launcher: aimed over the tube, as launchers are",
-    "core.guided": "a tube launcher: the rocket is steered after the shot, not aimed through a sight",
-    "core.blast_rockets": "a tube launcher: aimed over the tube",
+    "core.guided": "a tube launcher: the rocket is steered after the shot, not aimed through a sight (the RPG's own leaf sights stand over the tube, too low and short to aim the slow rocket through)",
+    "core.blast_rockets": "a tube launcher: aimed over the tube (the RPG's own leaf sights stand on it: nothing is added on top)",
     "core.launcher": "a grenade launcher: its rounds are lobbed, a sight on the bore would point over the target",
     "core.swarm": "a launcher whose rockets home: no sight to line up",
     "core.heart_taser": "fires a slime that finds a hurt teammate by itself: no sight to line up",

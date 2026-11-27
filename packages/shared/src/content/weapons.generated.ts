@@ -1174,6 +1174,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.swarm.d',
     },
   },
+  // model: The owner's own Modular Classic RPG (Meshy, owned, 2026-11-27; content/guns.json), shared by Blast Rockets and the Guided Rocket; sharper copies in your own hands at Medium and High. The code-built rocket tube is the fallback.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // group: The extended arsenal: every one fires differently. 8: heavy.
   // design: Laser-guided: the rocket flies wherever you keep your crosshair. Slow, so steer it round corners.
@@ -1212,11 +1213,14 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     spread: 0,
     range: 120,
     view: {
-      model: 'weapons/rockets.glb',
-      viewOffset: [0.24, -0.26, 0.5],
+      model: 'guns/rpg7.glb',
+      held: { medium: 'guns/rpg7.medium.glb', high: 'guns/rpg7.high.glb' },
+      fallback: 'weapons/rockets.glb',
+      muzzleAt: [0, 0.04, 0.47],
+      viewOffset: [0.24, -0.305, 0.415],
       tracer: '#ff4a3a',
       sound: 'fire.plasma',
-      hold: { style: 'long', grip: [0, -0.1, 0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] },
+      hold: { style: 'long', grip: [0, -0.055, 0.085], support: [0, -0.005, 0.2], shoulder: [0, 0.04, -0.3] },
     },
   },
   // group: The extended arsenal: every one fires differently. 8: heavy.
@@ -1624,6 +1628,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'pistol', grip: [0, 0.1, 0] },
     },
   },
+  // model: The owner's own Steampunk Claw Grapple Gun (Meshy, owned, 2026-11-27; content/guns.json): loaded with its claw in, the unloaded one (`spent`) from a shot until it is ready again, and the claw itself (`hookModel`) drawn where it bites. The flare gun it replaced is the fallback.
   'core.grapple': {
     id: 'core.grapple',
     displayName: 'Grapple Hook',
@@ -1644,10 +1649,18 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'weapons/flare_gun.glb',
-      viewOffset: [0.2, -0.18, 0.42],
+      model: 'guns/grapple.glb',
+      held: { medium: 'guns/grapple.medium.glb', high: 'guns/grapple.high.glb' },
+      spent: {
+        model: 'guns/grapple_fired.glb',
+        held: { medium: 'guns/grapple_fired.medium.glb', high: 'guns/grapple_fired.high.glb' },
+      },
+      hookModel: 'guns/grapple_hook.glb',
+      fallback: 'weapons/flare_gun.glb',
+      viewOffset: [0.2, -0.2, 0.46],
       tracer: '#d8d2c0',
-      hold: { style: 'pistol', grip: [0, -0.043, -0.068], support: [-0.02, -0.053, -0.058], rake: 34 },
+      hold: { style: 'long', grip: [0, -0.04, -0.17], support: [0, 0, 0.12], shoulder: [0, 0.01, -0.31] },
+      muzzleAt: [0, 0.045, 0.25],
       sound: 'fire.disc.c',
     },
   },
@@ -1769,6 +1782,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       reloadSound: 'reload.scifi',
     },
   },
+  // model: The owner's own Modular Classic RPG (Meshy, owned, 2026-11-27; content/guns.json), shared by Blast Rockets and the Guided Rocket; sharper copies in your own hands at Medium and High. The code-built rocket tube is the fallback.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: A variant of an existing weapon for Disc Arena and Classes. Blast rockets: a Rocket Launcher with a four-rocket drum and the knockback to rocket-jump.
   'core.blast_rockets': {
@@ -1805,11 +1819,14 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'weapons/rockets.glb',
-      viewOffset: [0.24, -0.26, 0.5],
+      model: 'guns/rpg7.glb',
+      held: { medium: 'guns/rpg7.medium.glb', high: 'guns/rpg7.high.glb' },
+      fallback: 'weapons/rockets.glb',
+      muzzleAt: [0, 0.04, 0.47],
+      viewOffset: [0.24, -0.305, 0.415],
       tracer: '#ffb347',
       sound: 'fire.swarm.d',
-      hold: { style: 'long', grip: [0, -0.1, 0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] },
+      hold: { style: 'long', grip: [0, -0.055, 0.085], support: [0, -0.005, 0.2], shoulder: [0, 0.04, -0.3] },
     },
   },
   // design: A variant of an existing weapon for Disc Arena and Classes. The medi-beam: a Medkit that heals a little, often, from further away.

@@ -126,7 +126,7 @@ const HIDDEN_WORK = 40000;
  * triangles whose centre is inside that box before anything else: a part of the model (a vehicle's cockpit) cut far
  * less than the whole, with maps of its own (prepare-guns.mjs `interior`). Returns { doc, sourceTriangles, triangles }.
  */
-export async function meshyDocument(fbxPath, { triangles, recolor = null, renormal = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null, keepMetalRough = false } = {}) {
+export async function meshyDocument(fbxPath, { triangles, recolor = null, renormal = null, metallic = 0, roughness = 0.75, maxError = 0.02, surface = 'texture', textureSize = 1024, normalSize = 1024, dropHidden = false, sloppy = false, lod = null, crop = null, keepMetalRough = false, align = null } = {}) {
   const glb = /\.glb$/i.test(fbxPath);
   const { doc, normalImage, metalRoughImage = null } = glb ? await glbDocument(fbxPath) : { ...(await fbxToDocument(fbxPath, { keepUv: true })), normalImage: existsSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) ? readFileSync(fbxPath.replace(/\.fbx$/i, '_normal.png')) : null };
   const prims = doc.getRoot().listMeshes().flatMap((m) => m.listPrimitives());
@@ -138,6 +138,14 @@ export async function meshyDocument(fbxPath, { triangles, recolor = null, renorm
   const glbMap = glb ? prim.getMaterial()?.getBaseColorTexture()?.getImage() : null;
   if (glb && !glbMap) throw new Error(`${basename(fbxPath)}: no base colour map in the GLB`);
   await doc.transform(weld());
+  // `align: { scale, shift }`: the download moved into another download's frame first (a second pose of the same
+  // model that Meshy scaled to its own bounds: the grapple gun without its claw), positions times `scale` plus `shift`.
+  if (align) {
+    const pos = prim.getAttribute('POSITION');
+    const a = pos.getArray().slice();
+    for (let i = 0; i < a.length; i += 3) for (let k = 0; k < 3; k++) a[i + k] = a[i + k] * align.scale + (align.shift[k] ?? 0);
+    pos.setArray(a);
+  }
   if (crop) cropToBox(prim, crop);
   if (prim.getIndices().getCount() / 3 > WORK_TRIANGLES) {
     const [cut] = MeshoptSimplifier.simplify(new Uint32Array(prim.getIndices().getArray()), new Float32Array(prim.getAttribute('POSITION').getArray()), 3, WORK_TRIANGLES * 3, Math.max(0.01, maxError), []);

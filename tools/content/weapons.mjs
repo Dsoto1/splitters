@@ -84,6 +84,7 @@ export function schemas(root = ROOT, families = []) {
     model: str, 'fallback?': str, viewOffset: vec3, tracer: str, 'zoomFov?': num, hold, 'sound?': str, 'reloadSound?': str, 'explosionSound?': str, 'impactSound?': str, 'cycle?': obj({ sound: str, at: num }), 'beam?': bool,
     'muzzle?': flash, 'muzzleAt?': vec3, 'altShot?': obj({ sound: str, 'rate?': num, flash, 'smoke?': num }),
     'held?': obj({ medium: str, high: str }),
+    'spent?': obj({ model: str, 'held?': obj({ medium: str, high: str }) }), 'hookModel?': str,
     'optic?': obj({ mag: num, eye: vec3, radius: num, 'relief?': num, 'reticle?': en(['duplex', 'chevron']) }),
   });
   const fireModeSpec = obj({ mode: en(['auto', 'semi', 'burst']), label: str, 'fireIntervalTicks?': int, 'burst?': obj({ count: int, intervalTicks: int }), 'kick?': partial(kick) });
@@ -290,7 +291,7 @@ export function build(content, root = ROOT) {
     if (def.botRange[0] > def.botRange[1]) problems.push(`${file}: botRange runs backwards`);
     handlingProblems(def.handling, file);
     if (def.vehicleDamage !== undefined && (def.vehicleDamage <= 0 || def.vehicleDamage > 5)) problems.push(`${file}: vehicleDamage multiplies what it does to vehicles, above 0 and at most 5`);
-    for (const m of [def.view.model, def.view.fallback, def.view.held?.medium, def.view.held?.high]) if (m && !modelExists(m)) problems.push(`${file}: model ${m} not found under packages/client/public/models`);
+    for (const m of [def.view.model, def.view.fallback, def.view.held?.medium, def.view.held?.high, def.view.spent?.model, def.view.spent?.held?.medium, def.view.spent?.held?.high, def.view.hookModel]) if (m && !modelExists(m)) problems.push(`${file}: model ${m} not found under packages/client/public/models`);
     const sound = def.view.sound ?? `fire.${name}`;
     if (!sounds.has(sound)) problems.push(`${file}: sound ${sound} is not in content/sounds.json`);
     if (def.view.altShot && !sounds.has(def.view.altShot.sound)) problems.push(`${file}: sound ${def.view.altShot.sound} is not in content/sounds.json`);

@@ -4,7 +4,7 @@
   "excluded": {
     "core.arc_caster": "no iron sights: its own scope tube stands on its top: aims through the tube, its window in content/optics.json",
     "core.arena_disc": "no sights on the model: a flat-topped disc launcher",
-    "core.blast_rockets": "a tube launcher: no sights, its top line starts on the stock",
+    "core.blast_rockets": "a tube launcher, aimed over the tube: the RPG's leaf sights are not fitted (content/optics.json none)",
     "core.blaster_x42": "its own scope sits over the receiver with no sights under it: aims through the scope, its window in content/optics.json",
     "core.bubble_blaster": "no sights on the model: a flat-topped kit gun",
     "core.desert_carbine": "its sights are its own holographic sight and a front post with no rear sight: aims through the holographic sight, its window in content/optics.json",
@@ -13,7 +13,7 @@
     "core.flamethrower": "no sights on the model: its top line starts on the stock",
     "core.flare_gun": "the model is drawn broken open, its barrel tipped up: no line along it",
     "core.gilded_pistol": "a flintlock: the cock stands on the centre plane over the barrel, blocking the line to the bead",
-    "core.guided": "a tube launcher: no sights, its top line starts on the stock",
+    "core.guided": "a tube launcher, steered after the shot: the RPG's leaf sights are not fitted (content/optics.json none)",
     "core.heart_taser": "its slime finds a hurt teammate by itself: aims with the top of the gun (weapons intake 11-18)",
     "core.hornet": "an organic sci-fi shell: the mandibles at the muzzle block a line along the top (weapons intake 11-18)",
     "core.laser_rifle": "no sights on the model: a flat-topped kit gun",
