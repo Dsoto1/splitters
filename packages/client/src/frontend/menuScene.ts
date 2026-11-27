@@ -397,12 +397,13 @@ export class MenuScene {
     l.opacity = l.doneAt === null ? Math.min(1, l.opacity + dt / 0.2) : Math.max(0, l.opacity - dt / 0.3);
     bar.el.style.opacity = l.opacity.toFixed(3);
     if (l.doneAt !== null && l.opacity <= 0) this.loading = null;
-    // Under the hero's feet (the plinth's front edge), wherever the camera has drifted.
+    // Just under the hero's feet, wherever the camera has drifted, and above the screen's turn buttons.
     const canvas = this.scene.getEngine().getRenderingCanvasClientRect();
     if (canvas) {
-      const p = Vector3.Project(new Vector3(0, 0, 1.05), Matrix.IdentityReadOnly, this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(canvas.width, canvas.height));
+      const p = Vector3.Project(Vector3.ZeroReadOnly, Matrix.IdentityReadOnly, this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(canvas.width, canvas.height));
+      const below = bar.el.parentElement?.querySelector('.spin-bar')?.getBoundingClientRect().top ?? Infinity;
       bar.el.style.left = `${Math.round(canvas.left + p.x)}px`;
-      bar.el.style.top = `${Math.round(canvas.top + p.y)}px`;
+      bar.el.style.top = `${Math.round(Math.min(canvas.top + p.y + 6, below - 12))}px`;
     }
   }
 
