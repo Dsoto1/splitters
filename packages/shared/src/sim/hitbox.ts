@@ -40,7 +40,8 @@ export interface HitShapes {
 }
 /**
  * A look's measured shapes. `rest`: the model's rest height (the game fits it to 1.8 m); creatures (`creature`)
- * are in their own drawn metres instead, with `wide` (their widest) and `hover`. `crouch` / `prone` null: the
+ * are in their own drawn metres instead, with `wide` (their widest) and `hover`. A hovering look (`locomotion:
+ * 'hover'`) has `hover` too: its shapes are measured that far up, where it is drawn. `crouch` / `prone` null: the
  * standing shapes in every stance (creatures have no such clips).
  */
 export interface LookHitbox {

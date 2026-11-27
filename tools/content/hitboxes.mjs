@@ -24,7 +24,7 @@ import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { firstFrame, jointParents, jointPositions, readGlb, retargetFrame, skinnedVertices } from './skinpose.mjs';
-import { hitboxOverrideProblems, isQueued, readManifests } from './character-manifests.mjs';
+import { HOVER_DEFAULT, hitboxOverrideProblems, isQueued, readManifests } from './character-manifests.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
 export const OUT_FILE = join(ROOT, 'packages/shared/src/content/hitboxes.generated.ts');
@@ -296,27 +296,35 @@ function spineLine(d, frame, k, lift = 0) {
  * A character on the rig (one file or several parts) posed in one stance, its vertices by region in the hit
  * shapes' units (metres at a 1.8 m standing height, x to its right). Returns { reg, rest }.
  */
-export async function characterPoints(files, stance, clipsFrom) {
+export async function characterPoints(files, stance, clipsFrom, hover = 0) {
   const rig = await readGlb(join(CHARS, 'rig.glb'));
   const docs = await Promise.all(files.map((f) => readGlb(join(CHARS, `${f}.glb`))));
   const rest = restBounds(docs);
   const k = STAND / rest.height;
+  // A hovering look (`locomotion: hover`) is drawn its `hover` metres (at 1.8 m) up: its shapes are lifted as much.
+  const lift = hover / k;
   let spine = [];
   const regs = docs.map((d, i) => {
     const frame = stanceFrame(rig, d, stance, clipsFrom);
-    if (i === 0) spine = spineLine(d, frame, k);
-    return regions(skinnedVertices(d, frame), jointParents(d), k);
+    if (i === 0) spine = spineLine(d, frame, k, lift);
+    return regions(skinnedVertices(d, frame), jointParents(d), k, lift);
   });
   return { reg: merge(regs), rest: rest.height, spine };
 }
 
 /** Measure a character on the rig: its shapes in each pose, at a 1.8 m standing height. */
-export async function measureCharacter(files, overrides, clipsFrom) {
+export async function measureCharacter(files, overrides, clipsFrom, hover = 0) {
   const out = {};
-  for (const stance of Object.keys(POSES)) {
-    const { reg, rest, spine } = await characterPoints(files, stance, clipsFrom);
+  // Hovering, the body is drawn upright in every stance (it hunches a little, CharacterAnimator): the standing shapes.
+  for (const stance of hover ? ['stand'] : Object.keys(POSES)) {
+    const { reg, rest, spine } = await characterPoints(files, stance, clipsFrom, hover);
     out.rest = r3(rest);
+    if (hover) out.hover = hover;
     out[stance] = applyOverrides(fitPose(reg, overrides?.arms, spine), overrides);
+  }
+  if (hover) {
+    out.crouch = out.prone = out.stand;
+    return out;
   }
   // Crouched, the hold still brings the gun up to the eye: the arms are the standing ones, carried with the head.
   const st = out.stand, cr = out.crouch;
@@ -360,19 +368,19 @@ export async function subjects() {
   for (const l of CORE_LOOKS) if (!l.whole) out.push({ key: l.id, files: [l.head, ...l.parts, ...l.hair].filter(Boolean) });
   for (const m of readManifests()) {
     if (isQueued(m) || m.kind !== 'character' || !existsSync(join(CHARS, `${m.id}.glb`))) continue;
-    out.push({ key: m.look, files: [m.id], overrides: m.hitbox });
+    out.push({ key: m.look, files: [m.id], overrides: m.hitbox, ...(m.locomotion === 'hover' ? { hover: m.hover ?? HOVER_DEFAULT } : {}) });
   }
   for (const [kind, spec] of Object.entries(CREATURE_SPECS)) out.push({ key: `creature:${kind}`, creature: spec });
   return out;
 }
 
 /** A subject's posed vertices by region (see characterPoints / creaturePoints). */
-export const pointsOf = (sub, stance = 'stand') => (sub.creature ? creaturePoints(sub.creature) : characterPoints(sub.files, stance, sub.clipsFrom));
+export const pointsOf = (sub, stance = 'stand') => (sub.creature ? creaturePoints(sub.creature) : characterPoints(sub.files, stance, sub.clipsFrom, sub.hover));
 
 /** Everything measured: [key, entry]. Keys: look ids, `base:male` / `base:female` / `base:zombie` (mannequins), `creature:<kind>`. */
 export async function measureAll() {
   const out = [];
-  for (const sub of await subjects()) out.push([sub.key, sub.creature ? await measureCreature(sub.creature) : await measureCharacter(sub.files, sub.overrides, sub.clipsFrom)]);
+  for (const sub of await subjects()) out.push([sub.key, sub.creature ? await measureCreature(sub.creature) : await measureCharacter(sub.files, sub.overrides, sub.clipsFrom, sub.hover)]);
   return out;
 }
 
@@ -400,7 +408,7 @@ export function source(entries) {
   ];
   for (const [key, e] of entries) {
     const same = e.crouch === e.stand;
-    const extra = e.wide !== undefined ? `, wide: ${fmt(e.wide)}, hover: ${fmt(e.hover)}, creature: true` : '';
+    const extra = e.wide !== undefined ? `, wide: ${fmt(e.wide)}, hover: ${fmt(e.hover)}, creature: true` : e.hover ? `, hover: ${fmt(e.hover)}` : '';
     L.push(`  '${key}': { rest: ${fmt(e.rest)}${extra},`);
     L.push(`    stand: ${shapesSrc(e.stand)},`);
     if (same) L.push('    crouch: null, prone: null },');

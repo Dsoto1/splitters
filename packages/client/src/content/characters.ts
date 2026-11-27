@@ -137,8 +137,9 @@ export interface CharacterInstance {
   holdPistol?: { forward?: number; down?: number; out?: number };
   /** This body's own hands and arms on a gun against everyone's (the look's `whole.grip`, GripTune). */
   grip?: GripTune;
-  /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle. */
-  locomotion?: 'roll';
+  /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle; `hover` glides `hover` m up (at 1.8 m). */
+  locomotion?: 'roll' | 'hover';
+  hover?: number;
   /** The look's authored clip set (`clips`), loaded: each clip's natural speed, length and left-foot touchdown (gait.ts ClipLoop). */
   clipLoops?: Partial<Record<Clip, ClipLoop>>;
   dispose(): void;
@@ -315,6 +316,7 @@ export class CharacterLibrary {
     let holdPistol: CharacterInstance['holdPistol'];
     let grip: CharacterInstance['grip'];
     let locomotion: CharacterInstance['locomotion'];
+    let hover: CharacterInstance['hover'];
     let clipLoops: CharacterInstance['clipLoops'];
 
     if (spec.npc) {
@@ -376,6 +378,7 @@ export class CharacterLibrary {
         // The fitted offsets under the manifest's own (hand-set ones the audit kept, curls, rolls).
         grip = fit?.grip || look.whole?.grip ? { ...fit?.grip, ...look.whole?.grip } : undefined;
         locomotion = look.locomotion;
+        hover = look.locomotion === 'hover' ? look.hover : undefined;
       }
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
       const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair.filter((h) => h !== BEARD)];
@@ -499,6 +502,7 @@ export class CharacterLibrary {
       ...(holdPistol ? { holdPistol } : {}),
       ...(grip ? { grip } : {}),
       ...(locomotion ? { locomotion } : {}),
+      ...(hover ? { hover } : {}),
       ...(clipLoops ? { clipLoops } : {}),
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();
