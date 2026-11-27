@@ -6181,7 +6181,7 @@ async function offlineFlow(browser) {
   const arenas = await kindCards('arenas');
   const arcadeK = await kindCards('arcade');
   const grounds = await kindCards('battlegrounds');
-  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-battlegrounds.png` });
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-battlegrounds.png`, timeout: T(60000) }).catch(() => {});
   const storyK = await kindCards('story');
   const rowsK = await page.evaluate(() => [...document.querySelectorAll('#map-cards .sector-row')].map((r) => ({ id: r.id, maps: r.querySelectorAll('.map-card').length, unknown: r.querySelectorAll('.sector-tile.unknown').length })));
   const customK = await kindCards('custom');
@@ -12724,7 +12724,7 @@ async function storyFlow(browser) {
       status: r.querySelector('.sector-status')?.textContent,
     })),
   );
-  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-story.png` });
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-story.png`, timeout: T(60000) }).catch(() => {});
   const jade = rows.find((r) => r.id === 'jade_empire');
   check(
     rows.map((r) => r.id).join() === 'jade_empire,lockdown,neon_tomorrow' &&
