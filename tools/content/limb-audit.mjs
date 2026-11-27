@@ -48,14 +48,33 @@ const browser = await chromium.launch({
 const page = await browser.newPage({ viewport: { width: 360, height: 480 } });
 const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
-await page.goto(`${base}/?mode=grips&test=1`, { waitUntil: 'domcontentloaded' });
-await page.waitForFunction(() => window.__grips, null, { timeout: 120_000 });
-if (fixOff) await page.evaluate(() => window.__grips.limbFix(false));
+// (Opened again when a look's pose hangs: the run goes on with the next look.)
+const open = async () => {
+  await page.goto(`${base}/?mode=grips&test=1`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.__grips, null, { timeout: 120_000 });
+  if (fixOff) await page.evaluate(() => window.__grips.limbFix(false));
+};
+await open();
 const looks = (await page.evaluate(() => window.__grips.looks())).filter((l) => (only ? only.includes(l.id) : l.pickable));
 
 const rows = [];
+const LOOK_MS = 120_000;
 for (const l of looks) {
+  let timer;
   try {
+    await Promise.race([measure(l), new Promise((_, no) => (timer = setTimeout(() => no(new Error(`timed out after ${LOOK_MS / 1000} s`)), LOOK_MS)))]);
+  } catch (e) {
+    console.error(`${l.id}: ${e.message.split('\n')[0]}`);
+    if (/timed out/.test(e.message)) await open();
+  } finally {
+    clearTimeout(timer);
+  }
+  // Saved as it goes (a long run cut short keeps what it measured).
+  writeFileSync(join(out, 'limbs.json'), JSON.stringify(rows, null, 1));
+}
+
+async function measure(l) {
+  {
     if (tune) await page.evaluate(([id, t]) => window.__grips.tune(id, { grip: t }), [l.id, tune]);
     await page.evaluate((id) => window.__grips.pose(id, 'core.rifle', 'third'), l.id);
     if (legsRest) await page.evaluate(() => window.__grips.legsAtRest(true));
@@ -80,8 +99,6 @@ for (const l of looks) {
         if (pictures && view !== 'third') await page.screenshot({ path: join(out, 'pics', `${l.id}_${gun}_${view}.png`) });
       }
     console.log(`${l.id}: legs ${m.legScore} elbows ${m.elbowScore}${wristGuns.length ? ` wrists ${JSON.stringify(wrists)}` : ''}`);
-  } catch (e) {
-    console.error(`${l.id}: ${e.message.split('\n')[0]}`);
   }
 }
 await browser.close();

@@ -69,186 +69,238 @@ and support side), in `/tmp/claude-0/-home-user/99559628-4a1b-594f-bb6f-7638c875
 For the fix (lane B): the legs' stance in the standing armed clips (or a pass straightening the knees and squaring the
 feet when standing still), not a per-rig correction; the elbow pole's out/down ratio if the owner wants it lower.
 
-## Table, worst first
+## After: the fix (lane B, 2026-11-27, `wip/limbs-fix-1127`)
+
+For every character at once; no per-look `tune` was needed (the leftovers in the table are the skin measures' cloth:
+capes, robes, spurs and clown shoes, checked on the sheet).
+
+- **Legs, standing still** (`packages/client/src/game/standLegs.ts`, run by CharacterAnimator.pose after the clips): each
+  leg re-solved as a two-bone chain while the standing loops (aim_idle, idle) hold the body, by their weight (so it eases
+  in as the feet plant and out as a walk, run, crouch, jump or dance takes over; none seated, rolling, dodging or lying,
+  nor far off at coarse detail). The hip stays where the clip put it; the ankle keeps the clip's height and place along
+  the body but comes in to at most `STANCE_LEAN` 3° out from under the hip (85 % of the way); the knee bends toward the
+  toes (`KNEE_OUT` 6° out from ahead); the foot keeps the clip's pitch and roll on the ground and is turned about the
+  vertical to `TOE_OUT` 7° out. The clip's knee flex is kept. Unit test `packages/client/test/standLegs.test.ts`.
+- **Elbows:** the shooting elbow's pole drops further (`ELBOW_POLE_DOWN` 0.18 → 0.30, its reach out, `ELBOW_POLE_OUT`
+  0.45, kept): never in toward the body (the owner's Grandpa Chains note).
+- **Support wrist under a handguard** (first and third person, long guns): the forearm rolls about its own line by
+  `FOREARM_TWIST_SHARE` 40 % of the hand's twist off rest, the hand turned back by as much (it stays on the gun; in the
+  joints' own frames, so mirroring doesn't matter). `shareWristTwist`, unit test `packages/client/test/wristTwist.test.ts`.
+- Before/after switch: `__grips.limbFix(false)` (`FIX=0` in limb-audit.mjs) turns all three off; `WRISTS=<guns>` measures
+  the wrists (`__grips.wrists()`: each hand's bend and twist on its forearm, the forearm's roll, degrees off rest).
+
+All 176 pickable looks, roster medians (L / R), before → after:
+
+| measure | before | after |
+|---|---|---|
+| knee bow | 5.7 / 9.9 | 3.1 / 2.2 |
+| shin out | 7.8 / 3.2 | 2.6 / 2.6 |
+| knee points | 13.7 / 44.3 | 5.5 / 7.2 |
+| foot yaw | 7.6 / 30.3 | 7 / 7 |
+| sole roll | 2.1 / 1.3 | 2.9 / 2.6 |
+| skin bow | -1.9 / -3.2 | -2 / -2.1 |
+| elbow (support / shooting) | 16.3 / 57.5 (shooting 47-61) | 16.3 / 46.7 (shooting 38-52) |
+| elbows wrong (in or up) | 0 | 0 |
+| leg score, median | 14.8 | 8.7 |
+
+Worst five by leg score, before: Sigrun Frostmane 85.7, Grandpa Chains 74.5, Aurelio Dawnmantle 70.8, Patches 56.3, Silas
+Coilwhisper 51.5; after: Sigrun Frostmane 89, Dex Calloway 60.5, Patches 56.6, Space Marine 53.2, Silas Coilwhisper 50.5
+(all the skin measures: Sigrun's cape, Dex's spurs, Patches' shoes, Space Marine's padded shins, Silas' fringes; their
+joints read as the roster's and they stand straight on the sheet). Grandpa Chains 74.5 → 13.1 (his slipper, turned 30°
+by the clip, now points ahead), Elder Tomo 14.8 → 4.5.
+
+Support wrist, Grandpa Chains (degrees off rest, the hand on its forearm, bend / twist, and the forearm's roll):
+
+| gun, view | before | after |
+|---|---|---|
+| Auto Shotgun, first person (arms) | 31 / −129, forearm −39 | 31 / −77, forearm −91 |
+| Auto Shotgun, full body | 28 / −132, −47 | 28 / −79, −100 |
+| Rifle, first person | 34 / −131, −39 | 34 / −78, −92 |
+| SMG, first person | 34 / −130, −39 | 34 / −78, −92 |
+| Rifle, third person | 33 / −127, −45 | 33 / −76, −96 |
+
+The bend is the cup's own (the hand palm up, fingers round the handguard's far side) and is unchanged.
+
+## Table, worst first (after the fix)
 
 <!-- limb-table -->
 | # | Look | Legs (off median) | worst | Elbows | knee bow L/R | shin out L/R | knee points L/R | foot yaw L/R | sole roll L/R | skin bow L/R | elbow L/R |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| | **roster median** (176) | | | | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | 2.1 / 1.3 | -1.9 / -3.2 | 16.3 / 57.5 |
-| 1 | Sigrun Frostmane (`core.frostvalkyrie`) | 87.8 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -85.7 / 19 | 14.1 / 5.9 | 16.6 / 59.6 |
-| 2 | Grandpa Chains (`core.grandpachains`) | 72.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | 74.5 / 5 | -6.7 / -16.4 | 15.8 / 59.9 |
-| 3 | Aurelio Dawnmantle (`core.sunpriest`) | 68.7 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.6 | 7.6 / 30.3 | 70.8 / -1.4 | -4.6 / -2.3 | 15.2 / 53.2 |
-| 4 | Patches (`core.hoboclown`) | 58.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 14.1 / 44.9 | 7.7 / 30.3 | -56.3 / 10 | -4.2 / -10.4 | 15.3 / 52.7 |
-| 5 | Silas Coilwhisper (`core.snakeshaman`) | 53.6 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | -51.5 / 44 | -7.7 / -6.1 | 15.4 / 57.2 |
-| 6 | Space Marine (`core.spacemarine`) | 47.8 | skinBow R | 0 | 5.4 / 10 | 7.9 / 3 | 12.7 / 44.7 | 6.9 / 31 | 2.4 / -1.1 | -29.4 / -51 | 21.2 / 60.7 |
-| 7 | King Waddleston (`core.penguinking`) | 46.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.2 / 43.9 | 7.6 / 30.3 | -2.1 / 0.1 | – / 43.6 | 18.9 / 55.4 |
-| 8 | Dredge Marrow (`core.abyssalhunter`) | 37.9 | footRoll R | 0 | 5.6 / 9.9 | 7.8 / 3.2 | 13.5 / 44.4 | 7.5 / 30.4 | 11 / 39.2 | -6.4 / -8.8 | 15.9 / 60.8 |
-| 9 | Greyfang (`core.greyfang`) | 37.6 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.3 | -35.5 / 3.2 | -0.7 / -3.9 | 15.7 / 52.9 |
-| 10 | Napsworth (`core.koala`) | 36 | skinBow R | 0 | 5.8 / 9.8 | 7.8 / 3.3 | 14 / 44.2 | 8 / 30 | -1 / -0.4 | 21.4 / -39.2 | 14.9 / 52.8 |
-| 11 | Dex Calloway (`core.crewgunslinger`) | 33.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 35.5 / 14.2 | -5.4 / -7.4 | 17.1 / 60 |
-| 12 | Sarge Tobias Crane (`core.veterancrew`) | 30.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.7 / 30.3 | 32.5 / 3.8 | -5.3 / -2.1 | 16.2 / 53.8 |
-| 13 | Duke Dashwood (`core.cheetah`) | 28.3 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.3 | 13.8 / 44.2 | 7.8 / 30.2 | 10 / 6.1 | -30.2 / -12.3 | 16.6 / 54.4 |
-| 14 | Teddy (`core.teddy`) | 27.9 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.4 / 44 | 7.6 / 30.3 | 1.4 / -2.5 | 26 / -12 | 19 / 56.5 |
-| 15 | Blix Orrin (`core.crewalien`) | 26 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 28.1 / 0.2 | -2.7 / -1.4 | 15.4 / 58.4 |
-| 16 | Rourke (`core.rourke`) | 25.9 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.3 | 1.2 / -2.7 | -25.7 / -29.1 | 15.6 / 57.5 |
-| 17 | Axel Gainz (`core.axolotl`) | 25.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | -4.5 / – | -2.6 / 22.6 | 9.8 / 60.5 |
-| 18 | Lien Vo (`core.vcscout`) | 23.3 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -4.9 / 8 | 21.4 / -2.8 | 16.6 / 59.4 |
-| 19 | Jolly Springjack (`core.jackinthebox`) | 22.7 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | -20.6 / -2.8 | 11.3 / -5.3 | 14.5 / 57.4 |
-| 20 | Master Bodhi (`core.zencapybara`) | 22.2 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.4 / 44.1 | 7.6 / 30.4 | -0.4 / -3.3 | -12.7 / 19 | 14 / 54.1 |
-| 21 | Col. Josiah Beaumont (`core.rebelcommander`) | 20.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | 0.4 / 0 | -10.9 / -23.6 | 16.5 / 58 |
-| 22 | Brother Silencio (`core.ansel`) | 19.8 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.3 | 1.5 / -1.5 | -21.7 / 1.9 | 16.7 / 58.7 |
-| 23 | Ignatius Slagg (`core.magmajuggernaut`) | 18.8 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.9 / 44.6 | 7.7 / 30.3 | -16.7 / – | -0.7 / -5.7 | 15.5 / 55.4 |
-| 24 | Chef Basile (`core.basile`) | 18.2 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 18.4 / 19.5 | -4.2 / -12.9 | 16.9 / 57.8 |
-| 25 | The Butcher (`core.butcher`) | 17.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | 7.8 / -0.7 | -15.4 / -20.8 | 17.2 / 58.1 |
-| 26 | Capt. Elias Harrowgate (`core.unionofficer`) | 16.9 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 19 / 0.9 | -12.5 / -6.7 | 16.8 / 57.7 |
-| 27 | Pfc. Danny Okerlund (`core.vietnamsoldier`) | 16.9 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.4 | 2.1 / 1.2 | 8.5 / 13.7 | 16.8 / 56.9 |
-| 28 | Grimspire (`core.gargoyle`) | 16.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.7 / 30.3 | -1.6 / -3.8 | -16 / -20 | 17.7 / 58.7 |
-| 29 | Dusty Ranger (`core.dustycolt`) | 16.2 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.4 | 7.6 / 30.4 | 7.3 / -4.3 | -18.1 / -18.5 | 16.7 / 53.7 |
-| 30 | Rio Neonwing (`core.flamingo`) | 16.1 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.9 / 44.5 | 7.7 / 30.3 | 9.2 / 1.7 | 14.2 / -0.4 | 16.8 / 60.5 |
-| 31 | Hazel Hexley (`core.witch`) | 15.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.4 | 7.7 / 30.3 | 0.8 / 0 | 8.2 / 12.6 | 13.7 / 59.8 |
-| 32 | Jingle Tinsel (`core.elf`) | 15.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -3.8 / 3 | 11.5 / 12.4 | 17.1 / 59.5 |
-| 33 | Dr. Hugo Hue (`core.chameleon`) | 15 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.4 | 5.4 / 1.2 | -10.3 / -18.2 | 15.5 / 54.7 |
-| 34 | Poor Richard (`core.franklin`) | 14.7 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.7 / 30.3 | 1.6 / 0.7 | -16.2 / -17.9 | 17.2 / 59.8 |
-| 35 | Tik Winderly (`core.windupbot`) | 14.5 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.4 | 2.8 / 2.6 | 5.6 / -17.7 | 16 / 55.1 |
-| 36 | Sgt. Mackie (`core.pruitt`) | 14.2 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | 16.3 / 3.8 | -11.1 / -11.3 | 16.9 / 57.1 |
-| 37 | Pvt. Hank Dowling (`core.usgrunt`) | 14.2 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 1.7 / -0.2 | 5.6 / 11 | 16.7 / 59.1 |
-| 38 | Rascal McGraw (`core.bandit`) | 14 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.4 / 44 | 7.7 / 30.3 | 12.7 / 3.1 | 3.2 / -17.2 | 15.9 / 53.4 |
-| 39 | Emerald Robot (`core.emeraldrobot`) | 13.9 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.4 | 7.7 / 30.3 | 16 / 7.4 | -1.6 / -0.2 | 17.8 / 58.4 |
-| 40 | Hazmat Joe (`core.hazmat`) | 13.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 12.6 / 7 | -9.4 / -17 | 16.6 / 55.1 |
-| 41 | Cutter McCrae (`core.outlawranger`) | 13.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 15.5 / 10.3 | -6.6 / -4.5 | 16 / 59.1 |
-| 42 | Ulf Ravenshield (`core.vikingm`) | 12.9 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 4.8 / 4.7 | 10.5 / 9.7 | 16.5 / 58.9 |
-| 43 | Balam Nightclaw (`core.aztecjaguar`) | 12.6 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.6 | 7.6 / 30.4 | -2.5 / -11.3 | -1 / -3.2 | 17.3 / 56.9 |
-| 44 | Bricksby (`core.brickman`) | 12.5 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.3 | 7.6 / 30.3 | 12.1 / -9.8 | -11.2 / -15.7 | 16.3 / 57.3 |
-| 45 | Cleo Groovestone (`core.afropi`) | 12.4 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.6 | 7.6 / 30.4 | 1.2 / -0.8 | -14.3 / -9.1 | 15.5 / 59.3 |
-| 46 | Rocket Nutley (`core.acesquirrel`) | 12.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.4 | 0 / -0.6 | -10.9 / -15.6 | 16.5 / 57.4 |
-| 47 | Mujina (`core.facelessspirit`) | 12.3 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | -5.5 / 5.3 | -14.2 / -9.5 | 14.8 / 58.9 |
-| 48 | Rowdy Gnashwell (`core.tasmaniandevil`) | 12 | skinBow R | 0 | 5.6 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.4 | 4.9 / 0.4 | 7.4 / 8.8 | 21.6 / 53.8 |
-| 49 | Cool Hands Rex (`core.trex`) | 11.7 | skinBow R | 0 | 5.8 / 9.8 | 7.8 / 3.3 | 13.5 / 43.6 | 7.9 / 30.1 | 3.3 / 1.5 | -11.2 / -14.9 | 15.1 / 58.3 |
-| 50 | Madame Zephyrine (`core.mystic`) | 11.7 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44 | 7.7 / 30.3 | 2.6 / 4.2 | -13.6 / -13 | 15.6 / 59.4 |
-| 51 | Doc Seraphine Vale (`core.crewmedic`) | 11.7 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.4 | -9.6 / 1.8 | -9.4 / -4.5 | 14.2 / 55.9 |
-| 52 | Themba Ironspear (`core.zuluwarrior`) | 11.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | -3.5 / 2.2 | 4.2 / 8.4 | 18.6 / 56.7 |
-| 53 | Bronzer (`core.bronzer`) | 11.5 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -0.6 / -0.7 | 4.8 / 8.3 | 14.8 / 57 |
-| 54 | Fuse Hollister (`core.crewdemolitions`) | 11.5 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 4.2 / 12.8 | -1.8 / -2.7 | 16.6 / 57.5 |
-| 55 | Khan of the Steppes (`core.khan`) | 11.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | 2.2 / 2.8 | -12.4 / -14.5 | 14 / 54.3 |
-| 56 | Cal (`core.dale`) | 11.2 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.7 / 30.3 | -9.1 / -0.1 | -4.7 / -14.1 | 17 / 57.9 |
-| 57 | Dez Kickley (`core.hoodieguy`) | 11.1 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | 9.4 / 1.9 | -4.8 / -14.3 | 16.3 / 59.3 |
-| 58 | Dusty Orebeck (`core.spaceminer`) | 11.1 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 13.2 / 0.2 | -2.5 / -8.1 | 15.5 / 58.7 |
-| 59 | Pvt. Pete Plastic (`core.greenarmy`) | 10.7 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 12.8 / 0.6 | -4.2 / -4.7 | 17.5 / 58.6 |
-| 60 | Tag Malone (`core.graffitiraccoon`) | 10.5 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.4 | 11.2 / -9.2 | -9.5 / 3.1 | 18.5 / 52.6 |
-| 61 | Rollo Splitworth (`core.hyena`) | 10.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | -0.3 / 3.5 | -5.2 / -13.6 | 17.5 / 53.8 |
-| 62 | Barnaby Bruin (`core.barnaby`) | 10.1 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -0.5 / 2.1 | -12 / -11.2 | 14.1 / 53 |
-| 63 | Valeria Sandstorm (`core.gladiatrix`) | 9.9 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.7 / 30.3 | -7.8 / -2.6 | 1.2 / -0.5 | 15.9 / 58.8 |
-| 64 | Gears Okafor (`core.crewmechanic`) | 9.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 11.8 / 4 | -8.8 / -13 | 16.2 / 51.9 |
-| 65 | Ottis Crema (`core.baristaotter`) | 9.8 | skinBow R | 0 | 5.9 / 9.8 | 7.8 / 3.4 | 14.2 / 43.7 | 8.2 / 29.8 | -3.7 / 1.5 | 2.3 / -13 | 15 / 55 |
-| 66 | Nebka the Unwrapped (`core.ankhmummy`) | 9.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -4.8 / -2.4 | -1.1 / 6.6 | 14.5 / 58.7 |
-| 67 | Cpl. Tinwhistle (`core.toysoldier`) | 9.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.4 | -5.1 / 5.2 | -7.3 / -12.8 | 15.1 / 55.1 |
-| 68 | El Zarpazo (`core.whitetiger`) | 9.5 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.7 / 30.3 | 11.6 / 1.4 | -2.3 / -3.8 | 16.5 / 56.4 |
-| 69 | Orange Suit Engineer (`core.orangeengineer`) | 9.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.7 / 30.3 | 2.1 / -3.3 | -5.6 / -12.6 | 16.3 / 55.9 |
-| 70 | Kesi Tallgrass (`core.lionsuit`) | 9.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.3 | 5.5 / 2.2 | 0.9 / 6.2 | 15.5 / 57.3 |
-| 71 | Sgt. Samir Haddad (`core.repguard`) | 9.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.1 | 7.7 / 30.3 | 2.2 / 1.4 | 2 / 6.1 | 17.2 / 56.4 |
-| 72 | Deuce Droopwell (`core.blobfish`) | 9 | skinBow R | 0 | 6.7 / 9.3 | 7.7 / 4.2 | 16.4 / 41.3 | 10.6 / 27.4 | 0.6 / -1.3 | -7.8 / -12.2 | 15.6 / 53.5 |
-| 73 | Shaka Mpande (`core.shaka`) | 9 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 1.7 / 0.4 | -1.4 / 5.8 | 17.6 / 55.8 |
-| 74 | Prof. Quanta (`core.einstein`) | 9 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.1 | 7.6 / 30.3 | 4 / 0.5 | 7.1 / -4.2 | 16.7 / 59.7 |
-| 75 | Gorilla G (`core.gorillag`) | 8.9 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 7.6 / 2.7 | -1.5 / 5.7 | 18.3 / 55.1 |
-| 76 | Boogie Tuskworth (`core.warthog`) | 8.9 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 5.2 / 0.9 | -6.5 / -12.1 | 19.1 / 54.4 |
-| 77 | Emir Tariq Falconsword (`core.emir`) | 8.9 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.1 | 7.6 / 30.3 | 1.4 / 2.2 | -10.8 / -7.1 | 16.3 / 58.2 |
-| 78 | Nova Kade (`core.crewcyborg`) | 8.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 9.4 / 4.6 | 3.7 / 5.6 | 14.5 / 58.8 |
-| 79 | Gobbles Plymouth (`core.turkeypilgrim`) | 8.7 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.3 | 1.1 / 0.2 | 6.8 / 2.1 | 14 / 59.4 |
-| 80 | Pharaoh Mummy Warrior (`core.pharaoh`) | 8.6 | skinBow L | 0 | 5.6 / 9.9 | 7.8 / 3.2 | 13.6 / 44.4 | 7.6 / 30.4 | -1.5 / -0.7 | -10.5 / 5.1 | 11.6 / 52.5 |
-| 81 | Corvin Blackquill (`core.ravennoir`) | 8.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | -6.3 / 1.5 | -2.1 / -1.4 | 16.3 / 60 |
-| 82 | The Pale Stranger (`core.stranger`) | 8.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.7 / 30.3 | 0.7 / 3.1 | -4.6 / -11.5 | 16.6 / 59.3 |
-| 83 | Pip Quickfoot (`core.harecourier`) | 8.2 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 9.4 / 1 | 2.7 / 5 | 13.5 / 55.4 |
-| 84 | Det. Drake Montego (`core.detectiveduck`) | 8.2 | skinBow R | 0 | 5.8 / 9.8 | 7.8 / 3.4 | 14 / 43.9 | 8 / 29.9 | 4.8 / 3.7 | -3.5 / -11.4 | 16.8 / 56.4 |
-| 85 | Shiba (`core.shiba`) | 8.1 | skinBow R | 0 | 6.1 / 9.6 | 7.8 / 3.7 | 15 / 42.9 | 9 / 29 | 2.8 / 2 | -9 / -11.3 | 15.3 / 59.1 |
-| 86 | Inspector Bigotes (`core.inspector`) | 8.1 | skinBow R | 0 | 5.1 / 10.2 | 7.9 / 2.7 | 12.2 / 46 | 6.1 / 31.9 | -1.8 / 3.6 | -6.9 / -11.3 | 12 / 52.5 |
-| 87 | Elder Tomo (`core.elder`) | 8 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.5 | 7.6 / 30.3 | -5.9 / 2 | -0.2 / 4 | 16.6 / 58.9 |
-| 88 | Goblina (`core.grizzelda`) | 7.8 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 6 / 9.1 | -5.8 / -9.4 | 13.7 / 48.9 |
-| 89 | Sgt. Mickey Callahan (`core.paratrooper`) | 7.8 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | -5.7 / 1.6 | -1.1 / 2.4 | 15.3 / 55.8 |
-| 90 | Ace Featherstone (`core.eagleace`) | 7.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.7 / 30.3 | 2.1 / 1.6 | 0.9 / 4.4 | 17.1 / 54.6 |
-| 91 | Tetl Stonewarden (`core.basaltguardian`) | 7.5 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.4 | 7.7 / 30.3 | 9.6 / 0.7 | -1 / -4 | 16.5 / 58.5 |
-| 92 | Thornweaver (`core.thornweaver`) | 7.4 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | 2 / -0.1 | 5.5 / 3.1 | 15.3 / 58.8 |
-| 93 | Talon Skycrest (`core.eagleclan`) | 7.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 9.5 / 0.6 | -1.7 / 1.1 | 17.4 / 60.3 |
-| 94 | Barnaby Burrows (`core.badgeragent`) | 7.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.4 / 44.1 | 7.6 / 30.4 | 2 / 1.6 | -1.2 / 4.1 | 17.2 / 58.4 |
-| 95 | Ser Godric Vale (`core.templar`) | 7.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.3 / 43.9 | 7.6 / 30.3 | -0.3 / 1.6 | -0.6 / -10.5 | 16.8 / 58.1 |
-| 96 | Croakley (`core.croakley`) | 7.2 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.4 | 1.2 / 1 | 1.5 / 4 | 17.3 / 55.2 |
-| 97 | Freaky Frida (`core.frida`) | 7 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 3.2 / 3.7 | 3.4 / 3.8 | 14 / 59.3 |
-| 98 | Seetah J. Chloth (`core.seetah`) | 7 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.4 | -4.9 / -1.9 | -0.1 / -4.6 | 15.1 / 57.7 |
-| 99 | Octo Buddy (`core.octobuddy`) | 7 | skinBow R | 0 | 5.6 / 10 | 7.9 / 3.1 | 13.2 / 44.4 | 7.4 / 30.6 | 5.5 / 1.7 | 4.5 / -10.2 | 22.2 / 55.5 |
-| 100 | Mr. Gideon Tarr (`core.firstmate`) | 6.7 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 8.8 / 1.9 | -4.1 / -5.2 | 17.4 / 56.9 |
-| 101 | Mags Petrov (`core.crewquartermaster`) | 6.6 | skinBow R | 0 | 5.6 / 9.9 | 7.8 / 3.2 | 13.7 / 44.5 | 7.6 / 30.4 | 2.5 / 1.4 | 0.7 / 3.4 | 15.8 / 57 |
-| 102 | Cap'n Ezra Blackwake (`core.piratecaptain`) | 6.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.3 | 13.7 / 44.1 | 7.8 / 30.2 | 3.6 / 0 | 0.6 / 3.4 | 15.9 / 54.8 |
-| 103 | Zorp Gleebix (`core.abnormalalien`) | 6.5 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 3.3 / 0.8 | 0.8 / 3.3 | 16 / 59.6 |
-| 104 | Biker Gang Girl (`core.bikergirl`) | 6.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 0.9 / 0.6 | 0.3 / 3.2 | 15.2 / 57.1 |
-| 105 | Imperial Guard (`core.imperialguard`) | 6.4 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.4 / 44.1 | 7.7 / 30.3 | 1.4 / 2.6 | 4.5 / -6.8 | 17.4 / 59.8 |
-| 106 | Wren Halloway (`core.crewrecon`) | 6.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 6.6 / 1.8 | -2.3 / 3.2 | 16.1 / 58.2 |
-| 107 | Maximus Cluckworth (`core.gladiatorrooster`) | 6.2 | skinBow R | 0 | 5.8 / 9.8 | 7.8 / 3.3 | 13.6 / 43.6 | 7.9 / 30.1 | -0.7 / 3.3 | 1.1 / 3 | 17 / 56 |
-| 108 | Gorgle (`core.gorgle`) | 5.8 | skinBow R | 0 | 5.6 / 9.9 | 7.8 / 3.2 | 13.8 / 44.6 | 7.6 / 30.4 | 0.3 / -1.1 | 0.4 / 2.6 | 17.2 / 59.5 |
-| 109 | Dog Tag Doyle (`core.undeadsoldier`) | 5.8 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.4 | 7.7 / 30.3 | 7.9 / 1.2 | -1.7 / -2.5 | 14.7 / 57 |
-| 110 | Vesper Quill (`core.crewalchemist`) | 5.8 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | – / 7.1 | -3.4 / -3 | 14 / 59.5 |
-| 111 | DJ Volta Coilwave (`core.synthwaveeel`) | 5.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.9 / 44.6 | 7.6 / 30.3 | 4 / 6.5 | -3.4 / 2.6 | 20.8 / 47.1 |
-| 112 | Hopsworth Eggleton (`core.easterbunny`) | 5.8 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | 4.9 / 3.3 | 0.6 / 2.6 | 13.6 / 58.3 |
-| 113 | Sterling Purrcival (`core.tuxedocat`) | 5.7 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 4.5 / 3.6 | -6.5 / -8.9 | 16.8 / 56.7 |
-| 114 | Fishy Fred (`core.fishyfred`) | 5.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.3 | 14 / 44.4 | 7.8 / 30.2 | 2.7 / 0.5 | 0.3 / -8.8 | 14.7 / 54.6 |
-| 115 | The Rough Rider (`core.roosevelt`) | 5.6 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | 1.4 / 1 | -4.9 / 2.4 | 17 / 58.9 |
-| 116 | Puddles Backspin (`core.boxduck`) | 5.5 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.3 | 13.8 / 44.2 | 7.8 / 30.2 | 2.1 / 0.8 | -4.5 / -8.7 | 17.1 / 53.2 |
-| 117 | Kaiser Ironhelm (`core.gothickaiser`) | 5.5 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -0.5 / 0.2 | 1.4 / 2.3 | 16.2 / 58.6 |
-| 118 | Botboy (`core.botboy`) | 5.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.6 | 7.6 / 30.4 | 1.3 / -1.9 | -3.9 / -8.6 | 17.1 / 58.8 |
-| 119 | Chompers McFinn (`core.wackyshark`) | 5.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -0.4 / -3.2 | -4.7 / -8.6 | 20.5 / 55 |
-| 120 | Ser Aurelian Dawnshield (`core.paladin`) | 5.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | 6.3 / 0.3 | -2.3 / 2.1 | 16.4 / 58.4 |
-| 121 | Spacewalker (`core.astronaut`) | 5.2 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.9 / 44.5 | 7.7 / 30.3 | 5 / 1.9 | 3.3 / 1 | 16.7 / 57.9 |
-| 122 | Rad Rootley (`core.radishman`) | 5.2 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.4 | 2.6 / 1.3 | -7.1 / -7.7 | 12 / 59.2 |
-| 123 | Uncle Spangle (`core.unclesam`) | 5.2 | skinBow R | 0 | 5.6 / 9.9 | 7.8 / 3.2 | 13.6 / 44.5 | 7.6 / 30.4 | 0.1 / 1.6 | -1.1 / 2 | 16.2 / 58.7 |
-| 124 | Rufus Boomtown (`core.baboon`) | 5.1 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.7 / 30.3 | 7.2 / 1.7 | 0.9 / 0.2 | 16.4 / 53.6 |
-| 125 | Buster Haymaker (`core.boxerbunny`) | 4.8 | skinBow R | 0 | 6.4 / 9.5 | 7.8 / 3.9 | 15.6 / 42.2 | 9.7 / 28.3 | 2.1 / 2.1 | -4.2 / -8 | 17.2 / 53.9 |
-| 126 | Ellis Velvetrope (`core.elephantwarrior`) | 4.7 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | 3.4 / 0.9 | -6.6 / -7.2 | 19.3 / 54.7 |
-| 127 | Rocco Tickwell (`core.crewk9`) | 4.7 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | 0.3 / -0.3 | -0.8 / -7.9 | 16.5 / 58.4 |
-| 128 | The Dapper (`core.dapper`) | 4.4 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 1.3 / -3.1 | -6.2 / -5.6 | 14.9 / 56.6 |
-| 129 | Punkin (`core.punkin`) | 4.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.3 | 5.9 / 1.6 | 0.7 / -7.5 | 15.6 / 58.8 |
-| 130 | Coach Hank Shelton (`core.coachtortoise`) | 4.3 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 6.4 / 0.5 | -2.7 / -5.2 | 17.5 / 55.8 |
-| 131 | Kato Emberline (`core.kato`) | 4.2 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | -2.1 / -1.1 | -2.7 / -4.5 | 17 / 58.7 |
-| 132 | Honest Abe (`core.abe`) | 4.2 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.2 | 7.6 / 30.3 | 2 / 1.4 | 2.3 / -2.2 | 17 / 58.6 |
-| 133 | Ricochet (`core.ricochet`) | 4.1 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 0.2 / -2.8 | -4.7 / -2.9 | 10.9 / 57.5 |
-| 134 | Field Medic Automaton (`core.medicautomaton`) | 4.1 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | -2 / 0.4 | 0.9 / -3.9 | 16.2 / 55.3 |
-| 135 | General Cherrytree (`core.washington`) | 4 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | 1.2 / 0.3 | -5.9 / -4.8 | 17.4 / 58.6 |
-| 136 | The Mechanic (`core.mechanic`) | 3.9 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 6 / 2.6 | -1.1 / -3.7 | 13.6 / 52.3 |
-| 137 | Pink Mantis (`core.pinkalien`) | 3.8 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.7 / 30.3 | -0.7 / -2.5 | -0.7 / -2.4 | 16.5 / 59.6 |
-| 138 | Ryker Voss (`core.merc`) | 3.8 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 3.4 / 0.9 | 1.9 / 0.3 | 16.4 / 56 |
-| 139 | Lancer Mei (`core.mei`) | 3.7 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -0.8 / 0.2 | -5.6 / -2.9 | 15.6 / 59.6 |
-| 140 | Stealth Operative (`core.stealthop`) | 3.7 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.7 / 30.3 | 1.2 / 1.1 | 1.8 / 0.4 | 9.6 / 50.1 |
-| 141 | Clangers (`core.cymbalmonkey`) | 3.7 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.6 / 30.3 | 3.6 / -0.3 | 1.8 / -1.3 | 15.1 / 58.6 |
-| 142 | Kenji (`core.resolvesoldier`) | 3.6 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 2.3 / 4.9 | -4 / -2.3 | 14.5 / 54.1 |
-| 143 | Flicker (`core.crewphase`) | 3.5 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.7 / 30.3 | 5.6 / 2.2 | 0.2 / 0.1 | 15.3 / 60.7 |
-| 144 | Kris Kringleton (`core.santa`) | 3.5 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.4 / 44.1 | 7.6 / 30.3 | 0.8 / 1.2 | 1.6 / -3.1 | 17.6 / 58.4 |
-| 145 | Iron Knight (`core.knight`) | 3.4 | skinBow R | 0 | 7 / 9.2 | 7.7 / 4.4 | 17.1 / 40.3 | 11.3 / 26.7 | 4 / -1.7 | -2.1 / -6.6 | 10.6 / 49.4 |
-| 146 | Anoobys (`core.anubis`) | 3.4 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | -1.3 / 2.8 | -4.7 / -2.7 | 16.8 / 55.8 |
-| 147 | Ollie Hootman (`core.owlsniper`) | 3.4 | skinBow R | 0 | 5.3 / 10.1 | 7.9 / 2.9 | 12.6 / 45.5 | 6.5 / 31.5 | 0.8 / 0.2 | -3.7 / -6.6 | 16.5 / 60.1 |
-| 148 | Fenn Dustwhirl (`core.fennec`) | 3.4 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 4.4 / 1.3 | -1.6 / 0.2 | 17.4 / 55.2 |
-| 149 | Imperator Laurel (`core.caesar`) | 3.4 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.7 / 30.3 | 3.2 / -0.1 | 1.5 / -2.7 | 17.2 / 60 |
-| 150 | Ser Castor Brightmoor (`core.celestialknight`) | 3.3 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.7 / 30.3 | 2.8 / 4.6 | -3.9 / -5.4 | 16.4 / 59.9 |
-| 151 | Ziggy Bananas (`core.chimp`) | 3.3 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.1 | 7.6 / 30.3 | 5.4 / 0.6 | 0.7 / -3.5 | 17 / 60 |
-| 152 | T-TreeFitty (`core.t350`) | 3.2 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | -1.1 / -1.4 | -1.7 / -1.1 | 15.7 / 57.7 |
-| 153 | Lyra Vantis (`core.crewchronomage`) | 3.2 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | 2.5 / 0.6 | -2.2 / 0 | 15.1 / 55.8 |
-| 154 | Ryo Snapclaw (`core.mantisshrimp`) | 3.2 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.3 | 13.5 / 44 | 7.8 / 30.2 | -0.7 / 0.6 | 1.3 / -0.1 | 15.3 / 56.2 |
-| 155 | Azure Sentinel (`core.azuresentinel`) | 3.1 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.1 | 7.6 / 30.3 | -1 / 3.5 | -4.2 / -3.9 | 14.5 / 58.1 |
-| 156 | Mummy Bot (`core.mummybot`) | 3 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.3 | 7.7 / 30.3 | 5.1 / -1 | -2.5 / -1 | 14.4 / 58.4 |
-| 157 | The Visitor (`core.visitor`) | 2.8 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.6 / 30.3 | -0.7 / 3 | -1.6 / -0.8 | 14.7 / 58 |
-| 158 | Chad Croakley (`core.gymfrog`) | 2.8 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | 0.4 / 2.1 | 0.9 / -1.2 | 19 / 57.2 |
-| 159 | Ser Aldous Lionmane (`core.lionheart`) | 2.8 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.2 | 7.7 / 30.3 | 1.9 / 2.1 | 0.9 / -3.5 | 17.1 / 57.5 |
-| 160 | Astrid Stormbrand (`core.vikingf`) | 2.8 | skinBow L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.7 / 30.3 | 4.8 / 0 | 0.9 / -2.2 | 15.9 / 57.9 |
-| 161 | Boglurker (`core.boglurker`) | 2.7 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.4 | – / -1.1 | -4.4 / -5.9 | 16.1 / 55.7 |
-| 162 | Count Bonesworth (`core.bonesworth`) | 2.7 | footRoll R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 0.5 / 4 | -1.3 / -1.3 | 16.3 / 59.1 |
-| 163 | CRT Robot (`core.crtrobot`) | 2.5 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.6 / 30.3 | 4.6 / 1.7 | -0.1 / -2.4 | 12 / 48.7 |
-| 164 | Old Timer (`core.oldtimer`) | 2.5 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 0.3 / 2.1 | -4.2 / -0.7 | 15.2 / 60.7 |
-| 165 | Flt. Lt. Ember (`core.ember`) | 2.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 1.8 / 2.5 | -0.1 / -0.9 | 12.4 / 51.1 |
-| 166 | Clio Everwhen (`core.timetraveler`) | 2.2 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.5 | 7.6 / 30.3 | -0.1 / 3 | -0.6 / -1.4 | 14.8 / 57.7 |
-| 167 | Juno Hartwell (`core.crewpilot`) | 2.2 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 3.1 / 0 | -4.1 / -5.4 | 13.6 / 60.6 |
-| 168 | Scarlet Brinewell (`core.femalepirate`) | 2.2 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.7 / 30.3 | 4.3 / 2.1 | -0.4 / -5.2 | 14.9 / 58 |
-| 169 | Cyber Lion (`core.cyberlion`) | 2.1 | footRoll L | 0 | 5.6 / 9.9 | 7.8 / 3.2 | 13.7 / 44.5 | 7.6 / 30.4 | 0 / 0.9 | -0.3 / -5 | 17.4 / 53.8 |
-| 170 | Newt Calloway (`core.warlord`) | 2 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.4 | 7.6 / 30.4 | 3 / 1.1 | -1 / -1.2 | 17.3 / 56.6 |
-| 171 | Astor Moonvale (`core.ts2wizard`) | 1.9 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.4 / 44 | 7.6 / 30.3 | 0.2 / 1.5 | -2.7 / -3 | 15.4 / 56.5 |
-| 172 | Gefr. Otto Brandt (`core.germanpara`) | 1.3 | skinBow R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.6 / 44.3 | 7.7 / 30.3 | 0.9 / 1.7 | -2.4 / -1.9 | 16.4 / 57.6 |
-| 173 | Starfarer (`core.darkastronaut`) | 1.2 | footRoll L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | 0.9 / 0.9 | -1.9 / -2 | 15.5 / 54 |
-| 174 | Chilly Flakesworth (`core.snowman`) | 0.3 | kneePoint R | 0 | 5.5 / 10 | 7.9 / 3 | 13.3 / 45.2 | 7.1 / 30.9 | – / – | – / – | 13.8 / 54.5 |
-| 175 | Baseball Robot (`core.rollerbot`) | 0.1 | kneePoint L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.1 | 7.6 / 30.3 | – / – | – / – | 14.3 / 58.3 |
-| 176 | The Veiled Vanguard (`core.vanguard`) | 0 | kneePoint L | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.4 | 7.7 / 30.3 | – / – | – / – | 17.8 / 58.8 |
+| | **roster median** (176) | | | | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 2.9 / 2.6 | -2 / -2.1 | 16.3 / 46.7 |
+| 1 | Sigrun Frostmane (`core.frostvalkyrie`) | 91.9 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -89 / -75.8 | 10.8 / 2.6 | 16.6 / 49.3 |
+| 2 | Patches (`core.hoboclown`) | 59.5 | footRoll L | 0 | 3.1 / 2 | 3 / 2.8 | 5.6 / 7.3 | 7 / 7 | -56.6 / 9.3 | -3.5 / -10 | 15.3 / 41.4 |
+| 3 | Dex Calloway (`core.crewgunslinger`) | 57.6 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 60.5 / 36.1 | -5.3 / -6.8 | 17.1 / 48.9 |
+| 4 | Silas Coilwhisper (`core.snakeshaman`) | 53.4 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -50.5 / 4.3 | -7.9 / -5.6 | 15.4 / 46.2 |
+| 5 | Space Marine (`core.spacemarine`) | 51.1 | skinBow R | 0 | 3.2 / 2.4 | 2.4 / 2.4 | 5.4 / 7.1 | 7 / 7 | 5.2 / 0.4 | -28 / -53.2 | 21.2 / 51.2 |
+| 6 | King Waddleston (`core.penguinking`) | 46.8 | skinBow R | 0 | 3.3 / 2.6 | 2.2 / 2.3 | 5.4 / 7 | 7 / 7 | -2.6 / -0.3 | – / 44.7 | 18.9 / 44.1 |
+| 7 | Napsworth (`core.koala`) | 37.8 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -0.5 / -0.1 | 24.5 / -39.9 | 14.9 / 41.8 |
+| 8 | Sarge Tobias Crane (`core.veterancrew`) | 34.3 | footRoll L | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 37.2 / 25.9 | -5.4 / -1.9 | 16.2 / 42.6 |
+| 9 | Dredge Marrow (`core.abyssalhunter`) | 31.7 | footRoll R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 11 / 34.3 | -6.7 / -8.8 | 15.9 / 50.6 |
+| 10 | Teddy (`core.teddy`) | 30.7 | skinBow L | 0 | 3.2 / 2.4 | 2.4 / 2.4 | 5.4 / 7.1 | 7 / 7 | 2.4 / 0.6 | 28.7 / -7.9 | 19 / 45.9 |
+| 11 | Duke Dashwood (`core.cheetah`) | 28.8 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 11.1 / 20.5 | -30.8 / -14.2 | 16.6 / 44.1 |
+| 12 | Vesper Quill (`core.crewalchemist`) | 27.8 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 30.7 / 8.3 | -3.5 / -2.3 | 14 / 48.9 |
+| 13 | Rourke (`core.rourke`) | 27 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.5 | 5.5 / 7.1 | 7 / 7 | 0.3 / -4.4 | -26.2 / -29.1 | 15.6 / 47 |
+| 14 | Capt. Elias Harrowgate (`core.unionofficer`) | 25.9 | footRoll R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 14.8 / 28.5 | -12.4 / -7.6 | 16.8 / 47.2 |
+| 15 | Lien Vo (`core.vcscout`) | 25.3 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -4.7 / 11.2 | 23.3 / -0.4 | 16.6 / 48.1 |
+| 16 | Master Bodhi (`core.zencapybara`) | 24.1 | skinBow R | 0 | 3.2 / 2.4 | 2.4 / 2.4 | 5.4 / 7.1 | 7 / 7 | -0.4 / 3.2 | -11.8 / 22 | 14 / 43.1 |
+| 17 | Axel Gainz (`core.axolotl`) | 23.7 | skinBow R | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | -3 / – | -2.1 / 21.6 | 9.8 / 51.7 |
+| 18 | Dr. Hugo Hue (`core.chameleon`) | 21.7 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 6.4 / 8.1 | -8.7 / -23.8 | 15.5 / 42.6 |
+| 19 | Jolly Springjack (`core.jackinthebox`) | 21.5 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | -18.6 / -1.6 | 9.3 / -6.1 | 14.5 / 46.8 |
+| 20 | Chef Basile (`core.basile`) | 21.3 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 19.5 / 23.9 | -4.2 / -11.5 | 16.9 / 46.6 |
+| 21 | Col. Josiah Beaumont (`core.rebelcommander`) | 21.3 | skinBow R | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | -0.4 / 0.3 | -10.5 / -23.4 | 16.5 / 46.9 |
+| 22 | Brother Silencio (`core.ansel`) | 20.7 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.4 / -0.7 | -22.7 / 1.7 | 16.7 / 47.8 |
+| 23 | Goblina (`core.grizzelda`) | 18.7 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 11.8 / 21.3 | -5.5 / -7.5 | 13.7 / 42.4 |
+| 24 | The Butcher (`core.butcher`) | 17.2 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 7.2 / 3.5 | -14.8 / -19.3 | 17.2 / 47 |
+| 25 | Tetl Stonewarden (`core.basaltguardian`) | 17.2 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 11.4 / 19.8 | -0.9 / -2.1 | 16.5 / 47.4 |
+| 26 | Tik Winderly (`core.windupbot`) | 17.2 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 5 / 5.5 | 5.8 / -19.3 | 16 / 44.2 |
+| 27 | Dusty Ranger (`core.dustycolt`) | 16.7 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 6.8 / -3.2 | -18.5 / -18.8 | 16.7 / 45.1 |
+| 28 | Cutter McCrae (`core.outlawranger`) | 16.7 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 16.1 / 19.3 | -6.9 / -5 | 16 / 48.3 |
+| 29 | Rio Neonwing (`core.flamingo`) | 16.1 | skinBow L | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 10.8 / 11.2 | 14.1 / -2.1 | 16.8 / 49.3 |
+| 30 | Pfc. Danny Okerlund (`core.vietnamsoldier`) | 15.7 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.6 / 3.8 | 8.1 / 13.6 | 16.8 / 46.6 |
+| 31 | Ottis Crema (`core.baristaotter`) | 15.2 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -3.7 / 1.8 | 3 / -17.3 | 15 / 43.4 |
+| 32 | Bricksby (`core.brickman`) | 15.1 | footRoll R | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | 16.1 / -12.5 | -10.9 / -16.6 | 16.3 / 46.7 |
+| 33 | Grimspire (`core.gargoyle`) | 15.1 | skinBow R | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.4 / 7.1 | 7 / 7 | 0.6 / 1.6 | -16.2 / -17.2 | 17.7 / 47.9 |
+| 34 | Gears Okafor (`core.crewmechanic`) | 14.5 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 17.4 / 15.6 | -8.1 / -11.5 | 16.2 / 41 |
+| 35 | Blix Orrin (`core.crewalien`) | 14.5 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 17.4 / 0.4 | -2.8 / -0.4 | 15.4 / 47.6 |
+| 36 | Hazel Hexley (`core.witch`) | 14.1 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.7 / 0.7 | 7.5 / 12 | 13.7 / 48.9 |
+| 37 | Ulf Ravenshield (`core.vikingm`) | 14 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 5.7 / 6.4 | 10.2 / 11.9 | 16.5 / 48.4 |
+| 38 | Dusty Orebeck (`core.spaceminer`) | 14 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 16.9 / -0.3 | -2.6 / -6.6 | 15.5 / 48 |
+| 39 | Poor Richard (`core.franklin`) | 13.8 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.7 / 3 | -15.8 / -15.5 | 17.2 / 48.9 |
+| 40 | Pvt. Hank Dowling (`core.usgrunt`) | 13.8 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.1 / 1.3 | 5 / 11.7 | 16.7 / 48.1 |
+| 41 | Jingle Tinsel (`core.elf`) | 13.8 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -4.8 / 6.6 | 11.7 / 11.7 | 17.1 / 48.8 |
+| 42 | Sgt. Mickey Callahan (`core.paratrooper`) | 13.7 | footRoll L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | -10.8 / 3 | -0.8 / 2.6 | 15.3 / 45.1 |
+| 43 | Hazmat Joe (`core.hazmat`) | 13.3 | skinBow R | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 12.4 / 13.2 | -8.5 / -15.4 | 16.6 / 43.2 |
+| 44 | Greyfang (`core.greyfang`) | 13.1 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 16 / 6.3 | -0.3 / -1.8 | 15.7 / 42.1 |
+| 45 | Rascal McGraw (`core.bandit`) | 12.8 | skinBow R | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 13.4 / 8.6 | 1.5 / -14.9 | 15.9 / 43.8 |
+| 46 | Emerald Robot (`core.emeraldrobot`) | 12.7 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 15.6 / 7.3 | -1.8 / 0.8 | 17.8 / 48.5 |
+| 47 | Chilly Flakesworth (`core.snowman`) | 12.7 | kneePoint R | 0 | 5.5 / 10 | 7.9 / 3 | 13.3 / 45.2 | 7.1 / 30.9 | – / – | – / – | 13.8 / 41.6 |
+| 48 | Cleo Groovestone (`core.afropi`) | 12.5 | skinBow L | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.6 / 7.2 | 7 / 7 | -2.1 / -0.9 | -14.5 / -9.6 | 15.5 / 48.7 |
+| 49 | The Veiled Vanguard (`core.vanguard`) | 12.4 | kneePoint R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.8 / 44.4 | 7.7 / 30.3 | – / – | – / – | 17.8 / 47.9 |
+| 50 | Cpl. Tinwhistle (`core.toysoldier`) | 12.4 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.5 | 5.5 / 7.1 | 7 / 7 | -9.5 / 6.2 | -6.9 / -10.3 | 15.1 / 44.5 |
+| 51 | Mujina (`core.facelessspirit`) | 12.4 | kneePoint R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.7 / 44.4 | 7.6 / 30.3 | -5.5 / 5.3 | -14.2 / -9.5 | 14.8 / 48.2 |
+| 52 | Baseball Robot (`core.rollerbot`) | 12.3 | kneePoint R | 0 | 5.7 / 9.9 | 7.8 / 3.2 | 13.5 / 44.1 | 7.6 / 30.3 | – / – | – / – | 14.3 / 46.7 |
+| 53 | Sgt. Mackie (`core.pruitt`) | 12.2 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 15.1 / 6.3 | -10.4 / -8.8 | 16.9 / 46.1 |
+| 54 | Rocket Nutley (`core.acesquirrel`) | 12.2 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -2.9 / 4.6 | -11 / -14.3 | 16.5 / 46.8 |
+| 55 | Madame Zephyrine (`core.mystic`) | 12.1 | skinBow L | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4.4 / 4.8 | -14.1 / -11.1 | 15.6 / 48.6 |
+| 56 | Khan of the Steppes (`core.khan`) | 11.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -3 / 7 | -12 / -13.7 | 14 / 42.9 |
+| 57 | Rowdy Gnashwell (`core.tasmaniandevil`) | 11.4 | skinBow R | 0 | 3.2 / 2.3 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4.8 / 4 | 6.7 / 9.3 | 21.6 / 44.1 |
+| 58 | Cool Hands Rex (`core.trex`) | 11.2 | skinBow R | 0 | 3.3 / 2.6 | 2.2 / 2.3 | 5.4 / 7 | 7 / 7 | 3.8 / 3.8 | -10.4 / -13.3 | 15.1 / 46.6 |
+| 59 | Rollo Splitworth (`core.hyena`) | 11 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.1 / 4 | -4.6 / -13.1 | 17.5 / 42.8 |
+| 60 | Grandpa Chains (`core.grandpachains`) | 11 | skinBow R | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 2.9 / 9.8 | -7.1 / -13.1 | 15.8 / 49.3 |
+| 61 | Themba Ironspear (`core.zuluwarrior`) | 11 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | -5.2 / 4.1 | 3.8 / 8.9 | 18.6 / 46.2 |
+| 62 | Ignatius Slagg (`core.magmajuggernaut`) | 10.7 | footRoll L | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.6 / 7.2 | 7 / 7 | -7.8 / – | -0.2 / -3.7 | 15.5 / 45.5 |
+| 63 | Balam Nightclaw (`core.aztecjaguar`) | 10.7 | footRoll R | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.6 / 7.2 | 7 / 7 | -2 / -8.1 | -0.5 / -2.8 | 17.3 / 46.1 |
+| 64 | Boogie Tuskworth (`core.warthog`) | 10.7 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.9 / 1.7 | -6.6 / -12.8 | 19.1 / 43.3 |
+| 65 | Sgt. Samir Haddad (`core.repguard`) | 10.4 | skinBow R | 0 | 3.2 / 2.4 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 2.4 / 2.6 | 1.5 / 8.3 | 17.2 / 45.4 |
+| 66 | Dez Kickley (`core.hoodieguy`) | 10.3 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 7.1 / 3.2 | -4.2 / -12.4 | 16.3 / 48.6 |
+| 67 | Barnaby Bruin (`core.barnaby`) | 10.1 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 0.7 / 2.1 | -12.1 / -10.7 | 14.1 / 41.6 |
+| 68 | Iron Knight (`core.knight`) | 9.9 | footRoll L | 0 | 3.3 / 2.6 | 2.4 / 2.4 | 5.4 / 7 | 7 / 7 | 12.8 / -0.2 | -1.9 / -7 | 10.6 / 37.6 |
+| 69 | El Zarpazo (`core.whitetiger`) | 9.9 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 12.8 / 1.8 | -2 / -2.5 | 16.5 / 45.5 |
+| 70 | Nebka the Unwrapped (`core.ankhmummy`) | 9.9 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -4.3 / -4.2 | -1 / 7.8 | 14.5 / 47.1 |
+| 71 | Bronzer (`core.bronzer`) | 9.8 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -0.7 / -0.6 | 4 / 7.7 | 14.8 / 45.9 |
+| 72 | Valeria Sandstorm (`core.gladiatrix`) | 9.8 | footRoll L | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | -6.9 / -2.7 | 1.2 / 0 | 15.9 / 47.9 |
+| 73 | Orange Suit Engineer (`core.orangeengineer`) | 9.6 | skinBow R | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 1.6 / 0.1 | -5.4 / -11.7 | 16.3 / 45.1 |
+| 74 | Corvin Blackquill (`core.ravennoir`) | 9.5 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | -6.6 / 2.4 | -1.8 / 0 | 16.3 / 49 |
+| 75 | Doc Seraphine Vale (`core.crewmedic`) | 9.1 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | -6.2 / 5.5 | -9.5 / -3.6 | 14.2 / 45.6 |
+| 76 | Pvt. Pete Plastic (`core.greenarmy`) | 9.1 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 12 / -0.6 | -3.8 / -2.8 | 17.5 / 47.3 |
+| 77 | Cal (`core.dale`) | 9 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -6.1 / -2.3 | -3.9 / -10.4 | 17 / 47 |
+| 78 | Tag Malone (`core.graffitiraccoon`) | 9 | footRoll L | 0 | 3.2 / 2.3 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 11.9 / 3.9 | -9.9 / 1.9 | 18.5 / 42.9 |
+| 79 | Chompers McFinn (`core.wackyshark`) | 8.9 | footRoll R | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | -1.4 / -6.3 | -4.4 / -6.9 | 20.5 / 44.2 |
+| 80 | Rufus Boomtown (`core.baboon`) | 8.9 | footRoll L | 0 | 3.1 / 2.1 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 11.8 / 1.9 | 1.1 / 0.9 | 16.4 / 42.8 |
+| 81 | Shaka Mpande (`core.shaka`) | 8.9 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.4 / 1.1 | -2 / 6.8 | 17.6 / 44.8 |
+| 82 | Prof. Quanta (`core.einstein`) | 8.9 | skinBow L | 0 | 3.1 / 2.4 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4 / 1.5 | 6.9 / -1.8 | 16.7 / 48.6 |
+| 83 | Shiba (`core.shiba`) | 8.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.1 / 2.2 | -8.3 / -10.7 | 15.3 / 47.7 |
+| 84 | Gobbles Plymouth (`core.turkeypilgrim`) | 8.6 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 2.3 / 1 | 6.6 / 2.2 | 14 / 47.1 |
+| 85 | Pharaoh Mummy Warrior (`core.pharaoh`) | 8.5 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | -0.8 / 0.7 | -10.5 / 5.9 | 11.6 / 40.7 |
+| 86 | Deuce Droopwell (`core.blobfish`) | 8.5 | skinBow R | 0 | 3.2 / 2.4 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | 2.3 / -0.5 | -6.7 / -10.6 | 15.6 / 42.4 |
+| 87 | Inspector Bigotes (`core.inspector`) | 8.3 | skinBow R | 0 | 3.1 / 2.1 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -2.1 / 0.8 | -6.5 / -10.4 | 12 / 41.1 |
+| 88 | Emir Tariq Falconsword (`core.emir`) | 8.3 | skinBow L | 0 | 3.2 / 2.4 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 3.7 / 2.4 | -10.3 / -4.9 | 16.3 / 47.7 |
+| 89 | Det. Drake Montego (`core.detectiveduck`) | 8.1 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.8 / 6.6 | -3.1 / -10.2 | 16.8 / 45 |
+| 90 | Flicker (`core.crewphase`) | 8 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 10.9 / 6.3 | 0.1 / 1.1 | 15.3 / 49.7 |
+| 91 | Thornweaver (`core.thornweaver`) | 7.7 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.4 / 2.6 | 5.7 / 3.8 | 15.3 / 47.6 |
+| 92 | Gorilla G (`core.gorillag`) | 7.7 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 10.6 / 0.7 | -2.3 / 5.5 | 18.3 / 44.2 |
+| 93 | Kesi Tallgrass (`core.lionsuit`) | 7.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 4.7 / 4.1 | 0.4 / 5.5 | 15.5 / 46.1 |
+| 94 | Nova Kade (`core.crewcyborg`) | 7.6 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 9.5 / 9.2 | 2.7 / 5.5 | 14.5 / 48.1 |
+| 95 | Maximus Cluckworth (`core.gladiatorrooster`) | 7.6 | skinBow R | 0 | 3.2 / 2.5 | 2.3 / 2.4 | 5.4 / 7 | 7 / 7 | -1.7 / 4.4 | 0.9 / 5.5 | 17 / 45.7 |
+| 96 | Talon Skycrest (`core.eagleclan`) | 7.6 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 10.5 / 4.3 | -1.6 / 1.4 | 17.4 / 49.6 |
+| 97 | Elder Tomo (`core.elder`) | 7.4 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -4.5 / 3.2 | 0 / 4.3 | 16.6 / 48.5 |
+| 98 | Octo Buddy (`core.octobuddy`) | 7.4 | skinBow L | 0 | 3.2 / 2.4 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 5.8 / 3.6 | 5.4 / -8.7 | 22.2 / 45.1 |
+| 99 | Ace Featherstone (`core.eagleace`) | 7.2 | skinBow R | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 3.6 / 2.5 | 0.5 / 5.1 | 17.1 / 43.8 |
+| 100 | The Dapper (`core.dapper`) | 7.1 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 0.4 / -4.5 | -3.4 / -2.3 | 14.9 / 45.5 |
+| 101 | Seetah J. Chloth (`core.seetah`) | 7.1 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -4.2 / -1.1 | -0.3 / -4 | 15.1 / 46.6 |
+| 102 | Imperial Guard (`core.imperialguard`) | 7 | footRoll R | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4.7 / 9.6 | 4.3 / -4.7 | 17.4 / 49.5 |
+| 103 | Pip Quickfoot (`core.harecourier`) | 6.8 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 9.6 / 2.3 | 2.3 / 4.7 | 13.5 / 44.8 |
+| 104 | Fuse Hollister (`core.crewdemolitions`) | 6.7 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 9.6 / 9.2 | -1.9 / -1.6 | 16.6 / 47 |
+| 105 | Punkin (`core.punkin`) | 6.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 6 / 4.6 | 1.4 / -8.7 | 15.6 / 48.5 |
+| 106 | Kaiser Ironhelm (`core.gothickaiser`) | 6.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.5 / 1.2 | 1.3 / 4.5 | 16.2 / 47.7 |
+| 107 | Biker Gang Girl (`core.bikergirl`) | 6.4 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.5 / 2.4 | 0.1 / 4.3 | 15.2 / 46.8 |
+| 108 | Hopsworth Eggleton (`core.easterbunny`) | 6.3 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 5.1 / 4.4 | 0.7 / 4.2 | 13.6 / 47.6 |
+| 109 | Botboy (`core.botboy`) | 6.2 | footRoll R | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 0.9 / -3.6 | -3.8 / -7.5 | 17.1 / 48.6 |
+| 110 | Fishy Fred (`core.fishyfred`) | 6.2 | skinBow R | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 4.8 / 1.8 | 0.2 / -8.3 | 14.7 / 44.9 |
+| 111 | Ser Aurelian Dawnshield (`core.paladin`) | 6.2 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 9.1 / 4.6 | -2.2 / 4 | 16.4 / 47.9 |
+| 112 | Ricochet (`core.ricochet`) | 6.1 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 0.7 / -3.5 | -5 / -5 | 10.9 / 46.4 |
+| 113 | Cap'n Ezra Blackwake (`core.piratecaptain`) | 6.1 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 4 / 1.8 | 0.3 / 4 | 15.9 / 44.7 |
+| 114 | Dog Tag Doyle (`core.undeadsoldier`) | 6 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 8.9 / 4.4 | -1.7 / -1.9 | 14.7 / 46.1 |
+| 115 | The Pale Stranger (`core.stranger`) | 6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 2.9 / 5.2 | -3.8 / -8.1 | 16.6 / 48.3 |
+| 116 | Zorp Gleebix (`core.abnormalalien`) | 6 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 3.2 / 1.9 | 0.8 / 3.9 | 16 / 48.9 |
+| 117 | Boglurker (`core.boglurker`) | 5.9 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | – / -3.3 | -4.1 / -5 | 16.1 / 44.9 |
+| 118 | Freaky Frida (`core.frida`) | 5.9 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 3.7 / 4 | 2.7 / 3.8 | 14 / 47.7 |
+| 119 | Anoobys (`core.anubis`) | 5.8 | footRoll L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | -2.9 / 3.9 | -4.6 / -3.1 | 16.8 / 45.2 |
+| 120 | Kenji (`core.resolvesoldier`) | 5.8 | footRoll R | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 3.5 / 8.4 | -4.1 / -0.9 | 14.5 / 42.6 |
+| 121 | Mr. Gideon Tarr (`core.firstmate`) | 5.8 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 8.7 / 4.7 | -3.2 / -5.6 | 17.4 / 45.5 |
+| 122 | Ellis Velvetrope (`core.elephantwarrior`) | 5.6 | skinBow R | 0 | 3.2 / 2.3 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4.6 / 1.4 | -6.2 / -7.7 | 19.3 / 43.5 |
+| 123 | Croakley (`core.croakley`) | 5.4 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 2.5 / 2.2 | 1.1 / 3.3 | 17.3 / 44.3 |
+| 124 | Wren Halloway (`core.crewrecon`) | 5.4 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 6.2 / 3.6 | -2.5 / 3.3 | 16.1 / 47.4 |
+| 125 | Mags Petrov (`core.crewquartermaster`) | 5.4 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.6 / 1.1 | 0.1 / 3.3 | 15.8 / 47.1 |
+| 126 | Buster Haymaker (`core.boxerbunny`) | 5.4 | skinBow R | 0 | 3.2 / 2.4 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.6 / -0.4 | -4.2 / -7.5 | 17.2 / 43.2 |
+| 127 | Ryo Snapclaw (`core.mantisshrimp`) | 5.3 | skinBow R | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 0.2 / 2.6 | 2 / 3.2 | 15.3 / 46.3 |
+| 128 | Sterling Purrcival (`core.tuxedocat`) | 5.3 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 5 / 3.5 | -5.9 / -7.4 | 16.8 / 45.6 |
+| 129 | Azure Sentinel (`core.azuresentinel`) | 5.2 | footRoll L | 0 | 3.2 / 2.4 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | -2.3 / 5.6 | -3.8 / -3 | 14.5 / 46.3 |
+| 130 | Rad Rootley (`core.radishman`) | 5.2 | skinBow R | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 3.7 / 2.6 | -6.9 / -7.3 | 12 / 48.8 |
+| 131 | Pink Mantis (`core.pinkalien`) | 5 | footRoll R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -0.5 / -2.4 | -0.4 / -1.5 | 16.5 / 48.6 |
+| 132 | Rocco Tickwell (`core.crewk9`) | 5 | skinBow R | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.7 / 0 | -0.5 / -7.1 | 16.5 / 47.6 |
+| 133 | Barnaby Burrows (`core.badgeragent`) | 4.9 | skinBow R | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 0.6 / 4 | -1.2 / 2.8 | 17.2 / 47.5 |
+| 134 | DJ Volta Coilwave (`core.synthwaveeel`) | 4.9 | skinBow R | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.6 / 7.2 | 7 / 7 | 4.4 / 6.5 | -3.3 / 2.8 | 20.8 / 39.3 |
+| 135 | Gorgle (`core.gorgle`) | 4.8 | skinBow R | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.6 / 7.2 | 7 / 7 | 0.5 / -1.9 | 0.3 / 2.7 | 17.2 / 48.7 |
+| 136 | Starfarer (`core.darkastronaut`) | 4.8 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 4.8 / -2.2 | -2.2 / -0.5 | 15.5 / 43.5 |
+| 137 | Spacewalker (`core.astronaut`) | 4.7 | skinBow L | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 6 / 6.9 | 2.7 / 2 | 16.7 / 46.7 |
+| 138 | Aurelio Dawnmantle (`core.sunpriest`) | 4.7 | footRoll R | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.5 / -2.1 | -4.8 / -2.9 | 15.2 / 42.7 |
+| 139 | Count Bonesworth (`core.bonesworth`) | 4.6 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.7 / 7.2 | -1.4 / -1.4 | 16.3 / 49 |
+| 140 | Honest Abe (`core.abe`) | 4.5 | skinBow L | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.5 / 4.2 | 2.5 / -0.6 | 17 / 47.9 |
+| 141 | Clangers (`core.cymbalmonkey`) | 4.5 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 6.2 / 4.9 | 2.5 / -1 | 15.1 / 48.2 |
+| 142 | Coach Hank Shelton (`core.coachtortoise`) | 4.4 | footRoll L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 7.3 / 2.3 | -2.3 / -4 | 17.5 / 43.8 |
+| 143 | Clio Everwhen (`core.timetraveler`) | 4.2 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -0.9 / 6.8 | -0.8 / -1.5 | 14.8 / 46.9 |
+| 144 | Ser Godric Vale (`core.templar`) | 4.2 | skinBow R | 0 | 3.2 / 2.5 | 2.3 / 2.4 | 5.4 / 7.1 | 7 / 7 | 0.1 / 0.7 | -0.2 / -6.3 | 16.8 / 47.9 |
+| 145 | Stealth Operative (`core.stealthop`) | 4.1 | skinBow L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 0.3 / 2.5 | 2.1 / 0.4 | 9.6 / 39.1 |
+| 146 | T-TreeFitty (`core.t350`) | 4 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -0.1 / -1.4 | -1.6 / -0.9 | 15.7 / 47.4 |
+| 147 | Kato Emberline (`core.kato`) | 3.9 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -1 / -0.6 | -4.9 / -4.7 | 17 / 48.1 |
+| 148 | Juno Hartwell (`core.crewpilot`) | 3.9 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 5.5 / 6.5 | -4 / -4.6 | 13.6 / 48.9 |
+| 149 | The Visitor (`core.visitor`) | 3.8 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -0.9 / 6.3 | -2.1 / 0 | 14.7 / 47.1 |
+| 150 | General Cherrytree (`core.washington`) | 3.8 | skinBow L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 2.5 / 1.9 | -5.8 / -3.9 | 17.4 / 47.6 |
+| 151 | Ryker Voss (`core.merc`) | 3.8 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 3.7 / 3.3 | 1.8 / 1.2 | 16.4 / 45.3 |
+| 152 | Lancer Mei (`core.mei`) | 3.7 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 0.7 / 2.1 | -5.7 / -2.4 | 15.6 / 48.7 |
+| 153 | Imperator Laurel (`core.caesar`) | 3.7 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 3.4 / 0.3 | 1.7 / -2.1 | 17.2 / 49.7 |
+| 154 | Kris Kringleton (`core.santa`) | 3.7 | skinBow L | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 2.6 / 2 | 1.7 / -0.5 | 17.6 / 46.9 |
+| 155 | Uncle Spangle (`core.unclesam`) | 3.7 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.4 / 3.6 | -1.4 / 1.6 | 16.2 / 47.7 |
+| 156 | The Rough Rider (`core.roosevelt`) | 3.5 | skinBow R | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.1 / 4.5 | -4.9 / 1.4 | 17 / 48 |
+| 157 | Ollie Hootman (`core.owlsniper`) | 3.1 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 1 / 0 | -3.8 / -5.2 | 16.5 / 48.7 |
+| 158 | Scarlet Brinewell (`core.femalepirate`) | 3.1 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 6 / 4.7 | -0.4 / -4.3 | 14.9 / 47 |
+| 159 | Old Timer (`core.oldtimer`) | 2.9 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 0 / 3.2 | -4.2 / -0.5 | 15.2 / 49.9 |
+| 160 | Field Medic Automaton (`core.medicautomaton`) | 2.8 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.9 / 2.7 | 0.8 / -0.4 | 16.2 / 44.7 |
+| 161 | The Mechanic (`core.mechanic`) | 2.8 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 5.7 / 4.7 | -1 / -3.3 | 13.6 / 41.3 |
+| 162 | Lyra Vantis (`core.crewchronomage`) | 2.7 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 3.7 / 0.9 | -2.4 / 0.6 | 15.1 / 46.1 |
+| 163 | Ziggy Bananas (`core.chimp`) | 2.7 | footRoll R | 0 | 3.1 / 2.4 | 2.5 / 2.5 | 5.5 / 7.1 | 7 / 7 | 5.5 / -0.1 | 0.2 / -1.1 | 17 / 49 |
+| 164 | Mummy Bot (`core.mummybot`) | 2.6 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 5.5 / 0.8 | -2.6 / -0.5 | 14.4 / 46.6 |
+| 165 | Chad Croakley (`core.gymfrog`) | 2.6 | skinBow L | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 0.4 / 2.3 | 0.6 / -0.3 | 19 / 45.8 |
+| 166 | Fenn Dustwhirl (`core.fennec`) | 2.6 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 4.3 / 0.2 | -1.5 / 0.5 | 17.4 / 44.5 |
+| 167 | Ser Aldous Lionmane (`core.lionheart`) | 2.5 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.9 / 4.3 | 0.5 / -1.2 | 17.1 / 47.1 |
+| 168 | Astrid Stormbrand (`core.vikingf`) | 2.4 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 4.9 / 1.1 | 0.4 / -1.8 | 15.9 / 47.4 |
+| 169 | Cyber Lion (`core.cyberlion`) | 2.1 | skinBow L | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.3 / 1.9 | 0.1 / -4.2 | 17.4 / 43 |
+| 170 | Ser Castor Brightmoor (`core.celestialknight`) | 2.1 | footRoll R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.4 / 4.7 | -3.9 / -4.2 | 16.4 / 49.8 |
+| 171 | Flt. Lt. Ember (`core.ember`) | 1.9 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.1 / 2.4 | -0.3 / -0.2 | 12.4 / 39.8 |
+| 172 | CRT Robot (`core.crtrobot`) | 1.9 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 4.8 / 2 | -0.1 / -1.5 | 12 / 38.6 |
+| 173 | Puddles Backspin (`core.boxduck`) | 1.5 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 2.5 / 3 | -0.5 / -1.6 | 17.1 / 42 |
+| 174 | Astor Moonvale (`core.ts2wizard`) | 1.5 | footRoll L | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 1.4 / 3.4 | -2.7 / -1.5 | 15.4 / 45.3 |
+| 175 | Gefr. Otto Brandt (`core.germanpara`) | 1.3 | footRoll R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 2.3 / 3.9 | -2.3 / -1.2 | 16.4 / 46.6 |
+| 176 | Newt Calloway (`core.warlord`) | 1 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 3.6 / 2.2 | -1 / -1.1 | 17.3 / 45.8 |
 <!-- /limb-table -->
