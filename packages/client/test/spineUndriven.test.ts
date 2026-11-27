@@ -40,7 +40,7 @@ function rig(driveSpine: boolean) {
   const sk = new Skeleton('sk', 'sk', scene);
   let parentBone: Bone | null = null;
   for (const n of [skRoot, pelvis, s1, s2, s3]) {
-    const b = new Bone(n.name, sk, parentBone, Matrix.Identity());
+    const b: Bone = new Bone(n.name, sk, parentBone, Matrix.Identity());
     b.linkTransformNode(n);
     parentBone = b;
   }
