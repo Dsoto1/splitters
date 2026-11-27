@@ -490,7 +490,9 @@ async function editorFlow(browser) {
   const stopped = await page.waitForFunction(() => window.__navTestPressed?.after && document.getElementById('editor').hidden && window.__cs?.local, null, { timeout: T(30000) }).then(() => page.evaluate(() => window.__navTestPressed), () => null);
   check(stopped && stopped.after.stops === stopped.stopsBefore + 1 && !stopped.after.running && !stopped.after.worker, `Test stops the navigation check still running (${JSON.stringify(stopped)})`);
   await frames(page, 10);
+  // Esc in a Test already in play opens the pause menu; F5 goes back then.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   // Back in MapMaker the stopped check runs again, in a new worker, to its end.
   const rechecked = await page.waitForFunction(() => !window.__editor.checks.navRunning && !!window.__editor.checks.navWorker, null, { timeout: T(60000) }).then(() => true, () => false);
@@ -2018,7 +2020,9 @@ async function editorTourChecks(browser) {
   await page.click('#ed-test');
   const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
   check(started && (await tour()).stored === 'done', `PLAY TEST starts the match; the tour is remembered as done (${started})`);
+  // Esc in a Test already in play opens the pause menu; F5 goes back then.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   await frames(page, 2);
   t = await tour();
