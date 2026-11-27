@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **The Armory: every weapon on one page.** Main menu → Armory lists every weapon you can hold by category (like Character Select: search, favourites, controller and touch), shows the one you pick large and turnable, with its role, stats, sights (pick its optic for your loadout) and fire sound, and **Try it in the range** drops you on the Practice range holding it.
 - **Characters load before the rest of the map on a first visit.** Your own body and everyone's in the match now download ahead of the props and guns, so on a slow line players and bots show up as themselves by the start instead of staying coloured capsules for half a minute or more.
 - **Characters come back after the graphics card resets.** When the browser loses and restores the game's graphics, each character shows as a capsule until its textures are rebuilt, instead of vanishing; bullet holes and static shadows are rebuilt too, and the performance report records each reset.
 - **Phones: Add to Home Screen plays full screen.** The game installs as a web app (its own icon, landscape, no browser bars); an iPhone in Safari shows a one-time line saying how ("Share → Add to Home Screen").

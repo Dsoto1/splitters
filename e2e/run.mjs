@@ -15307,6 +15307,106 @@ async function practicerangeFlow(browser) {
   await context.close();
 }
 
+/**
+ * The Armory (owner, 2026-11-27; frontend/armory.ts, docs/ARSENAL.md "Armory"): the main menu's Armory opens a weapons
+ * page laid out like Character Select; Q / E and a chip change the category in view, a tile shows its weapon large in
+ * the menu scene (its held copy, every hero hidden), a drag turns it, and Try it in the range lands in the Practice
+ * range holding it; leaving the range comes back to the Armory. Then on a phone held sideways: the main menu still
+ * fits, a tap shows a weapon and its details sheet with Try it. No page errors. ARMORY_PICS=<dir>: pictures.
+ */
+async function armoryFlow(browser) {
+  const pics = process.env.ARMORY_PICS;
+  const errors = [];
+  const snap = (page, name) => (pics ? page.screenshot({ path: `${pics}/${name}.png`, timeout: T(90000) }).catch((e) => console.log(`NOTE armory picture ${name}: ${e.message.split('\n')[0]}`)) : null);
+  const shownIs = (page, id) => page.waitForFunction((w) => document.querySelector('.screen.armory')?.dataset.shown === w && window.__front.scene.scene.getTransformNodeByName('armoryShow')?.getChildMeshes().length > 0, id, { timeout: T(60000) }).then(() => true, () => false);
+  const yaw = (page) => page.evaluate(() => window.__front.scene.scene.getTransformNodeByName('armoryShow')?.rotation.y ?? null);
+  {
+    const context = await browser.newContext({ viewport: { width: 1280, height: 720 }, deviceScaleFactor: pics ? 2 : 1 });
+    const page = await context.newPage();
+    livePages.add(page);
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.goto(`${CLIENT}/?test=1&name=Tester`);
+    await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+    await page.click('#nav-armory');
+    await page.waitForSelector('#armory-grid .char-tile', { timeout: T(30000) });
+    const first = await shownIs(page, 'core.rifle');
+    // (The heroes hide with the next frame drawn: a body still loading as the page opened hides as it arrives.)
+    await page.waitForFunction(() => !window.__front.scene.scene.transformNodes.some((n) => n.name.startsWith('menuHero_') && n.isEnabled()), null, { timeout: T(10000) }).catch(() => {});
+    const layout = await page.evaluate(() => ({
+      sections: [...document.querySelectorAll('#armory-grid .char-sec')].map((s) => s.dataset.section),
+      tiles: document.querySelectorAll('#armory-grid .char-tile').length,
+      hidden: !!document.querySelector('.char-tile[data-weapon="core.space_shield"]'),
+      hero: window.__front.scene.scene.transformNodes.filter((n) => n.name.startsWith('menuHero_') && n.isEnabled()).map((n) => n.name).join('/') || 0,
+    }));
+    check(first && layout.sections.join(',') === 'pistol,smg,rifle,shotgun,sniper,heavy,energy,melee' && layout.tiles > 50 && !layout.hidden && layout.hero === 0, `the Armory lists the wheel's eight categories (${layout.sections}), ${layout.tiles} weapons (no hidden ones), the rifle on the plinth in place of the hero (${first}, ${layout.hero})`);
+    await snap(page, 'armory-desktop');
+    // Q / E: the next category in view; a chip jumps to one.
+    const before = await page.evaluate(() => document.querySelector('.char-chip.on')?.dataset.section);
+    await page.keyboard.press('KeyE');
+    await page.waitForFunction((b) => document.querySelector('.char-chip.on')?.dataset.section !== b, before, { timeout: T(5000) }).catch(() => {});
+    const after = await page.evaluate(() => document.querySelector('.char-chip.on')?.dataset.section);
+    await page.click('.char-chip[data-section="sniper"]');
+    const chip = await page.waitForFunction(() => document.querySelector('.char-chip.on')?.dataset.section === 'sniper', null, { timeout: T(5000) }).then(() => true, () => false);
+    check(after && after !== before && chip, `E steps to the next category (${before} → ${after}) and the Snipers chip jumps there (${chip})`);
+    await page.click('.char-tile[data-weapon="core.sniper"]');
+    const sniper = await shownIs(page, 'core.sniper');
+    const panel = await page.evaluate(() => ({ name: document.querySelector('#armory-info h3')?.textContent, bars: document.querySelectorAll('#armory-stats .stat-row').length, sights: !!document.querySelector('.armory-sights') }));
+    check(sniper && /sniper/i.test(panel.name ?? '') && panel.bars >= 5 && panel.sights, `a tile shows its weapon, with its name, stat bars and sights (${JSON.stringify(panel)})`);
+    // Drag to turn.
+    const y0 = await yaw(page);
+    const box = await page.locator('.armory-spin').boundingBox();
+    await page.mouse.move(box.x + box.width * 0.3, box.y + box.height * 0.5);
+    await page.mouse.down();
+    await page.mouse.move(box.x + box.width * 0.7, box.y + box.height * 0.5, { steps: 6 });
+    await page.mouse.up();
+    await frames(page, 4);
+    const y1 = await yaw(page);
+    check(y0 !== null && y1 !== null && Math.abs(y1 - y0) > 0.3, `a drag turns the weapon (${y0?.toFixed(2)} → ${y1?.toFixed(2)})`);
+    await snap(page, 'armory-desktop-sniper');
+    // Try it in the range: the Practice range, the sniper in hand.
+    await page.click('#armory-try');
+    const inRange = await page.waitForFunction(() => window.__cs?.map === 'practice_range' && window.__cs.phase?.() === 'playing' && window.__cs.local?.alive && window.__cs.view.viewWeapon === 'core.sniper', null, { timeout: T(120000) }).then(() => true, () => false);
+    if (!inRange) console.log(`NOTE armory range: ${await page.evaluate(() => JSON.stringify({ map: window.__cs?.map, phase: window.__cs?.phase?.(), alive: window.__cs?.local?.alive, weapon: window.__cs?.view?.viewWeapon })).catch((e) => e.message)}`);
+    check(inRange, 'Try it in the range lands in the Practice range holding the sniper rifle');
+    if (inRange) {
+      await playWithoutMouse(page);
+      await snap(page, 'armory-range');
+      await page.evaluate(() => document.getElementById('exitmatch').click());
+      const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && document.querySelector('.screen.armory')?.dataset.shown === 'core.sniper', null, { timeout: T(30000) }).then(() => true, () => false);
+      check(back, 'leaving the range comes back to the Armory, the sniper rifle shown');
+    }
+    await context.close();
+  }
+  {
+    // A phone held sideways (docs/MOBILE_AUDIT.md): the main menu, then the grid and the details sheet, Character Select's.
+    const context = await browser.newContext({ viewport: { width: 915, height: 412 }, hasTouch: true, isMobile: true, deviceScaleFactor: pics ? 2 : 1 });
+    const page = await context.newPage();
+    livePages.add(page);
+    page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+    await page.goto(`${CLIENT}/?test=1&name=Tester`);
+    await page.waitForFunction(() => window.__front && !document.getElementById('menu').hidden, null, { timeout: T(60000) });
+    await snap(page, 'armory-phone-home');
+    const navFits = await page.evaluate(() => [...document.querySelectorAll('.nav button')].every((b) => { const r = b.getBoundingClientRect(); return r.height > 0 && r.bottom <= innerHeight; }));
+    check(navFits, 'phone sideways: the main menu, Armory added, still fits every entry on screen');
+    await page.tap('#nav-armory');
+    await page.waitForSelector('#armory-grid .char-tile', { timeout: T(30000) });
+    await shownIs(page, 'core.rifle');
+    await snap(page, 'armory-phone');
+    await page.locator('.char-tile[data-weapon="core.shotgun"]').scrollIntoViewIfNeeded();
+    await page.tap('.char-tile[data-weapon="core.shotgun"]');
+    const shot = await shownIs(page, 'core.shotgun');
+    const sheet = await page.evaluate(() => {
+      const i = document.getElementById('armory-info');
+      const t = document.getElementById('armory-try')?.getBoundingClientRect();
+      return { open: i?.classList.contains('sheet-open'), tryShown: !!t && t.width > 0 && t.bottom <= innerHeight + 1, scroll: document.documentElement.scrollWidth <= innerWidth };
+    });
+    check(shot && sheet.open && sheet.tryShown && sheet.scroll, `phone sideways: a tap shows the weapon and brings up the details sheet with Try it in the range, no sideways scroll (${shot}, ${JSON.stringify(sheet)})`);
+    await snap(page, 'armory-phone-sheet');
+    await context.close();
+  }
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+}
+
 async function testrangeFlow(browser) {
   const pics = process.env.TESTRANGE_PICS;
   const run = async (label, ctxOpts, tap) => {
@@ -18009,7 +18109,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, iphone: iphoneFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, iphone: iphoneFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, armory: armoryFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

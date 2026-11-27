@@ -28,7 +28,7 @@ export const EDITOR_UX_FLOWS = ['editorux', 'editorpieces', 'editortools', 'edit
 export const FLOWS = [
   'editor', ...EDITOR_UX_FLOWS, 'offline', 'mobile', 'iphone', 'vault', 'outpost', 'sandgate', 'citadel', 'canyon', 'scenery', 'setpieces', 'physicsfx', 'beams', 'tracers', 'tracers2', 'tracers3',
   'teams', 'colourvision', 'weaponsets', 'ctf', 'forts', 'breakthrough', 'roulette', 'arsenal', 'vehicles', 'traffic', 'zombies', 'classes', 'coverage', ...MAP_FLOWS,
-  'firstperson', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'dodgeroll', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'practicerange', 'crashreport', 'captions', 'chat', 'chathost',
+  'firstperson', ...CHARACTER_FLOWS, 'online', 'hostgame', 'hostcontrols', 'party', 'lobby', 'community', 'handoff', 'dedicatedhost', 'hostpage', 'webgpu', 'visual', 'environment', ...FLASHING_FLOWS, 'newplayer', 'story', 'fireteams', 'slidepeek', 'dodgeroll', 'weaponmanager', 'profiles', 'padsetup', 'testrange', 'practicerange', 'armory', 'crashreport', 'captions', 'chat', 'chathost',
 ];
 
 /** Maps that have a flow of their own, so the tour leaves them out. */
@@ -208,7 +208,7 @@ const RULES = [
   [/^packages\/client\/src\/game\/(tutorial|tips|coachHud)\.ts$|^packages\/client\/src\/game\/coach\.css$/, ['newplayer', 'offline', 'mobile'], ['client']],
   [/^packages\/client\/src\/(inputMode\.ts$|frontend\/padNav\.ts$)/, ['padsetup', 'offline', 'mobile', 'newplayer', 'visual', ...CHARACTER_FLOWS], ['client']],
   [/^packages\/client\/src\/campaign\//, ['story', 'offline'], ['client']],
-  [/^packages\/client\/src\/frontend\//, ['story', 'padsetup', 'newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'firstperson', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual', 'testrange', 'practicerange', 'captions'], ['client']],
+  [/^packages\/client\/src\/frontend\//, ['story', 'padsetup', 'newplayer', 'fireteams', 'offline', 'mobile', 'teams', 'weaponsets', 'breakthrough', 'roulette', 'lobby', 'community', 'hostgame', 'hostcontrols', 'party', 'dedicatedhost', 'firstperson', ...CHARACTER_FLOWS, 'editor', 'webgpu', 'visual', 'testrange', 'practicerange', 'armory', 'captions'], ['client']],
   [/^packages\/client\/src\/hostPage\.ts$/, ['hostpage'], ['client']],
   // Crash and error reports (docs/CRASH_REPORTS.md): the panel, and the owner's list on Profile.
   [/^packages\/client\/src\/(crashReport|crashPanel|crashReportsUi)\.ts$/, ['crashreport'], ['client']],
