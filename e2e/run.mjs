@@ -586,14 +586,20 @@ async function editorFlow(browser) {
   const modesBefore = (await doc()).metadata.supportedModes;
   await page.evaluate((before) => window.__editor.run('Mode', { kind: 'setMetadata', before: { supportedModes: before }, after: { supportedModes: ['core.tdm', ...before.filter((m) => m !== 'core.tdm')] } }), modesBefore);
   await page.evaluate(() => window.__editor.run('Set teams', { kind: 'setTeamSetup', before: window.__editor.doc.teamSetup, after: { sizes: [2, 2, 2, 2, 2, 2, 2, 2] } }));
-  await openMapSettings(page);
-  await page.waitForSelector('#ed-team-preset', { state: 'attached', timeout: T(10000) });
+  // Map settings drawn afresh for each look (closed first if open: an edit made from outside them doesn't redraw them).
+  const freshSettings = async () => {
+    if (await page.evaluate(() => document.getElementById('ed-map-settings')?.hidden === false)) await page.click('#ed-ms-close');
+    await openMapSettings(page);
+    await page.waitForSelector('#ed-team-preset', { state: 'attached', timeout: T(10000) });
+  };
+  await freshSettings();
   const chipsOf = () => page.evaluate(() => [...document.querySelectorAll('#ed-team-preset button')].map((b) => `${b.textContent}${b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true' ? '*' : ''}${b.dataset.odd ? '!' : ''}`));
   const oddChips = await chipsOf();
   await page.click('#ed-team-preset button[data-value="4,4"]');
-  await page.waitForFunction(() => window.__editor.doc.teamSetup?.sizes.join(',') === '4,4', null, { timeout: T(5000) }).catch(() => {});
+  const picked = await page.waitForFunction(() => window.__editor.doc.teamSetup?.sizes.join(',') === '4,4', null, { timeout: T(5000) }).then(() => true, () => false);
+  await freshSettings();
   const commonChips = await chipsOf();
-  check(JSON.stringify(oddChips) === JSON.stringify(['2v2v2v2v2v2v2v2*!', '1v1', '2v2', '4v4', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']) && JSON.stringify(commonChips) === JSON.stringify(['1v1', '2v2', '4v4*', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']), `Map settings' team Layout chips are the common ones; a saved odd layout shows first, lit (${JSON.stringify({ oddChips, commonChips })})`);
+  check(picked && JSON.stringify(oddChips) === JSON.stringify(['2v2v2v2v2v2v2v2*!', '1v1', '2v2', '4v4', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']) && JSON.stringify(commonChips) === JSON.stringify(['1v1', '2v2', '4v4*', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']), `Map settings' team Layout chips are the common ones; a saved odd layout shows first, lit; a chip sets the layout (${JSON.stringify({ oddChips, picked, commonChips })})`);
   for (let i = 0; i < 3; i++) await page.keyboard.press('Control+KeyZ');
   check(JSON.stringify((await doc()).metadata.supportedModes) === JSON.stringify(modesBefore), 'undo takes the teams and mode back');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
