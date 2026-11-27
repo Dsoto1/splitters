@@ -458,7 +458,10 @@ async function editorFlow(browser) {
   const shown = rolled ? await page.waitForFunction((r) => window.__cs.view.pickupItem(r[0]) === r[1], [randomPickup.id, rolled], { timeout: T(10000) }).then(() => true, () => false) : false;
   check(SNIPERS.includes(rolled) && shown, `a random pickup holds a weapon of its category in TEST, and that is what's drawn (${rolled}, drawn ${shown})`);
   await frames(page, 10);
+  // Esc while Test still loads or counts down goes back to MapMaker; once in play (a quick load) it opens the pause
+  // menu, and F5 goes back.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   check(await page.evaluate(() => window.__editor.history.canUndo), 'returns to the editor with history intact');
