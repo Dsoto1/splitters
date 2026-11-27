@@ -12,6 +12,7 @@ import type { Material } from '@babylonjs/core/Materials/material';
 import '@babylonjs/core/Meshes/meshLODLevel';
 import '@babylonjs/core/Meshes/instancedMesh';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import type { LoadOrder } from './loadOrder.ts';
 import { freeIfSceneGone } from './sceneGone.ts';
 // Side-effect import: registers the glTF 2.0 loader plugin.
 import './gltf.ts';
@@ -40,6 +41,9 @@ export const MODEL_BASE = `${import.meta.env.BASE_URL}models/`;
 export class ModelLibrary {
   private readonly containers = new Map<string, Promise<AssetContainer>>();
 
+  /** A match's download order (GameView): models wait behind the characters' files while they load first (loadOrder.ts). */
+  order: Pick<LoadOrder, 'other'> | null = null;
+
   constructor(private readonly scene: Scene) {}
 
   /** `path` is relative to public/models, or to public itself for placeable props, kit props, creatures and the city kit ("props/…", "kit/…", "creatures/…", "city/…"). */
@@ -50,7 +54,9 @@ export class ModelLibrary {
       this.containers.set(path, p);
     }
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(/^(props|kit|creatures|city|packs|env)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`), this.scene, GLB).then(async (c) => {
+      // Behind a match's characters while they load first (loadOrder.ts).
+      const url = versioned(/^(props|kit|creatures|city|packs|env)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`);
+      p = (this.order ? this.order.other(() => LoadAssetContainerAsync(url, this.scene, GLB)) : LoadAssetContainerAsync(url, this.scene, GLB)).then(async (c) => {
         // The scene went while the file loaded: free it now (sceneGone.ts) and make nothing more in that scene.
         if (this.scene.isDisposed) return freeIfSceneGone(this.scene)(c);
         this.lods.set(path, takeLods(c));

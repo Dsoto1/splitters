@@ -14,6 +14,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import type { LoadOrder } from './loadOrder.ts';
 import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
@@ -230,9 +231,13 @@ export class CharacterLibrary {
    */
   fetcher: FileFetcher | null = null;
 
+  /** A match's download order (GameView): characters' files go first (loadOrder.ts); unset, files load as asked. */
+  order: Pick<LoadOrder, 'first'> | null = null;
+
   /** A file's container: from the fetcher's bytes when there is one (its own fetch if that fails), else by URL. */
   private loadUrl(url: string, rootUrl: string): Promise<AssetContainer> {
-    const byUrl = () => LoadAssetContainerAsync(url, this.scene, GLB);
+    // A match's characters download before its other models (loadOrder.ts).
+    const byUrl = () => (this.order ? this.order.first(() => LoadAssetContainerAsync(url, this.scene, GLB)) : LoadAssetContainerAsync(url, this.scene, GLB));
     if (!this.fetcher) return byUrl();
     return this.fetcher.get(url, 'now').then(
       (buf) => (this.fetcher?.take(url), LoadAssetContainerAsync(new Uint8Array(buf), this.scene, { ...GLB, rootUrl })),

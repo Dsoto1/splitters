@@ -4,6 +4,7 @@ import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
 import type { AnimationGroup } from '@babylonjs/core/Animations/animationGroup';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import type { LoadOrder } from './loadOrder.ts';
 import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
 import { CREATURE_SPECS, type CreatureModel, type CreatureSpec } from '@tiletrigger/shared';
@@ -40,12 +41,16 @@ export interface CreatureInstance {
 export class CreatureLibrary {
   private readonly files = new Map<string, Promise<AssetContainer>>();
 
+  /** A match's download order (GameView): creatures are characters, so their files go first (loadOrder.ts). */
+  order: Pick<LoadOrder, 'first'> | null = null;
+
   constructor(private readonly scene: Scene) {}
 
   private load(kind: CreatureModel): Promise<AssetContainer> {
     let p = this.files.get(kind);
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`), this.scene, GLB).then(freeIfSceneGone(this.scene));
+      const url = versioned(`${import.meta.env.BASE_URL}${CREATURE_SPECS[kind].model}`);
+      p = (this.order ? this.order.first(() => LoadAssetContainerAsync(url, this.scene, GLB)) : LoadAssetContainerAsync(url, this.scene, GLB)).then(freeIfSceneGone(this.scene));
       this.files.set(kind, p);
     }
     return p;

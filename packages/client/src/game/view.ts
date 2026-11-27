@@ -174,6 +174,7 @@ import { createPropNode } from './propVisuals.ts';
 import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
+import { LoadOrder, useLoadOrder } from '../content/loadOrder.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { seatDrawnYaw } from './riderPlacement.ts';
@@ -515,6 +516,8 @@ export class GameView {
   readonly scenario: ScenarioVisuals;
   readonly characters: CharacterLibrary;
   readonly creatures: CreatureLibrary;
+  /** Which downloads go first while a match loads: the characters' (content/loadOrder.ts). */
+  readonly loadOrder = new LoadOrder();
   private readonly avatars = new Map<number, Avatar>();
   /** More remote players than ANIM_LOD_CROWD (the last updateAvatars): big-match savings apply. */
   private crowd = false;
@@ -731,6 +734,9 @@ export class GameView {
       lastTurn = now;
     });
     this.creatures = new CreatureLibrary(this.scene);
+    // The characters' files download first, the other models behind them while a match loads (session.prepareMatch).
+    this.characters.order = this.creatures.order = this.models.order = this.loadOrder;
+    useLoadOrder(this.scene, this.loadOrder);
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);
     this.impacts = new ImpactVisuals(this.scene, () => this.physics);

@@ -295,6 +295,8 @@ const DODGE_VIEW_ROLL = 0.035;
 const ROLL_VIEW_ROLL = 0.06;
 /** How long a board that has just joined the loading screen stays before the countdown (ms). */
 const LOADING_BOARD_HOLD_MS = 1600;
+/** How long a match's load holds other downloads behind the characters' at most (prepareMatch, content/loadOrder.ts). */
+const MATCH_CHARACTERS_FIRST_MS = 20000;
 /** A slow load puts the board on the loading screen this long after the files start coming in (ms), half way or not. */
 const LOADING_STAGE_AFTER_MS = 4000;
 
@@ -3219,8 +3221,14 @@ export class GameSession {
     // The roster comes straight after the welcome.
     for (let i = 0; i < 40 && this.looks.size === 0; i++) await new Promise((r) => setTimeout(r, 50));
     const jobs: Promise<unknown>[] = [];
+    // What you'll see first downloads first: your own body, then everyone's in the match (the roster's looks, and
+    // the bots' as they join), and only then the map's props, the guns and the other models, a couple at a time
+    // beside them (content/loadOrder.ts). On a first visit they all shared the line at once, and the bots stayed
+    // capsules for half a minute of play (owner, 2026-11-27). Held 20 s at most; the start gate's cap is 25 s.
+    this.view.loadOrder.hold(MATCH_CHARACTERS_FIRST_MS);
     // Roulette: the cards everyone is dealt next as well (the spawn events name them), so the first lives load with the map.
-    for (const look of new Set([...this.looks.values(), ...this.rlUpcoming])) jobs.push(this.view.characters.preload({ look }));
+    const mine = this.looks.get(this.slot);
+    for (const look of new Set([...(mine ? [mine] : []), ...this.looks.values(), ...this.rlUpcoming])) jobs.push(this.view.characters.preload({ look }));
     jobs.push(this.view.characters.preload({ npc: { color: '#888888', scale: 1, female: true } }));
     // The zombies' six characters, loaded before the first wave: a zombie whose model was still on its way was a
     // capsule, and one shot in that state dropped like a box (owner, 2026-11-12).
@@ -3318,6 +3326,8 @@ export class GameSession {
     // Never stall the start on one slow file.
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
     started = true;
+    // Whatever still waits for its turn starts now.
+    this.view.loadOrder.release();
     if (this.closed) return;
     // Loaded. A board that has only just appeared stays a moment, so it can be read, before the countdown (not in
     // MapMaker's Test or a browser test: nothing to wait for there).
