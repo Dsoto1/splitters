@@ -175,7 +175,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
 import { LoadOrder, useLoadOrder } from '../content/loadOrder.ts';
-import { bodyDrawable, noteBodiesBack, noteContextLost, noteContextRestored } from './contextLosses.ts';
+import { bodyDrawable, contextLossCount, noteBodiesBack, noteContextLost, noteContextRestored } from './contextLosses.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { seatDrawnYaw } from './riderPlacement.ts';
@@ -3678,14 +3678,14 @@ export class GameView {
   private restoringSince: number | null = null;
 
   /** After a lost context (tests): still waiting on characters' maps, how many wait, and how many bodies are in. */
-  contextState(): { restoring: boolean; rebuilding: number; bodies: number } {
+  contextState(): { restoring: boolean; rebuilding: number; bodies: number; losses: number } {
     let rebuilding = 0;
     let bodies = 0;
     for (const a of this.avatars.values()) {
       if (a.rebuilding) rebuilding++;
       if (a.anim) bodies++;
     }
-    return { restoring: this.restoringSince !== null, rebuilding, bodies };
+    return { restoring: this.restoringSince !== null, rebuilding, bodies, losses: contextLossCount() };
   }
 
   /**
@@ -3693,11 +3693,13 @@ export class GameView {
    * maps are transcoded again from their files on the way (seconds on a slow machine, more with many looks), and
    * a mesh whose maps aren't in isn't drawn at all: every character vanished until then (2026-11-27). Meanwhile each
    * one's capsule stands in, as while its files first load; the bullet holes' buffers are set again whole
-   * (ImpactVisuals.restored). The performance report records the loss (contextLosses.ts).
+   * (ImpactVisuals.restored) and the static shadow cache's depth copy made again (its framebuffers were the old
+   * context's: ShadowCache.restored). The performance report records the loss (contextLosses.ts).
    */
   private contextRestored(): void {
     noteContextRestored();
     this.impacts.restored();
+    this.atmosphere.restored();
     this.restoringSince = performance.now();
     this.checkRebuilt();
   }
