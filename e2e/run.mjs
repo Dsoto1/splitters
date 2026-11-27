@@ -10215,6 +10215,26 @@ async function arsenalFlow(browser) {
   const sheepDrawn = sheepOut && await page.waitForFunction(() => window.__cs.view.thrownModelSizes().some((s) => s.look === 'sheep'), null, { timeout: T(20000) }).then(() => true, () => false);
   const sheepSize = await page.evaluate(() => window.__cs.view.thrownModelSizes().filter((s) => s.look === 'sheep').map((s) => s.tall));
   check(sheepOut && sheepDrawn && sheepSize.length > 0 && sheepSize.every((t) => t > 0.3 && t < 1), `a thrown sheep is drawn as its model, 0.3-1 m tall (0.7 in its bind pose, lower in its walk) (thrown ${sheepOut}, drawn ${sheepDrawn}, ${sheepSize.join(', ')} m)`);
+  // A lost WebGL context (a GPU reset, out of video memory) and its return: the characters' KTX2 maps are transcoded
+  // again, their capsules standing in meanwhile, and then every body is drawn again (they vanished till then, owner
+  // 2026-11-27); the performance report records the loss (view.ts contextRestored, contextLosses.ts).
+  const lostCtx = await page.evaluate(() => {
+    const ext = window.__cs.view.scene.getEngine()._gl?.getExtension('WEBGL_lose_context');
+    window.__loseCtx = ext;
+    ext?.loseContext();
+    return !!ext;
+  });
+  if (lostCtx) {
+    await page.waitForFunction(() => window.__cs.view.scene.getEngine()._contextWasLost, null, { timeout: T(10000) }).catch(() => {});
+    await page.evaluate(() => window.__loseCtx.restoreContext());
+    const back = await page.waitForFunction(() => !window.__cs.view.scene.getEngine()._contextWasLost, null, { timeout: T(20000) }).then(() => true, () => false);
+    const redrawn = back && (await page.waitForFunction(() => !window.__cs.view.contextState().restoring, null, { timeout: T(60000) }).then(() => true, () => false));
+    const state = await page.evaluate(() => window.__cs.view.contextState());
+    await page.evaluate(() => document.querySelector('#pause [data-tab="settings"]')?.click());
+    await page.$eval('#perf-report', (b) => b.click());
+    const line = (await page.$eval('#perf-report-text', (e) => e.value)).split('\n').find((l) => l.startsWith('context')) ?? '';
+    check(back && redrawn && state.bodies > 0 && state.rebuilding === 0 && /WebGL context lost 1 time: .*back after .*characters drawn again after/.test(line), `after a lost WebGL context comes back every character is drawn again, and the performance report says so (back ${back}, redrawn ${redrawn}, ${JSON.stringify(state)}; "${line}")`);
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await thirdPersonShot(browser);

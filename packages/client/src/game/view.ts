@@ -3677,6 +3677,17 @@ export class GameView {
   /** Since when the characters' maps are being rebuilt after a lost context came back (null: not now). */
   private restoringSince: number | null = null;
 
+  /** After a lost context (tests): still waiting on characters' maps, how many wait, and how many bodies are in. */
+  contextState(): { restoring: boolean; rebuilding: number; bodies: number } {
+    let rebuilding = 0;
+    let bodies = 0;
+    for (const a of this.avatars.values()) {
+      if (a.rebuilding) rebuilding++;
+      if (a.anim) bodies++;
+    }
+    return { restoring: this.restoringSince !== null, rebuilding, bodies };
+  }
+
   /**
    * A lost WebGL context came back. Babylon rebuilds every buffer, shader and texture, but each character's KTX2
    * maps are transcoded again from their files on the way (seconds on a slow machine, more with many looks), and
