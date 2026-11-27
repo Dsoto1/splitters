@@ -175,6 +175,7 @@ import { CityVisuals } from './cityVisuals.ts';
 import { SkyEffects } from './skyEffects.ts';
 import { WeatherVisuals } from '../weatherVisuals.ts';
 import { LoadOrder, useLoadOrder } from '../content/loadOrder.ts';
+import { bodyDrawable, noteBodiesBack, noteContextLost, noteContextRestored } from './contextLosses.ts';
 import { CharacterLibrary, setCharacterLodCrowd, setCharacterLodZoom, type CharacterInstance } from '../content/characters.ts';
 import { CharacterAnimator, type OneShot } from './characterAnimator.ts';
 import { seatDrawnYaw } from './riderPlacement.ts';
@@ -368,6 +369,8 @@ interface Avatar {
   alive?: boolean;
   /** The pose check: when its body was put in it (built bodies: when the model came in). */
   bodyAt?: number;
+  /** After a lost WebGL context came back: its body's maps are still being rebuilt, so its capsule stands in (contextRestored). */
+  rebuilding?: boolean;
 }
 
 /** How long an NPC takes to climb out of a hatch or burrow (ms), and from how deep. */
@@ -435,6 +438,9 @@ const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z
 const RETIRE_MS = 1.5;
 /** Frames longer than this (ms: a CPU-rendered page) let more than one character be built after them (one per 16 ms). */
 const BUILD_CATCH_UP_MS = 250;
+/** After a lost context came back: how long the report waits for every character's maps before noting how many are still out. */
+const CONTEXT_REBUILD_REPORT_MS = 60000;
+
 /** A slice of the match's loading work spread over frames (sliced.ts): this much at most before a frame is drawn (ms). */
 const START_SLICE_MS = 8;
 /** Ragdoll parts parked in the effects world's pool when the map is built (a standard body's, this many times). */
@@ -740,6 +746,13 @@ export class GameView {
     this.foliage = new FoliageVisuals(this.scene, this.models);
     this.blood = new BloodVisuals(this.scene, () => this.physics);
     this.impacts = new ImpactVisuals(this.scene, () => this.physics);
+    // A lost WebGL context (a GPU reset, or out of video memory) and its return (contextRestored).
+    const lost = engine.onContextLostObservable.add(() => noteContextLost());
+    const back = engine.onContextRestoredObservable.add(() => this.contextRestored());
+    this.scene.onDisposeObservable.addOnce(() => {
+      engine.onContextLostObservable.remove(lost);
+      engine.onContextRestoredObservable.remove(back);
+    });
     this.scenario.onBlockReset = (body) => this.impacts.clearHolesOn(body);
     this.throwArc = new ThrowArc(this.scene);
     this.blood.enabled = bloodPreference();
@@ -2790,6 +2803,8 @@ export class GameView {
     // Last frames' going characters first: one back in the pool can be this frame's respawn.
     this.retiring.run();
     const starting = this.deathsToStart(poses, eye);
+    // After a lost context came back: every few frames, whose body can be drawn again (contextRestored).
+    if (this.restoringSince !== null && this.avatarFrame % 10 === 0) this.checkRebuilt();
     for (const p of poses) {
       if (p.slot === localSlot) {
         // Your own body in first person: kept loaded but not drawn (and not animated), so switching to
@@ -2938,7 +2953,8 @@ export class GameView {
         // Its bones aren't drawn: pause its clips and skip the aim and grip until it is back in view.
         if (a.anim instanceof CharacterAnimator) a.anim.setDormant(out);
       }
-      a.placeholder.setEnabled(p.alive && !a.anim);
+      // (After a lost context came back, also while its body's maps are being rebuilt: contextRestored.)
+      a.placeholder.setEnabled(p.alive && (!a.anim || !!a.rebuilding));
       // A power-up's glow (powerupGlow.ts): Overdrive's gold swells and settles slower than once a second (held still
       // with Reduce flashing), never a flicker.
       const glowColor = p.alive ? bodyGlowColor(p.powerups) : null;
@@ -3656,6 +3672,38 @@ export class GameView {
       if (slotNow >= 0) this.setAvatarWeapon(a, slotNow);
     });
     return a;
+  }
+
+  /** Since when the characters' maps are being rebuilt after a lost context came back (null: not now). */
+  private restoringSince: number | null = null;
+
+  /**
+   * A lost WebGL context came back. Babylon rebuilds every buffer, shader and texture, but each character's KTX2
+   * maps are transcoded again from their files on the way (seconds on a slow machine, more with many looks), and
+   * a mesh whose maps aren't in isn't drawn at all: every character vanished until then (2026-11-27). Meanwhile each
+   * one's capsule stands in, as while its files first load; the bullet holes' buffers are set again whole
+   * (ImpactVisuals.restored). The performance report records the loss (contextLosses.ts).
+   */
+  private contextRestored(): void {
+    noteContextRestored();
+    this.impacts.restored();
+    this.restoringSince = performance.now();
+    this.checkRebuilt();
+  }
+
+  /**
+   * While restoring: which characters' bodies can be drawn again (their maps in). Done when all can; the report
+   * notes the time then, or after CONTEXT_REBUILD_REPORT_MS how many still wait (they keep their capsule till then).
+   */
+  private checkRebuilt(): void {
+    if (this.restoringSince === null) return;
+    let waiting = 0;
+    for (const a of this.avatars.values()) {
+      a.rebuilding = !!a.anim && !bodyDrawable(a.anim);
+      if (a.rebuilding) waiting++;
+    }
+    if (!waiting || performance.now() - this.restoringSince > CONTEXT_REBUILD_REPORT_MS) noteBodiesBack(waiting);
+    if (!waiting) this.restoringSince = null;
   }
 
   /** Show a teammate marker in the team colour over the avatar (null hides it). */
