@@ -1,7 +1,7 @@
 // The touch controls' layout (game/touchLayout.ts; docs/MOBILE_AUDIT.md, proposal 3): button size, opacity,
 // left-handed; and a phone's Aim default (combatPrefs.ts: Toggle on touch).
 import { beforeAll, beforeEach, describe, expect, it } from 'vitest';
-import { DEFAULT_TOUCH_LAYOUT, TOUCH_LAYOUT_EVENT, applyTouchLayout, parseTouchLayout, resetTouchLayoutCache, saveTouchLayout, touchLayout, touchScale } from '../src/game/touchLayout.ts';
+import { DEFAULT_TOUCH_LAYOUT, TOUCH_LAYOUT_EVENT, defaultTouchSize, applyTouchLayout, parseTouchLayout, resetTouchLayoutCache, saveTouchLayout, touchLayout, touchScale } from '../src/game/touchLayout.ts';
 import { DEFAULT_COMBAT_PREFS, TOUCH_COMBAT_DEFAULTS, parseCombatPrefs } from '../src/game/combatPrefs.ts';
 
 const store = new Map<string, string>();
@@ -22,18 +22,33 @@ beforeEach(() => {
 });
 
 describe('touch layout', () => {
-  it('defaults to Medium, fully drawn, right-handed', () => {
+  it('defaults to Medium (no screen to go by), fully drawn, right-handed', () => {
     expect(touchLayout()).toEqual(DEFAULT_TOUCH_LAYOUT);
-    expect(DEFAULT_TOUCH_LAYOUT).toEqual({ size: 'medium', opacity: 1, leftHanded: false });
+    expect(DEFAULT_TOUCH_LAYOUT).toEqual({ size: 'medium', sizeChosen: false, opacity: 1, leftHanded: false });
+  });
+
+  it('picks Small on a phone and Medium on a tablet by the screen\'s short side, until the player picks', () => {
+    // iPhone SE, iPhone 13/14, Pixel 7, an iPhone Pro Max, either way up; then an iPad mini and a big tablet.
+    for (const [w, h] of [[375, 667], [390, 844], [844, 390], [412, 915], [430, 932]] as const) expect(defaultTouchSize(w, h)).toBe('small');
+    for (const [w, h] of [[744, 1133], [1024, 1366], [1366, 1024]] as const) expect(defaultTouchSize(w, h)).toBe('medium');
+    expect(parseTouchLayout(null, 'small')).toEqual({ ...DEFAULT_TOUCH_LAYOUT, size: 'small' });
+    // A saved pick wins over the screen's.
+    expect(parseTouchLayout('{"size":"large"}', 'small')).toMatchObject({ size: 'large', sizeChosen: true });
   });
 
   it('saves a change, keeps the rest, and tells the page', () => {
     saveTouchLayout({ size: 'large' });
     saveTouchLayout({ leftHanded: true, opacity: 0.55 });
-    expect(touchLayout()).toEqual({ size: 'large', opacity: 0.55, leftHanded: true });
+    expect(touchLayout()).toEqual({ size: 'large', sizeChosen: true, opacity: 0.55, leftHanded: true });
     expect(fired).toBe(2);
     resetTouchLayoutCache();
-    expect(touchLayout()).toEqual({ size: 'large', opacity: 0.55, leftHanded: true });
+    expect(touchLayout()).toEqual({ size: 'large', sizeChosen: true, opacity: 0.55, leftHanded: true });
+  });
+
+  it('saves no size until one is picked: the opacity alone leaves it following the screen', () => {
+    saveTouchLayout({ opacity: 0.7 });
+    expect(JSON.parse(store.get('tiletrigger.touchLayout')!)).toEqual({ opacity: 0.7, leftHanded: false });
+    expect(touchLayout()).toMatchObject({ sizeChosen: false, opacity: 0.7 });
   });
 
   it('reads damaged or unknown values as the defaults, and keeps opacity within 30-100 %', () => {
@@ -63,7 +78,7 @@ describe('touch layout', () => {
       style: { setProperty: (k: string, v: string) => void props.set(k, v) },
       classList: { toggle: (c: string, on: boolean) => void (on ? classes.add(c) : classes.delete(c)) },
     } as unknown as HTMLElement;
-    applyTouchLayout(root, { size: 'small', opacity: 0.6, leftHanded: true }, 412);
+    applyTouchLayout(root, { size: 'small', sizeChosen: true, opacity: 0.6, leftHanded: true }, 412);
     expect(props.get('--tc-scale')).toBe('0.85');
     expect(props.get('--tc-opacity')).toBe('0.6');
     expect(classes.has('tc-left')).toBe(true);

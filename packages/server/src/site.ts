@@ -11,6 +11,7 @@ const TYPES: Record<string, string> = {
   '.mjs': 'text/javascript; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
   '.json': 'application/json; charset=utf-8',
+  '.webmanifest': 'application/manifest+json; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
@@ -31,7 +32,7 @@ const TYPES: Record<string, string> = {
   '.txt': 'text/plain; charset=utf-8',
 };
 /** Worth compressing on the way out (models and images already are). */
-const TEXT = new Set(['.html', '.js', '.mjs', '.css', '.json', '.svg', '.gltf', '.wasm', '.txt']);
+const TEXT = new Set(['.html', '.js', '.mjs', '.css', '.json', '.webmanifest', '.svg', '.gltf', '.wasm', '.txt']);
 
 /** A content hash of a file, as a weak ETag (the same for its gzipped and plain forms). */
 function hashFile(file: string): Promise<string> {

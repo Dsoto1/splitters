@@ -2,9 +2,19 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <!-- viewport-fit=cover: the page runs under a notch and the home bar, and the safe-area rules (env(safe-area-inset-*))
+         keep the controls clear of them. maximum-scale and user-scalable: no page zoom (Safari still pinches: touchDevice.ts). -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <title>Tile Trigger</title>
     <meta name="color-scheme" content="dark" />
+    <!-- Add to Home Screen opens the game full screen (the only full screen an iPhone gives): the manifest, and Apple's own tags. -->
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#0b0f1a" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Tile Trigger" />
+    <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />
     <!-- The page's own colour from the first paint, before the stylesheet arrives (no white flash). -->
     <style>
       html, body { background: #0b0f1a; }

@@ -3802,10 +3802,10 @@ export class FrontEnd {
     const touchList = bindingList([
       ['Move (push past the rim to sprint)', touchLayout().leftHanded ? 'Right pad' : 'Left pad'],
       ['Jump · crouch', "Tap · hold the pad's middle"],
-      ['Look', touchLayout().leftHanded ? 'Drag on the left half' : 'Drag on the right half'],
+      ['Look', 'Drag anywhere off the buttons'],
       ['Fire (drag it to aim while firing)', 'Fire'],
       ['Aim down sights (hold or toggle: Aim above)', 'Aim'],
-      ['Quick melee · reload · use · throw', 'Melee · Reload · Use · Throw'],
+      ['Quick melee · reload · use · throw (Reload, Use and Throw show when they can act)', 'Melee · Reload · Use · Throw'],
       ['Dodge-step · crouched or sprinting: combat roll', 'Dodge'],
       ['Weapon wheel', 'Weapons'],
       ['Pause', 'II (top left)'],
