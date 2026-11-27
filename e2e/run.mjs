@@ -6181,6 +6181,7 @@ async function offlineFlow(browser) {
   const arenas = await kindCards('arenas');
   const arcadeK = await kindCards('arcade');
   const grounds = await kindCards('battlegrounds');
+  if (process.env.E2E_SHOTS) await page.waitForFunction(() => [...document.querySelectorAll('#map-cards .map-card .map-thumb.pic img')].slice(0, 8).every((i) => i.complete && i.naturalWidth > 0), null, { timeout: T(20000) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-battlegrounds.png`, timeout: T(60000) }).catch(() => {});
   const storyK = await kindCards('story');
   const rowsK = await page.evaluate(() => [...document.querySelectorAll('#map-cards .sector-row')].map((r) => ({ id: r.id, maps: r.querySelectorAll('.map-card').length, unknown: r.querySelectorAll('.sector-tile.unknown').length })));
@@ -12724,6 +12725,7 @@ async function storyFlow(browser) {
       status: r.querySelector('.sector-status')?.textContent,
     })),
   );
+  if (process.env.E2E_SHOTS) await page.waitForFunction(() => [...document.querySelectorAll('#map-cards .sector-row .map-card .map-thumb.pic img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: T(20000) }).catch(() => {});
   if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-story.png`, timeout: T(60000) }).catch(() => {});
   const jade = rows.find((r) => r.id === 'jade_empire');
   check(
