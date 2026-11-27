@@ -8262,6 +8262,128 @@ async function physicsfxFlow(browser) {
  * 17. One flow that long can't be packed and a retry of it (the whole flow again) ran past the e2e job's 45-minute
  * limit. Now four flows of 5-7 minutes: the beams, and the tracers by build (each its own page load).
  */
+/**
+ * Inside a blast (owner, 2026-11-27: a first-person screenshot, haze and gaps where the room's walls and floor should
+ * be while the camera was inside an explosion; QUEUE "Bugs"). A room of light walls made in MapMaker; you stand in it
+ * facing a wall 6 m off and a launcher's blast goes off at your feet, Reduce flashing on and then off. Frame by frame
+ * (the page's clock stepped, 30 frames a second), the room must still be drawn behind the blast: with the setting on,
+ * in every frame most of the picture is the room as it was before the blast (the blast's pieces fade near the camera
+ * and are drawn over the room, never as solid cards hiding it: godotVfx.ts NEAR_FADE); off, the room shows through the
+ * full-size fireball as it thins. Pictures: blastview-<on|off>-<frame>.png (and the frame before: -ref).
+ */
+async function blastviewFlow(browser) {
+  const [W, H] = [320, 180];
+  const ctx = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1 });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const made = await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, at, size, tint) => ({ id, kind: 'block', position: at, size, yaw: 0, material: null, tint, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: null, health: 5000 });
+    // A room 10 m across round 0 0 -20, open to the sky: a pale wall ahead (north), a darker one to each side.
+    const entities = [block('bv_n', [0, 0, -25], [10.4, 3.4, 0.4], '#d8c8a8'), block('bv_w', [-5, 0, -20], [0.4, 3.4, 10.4], '#8f9aa8'), block('bv_e', [5, 0, -20], [0.4, 3.4, 10.4], '#8f9aa8'), block('bv_floor', [0, 0, -20], [10, 0.1, 10], '#6f6a62')];
+    const ok = ed.run('Blast view room', { kind: 'batch', commands: [{ kind: 'addEntities', entities }] });
+    return { ok, walls: ed.doc.entities.filter((e) => e.id.startsWith('bv_')).length };
+  });
+  check(made.ok && made.walls === 4, `MapMaker makes a room of walls (${JSON.stringify(made)})`);
+  // (PLAY TEST, as its button does.)
+  await page.evaluate(() => document.getElementById('ed-test').click());
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(playing, 'the room plays (MapMaker TEST)');
+  if (!playing) {
+    await page.screenshot({ path: `${ARTIFACTS}/blastview-noplay.png` }).catch(() => {});
+    console.log('blastview errors', errors.slice(0, 5));
+    return void (await ctx.close());
+  }
+  await playWithoutMouse(page);
+  await holdBots(page);
+  // You stand in the room 7 m from the north wall, looking at it, never dying; the bots far off.
+  await sim(page, (m, me) => {
+    clearInterval(self.__bvPin);
+    const pin = () => {
+      me.move = { ...me.move, pos: { x: 0, y: 0.05, z: -18 }, velY: 0, vx: 0, vz: 0, grounded: true };
+      me.maxHealth = me.health = 100000;
+      for (const [i, b] of m.combatants().filter((c) => c.bot).entries()) b.move = { ...b.move, pos: { x: 60 + i * 2, y: 0, z: 60 }, velY: 0, grounded: true };
+    };
+    pin();
+    self.__bvPin = setInterval(pin, 1000 / 60);
+  });
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: Math.PI, pitch: -0.12 }));
+  // The explosion pack in, and the view settled on the room.
+  const ready = await page.waitForFunction(() => {
+    const e = window.__cs.view.cameraPosition();
+    return Math.abs(e.z + 18) < 0.2 && window.__cs.view.vfxReady?.('explosion_fx') !== false;
+  }, null, { timeout: T(30000) }).then(() => true, () => false);
+  check(ready, 'you stand in the room, the explosion effects loaded');
+  await frames(page, 20);
+  const grab = (n) =>
+    page.evaluate(([n, W, H]) => {
+      const thrown = [];
+      for (let i = 0; i < n; i++) thrown.push(...window.__frameClock.step(1000 / 30));
+      const canvas = window.__cs.view.scene.getEngine().getRenderingCanvas();
+      const out = (window.__bvCanvas ??= Object.assign(document.createElement('canvas'), { width: W, height: H }));
+      const g = out.getContext('2d', { willReadFrequently: true });
+      g.drawImage(canvas, 0, 0, W, H);
+      const px = g.getImageData(0, 0, W, H).data;
+      return { png: out.toDataURL('image/png'), px: Array.from(px), thrown };
+    }, [n, W, H]);
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  const dir = process.env.E2E_SHOTS ?? ARTIFACTS;
+  mkdirSync(dir, { recursive: true });
+  const save = (name, png) => writeFileSync(`${dir}/${name}.png`, Buffer.from(png.split(',')[1], 'base64'));
+  await page.evaluate(() => window.__frameClock.freeze());
+  const results = {};
+  for (const on of [true, false]) {
+    await setFlashing(on);
+    const ref = await grab(2);
+    save(`blastview-${on ? 'on' : 'off'}-ref`, ref.png);
+    // A launcher's blast at your feet, half a metre ahead: you are inside its fireball and smoke.
+    const played = await page.evaluate(() => {
+      const v = window.__cs.view;
+      const e = v.cameraPosition();
+      const before = v.vfx.count;
+      v.explosion({ x: e.x, y: e.y - 1.3, z: e.z - 0.5 }, 4.5, 'core.launcher');
+      return v.vfx.count > before;
+    });
+    check(played, `the launcher's explosion effect plays (Reduce flashing ${on ? 'on' : 'off'})`);
+    const rows = [];
+    for (const f of [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 25, 30, 40, 50]) {
+      const at = rows.length ? f - rows.at(-1).f : f;
+      const shot = await grab(at);
+      // How much of the picture is the room as it was (each pixel within 48 of the frame before the blast, summed over
+      // r g b).
+      let same = 0;
+      for (let i = 0; i < shot.px.length; i += 4) if (Math.abs(shot.px[i] - ref.px[i]) + Math.abs(shot.px[i + 1] - ref.px[i + 1]) + Math.abs(shot.px[i + 2] - ref.px[i + 2]) < 48) same++;
+      rows.push({ f, same: +(same / (W * H)).toFixed(2), thrown: shot.thrown.length });
+      save(`blastview-${on ? 'on' : 'off'}-${String(f).padStart(2, '0')}`, shot.png);
+    }
+    results[on ? 'on' : 'off'] = rows;
+    // (The blast over before the next.)
+    await grab(90);
+  }
+  console.log(`blastview ${JSON.stringify(results)}`);
+  const worst = (rows) => Math.min(...rows.map((r) => r.same));
+  check(worst(results.on) >= 0.5, `Reduce flashing on: inside a blast the room still draws behind it in every frame (least of the picture the room as it was: ${worst(results.on)}; ${JSON.stringify(results.on.map((r) => r.same))})`);
+  // With the setting off the blast is drawn full size and bright, the camera deep in its fireball: the room shows through
+  // it as it thins (before the fix, 4 % of the picture until 0.8 s: its cards were solid slabs hiding the walls).
+  const from = (rows, f) => Math.min(...rows.filter((r) => r.f >= f).map((r) => r.same));
+  check(from(results.off, 13) >= 0.2 && from(results.off, 30) >= 0.4, `Reduce flashing off: inside a blast the room shows through it as it thins (least from 0.43 s: ${from(results.off, 13)}, from 1 s: ${from(results.off, 30)}; ${JSON.stringify(results.off.map((r) => r.same))})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await sim(page, () => clearInterval(self.__bvPin)).catch(() => {});
+  await ctx.close();
+}
+
 async function beamsFlow(browser) {
   await beamMuzzleChecks(browser);
 }
@@ -13124,7 +13246,7 @@ const FLASHING_PARTS = {
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status', 'bolts'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
-  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
+  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups', 'inside'] },
 };
 
 /**
@@ -13156,7 +13278,7 @@ const FLASHING_DAY = {
       return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, shelves: ed.doc.entities.filter((e) => e.id.startsWith('day_shelf_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
   made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.shelves === 10 && m.sky !== 'night',
-  moments: ({ page, stage, step, frameMs }) => {
+  moments: ({ page, stage, step, frameMs, blast }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
     const at = {};
@@ -13335,6 +13457,18 @@ const FLASHING_DAY = {
           }),
         sees: (_on, s) => s.gold && s.phantom,
         after: () => sim(page, (m) => (clearInterval(self.__phantomKnife), m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0)))),
+      },
+      // Inside a blast (owner, 2026-11-27: walls and floor vanished for a moment from inside one): a launcher's blast at
+      // your feet by day, twice a second apart, the camera inside its fireball and smoke (the near pieces fade, a calm
+      // smoke haze comes up and goes: game/godotVfx.ts NEAR_FADE, view.ts blast haze).
+      {
+        name: 'inside',
+        label: 'inside a blast: two launcher blasts at your feet by day, a second apart',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -14],
+        look: { yaw: Math.PI, pitch: -0.12 },
+        bots: [],
+        at: { 4: () => blast([-24.4, 0.3, -14.5]), 34: () => blast([-24.2, 0.3, -14.4]) },
       },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
       // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
@@ -13602,7 +13736,7 @@ async function flashingScene(browser, scene, names) {
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
   // The moments (a few metres apart in the scene; 2 s each, setting on then off). A moment with something to do on
   // every frame gives `stepAt(f)`: its work and the frame's step in one trip to the page (it returns the step's errors).
-  const all = (scene ? scene.moments({ page, stage, aim, step, frameMs }) : [
+  const all = (scene ? scene.moments({ page, stage, aim, step, frameMs, blast }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
@@ -18107,7 +18241,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, iphone: iphoneFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, iphone: iphoneFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, blastview: blastviewFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];

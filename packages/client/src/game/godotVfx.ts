@@ -512,7 +512,16 @@ interface ShaderPort {
   helpers?: string;
   /** Its ping-pong noises are folded into bands as FastNoiseLite makes them (else drawn as plain noise). */
   pingPong?: boolean;
+  /**
+   * A blast's piece (the `explosion_*` shaders, smoke trails): it fades out as it nears the camera (NEAR_FADE), drawn
+   * blended over the scene without writing depth, never as a solid card. From inside a blast its fireball and smoke
+   * cards filled the view as flat opaque slabs, hiding the room's walls and floor (owner, 2026-11-27).
+   */
+  near?: boolean;
 }
+
+/** A blast's pieces (ShaderPort.near) are gone this close to the camera (m) and whole from NEAR_FADE[1] on. */
+export const NEAR_FADE = [0.6, 2.8] as const;
 
 const PORTS: Record<string, ShaderPort> = {
   // ---- hits
@@ -670,6 +679,7 @@ const PORTS: Record<string, ShaderPort> = {
   // ---- explosions
   explosion_bits: {
     uniforms: { primary_color: [1, 1, 1], secondary_color: [1, 1, 1], emission: 2 },
+    near: true,
     blend: 'cut',
     cut: -1,
     fragment: `
@@ -679,6 +689,7 @@ const PORTS: Record<string, ShaderPort> = {
   explosion_core: {
     uniforms: { primary_color: [1, 1, 1], emission: 3, noise_scale: [1, 1], noise_scroll: [0, 0.2], noise_shape: 1 },
     samplers: ['noise_texture'],
+    near: true,
     blend: 'cut',
     cut: 0.1,
     cull: false,
@@ -694,6 +705,7 @@ const PORTS: Record<string, ShaderPort> = {
   explosion_impact: {
     uniforms: { primary_color: [1, 1, 1], emission: 2, effect_decay: 0, noise_scale: [1, 1], noise_scroll: [0, 0.2], noise_shape: 1, streak_amount: 7 },
     samplers: ['noise_texture'],
+    near: true,
     blend: 'add',
     cut: 0.2,
     cull: false,
@@ -712,6 +724,7 @@ const PORTS: Record<string, ShaderPort> = {
   explosion_rings: {
     uniforms: { primary_color: [1, 1, 1], secondary_color: [1, 1, 1], emission: 2, noise_scale: [1, 1], noise_scroll: [0, 0.2], noise_shape: 1 },
     samplers: ['noise_texture'],
+    near: true,
     blend: 'add',
     cut: 0.2,
     cull: false,
@@ -727,6 +740,7 @@ const PORTS: Record<string, ShaderPort> = {
   explosion_smoke: {
     uniforms: { effect_decay: 0, is_particle: 1, primary_color: [1, 1, 1], secondary_color: [1, 1, 1], tertiary_color: [0.13, 0.13, 0.13], emission: 2, noise_scale: [1, 1], extra_scale: [1, 1], noise_scroll: [0, 0.2], use_stepped_shading: 1, shadow_steps: 3, displacement_amount: 0.2, pole_displacement_amount: 0 },
     samplers: ['smoke_texture', 'normal_texture'],
+    near: true,
     blend: 'cut',
     cut: 0.5,
     lit: true,
@@ -756,6 +770,7 @@ const PORTS: Record<string, ShaderPort> = {
   explosion_sphere: {
     uniforms: { effect_decay: 0, primary_color: [1, 1, 1], secondary_color: [1, 1, 1], emission: 2, noise_scale: [1, 1], noise_scroll: [-0.2, 0.2], noise_shape: 1, noise_twist: 0.5 },
     samplers: ['noise_texture'],
+    near: true,
     blend: 'cut',
     cut: 0.001,
     vertex: `
@@ -775,6 +790,7 @@ const PORTS: Record<string, ShaderPort> = {
   explosion_trails: {
     uniforms: { primary_color: [1, 1, 1], secondary_color: [1, 1, 1], emission: 2, noise_scale: [1, 1], noise_scroll: [0, 0.2] },
     samplers: ['noise_texture'],
+    near: true,
     blend: 'add',
     cut: 0.2,
     vertex: `
@@ -790,6 +806,7 @@ const PORTS: Record<string, ShaderPort> = {
   smoke_trail: {
     uniforms: { tertiary_color: [0.13, 0.13, 0.13] },
     samplers: ['noise_texture'],
+    near: true,
     blend: 'cut',
     cut: 0.1,
     lit: true,
@@ -1460,6 +1477,9 @@ uniform float u_gain;
 uniform vec3 u_sunDir;
 uniform vec3 u_sunColor;
 uniform vec3 u_ambient;
+#ifdef NEAR_FADE
+uniform vec3 eye;
+#endif
 UNIFORMS
 float overlay(float base, float blend) {
   float limit = step(0.5, base);
@@ -1479,13 +1499,29 @@ void main(void) {
 #ifdef ADDITIVE
   toned *= u_gain;
 #else
-  toned = min(toned, vec3(0.3 + 0.7 * u_gain));
+  // (Scaled down to the cap, keeping its hue: capping each channel turned a dimmed orange fireball olive.)
+  float peak = max(max(toned.r, toned.g), toned.b);
+  float cap = 0.3 + 0.7 * u_gain;
+  if (peak > cap) toned *= cap / peak;
+#endif
+  float keep = 1.0;
+#ifdef NEAR_FADE
+  // A blast's piece fades out as it nears the camera (ShaderPort.near): from inside a blast the room shows through.
+  keep = smoothstep(NEAR_IN, NEAR_OUT, length(vWorld - eye));
+  if (keep < 0.01) discard;
+#ifdef ADDITIVE
+  toned *= keep;
+#endif
 #endif
 #ifdef CUT
   if (outAlpha < CUT) discard;
-  gl_FragColor = vec4(toned, 1.0);
+  gl_FragColor = vec4(toned, keep);
 #else
+#ifdef ADDITIVE
   gl_FragColor = vec4(toned, clamp(outAlpha, 0.0, 1.0));
+#else
+  gl_FragColor = vec4(toned, clamp(outAlpha, 0.0, 1.0) * keep);
+#endif
 #endif
 }`;
 
@@ -1526,19 +1562,21 @@ function materialFor(scene: Scene, mat: Json, root: Json, set: string | undefine
   if (hit) return hit;
   registerShaders();
   const billboard = billboardAlign || port.billboard === true || (port.billboardUniform === true && bool(mat['shader_parameter/billboard'], false));
-  const defines = [...(billboard ? ['#define BILLBOARD'] : []), ...(port.blend === 'cut' || (port.cut !== undefined && port.blend !== 'add') ? [`#define CUT ${(port.cut ?? 0.5) < 0 ? '-1.0' : (port.cut ?? 0.5).toFixed(3)}`] : []), ...(port.lit ? ['#define WORLD_NORMAL'] : []), ...(port.blend === 'add' ? ['#define ADDITIVE'] : [])];
+  const defines = [...(billboard ? ['#define BILLBOARD'] : []), ...(port.blend === 'cut' || (port.cut !== undefined && port.blend !== 'add') ? [`#define CUT ${(port.cut ?? 0.5) < 0 ? '-1.0' : (port.cut ?? 0.5).toFixed(3)}`] : []), ...(port.lit ? ['#define WORLD_NORMAL'] : []), ...(port.blend === 'add' ? ['#define ADDITIVE'] : []), ...(port.near ? ['#define NEAR_FADE', `#define NEAR_IN ${NEAR_FADE[0].toFixed(2)}`, `#define NEAR_OUT ${NEAR_FADE[1].toFixed(2)}`] : [])];
   const uniforms = ['world', 'view', 'viewProjection', 'eye', 'u_time', 'u_bright', 'u_gain', 'u_sunDir', 'u_sunColor', 'u_ambient', ...Object.keys(port.uniforms).map((k) => `u_${k}`)];
   const m = new ShaderMaterial(`gv_${key}`, scene, { vertex: `gv_${shaderName}`, fragment: `gv_${shaderName}` }, {
     attributes: ['position', 'normal', 'uv', 'pcolor', 'pextra'],
     uniforms,
     samplers: port.samplers ?? [],
     defines,
-    needAlphaBlending: port.blend !== 'cut' && !(port.cut !== undefined && port.blend === 'mix'),
+    // (A blast's cut-out pieces are blended too: they fade near the camera, NEAR_FADE.)
+    needAlphaBlending: !!port.near || (port.blend !== 'cut' && !(port.cut !== undefined && port.blend === 'mix')),
   });
   m.backFaceCulling = port.cull !== false && !billboard;
   if (port.blend === 'add') m.alphaMode = Constants.ALPHA_ADD;
-  else if (port.blend === 'mix') m.alphaMode = Constants.ALPHA_COMBINE;
-  if (port.blend !== 'cut') m.disableDepthWrite = true;
+  else if (port.blend === 'mix' || port.near) m.alphaMode = Constants.ALPHA_COMBINE;
+  // Solid cut-outs write depth, except a blast's: a card at the camera hid everything behind it.
+  if (port.blend !== 'cut' || port.near) m.disableDepthWrite = true;
   const tinted = tint ? hexColor(tint) : null;
   const param = (k: string): unknown => {
     // A tint (content/vfx.json `tint`) takes the effect's own colour: the secondary (and tertiary) one its controller sets.
