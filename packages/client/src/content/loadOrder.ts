@@ -16,6 +16,8 @@ export class LoadOrder {
   private until = 0;
   private graceUntil = 0;
   private running = 0;
+  /** Past the match's start (settle): character files asked for from now on hold nothing back. */
+  private settled = false;
   /** Waiting downloads, the map's before the rest, each in the order asked. */
   private readonly waiting: { rank: number; go: () => void }[] = [];
   private timer: ReturnType<typeof setTimeout> | null = null;
@@ -29,8 +31,20 @@ export class LoadOrder {
   /** Hold other downloads behind the characters' from now, for `ms` at most; at least `grace` ms (the roster's looks may come in a moment later). */
   hold(ms: number, grace = 3000): void {
     const t = this.now();
+    this.settled = false;
     this.until = Math.max(this.until, t + ms);
     this.graceUntil = Math.max(this.graceUntil, t + Math.min(grace, ms));
+    this.pump();
+  }
+
+  /**
+   * The match has started: the character files on their way still hold the rest back (a slow line's bots), but none
+   * asked for from now on does (a bot's new look mid-match, a joining player): their guns came in two at a time
+   * behind every new look, and bots stood unarmed.
+   */
+  settle(): void {
+    this.settled = true;
+    this.graceUntil = 0;
     this.pump();
   }
 
@@ -53,6 +67,7 @@ export class LoadOrder {
 
   /** A character file's download: it starts at once, and while it runs others are held (during a hold). */
   first<T>(start: () => Promise<T>): Promise<T> {
+    if (this.settled) return start();
     this.firsts++;
     let p: Promise<T>;
     try {

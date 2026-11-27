@@ -144,3 +144,29 @@ describe('LoadOrder: the map before the guns', () => {
     expect(log).toEqual(['body', 'gun1', 'prop1', 'prop2', 'gun2', 'gun3']);
   });
 });
+
+describe('LoadOrder: once the match has started', () => {
+  it('files on their way still hold the rest; character files asked for after the start hold nothing', async () => {
+    let now = 0;
+    const order = new LoadOrder(1, () => now);
+    const log: string[] = [];
+    order.hold(90000, 3000);
+    const bot = download(log, 'bot');
+    const botP = order.first(bot.start);
+    void order.other(download(log, 'gun1').start);
+    void order.other(download(log, 'gun2').start);
+    now = 30000;
+    order.settle();
+    // The bot's body is still coming: the guns still wait (one at a time).
+    expect(log).toEqual(['bot', 'gun1']);
+    // A new look mid-match: it starts, and holds nothing back once the first is in.
+    const late = download(log, 'newlook');
+    void order.first(late.start);
+    bot.finish();
+    await botP;
+    await flush();
+    expect(log).toEqual(['bot', 'gun1', 'newlook', 'gun2']);
+    void order.other(download(log, 'gun3').start);
+    expect(log).toEqual(['bot', 'gun1', 'newlook', 'gun2', 'gun3']);
+  });
+});

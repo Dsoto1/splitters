@@ -57,8 +57,10 @@ export class ModelLibrary {
       // Behind a match's characters while they load first (loadOrder.ts).
       const own = /^(props|kit|creatures|city|packs|env)\//.test(path);
       const url = versioned(own ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`);
-      // (The map's own pieces before guns and vehicles.)
-      p = (this.order ? this.order.other(() => LoadAssetContainerAsync(url, this.scene, GLB), own ? 0 : 1) : LoadAssetContainerAsync(url, this.scene, GLB)).then(async (c) => {
+      // (The map's own pieces before guns and vehicles.) One whose turn comes after the scene went (the match left
+      // while it waited) loads nothing: a promise that never settles, so nothing builds into the dead scene.
+      const start = () => (this.scene.isDisposed ? new Promise<AssetContainer>(() => {}) : LoadAssetContainerAsync(url, this.scene, GLB));
+      p = (this.order ? this.order.other(start, own ? 0 : 1) : start()).then(async (c) => {
         // The scene went while the file loaded: free it now (sceneGone.ts) and make nothing more in that scene.
         if (this.scene.isDisposed) return freeIfSceneGone(this.scene)(c);
         this.lods.set(path, takeLods(c));

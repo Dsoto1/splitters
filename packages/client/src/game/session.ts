@@ -3339,6 +3339,8 @@ export class GameSession {
     // Never stall the start on one slow file.
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
     started = true;
+    // Character files still on their way keep the other models behind them; new ones from here don't (loadOrder.ts).
+    this.view.loadOrder.settle();
     if (this.closed) return;
     // Loaded. A board that has only just appeared stays a moment, so it can be read, before the countdown (not in
     // MapMaker's Test or a browser test: nothing to wait for there).
