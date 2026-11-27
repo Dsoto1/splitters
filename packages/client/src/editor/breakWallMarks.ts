@@ -52,17 +52,24 @@ const point = (along: 'x' | 'z', u: number, y: number, plane: number): P3 => (al
  */
 export function breakWallMarkFaces(boxes: readonly WorldBox[]): MarkFace[] {
   const out: MarkFace[] = [];
-  for (const b of boxes) {
-    if (b.breakWall === undefined || b.kind !== 'wall' || b.yaw || b.pitch || b.roll) continue;
+  const marked = boxes.filter((b) => b.breakWall !== undefined && b.kind === 'wall' && !b.yaw && !b.pitch && !b.roll && b.max[1] - b.min[1] > 0.01);
+  // Which way each section runs: along its longest box (an arch's slices are shorter along the wall than through it).
+  const axis = new Map<number, { along: 'x' | 'z'; len: number }>();
+  for (const b of marked) {
+    const dx = b.max[0] - b.min[0];
+    const dz = b.max[2] - b.min[2];
+    const len = Math.max(dx, dz);
+    if (len > (axis.get(b.breakWall!)?.len ?? -1)) axis.set(b.breakWall!, { along: dx >= dz ? 'x' : 'z', len });
+  }
+  for (const b of marked) {
     const [x0, y0, z0] = b.min;
     const [x1, y1, z1] = b.max;
     const h = y1 - y0;
-    if (h <= 0.01) continue;
-    // The wall runs along its longer side; it is marked on both faces across its thickness.
-    const along: 'x' | 'z' = x1 - x0 >= z1 - z0 ? 'x' : 'z';
+    // Marked on both faces across the wall's thickness.
+    const along = axis.get(b.breakWall!)!.along;
     const [u0, u1, p0, p1] = along === 'x' ? [x0, x1, z0, z1] : [z0, z1, x0, x1];
     for (const plane of [p0 - MARK_LIFT, p1 + MARK_LIFT]) {
-      out.push({ corners: [point(along, u0, y0, plane), point(along, u1, y0, plane), point(along, u1, y1, plane), point(along, u0, y1, plane)], width: u1 - u0, height: h, along, plane, u0, u1, y0, y1, k: b.breakWall });
+      out.push({ corners: [point(along, u0, y0, plane), point(along, u1, y0, plane), point(along, u1, y1, plane), point(along, u0, y1, plane)], width: u1 - u0, height: h, along, plane, u0, u1, y0, y1, k: b.breakWall! });
     }
   }
   return out;

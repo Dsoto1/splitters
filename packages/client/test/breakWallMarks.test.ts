@@ -56,6 +56,9 @@ describe('breakable-wall mark', () => {
         expect((p[0] + p[1]) / MARK_HATCH).toBeCloseTo(Math.round((a[0] + a[1]) / MARK_HATCH));
       }
     }
+    // A slice of an arch is marked across the wall like the rest of it, not along it (it is deeper than it is long).
+    const arch = breakWallMarkFaces([wall([0, 0, 0], [4, 1, 0.3], { breakWall: 2 }), wall([1, 2, 0], [1.1, 2.4, 0.3], { breakWall: 2 })]);
+    expect(arch.map((a) => a.along)).toEqual(['x', 'x', 'x', 'x']);
     // A thin slice (an arch's) is only inside its wall's outline: no hatching of its own.
     expect(hatchLines(breakWallMarkFaces([wall([0, 2, 0], [0.1, 3, 0.2], { breakWall: 0 })])[0]!)).toEqual([]);
     expect(breakWallMarkLines([f!]).length).toBe(h.length + 2 * (dashes([0, 0, 0], [4, 0, 0]).length + dashes([0, 0, 0], [0, 3, 0]).length));
