@@ -2,7 +2,7 @@
   "$comment": "Sight fit (tools/content/sight-fit.mjs; docs/GUNPLAY_SPEC.md §15, \"Sights that line up\"). The tool measures each gun's sights from its model; this file holds only what a person decided after looking at the sight sheet (?mode=sights). `corrections`: a weapon whose automatic fit is wrong: `rear` and/or `front` (model space as `view.muzzleAt`: +Z the barrel, +Y up, metres), optional `kind`, and the `reason`. `excluded`: a weapon that aims with the placement it had before (the top of the gun under the eye) because its model has no usable sights, with the reason. Mounted guns, melee weapons and tools, scopes (`view.zoomFov`) and guns with an optic (`view.optic`) need no entry. Run `node tools/content/sight-fit.mjs` after a change.",
   "corrections": {},
   "excluded": {
-    "core.arc_caster": "no sights on the model: a flat-topped kit gun",
+    "core.arc_caster": "no iron sights: its own scope tube stands on its top: aims through the tube, its window in content/optics.json",
     "core.arena_disc": "no sights on the model: a flat-topped disc launcher",
     "core.blast_rockets": "a tube launcher: no sights, its top line starts on the stock",
     "core.blaster_x42": "its own scope sits over the receiver with no sights under it: aims through the scope, its window in content/optics.json",

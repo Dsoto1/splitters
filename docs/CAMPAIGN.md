@@ -56,7 +56,21 @@ Owner, 2026-11-25: real progression, "the game is free; we don't give it all at 
 - **Joining** a match someone else hosts on a locked map is never refused (the lock is only on the hosting paths above).
 - A player's own and community maps are never locked. Convergence maps aren't locked (the stand-in is an ordinary map).
 - Browser tests (`?test=1`, automated browsers) and bots play every map; `&maplocks=1` turns the locks on in a test.
-- Later (its own item): Match Setup arranged by sector.
+- Match Setup's Story tab shows the sectors as rows (below).
+
+## Match Setup by sector
+
+Owner, 2026-11-25 (QUEUE "The plan" step 3, built 2026-11-27): Match Setup's map list has five tabs over everything, **Story · Arenas · Arcade · Battlegrounds · Custom** (shared `map/setupKinds.ts`; the tabs `frontend/mapCategoriesUi.ts` `drawKindTabs`). The tab picked is kept in this browser (`tiletrigger.mapBrowse`'s `kind`); a first visit opens on Custom, the list as it was.
+
+- **Story** (`campaign/setupRows.ts` `storySetupRows`; drawn by `frontend/setupSectors.ts`, its own chunk): a row per sector the database shows, in `content/campaign.json`'s order, nothing else hard-coded, so it re-sorts itself as sectors are added, moved or given more maps. A row: the sector's name, kind and status, then its maps in play order, each a normal map card: the first **open**; one won in Story **Won ✓** (hostable); the one to win next **Next in Story** and the rest **Locked: Story**, both dimmed and refused by Start (the map lock above; a card still picks the map, and joining a match on it is never refused). Then the 4th tile: **Unknown** until the sector's convergence is discovered, then the convergence (picking it picks its first map). Browser tests have the locks off unless `&maplocks=1`.
+- **Arenas, Arcade, Battlegrounds**: the suite's built-in maps sorted by their own metadata (no map file names a tab), every map under exactly one, in this order:
+  1. **Arcade**: the map's first mode (the one it is made for) is a party or arcade mode: Discs, Forts, Co-op, Zombies or Roulette.
+  2. **Battlegrounds**: it is recommended for **24 players or more**, or it plays **Breakthrough**.
+  3. **Arenas**: everything else (the small and mid-size combat maps, up to 20 players).
+  On 2026-11-27: Arenas 43, Battlegrounds 20 (with Vinefall Sanctum, St. John's, Iron Coast), Arcade 4 (Fort Meadow, Grid Rings, Primeval Park, Sushi Belt Sumo). A map moves by itself when MapMaker changes its modes or its players. A player's own and the community maps are only under Custom. The tabs list all of theirs with the Filter maps window, search and sort.
+- **Custom**: every map, as the list was: the which-maps tabs (All, My maps, Featured, Recent, Favorites, Community Picks) and the category chips (Modern, Historic, Future & Space, Weird, and "Mine & community", the old Custom) live under it. A controller's LB / RB step the categories there, and the tabs themselves under the other tabs.
+
+Tests: `packages/shared/test/setupKinds.test.ts`; e2e `story` (the Story tab with the locks on) and `offline` (the five tabs, the rule, Custom's chips).
 
 ## Character locks (off)
 
@@ -76,4 +90,3 @@ Launch starts a normal bot match on that map through Match Setup's path (`rulesF
 - Discovery notification, briefings, boss intros (Phases 3-4); challenges and stars.
 - Sectors hidden until found (all are discovered from the start today).
 - The unlock-by-play rules, then character locks on.
-- Match Setup by sector.

@@ -76,6 +76,7 @@ export const ROULETTE_DATA = {
     space: 'core.plasma',
     agency: 'core.machine_pistol',
     legends: 'core.spear',
+    historical: 'core.crossbow',
     animals: 'core.smg',
     toys: 'core.bubble_blaster',
     pirates: 'core.flintlock_pistol',

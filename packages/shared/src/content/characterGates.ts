@@ -77,7 +77,7 @@ export function characterGates(look: Pick<CharacterLook, 'id' | 'clips' | 'locom
     }
   }
   const set = clipSetOf(look);
-  if (set === null) add('clips', 'Clip set complete', true, look.locomotion === 'roll' ? 'rolls: no gait clips' : 'the rig\'s own gait (opted out)');
+  if (set === null) add('clips', 'Clip set complete', true, look.locomotion ? `${look.locomotion === 'roll' ? 'rolls' : 'hovers'}: no gait clips` : 'the rig\'s own gait (opted out)');
   else {
     const missing = CLIP_SET_CLIPS.filter((c) => !facts.clips?.includes(c));
     add('clips', 'Clip set complete', !!facts.clips && !missing.length, !facts.clips ? `clip set ${set} is not built` : missing.length ? `${set} lacks ${missing.join(', ')}` : `${set}${set === DEFAULT_CLIP_SET ? ' (the default)' : ''}: all ${CLIP_SET_CLIPS.length} clips`);

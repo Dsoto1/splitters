@@ -109,6 +109,29 @@ describe('optics by gun: the table and the mounts', () => {
     expect(problems.some((p) => /kind x2: a magnified optic built in code draws the HUD's reticle/.test(p))).toBe(true);
   });
 
+  it('a gun whose model has a sight of its own gets no housing built on it (owner, 2026-11-27, "two sights stacked")', async () => {
+    const good = await buildOptics();
+    expect(good.problems).toEqual([]);
+    const file = readOpticsFile();
+    // The Arc Caster as it was: a holographic box built on top of its own scope tube.
+    const { window: _w, ...bare } = file.weapons['core.arc_caster'];
+    file.weapons['core.arc_caster'] = bare;
+    // The Woodland SMG as it was, but marked as the model having an optic of its own: a red dot would stand on it.
+    file.weapons['core.blaster_x42'] = { ...file.weapons['core.blaster_x42'], allowed: ['reddot', 'holo', 'x2'] };
+    const { problems } = await buildOptics(file);
+    expect(problems.some((p) => /core\.arc_caster: its model has a sight of its own \(hasSight "optic"\), so it cannot also carry a code-built holo/.test(p))).toBe(true);
+    expect(problems.some((p) => /core\.blaster_x42: its model has a sight of its own \(hasSight "optic"\), so it cannot also carry a code-built x2/.test(p))).toBe(true);
+    // Every gun says what its model has; a window or the model's own tube is an optic of its own.
+    const unmarked = readOpticsFile();
+    delete unmarked.weapons['core.flak'].hasSight;
+    unmarked.weapons['core.twin_rifle'].hasSight = 'irons';
+    unmarked.weapons['core.rifle'].hasSight = false;
+    const more = (await buildOptics(unmarked)).problems;
+    expect(more.some((p) => /core\.flak needs `hasSight`/.test(p))).toBe(true);
+    expect(more.some((p) => /core\.twin_rifle: a `window` is the model's own sight: mark it hasSight "optic"/.test(p))).toBe(true);
+    expect(more.some((p) => /core\.rifle: it has a sight fit/.test(p))).toBe(true);
+  }, 90000);
+
   it('every built housing a gun may carry stands on one mount, and must clear the gun there', async () => {
     const file = readOpticsFile();
     // The Burst Rifle's front sight stands in a red dot's window wherever one is mounted.
@@ -151,9 +174,10 @@ describe('optics by gun: the table and the mounts', () => {
       fitted++;
     }
     expect(fitted).toBeGreaterThan(12);
-    // Nearer than the fit, the Woodland SMG's receiver would show cut open by the near plane.
-    const wood = weapons['core.woodland_smg'];
-    const tris = await modelTriangles(join(MODELS, all.find((x) => x.id === 'core.woodland_smg').view.model));
+    // Nearer than the fit, the Assault Rifle's receiver would show cut open by the near plane (the Woodland SMG's did,
+    // before it went to its own iron sights).
+    const wood = weapons['core.rifle'];
+    const tris = await modelTriangles(join(MODELS, all.find((x) => x.id === 'core.rifle').view.model));
     const g = file.kinds.reddot.glass;
     expect(nearShows(surfacePoints(tris), 0, wood.mount.at[1] + g.rise * wood.mount.scale, wood.mount.at[2] - 0.2, pictureAt(g.half[1] * wood.mount.scale, 0.2))).toBe(true);
   }, 90000);
