@@ -11,6 +11,16 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-owned-drive-1127": {
+      "title": "Tile Trigger originals (made with Meshy): the owner's weapon models of 2026-11-27 (textured GLB downloads from the owner's Drive weapons folder)",
+      "creator": "Meshy, owned (made by the owner on their Meshy subscription; owner, 2026-11-27)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-11-27",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-owned-drive-1118": {
       "title": "Tile Trigger originals (made with Meshy): the Futuristic Baseball Bat (textured GLB download from the owner's Drive, 2026-11-18)",
       "creator": "Meshy, owned (made by the owner on their Meshy subscription; owner, 2026-11-18)",
@@ -336,32 +346,6 @@
         12
       ],
       "textureSize": 1024
-    },
-    {
-      "out": "guns/plasma_blaster.glb",
-      "pack": "meshy-community-weapons",
-      "glb": "Meshy_AI_Plasma_Blaster_1102011031_texture.glb",
-      "label": "Plasma Blaster (Meshy community model, downloaded 2026-11-02): the Singularity Cannon",
-      "forward": "-x",
-      "length": 0.66,
-      "triangles": 14000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024,
-      "glow": {
-        "color": "#b07aff",
-        "warm": [
-          130,
-          60,
-          35
-        ],
-        "strength": 1
-      }
     },
     {
       "out": "guns/freeze_gun.glb",
@@ -1698,6 +1682,31 @@
         0.2,
         12
       ]
+    },
+    {
+      "out": "guns/singularity_cannon.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_singularity_cannon_3d_20261127_image-to-3d-texture.glb",
+      "label": "Singularity Cannon (the owner's own Meshy model, owner's Drive, 2026-11-27): the Singularity Cannon",
+      "forward": "-x",
+      "length": 0.85,
+      "triangles": 14000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 60000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#b07aff",
+        "strength": 1
+      }
     }
   ]
 }

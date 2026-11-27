@@ -56,6 +56,7 @@
     "core.runebreaker": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.laser_rifle": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo", "x2"] },
     "core.bubble_blaster": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo"] },
+    "core.singularity": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo"] },
     "core.sawed_off": { "hasSight": false, "default": "reddot", "allowed": ["reddot"] },
     "core.arc_caster": {
       "hasSight": "optic",
@@ -109,7 +110,6 @@
     "core.oil_slicker": "sprays a lobbed stream: a sight on the bore would point over where it lands",
     "core.flamethrower": "a stream weapon, aimed by its flame",
     "core.lmg": "a rotary gun fired from the hip: its top is a housing and a crank",
-    "core.singularity": "an oddity with an organic shell: nowhere flat to stand a sight, and the shot is slow",
     "core.flare_gun": "a flare pistol, drawn broken open: fired from the hand",
     "core.gilded_pistol": "a flintlock: the cock stands over the barrel where a sight would go, and a modern optic does not belong on it",
     "core.hornet": "an organic sci-fi shell whose mandibles block the top: fired from the hand, its stingers home"

@@ -23,7 +23,7 @@
     "core.plasma": "no iron sights: the model carries an open sight box on a riser, which holds its holographic mark (content/optics.json)",
     "core.rockets": "a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)",
     "core.sawed_off": "no sights on the model: the hammers stand over a rib with no bead",
-    "core.singularity": "no sights on the model: an organic shell with a sloping top",
+    "core.singularity": "no sights on the model: a flat top rail with flush nubs, carrying a red dot or holographic sight",
     "core.swarm": "no sights on the model: a flat-topped kit launcher",
     "core.twin_rifle": "its own red dot is the only sight, with no posts: aims through it, its window in content/optics.json"
   }

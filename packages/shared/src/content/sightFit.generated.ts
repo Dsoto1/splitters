@@ -82,7 +82,7 @@ export const SIGHT_EXCLUDED: Readonly<Record<string, string>> = {
   'core.scimitar': 'melee or a tool: no aiming down sights',
   'core.sentry_arc': 'mounted: never held in the hand',
   'core.sentry_gun': 'mounted: never held in the hand',
-  'core.singularity': 'no sights on the model: an organic shell with a sloping top',
+  'core.singularity': 'no sights on the model: a flat top rail with flush nubs, carrying a red dot or holographic sight',
   'core.sniper': 'scope: the view is the scope overlay, the gun is hidden',
   'core.space_shield': 'melee or a tool: no aiming down sights',
   'core.spear': 'melee or a tool: no aiming down sights',

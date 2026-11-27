@@ -3317,36 +3317,40 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "guns/plasma_blaster.glb",
+     "model": "guns/singularity_cannon.glb",
+     "held": {
+      "medium": "guns/singularity_cannon.medium.glb",
+      "high": "guns/singularity_cannon.high.glb"
+     },
      "viewOffset": [
       0.27,
-      -0.31,
-      0.57
+      -0.34,
+      0.64
      ],
      "tracer": "#b07aff",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.13,
-       -0.17
+       -0.1,
+       -0.24
       ],
       "support": [
        0,
-       -0.076,
-       0.17
+       -0.085,
+       0.14
       ],
       "shoulder": [
        0,
-       0,
-       -0.33
+       0.04,
+       -0.43
       ]
      },
      "fallback": "weapons/singularity.glb",
      "muzzleAt": [
       0,
-      0.042,
-      0.33
+      0.045,
+      0.425
      ],
      "sound": "fire.vortex"
     }

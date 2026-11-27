@@ -37,7 +37,8 @@
 //
 // `glow: { color, warm: [r, r-b, r-g], strength }` (Meshy entries): the download's own glowing parts (lit panels,
 // a muzzle ring: the orange and red pixels the `warm` test picks, as in `paintOut`) are recoloured to `color`,
-// keeping their light and dark, and the built model gets an emissive map of them (glowColour): a weapon whose
+// keeping their light and dark, and the built model gets an emissive map of them (glowColour; a `held` entry's tiers each
+// get their own, from the tier's colour map, at most 1024 px): a weapon whose
 // in-house model glowed in its own colour keeps that glow on its new model (the Singularity Cannon's purple).
 // `metalDarken: k` folds the download's bare metal (its metal/roughness map) into the matte colour map, darkened toward
 // `k` (a GLB's metal parts read as dark steel, not flat grey); `roughness` (default 0.85) leaves painted bodywork some
@@ -246,6 +247,11 @@ async function heldTiers(doc, entry) {
     for (const mat of copy.getRoot().listMaterials()) {
       const base = mat.getBaseColorTexture();
       if (base && !done.has(base)) await shrink(base, colour, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
+      // `glow`: each tier's emissive map taken from its own colour map (at most 1024 px: a mask of a few lit parts).
+      if (entry.glow && base) {
+        const strength = entry.glow.strength ?? 1;
+        mat.setEmissiveTexture(copy.createTexture('glow').setImage(await glowMap(base.getImage(), entry.glow, Math.min(1024, colour))).setMimeType('image/jpeg')).setEmissiveFactor([strength, strength, strength]);
+      }
       const nrm = mat.getNormalTexture();
       if (nrm && !done.has(nrm)) nrm.setImage(await normalJpeg(nrm.getImage(), normal)).setMimeType('image/jpeg').setURI('');
       const mr = mat.getMetallicRoughnessTexture();
@@ -518,7 +524,6 @@ async function build(src, entry, pack, place = null) {
   // An interior says which part of the body it stands in for (`box`, in its glTF extras).
   if (place && entry.box) holder.setExtras({ cockpit: { box: entry.box } });
   if (entry.parts) splitParts(doc, holder, entry.parts);
-  if (entry.held && entry.glow) throw new Error(`${entry.out}: held tiers don't carry a glow map yet`);
   for (const mat of doc.getRoot().listMaterials()) {
     // `pbr`: the source's own metal and roughness (packMaps, or meshyDocument's keepMetalRough), else a matte finish.
     if (entry.pbr) mat.setOcclusionTexture(null).setEmissiveTexture(null);
