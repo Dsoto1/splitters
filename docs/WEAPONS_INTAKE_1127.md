@@ -85,7 +85,13 @@ Legend: **Replace** = the new model takes the existing gun's place (its rules, s
 | Weapons Ammo Cache (textured, and an untextured `_generate` copy) | Replace | the ammo resupply box pickup; the untextured copy is tinted to fit other uses (team colours, themes) |
 | Tactical Combat Medkit (textured, and an untextured `_generate` copy) | Replace | the health pickup / `medkit` (and Medi-Beam's model); untextured copy tintable likewise |
 
-| Minigun (owner, uploading) | Replace | `lmg` (Spin Gun) |
+| Tactical Rotary Minigun (Meshy_AI_tactical_rotary_minigun_3d_20261127…) | Replace | `lmg` (Spin Gun) |
 | Pneumatic Flechette Launcher (a newer file, 2026-11-27 20:14; use it, not the 11-22 one) | New gun | as #27 |
 
-Coming from the owner: a new Nailgun. Still without a new model: Knife, Grapple Hook, Battle Axe, Spear (the sharper-guns pass covers them meanwhile).
+| Tactical Combat Knife (textured, and an untextured `_generate` copy for colour variants) | Replace | `knife` |
+| Viking Battleaxe | Replace | `battle_axe` |
+| Mesoamerican Obsidian Spear | Replace | `spear` (held and thrown/stuck, as today) |
+| Steampunk Claw Grapple Gun, Loaded / Unloaded | Replace | `grapple` (Grapple Hook): the loaded model while the claw is in, the unloaded one once it's fired |
+| Deployed Grapple Hook, Long Cable | New model | the fired claw and its cable (the grapple's "ammo"), drawn where the hook bites |
+
+Coming from the owner: a new Nailgun. (the sharper-guns pass covers them meanwhile).
