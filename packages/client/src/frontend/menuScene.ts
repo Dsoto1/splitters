@@ -1,7 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
@@ -19,6 +19,7 @@ import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
 import { testMode } from '../testMode.ts';
+import { FileFetcher } from '../content/fileFetcher.ts';
 
 /** Browser tests (?test=1) compare screenshots: the drift and the hero's idle stop this far in, whatever the machine's speed. */
 const STILL_AT = testMode() ? 0.5 : Infinity;
@@ -30,6 +31,10 @@ const HERO_YAW = 0.45;
  * (every character, the rig's own Farmhand too). Turned, the gun runs across the screen and the grip shows.
  */
 const HERO_YAW_SELECT = 0.85;
+/** A pick still loading this long (ms) shows the loading bar: never for a character already here. */
+const BAR_AFTER = 150;
+/** The bar's share for the download; building the body fills the rest, slowly, never going back. */
+const BAR_DOWNLOAD = 0.85;
 
 /**
  * The live backdrop behind the main menu: your own character, rifle in hand,
@@ -138,7 +143,42 @@ export class MenuScene {
       v.material = cyan;
     });
     this.characters = new CharacterLibrary(this.scene);
+    // One download per file, shared by Character Select's prefetch and its picks (and the loading bar's progress).
+    this.characters.fetcher = new FileFetcher({ max: 2 });
     this.models = new ModelLibrary(this.scene);
+  }
+
+  /**
+   * Character Select: fetch a hovered or focused look's files (`soon`) and its neighbours' (`later`, after it), and
+   * drop prefetches no longer wanted. Only the files: they're built into the scene when picked.
+   */
+  prefetch(look: string, neighbours: readonly string[] = []): void {
+    const fetcher = this.characters.fetcher;
+    if (!fetcher) return;
+    const soon = this.filesOf(look);
+    const later = neighbours.flatMap((l) => this.filesOf(l)).filter((u) => !soon.includes(u));
+    fetcher.want(soon, 'soon', [...later, ...(this.loading?.files ?? [])]);
+    for (const u of later) fetcher.get(u, 'later').catch(() => undefined);
+  }
+
+  private filesOf(look: string): string[] {
+    const role = npcLookRole(look);
+    if (role && isCreature(role)) return [];
+    try {
+      return this.characters.filesFor(look);
+    } catch {
+      return [];
+    }
+  }
+
+  /** The loading bar (Character Select's), placed under the hero's feet and filled while a pick loads; null: none. */
+  private bar: { el: HTMLElement; fill: HTMLElement } | null = null;
+  /** The pick being loaded: since when, its files, how far the bar has filled, and when the body began to show. */
+  private loading: { token: number; since: number; files: string[]; fill: number; opacity: number; builtFor: number; doneAt: number | null } | null = null;
+
+  setLoadBar(el: HTMLElement | null): void {
+    this.bar = el ? { el, fill: (el.firstElementChild as HTMLElement | null) ?? el } : null;
+    if (el) el.style.opacity = '0';
   }
 
   /** Settles when the hero being shown (or the latest one asked for) is standing there with its gun, or failed to load. */
@@ -159,6 +199,7 @@ export class MenuScene {
     if (look === this.look) return;
     this.look = look;
     const token = ++this.token;
+    this.loading = { token, since: performance.now(), files: this.filesOf(look), fill: 0, opacity: 0, builtFor: 0, doneAt: null };
     const role = npcLookRole(look);
     if (role && isCreature(role)) {
       this.creatures ??= new CreatureLibrary(this.scene);
@@ -169,7 +210,7 @@ export class MenuScene {
         ch.root.rotation.y = this.baseYaw + this.yaw;
         this.heroRoot = ch.root;
         this.hide(ch.meshes);
-        this.anim?.dispose();
+        this.retire();
         const anim = new CreatureAnimator(this.scene, ch, true);
         this.anim = anim;
         this.heroT = 0;
@@ -180,6 +221,7 @@ export class MenuScene {
           () => this.appear(ch.meshes),
         );
       });
+      this.settle(token);
       return;
     }
     this.hero = this.characters.create({ look }, `menuHero_${token}`).then(async (ch) => {
@@ -191,15 +233,32 @@ export class MenuScene {
       ch.root.rotation.y = this.baseYaw + this.yaw;
       this.heroRoot = ch.root;
       this.hide(ch.meshes);
-      this.anim?.dispose();
-      this.anim = new CharacterAnimator(this.scene, ch);
+      this.retire();
+      const anim = new CharacterAnimator(this.scene, ch);
+      this.anim = anim;
       this.heroT = 0;
       const w = getWeapon('core.rifle');
       const node = await this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).catch(() => null);
       if (token !== this.token) return node?.dispose();
-      if (node) this.anim.hold(node, w.view.hold);
+      if (node) anim.hold(node, w.view.hold);
       this.appear([...ch.meshes, ...(node?.getChildMeshes() ?? [])]);
     });
+    this.settle(token);
+  }
+
+  /** A pick that failed to load ends its loading bar too. */
+  private settle(token: number): void {
+    this.hero.catch(() => {
+      if (this.loading?.token === token) this.loading.doneAt = performance.now();
+    });
+  }
+
+  /** Heroes on their way out: the one shown stays until its successor fades in (never an empty plinth while it loads its gun). */
+  private leaving: (CharacterAnimator | CreatureAnimator)[] = [];
+
+  private retire(): void {
+    if (this.anim) this.leaving.push(this.anim);
+    this.anim = null;
   }
 
   /** Meshes fading in, and how far along (0..1). */
@@ -212,12 +271,15 @@ export class MenuScene {
 
   /** Fade a hero in once its clips have posed it (two animation ticks from now). */
   private appear(meshes: AbstractMesh[]): void {
+    const token = this.token;
     let ticks = 0;
     const obs = this.scene.onAfterAnimationsObservable.add(() => {
       if (++ticks < 2) return;
       this.scene.onAfterAnimationsObservable.remove(obs);
       this.fading = { meshes, t: 0 };
       for (const m of meshes) m.visibility = 0.001;
+      for (const a of this.leaving.splice(0)) a.dispose();
+      if (this.loading?.token === token) this.loading.doneAt = performance.now();
     });
   }
 
@@ -266,6 +328,7 @@ export class MenuScene {
       this.heroT += step;
       if (step > 0) this.anim.update(step, this.state);
     }
+    this.drawBar(dt);
     if (this.fading) {
       const f = this.fading;
       f.t = Math.min(1, f.t + dt / 0.3);
@@ -275,7 +338,49 @@ export class MenuScene {
     this.scene.render();
   }
 
+  /**
+   * The loading bar: hidden until a pick has loaded for BAR_AFTER ms, then a thin steady bar filling with the bytes
+   * in (the rest of the way, slowly, while the body is built: it never goes back), fading out as the body fades in.
+   * No pulse and no blink (Reduce flashing): its fill and its opacity only ever ease.
+   */
+  private drawBar(dt: number): void {
+    const bar = this.bar;
+    const l = this.loading;
+    if (!bar) return;
+    if (!l) {
+      bar.el.style.opacity = '0';
+      return;
+    }
+    const now = performance.now();
+    // Came quickly (a character already here): never shown.
+    if (l.doneAt !== null && l.opacity === 0) {
+      this.loading = null;
+      bar.el.style.opacity = '0';
+      return;
+    }
+    if (l.doneAt === null && now - l.since < BAR_AFTER) return;
+    const { loaded, total } = this.characters.fetcher?.progress(l.files) ?? { loaded: 0, total: 0 };
+    const down = total > 0 ? loaded / total : 1;
+    // Building, once the bytes are in: a slow approach to the end that the body's arrival completes.
+    l.builtFor = down >= 1 ? l.builtFor + dt : 0;
+    const goal = l.doneAt !== null ? 1 : Math.min(0.97, down * BAR_DOWNLOAD + (1 - Math.exp(-l.builtFor / 0.8)) * (1 - BAR_DOWNLOAD));
+    l.fill = Math.max(l.fill, l.fill + (goal - l.fill) * (1 - Math.exp(-dt * 10)));
+    bar.fill.style.transform = `scaleX(${l.fill.toFixed(3)})`;
+    // In over 0.2 s; out over 0.3 s as the body fades in.
+    l.opacity = l.doneAt === null ? Math.min(1, l.opacity + dt / 0.2) : Math.max(0, l.opacity - dt / 0.3);
+    bar.el.style.opacity = l.opacity.toFixed(3);
+    if (l.doneAt !== null && l.opacity <= 0) this.loading = null;
+    // Under the hero's feet (the plinth's front edge), wherever the camera has drifted.
+    const canvas = this.scene.getEngine().getRenderingCanvasClientRect();
+    if (canvas) {
+      const p = Vector3.Project(new Vector3(0, 0, 1.05), Matrix.IdentityReadOnly, this.scene.getTransformMatrix(), this.camera.viewport.toGlobal(canvas.width, canvas.height));
+      bar.el.style.left = `${Math.round(canvas.left + p.x)}px`;
+      bar.el.style.top = `${Math.round(canvas.top + p.y)}px`;
+    }
+  }
+
   dispose(): void {
+    for (const a of this.leaving.splice(0)) a.dispose();
     this.anim?.dispose();
     this.scene.dispose();
   }
