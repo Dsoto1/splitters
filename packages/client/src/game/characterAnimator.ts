@@ -1745,9 +1745,48 @@ export class CharacterAnimator {
     }
     this.poseCount++;
     if (!this.spine.length) return;
+    this.fromClips();
     this.pose();
+    this.leftByPose();
     if (this.blend.on) this.blendGun(true);
   }
+
+  /**
+   * The joints the after-clip work turns in place (multiplying onto what the clips wrote: the hips, spine, neck and
+   * head, the legs), each with the clip pose it found and the turn it left. Each evaluation starts from the clips' pose:
+   * a joint still holding the turn it was left with (no clip wrote it since: its clips not evaluated that frame, or at
+   * weight 0, or a clip set without that joint) goes back to the clip pose it had, so the turns are not stacked again
+   * on last frame's. Stacked, the aim's and the third-person shoulder turn's few degrees built up frame on frame: the
+   * top half spun round and the back bent over (owner, 2026-11-27).
+   */
+  private inPlace: { joint: TransformNode; clip: Quaternion; left: Quaternion; kept: boolean }[] | null = null;
+
+  /** Before the after-clip work: each in-place joint back to its clip pose if no clip wrote it since (see inPlace). */
+  private fromClips(): void {
+    this.inPlace ??= [...new Set([this.pelvis, ...this.spine, ...['neck_01', 'Head', 'thigh_l', 'thigh_r', 'calf_l', 'calf_r'].map((n) => this.ch.joints.get(n))])]
+      .filter((j): j is TransformNode => !!j)
+      .map((joint) => ({ joint, clip: new Quaternion(), left: new Quaternion(), kept: false }));
+    for (const r of this.inPlace) {
+      const q = r.joint.rotationQuaternion;
+      if (!q) continue;
+      if (r.kept && q.equalsWithEpsilon(r.left, 1e-7)) {
+        q.copyFrom(r.clip);
+        this.undriven++;
+      } else r.clip.copyFrom(q);
+    }
+  }
+
+  /** After it: the turn each in-place joint was left with. */
+  private leftByPose(): void {
+    for (const r of this.inPlace ?? []) {
+      const q = r.joint.rotationQuaternion;
+      r.kept = !!q;
+      if (q) r.left.copyFrom(q);
+    }
+  }
+
+  /** In-place joints found still holding last evaluation's turn and put back to their clip pose (tests, the pose check). */
+  undriven = 0;
 
   /** Evaluated poses applied so far (the after-clip work of an awake, living evaluation): the pose check (poseCheck.ts). */
   private poseCount = 0;
