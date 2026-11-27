@@ -90,6 +90,8 @@ const BOT_SHOT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_ARMOR_
 const SIGHT_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_SHOTS_ONLY);
 /** What wheels stand on (PhysicsWorld.groundBelow): everything solid but players and force fields. */
 const GROUND_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS | GROUP_LATTICE);
+/** What a dropped weapon lies on (PhysicsWorld.dropGround): the level, terrain, glass and scenario boxes; no lattices or fields. */
+const DROP_QUERY = groups(0xffff, GROUP_WORLD | GROUP_TERRAIN | GROUP_GLASS | GROUP_ARMOR_GLASS);
 /**
  * A rigid vehicle's hull as a Rapier body (createChassisBody, driving physics 4): it meets what bodies meet (static
  * geometry, vehicles' boxes, fields, glass, lattices), never players, shots-only shapes or other hulls; no query sees it.
@@ -615,6 +617,32 @@ export class PhysicsWorld {
     if (this.dirty) this.commit();
     const hit = this.world.castRay(this.rayFrom(origin, dir), maxDist, true, undefined, MOVE_QUERY);
     return hit ? hit.timeOfImpact : null;
+  }
+
+  /**
+   * Straight down from `origin` to the first walkable top surface (no steeper than a player can stand on) of what
+   * stays put: map geometry, terrain, glass, scenario boxes; never a collider `skip` names (vehicles and turrets,
+   * which move or go: a gun dropped by a rider lay on the Hauler's bed and hung in the air when it drove off), never
+   * lattices' rails, fields or shots-only shapes. Undersides and slopes on the way are passed through. The distance,
+   * or null within maxDist. Weapon drops (sim/match.ts dropWeapon).
+   */
+  dropGround(origin: Vec3, maxDist: number, skip?: (handle: number) => boolean): number | null {
+    if (this.dirty) this.commit();
+    const minUp = Math.cos((PLAYER.maxSlopeDegrees * Math.PI) / 180);
+    // Solids the ray starts in (a body clipped into a wall, the top of a slope passed): left out.
+    const inside = new Set<number>();
+    const pred = (c: RAPIER.Collider) => !inside.has(c.handle) && !skip?.(c.handle);
+    let travelled = 0;
+    for (let i = 0; i < 12 && travelled < maxDist; i++) {
+      const from = { x: origin.x, y: origin.y - travelled, z: origin.z };
+      const hit = this.world.castRayAndGetNormal(this.rayFrom(from, DOWN), maxDist - travelled, true, RAPIER.QueryFilterFlags.EXCLUDE_SENSORS, DROP_QUERY, undefined, undefined, pred);
+      if (!hit) return null;
+      if (hit.timeOfImpact < 1e-4) inside.add(hit.collider.handle);
+      else if (hit.normal.y >= minUp) return travelled + hit.timeOfImpact;
+      // A slope too steep to lie on: on past it.
+      else travelled += hit.timeOfImpact + 0.02;
+    }
+    return null;
   }
 
   /**

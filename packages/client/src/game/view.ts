@@ -164,7 +164,8 @@ import { MapStyler } from '../mapMeshes.ts';
 import { buildRoadMeshes } from '../roadMeshes.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { disposeTree } from '../content/disposeTree.ts';
-import { DROP_LIE_HEIGHT, PICKUP_HOVER, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
+import { BLAST_HAZE, blastHazeDepth, type BlastSmoke } from './blastHaze.ts';
+import { DROP_LIE_HEIGHT, PICKUP_HOVER, dropFall, createLootOutline, createPickupVisual, pickupRoom } from './pickupVisuals.ts';
 import { PickupBatch } from './pickupBatch.ts';
 import { setGlow } from './glow.ts';
 import { LOOT_GLOW_RANGE, lootGlowKey, lootGlowLevel, lootOutlineAlpha, lootOutlineRadii } from './lootGlow.ts';
@@ -418,6 +419,8 @@ const isEnemyTag = (color: string): boolean => color.toLowerCase() === '#ff3b3b'
 /** The fog's colour and thickness inside a smoke cloud: a mid grey (not white) through which you see about 2-3 m. */
 const SMOKE_FOG = new Color3(0.42, 0.44, 0.46);
 const SMOKE_FOG_DENSITY = 0.42;
+/** A blast's smoke from inside (blastHaze.ts): a darker, warmer grey than a smoke grenade's (it never brightens a dark scene much). */
+const BLAST_FOG = new Color3(0.2, 0.19, 0.18);
 /** The way an avatar faces (its yaw; characters face +Z at yaw 0), for its ragdoll to tell front from back. */
 
 const facingOf = (a: Avatar): Vec3 => ({ x: Math.sin(a.root.rotation.y), y: 0, z: Math.cos(a.root.rotation.y) });
@@ -539,7 +542,9 @@ export class GameView {
   /** When pickups were last updated (ms; their glows ease by the time since). */
   private pickupsAt = 0;
   /** Weapons the fallen dropped (snapshot `dw`), by drop ID: drawn lying where they fell. */
-  private readonly drops = new Map<number, { root: TransformNode; item: string }>();
+  private readonly drops = new Map<number, { root: TransformNode; item: string; /** Height drawn (ground under it, or falling to it). */ y: number; vy: number }>();
+  /** When updateDrops last ran (ms). */
+  private dropsAt = 0;
   /** `at`: where the host has it (sampled); `stream`: a stream's piece, drawn from its shooter's muzzle (streamBlend.ts). */
   private readonly projectiles = new Map<number, { node: TransformNode; look: number; born: number; spark?: number; at: Vector3; stream?: StreamStart }>();
   /** Placed props by entity index (breakable ones disappear when broken). */
@@ -4029,28 +4034,41 @@ export class GameView {
   }
 
   /**
-   * Weapons dropped by the fallen, as the latest snapshot lists them ([drop ID, item ID, x, y, z, yaw]): new ones
-   * appear lying on the ground, gone ones are removed.
+   * Weapons dropped by the fallen, as the latest snapshot lists them ([drop ID, item ID, x, y, z, yaw, and for a
+   * moment after it landed the height it fell from]): new ones appear and fall to where the server put them (a short
+   * fall under gravity, from where their owner died), one whose spot drops (what it lay on gone) falls to it, gone ones
+   * are removed. `now`: ms (performance.now()).
    */
-  updateDrops(drops: readonly (readonly [number, string, number, number, number, number])[]): void {
+  updateDrops(drops: readonly (readonly [number, string, number, number, number, number, number?])[], now = performance.now()): void {
     if (!drops.length && !this.drops.size) return;
+    const dt = Math.min(0.1, Math.max(0, (now - this.dropsAt) / 1000));
+    this.dropsAt = now;
     const live = new Set<number>();
-    for (const [id, item, x, y, z, yaw] of drops) {
+    for (const [id, item, x, y, z, yaw, from] of drops) {
       live.add(id);
-      const had = this.drops.get(id);
-      if (had && had.item === item) continue;
-      // Never the materials: they're shared (see updatePickups).
-      had?.root.dispose(false, false);
-      const root = createPickupVisual(this.scene, this.models, item, `drop_${id}`, true, true);
-      root.position.set(x, y + DROP_LIE_HEIGHT, z);
-      root.rotation.y = yaw;
-      this.drops.set(id, { root, item });
+      let d = this.drops.get(id);
+      if (!d || d.item !== item) {
+        // Never the materials: they're shared (see updatePickups).
+        d?.root.dispose(false, false);
+        const root = createPickupVisual(this.scene, this.models, item, `drop_${id}`, true, true);
+        root.rotation.y = yaw;
+        d = { root, item, y: from !== undefined && from > y ? from : y, vy: 0 };
+        this.drops.set(id, d);
+      }
+      // Falling to its spot (DROP_GRAVITY), or lying on it.
+      dropFall(d, y, dt);
+      d.root.position.set(x, d.y + DROP_LIE_HEIGHT, z);
     }
     for (const [id, d] of this.drops) {
       if (live.has(id)) continue;
       d.root.dispose(false, false);
       this.drops.delete(id);
     }
+  }
+
+  /** Dropped weapons' heights drawn now, above the ground they lie on (tests): [drop ID, y]. */
+  dropHeights(): [number, number][] {
+    return [...this.drops].map(([id, d]) => [id, d.y]);
   }
 
   /** Dropped weapons drawn now: [drop ID, item ID] (tests). */
@@ -4350,8 +4368,15 @@ export class GameView {
     const y = airborne ? at.y : at.y - 0.3;
     // Reduce flashing: dimmed and drawn smaller near the camera, and brought up over a few frames instead of popping in white.
     const calm = reduceFlashing() ? { gain: this.blastStrength(at, radius), fadeIn: BLAST_FADE_IN } : {};
-    return this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale: Math.max(minScale, radius * fx.scale) * this.blastSize(at, radius), ...calm });
+    const scale = Math.max(minScale, radius * fx.scale) * this.blastSize(at, radius);
+    const played = this.vfx.play(fx.pack, fx.effect, new Vector3(at.x, y, at.z), { scale, ...calm });
+    // From inside its smoke the view hazes over a little (updateSmokeFog: a dark grey, eased in and out).
+    if (played) this.blastHaze.push({ x: at.x, y: y + scale * 0.6, z: at.z, radius: scale * BLAST_HAZE.reach, born: performance.now() });
+    return played;
   }
+
+  /** Blasts whose smoke hazes the view from inside (updateSmokeFog, blastHaze.ts), newest last. */
+  private blastHaze: BlastSmoke[] = [];
 
   explosion(at: Vec3, radius: number, weapon?: string): void {
     // Binbun's explosion for this blast (godotVfx.ts), sized to it; the plain fireball until its pack is in.
@@ -5104,6 +5129,8 @@ export class GameView {
   private smoke: SmokeCloud[] = [];
   /** How deep in smoke your eye is, eased (0 clear, 1 thick): the fog follows it, so it never jumps. */
   private smokeFog = 0;
+  /** The haze is a blast's (BLAST_FOG), not a smoke grenade's. */
+  private smokeBlast = 0;
   private smokeFogAt = 0;
   private smokeDryFog: { mode: number; color: Color3; density: number } | null = null;
 
@@ -5124,7 +5151,15 @@ export class GameView {
       const dz = (eye.z - c.z) / c.radius;
       deep = Math.max(deep, Math.min(1, (1 - Math.sqrt(dx * dx + dy * dy + dz * dz)) * 2.5));
     }
-    this.smokeFog += Math.max(-dt * 1.5, Math.min(dt * 1.5, deep - this.smokeFog));
+    // A blast's smoke from inside (blastFx): a lighter haze in a darker grey, never more than BLAST_HAZE.max.
+    if (this.blastHaze.length) this.blastHaze = this.blastHaze.filter((b) => now - b.born < BLAST_HAZE.seconds * 1000);
+    const blast = this.blastHaze.length ? blastHazeDepth(eye, this.blastHaze, now) : 0;
+    if (blast > deep) this.smokeBlast = 1;
+    else if (deep > 0) this.smokeBlast = 0;
+    deep = Math.max(deep, blast);
+    // (Eased in and out: never a step. With Reduce flashing on a blast's haze comes up slower.)
+    const rise = blast >= deep && reduceFlashing() ? BLAST_HAZE.calmRise : 1.5;
+    this.smokeFog += Math.max(-dt * 1.5, Math.min(dt * rise, deep - this.smokeFog));
     if (this.underLiquid) return;
     if (this.smokeFog < 0.005) {
       this.smokeFog = 0;
@@ -5141,7 +5176,7 @@ export class GameView {
     const dry = this.smokeDryFog;
     const grey = Math.min(1, this.smokeFog * 1.5);
     this.scene.fogMode = 2;
-    this.scene.fogColor = Color3.Lerp(dry.color, SMOKE_FOG, grey);
+    this.scene.fogColor = Color3.Lerp(dry.color, this.smokeBlast ? BLAST_FOG : SMOKE_FOG, grey);
     this.scene.fogDensity = dry.density + (SMOKE_FOG_DENSITY - dry.density) * this.smokeFog;
     // The sky draws without fog (backdrop.ts): it fades to the same grey, or the skyline, and anyone against it,
     // would show through the haze. Its brightness and glow are uniforms: no shader is built for it.

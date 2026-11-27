@@ -1,5 +1,5 @@
 import { beforeAll, describe, expect, it } from 'vitest';
-import { CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DROP_LIE_SECONDS, MAX_DROPS, TICK_RATE, chooseDrop, dropsInPlay, getWeapon, initPhysics, parseClientMessage, weaponCode, type MatchRules } from '../src/index.ts';
+import { CORE_BOT_PROFILES, DEFAULT_DEATHMATCH_RULES, DROP_FALL_TICKS, DROP_LIE_SECONDS, DROP_SETTLE_TICKS, MOUNT_DEFS, loadMap, type MapDocument, type MapEntity, type Vec3, MAX_DROPS, TICK_RATE, chooseDrop, dropsInPlay, getWeapon, initPhysics, parseClientMessage, weaponCode, type MatchRules } from '../src/index.ts';
 import { BotFiller, HostControl, Match, initNavigation, type Combatant } from '../src/match.ts';
 import { makeMap } from './helpers.ts';
 
@@ -54,7 +54,10 @@ describe('weapon drops', () => {
     expect(d.pos.x).toBeCloseTo(2);
     expect(d.pos.z).toBeCloseTo(2);
     expect(Math.abs(d.pos.y)).toBeLessThan(0.1);
-    // Clients get it in the snapshot.
+    // Clients get it in the snapshot, for a moment with the height it fell from (they show the fall)...
+    expect(match.snapshot([]).dw).toEqual([[d.id, 'core.weapon_rifle', 2, d.pos.y, 2, victim.yaw, 1.5]]);
+    // ...then lying.
+    run(match, killer, DROP_FALL_TICKS + 1);
     expect(match.snapshot([]).dw).toEqual([[d.id, 'core.weapon_rifle', 2, d.pos.y, 2, victim.yaw]]);
   });
 
@@ -195,5 +198,111 @@ describe('weapon drops', () => {
     const id = match.drops[0]!.id;
     run(match, killer, 30);
     expect(seen.some((list) => list.includes(`drop_${id}:core.weapon_rifle`))).toBe(true);
+  });
+});
+
+/**
+ * Where a drop lies (owner, 2026-11-27: riders killed in the Hauler left their guns hanging in the air at their seats):
+ * on the ground or floor under where its owner died, never on a vehicle; in water or over nothing, the nearest dry
+ * floor, or none.
+ */
+describe('weapon drops land on the ground', () => {
+  /** An open yard 32 × 48 m (floor at 0), with a Hauler parked at 12 0 18, a pool and a crate’s spot. */
+  function yard(extra: MapEntity[] = []) {
+    const tiles = [];
+    for (let x = 0; x < 4; x++) for (let y = 0; y < 6; y++) tiles.push({ id: `y${x}_${y}`, tile: 'core.yard', x, y, z: 0, rotation: 0 as const });
+    const map = makeMap(tiles, [[4, 0, 4]]);
+    const doc = { ...map, entities: [...map.entities, { id: 'hauler', kind: 'mount', position: [12, 0, 18], model: 'hauler', yaw: Math.PI / 2, faction: null, respawnSeconds: null } as MapEntity, ...extra] } as MapDocument;
+    const r = loadMap(doc);
+    if (!r.ok) throw new Error(JSON.stringify(r.issues));
+    const match = new Match(r.map, rules, 3);
+    const killer = match.addHuman('killer')!;
+    const victim = match.addHuman('victim')!;
+    killer.move = { pos: { x: 4, y: 0, z: 4 }, velY: 0, grounded: true };
+    arm(victim, 'core.rifle', 20, 20);
+    return { match, killer, victim };
+  }
+  /** The level's floor height at x z (map geometry only: what a drop should lie on). */
+  const floorY = (m: Match, x: number, z: number) => 0.5 - ((m as unknown as { physics: { raycastWorld(o: Vec3, d: Vec3, n: number): number | null } }).physics.raycastWorld({ x, y: 0.5, z }, { x: 0, y: -1, z: 0 }, 5) ?? NaN);
+
+  it('a rider killed in a vehicle seat: on the ground under the seat, not on the vehicle', () => {
+    const { match, killer, victim } = yard();
+    victim.move = { pos: { x: 12, y: 0, z: 15 }, velY: 0, grounded: true };
+    const boarded = (match as unknown as { enterMount(c: Combatant): boolean }).enterMount(victim);
+    expect(boarded).toBe(true);
+    expect(victim.mount).toBeDefined();
+    const seat = { ...victim.move.pos };
+    kill(match, victim, killer);
+    expect(match.drops).toHaveLength(1);
+    const d = match.drops[0]!;
+    // (The yard is flat: its floor as it is in the open.)
+    const ground = floorY(match, 4, 4);
+    expect(Math.abs(d.pos.y - ground)).toBeLessThan(0.05);
+    // On the yard’s floor below the seat, just beside the Hauler’s hull on the seat’s side (where it can be seen and
+    // taken, not under the truck), and the fall from the seat is in the snapshot.
+    const half = MOUNT_DEFS.hauler.half;
+    expect(d.pos.y).toBeLessThan(half[1]);
+    expect(Math.hypot(d.pos.x - seat.x, d.pos.z - seat.z)).toBeLessThan(Math.max(half[0], half[2]) + 0.5);
+    // (Parked at 12 0 18 turned a quarter: its length along x, its sides at z 18 ± half[0].)
+    const inside = Math.abs(d.pos.x - 12) < half[2] && Math.abs(d.pos.z - 18) < half[0];
+    expect(inside).toBe(false);
+    expect(Math.abs(d.pos.x - 12) <= half[2] + 0.5 && Math.abs(d.pos.z - 18) <= half[0] + 0.5).toBe(true);
+    expect(match.snapshot([]).dw![0]![6]).toBeCloseTo(seat.y, 2);
+  });
+
+  it('mid-air (blown up, mid-jump): on the ground under the body', () => {
+    const { match, killer, victim } = yard();
+    victim.move = { pos: { x: 24, y: 7.5, z: 30 }, velY: 6, grounded: false };
+    kill(match, victim, killer);
+    const d = match.drops[0]!;
+    expect([d.pos.x, d.pos.z]).toEqual([24, 30]);
+    expect(Math.abs(d.pos.y - floorY(match, 24, 30))).toBeLessThan(0.05);
+  });
+
+  it('just off a ledge: on the ground under the spot, not the ledge; under the map, over nothing, no drop', () => {
+    let { match, killer, victim } = yard();
+    const m = match as unknown as { addBox(kind: string, pos: Vec3, yaw: number, owner: number | null): { body: { translation(): Vec3 } } };
+    // A crate's edge (it is under a metre across): killed stepping off it, at the height of its top.
+    m.addBox('deployed', { x: 20, y: 0, z: 10 }, 0, null);
+    victim.move = { pos: { x: 20.75, y: 0.9, z: 10 }, velY: 0, grounded: false };
+    kill(match, victim, killer);
+    expect(match.drops).toHaveLength(1);
+    expect(Math.abs(match.drops[0]!.pos.y - floorY(match, 4, 4))).toBeLessThan(0.05);
+
+    ({ match, killer, victim } = yard());
+    arm(victim, 'core.rifle', 20, 20);
+    victim.move = { pos: { x: 10, y: -30, z: 20 }, velY: -20, grounded: false };
+    kill(match, victim, killer);
+    expect(match.drops).toHaveLength(0);
+  });
+
+  it('in water: no drop (a gun on the shore drew bots off their routes)', () => {
+    const pool: MapEntity = { id: 'pool', kind: 'water', position: [24, 0, 36], size: [5, 1.5, 5], liquid: 'water' } as MapEntity;
+    const { match, killer, victim } = yard([pool]);
+    victim.move = { pos: { x: 24, y: 0.2, z: 36 }, velY: 0, grounded: false };
+    kill(match, victim, killer);
+    expect(match.drops).toHaveLength(0);
+    // Blown up over the pool: it would land in the water, so none either.
+    arm(victim, 'core.rifle', 20, 20);
+    victim.alive = true;
+    victim.move = { pos: { x: 24.5, y: 4, z: 36 }, velY: 0, grounded: false };
+    kill(match, victim, killer);
+    expect(match.drops).toHaveLength(0);
+  });
+
+  it('what it lay on goes (a crate broken): it falls to the floor under it', () => {
+    const { match, killer, victim } = yard();
+    const m = match as unknown as { addBox(kind: string, pos: Vec3, yaw: number, owner: number | null): { body: unknown; pos: Vec3 }; damageBox(b: unknown, n: number, by: null): void };
+    const box = m.addBox('deployed', { x: 20, y: 0, z: 10 }, 0, null);
+    victim.move = { pos: { x: 20, y: 1.2, z: 10 }, velY: 0, grounded: false };
+    kill(match, victim, killer);
+    const d = match.drops[0]!;
+    // On the crate’s top.
+    expect(d.pos.y).toBeGreaterThan(0.2);
+    m.damageBox(box, 100000, null);
+    run(match, killer, DROP_SETTLE_TICKS + 1);
+    expect(match.drops).toHaveLength(1);
+    expect(Math.abs(d.pos.y - floorY(match, 20, 10))).toBeLessThan(0.05);
+    expect(match.snapshot([]).dw![0]!.length).toBe(7);
   });
 });
