@@ -1,6 +1,7 @@
 // Out of the play area (Atomic Court, 2026-11-19: one player crawled out under the perimeter fence, then half his
 // team spawned beside him out there and couldn't get back in): a see-through edge with nothing built beyond it stops
 // every body, squad spawns refuse a teammate outside the play area, and nobody stays outside it.
+import { readFileSync } from 'node:fs';
 import { beforeAll, describe, expect, it } from 'vitest';
 import { BUTTON_CROUCH, BUTTON_PRONE, DEFAULT_RULES, buildMapGeometry, initPhysics, loadMap, type GameEvent, type MapDocument } from '../src/index.ts';
 import { Match, OUT_OF_BOUNDS, initNavigation, type Combatant } from '../src/match.ts';
@@ -162,6 +163,67 @@ describe('outside the play area', () => {
     for (let i = 0; i < (OUT_OF_BOUNDS.back + 1) * TICK_RATE; i++) events.push(...match.step());
     expect(events.some((e) => e.e === 'msg' && e.s === me.slot)).toBe(false);
     expect(Math.hypot(me.move.pos.x - 8, me.move.pos.z - 8)).toBeLessThan(0.5);
+    match.destroy();
+  });
+});
+
+/**
+ * Water (owner, 2026-11-27: on Norman Shores swimming or going under was warned, then returned): the seabed has no
+ * navmesh and no walking route out, but you can always swim back. In water inside the bounds, or on a floor under it
+ * with open water up to it, is in play for the watch; a spot beyond a fence still isn't.
+ */
+describe('in the water', () => {
+  const mapFile = (id: string): MapDocument => {
+    const loaded = loadMap(readFileSync(new URL(`../../../maps/${id}.json`, import.meta.url), 'utf8'));
+    if (!loaded.ok) throw new Error(`${id} failed to load`);
+    return loaded.map;
+  };
+
+  it('Norman Shores: standing on the seabed and swimming out at sea, nobody is warned or moved', () => {
+    const match = new Match(mapFile('norman_shores'), DEFAULT_RULES['core.deathmatch']);
+    const me = match.addHuman('me')!;
+    for (let i = 0; i < 5; i++) match.step();
+    const physics = (match as unknown as { physics: { moveRay(o: { x: number; y: number; z: number }, d: { x: number; y: number; z: number }, n: number): number | null } }).physics;
+    // Out at sea, well inside the bounds (±154): the seabed under the water (its top at -3.9).
+    let spot: { x: number; y: number; z: number } | null = null;
+    for (const [x, z] of [[120, 120], [-120, 120], [120, -120], [-120, -120], [0, 140], [140, 0], [0, -140], [-140, 0]] as const) {
+      const d = physics.moveRay({ x, y: -4.2, z }, { x: 0, y: -1, z: 0 }, 30);
+      if (d !== null && match.inPlay({ x, y: -4.2 - d, z }) === false) {
+        spot = { x, y: -4.2 - d, z };
+        break;
+      }
+    }
+    expect(spot, 'a seabed spot the navmesh calls out of play').not.toBeNull();
+    const events: GameEvent[] = [];
+    for (let i = 0; i < (OUT_OF_BOUNDS.back + 1) * TICK_RATE; i++) {
+      // Held on the seabed (as if walking along it), grounded.
+      me.move = { pos: { ...spot! }, velY: 0, grounded: true };
+      events.push(...match.step());
+    }
+    expect(events.some((e) => e.e === 'msg' && e.s === me.slot)).toBe(false);
+    expect(me.outsideTicks ?? 0).toBe(0);
+    // Swimming at the surface there too.
+    me.move = { pos: { x: spot!.x, y: -4.4, z: spot!.z }, velY: 0, grounded: true };
+    for (let i = 0; i < (OUT_OF_BOUNDS.back + 1) * TICK_RATE; i++) {
+      me.move = { ...me.move, pos: { x: spot!.x, y: -4.4, z: spot!.z }, grounded: true };
+      events.push(...match.step());
+    }
+    expect(events.some((e) => e.e === 'msg' && e.s === me.slot)).toBe(false);
+    match.destroy();
+  });
+
+  it('a pool in a fenced yard: in it is in play, behind the fence still is not (told, then returned)', () => {
+    const doc = fencedYard();
+    doc.entities.push({ id: 'pool', kind: 'water', position: [8, -0.5, 8], size: [6, 1.5, 6], liquid: 'water' } as MapDocument['entities'][number]);
+    const match = new Match(doc, DEFAULT_RULES['core.deathmatch']);
+    const me = match.addHuman('me')!;
+    for (let i = 0; i < 5; i++) match.step();
+    put(me, -7, 8);
+    const events: GameEvent[] = [];
+    for (let i = 0; i < (OUT_OF_BOUNDS.back + 1) * TICK_RATE; i++) events.push(...match.step());
+    const msgs = events.filter((e): e is Extract<GameEvent, { e: 'msg' }> => e.e === 'msg' && e.s === me.slot).map((e) => e.text);
+    expect(msgs).toContain('Returned to the play area');
+    expect(inside(me.move.pos)).toBe(true);
     match.destroy();
   });
 });

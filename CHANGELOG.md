@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Swimming is in the play area.** In the water inside a map's bounds, or down on the seabed under it (Norman Shores), you're no longer warned and returned; a spot behind a fence still is.
 - **Getting out of a moving vehicle puts you out behind it.** Above a walking pace you step out back along its way (never in front of it), and for a second it can't run you over as it glides on.
 - **Inside an explosion the room stays in view.** Its fire and smoke fade as they reach the camera and a light dark-grey haze comes up instead, so walls and floor no longer seem to vanish behind flat slabs; with Reduce flashing on a dimmed fireball keeps its orange.
 - **Dropped guns land on the ground.** A gun dropped by someone killed in a vehicle seat, mid-jump, off a ledge or blown into the air falls to the floor under them (inside a building, its floor; a rider's beside the vehicle) instead of hanging where they died; off a ledge into nothing it lies on the nearest floor, in water there's none, and one whose crate or floor breaks falls with it.

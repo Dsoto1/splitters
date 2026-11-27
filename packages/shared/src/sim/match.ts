@@ -8180,6 +8180,22 @@ export class Match {
   }
 
   /**
+   * In water inside the map's bounds, or on a floor under it with open water up to it (Norman Shores' seabed): in play
+   * for the out-of-play watch (owner, 2026-11-27: swimming or going under there was warned, then returned). There is no
+   * navmesh down there and no walking route out, but you can always swim back up.
+   */
+  private inOpenWater(p: Vec3): boolean {
+    if (!this.liquids.length || !this.insideBounds(p)) return false;
+    for (const l of this.liquids) {
+      if (p.x < l.min.x || p.x > l.max.x || p.z < l.min.z || p.z > l.max.z || p.y > l.max.y) continue;
+      if (p.y + 0.3 >= l.min.y) return true;
+      // Under it: nothing solid between you and the water (not a sealed floor under the pool).
+      if (this.physics.moveRay({ x: p.x, y: p.y + 0.3, z: p.z }, { x: 0, y: 1, z: 0 }, l.min.y - p.y - 0.3) === null) return true;
+    }
+    return false;
+  }
+
+  /**
    * Nobody stays outside the play area (crawled out through a gap, thrown over a fence, landed there): standing outside
    * it for OUT_OF_BOUNDS.warn they're told, calmly (a message, no flash: Reduce flashing), and after OUT_OF_BOUNDS.back
    * they're put back on the nearest clear ground inside it, as they are (no death, nothing taken). Checked every
@@ -8194,7 +8210,7 @@ export class Match {
       }
       // In the air: neither in nor out (a jump, a fall); the count waits for the ground.
       if (!c.move.grounded) continue;
-      if (this.inPlay(c.move.pos)) {
+      if (this.inPlay(c.move.pos) || this.inOpenWater(c.move.pos)) {
         c.outsideTicks = 0;
         continue;
       }
