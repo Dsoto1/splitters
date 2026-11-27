@@ -27,6 +27,48 @@ PICTURES=1 node tools/content/limb-audit.mjs http://localhost:4860 /tmp/limbs  #
 node tools/content/limb-sheet.mjs /tmp/limbs                                  # the contact sheet of the worst 20
 ```
 
+## Finding (step 3, confirmed with the switches)
+
+**Legs: the bow is the shared clips' standing pose, the same on every body; not a rest-pose roll.**
+
+- (a) refuted as stated. Every pickable look (176, all whole-body Meshy builds) has its limb joints' rest rotations equal
+  to the rig's: `node tools/content/limb-rest.mjs` finds 0.03° at most over all 215 Meshy body files (the only
+  differences, 9.6° at `foot_l` and 11.3° at `clavicle_l`, are the 26 modular `_f`/`_m` part files, which no pickable
+  look uses). `prepare-meshy-characters.mjs` keeps the rig's joint orientations, so there is no roll to correct.
+- The joints' pose is the same on all 176 to within 2-4°: roster medians knee bow 5.7° / 9.9° (L/R, bow legs), left shin
+  out 7.8°, right knee pointing 44° out, right toes 30° out. That is the clip's rifle stance, and it reads as bowed knees
+  and splayed ankles on any body; wide hips and thin bare shins (Grandpa Chains, Elder Tomo) show it most, robes and
+  wide trousers hide it.
+- Switch: `LEGS_REST=1` (client `__grips.legsAtRest(true)`, the grip sheet's own switch, run after the clips are
+  evaluated; the game's path is untouched) holds the legs at rest. Elder Tomo, Grandpa Chains and Space Marine: knee bow
+  5.7/9.9 → 0/0, shin out 7.8/3.2 → 0/0, knee points 13.7/44.5 → 0/0, foot yaw 7.6/30.3 → 0/0, and the drawn legs stand
+  straight (picture below). Their skin follows their bones (skin bow at rest: Tomo 1.0/0.2, Grandpa −3.2/−4.5); Space
+  Marine's −16/−20 at rest is its own short, padded shin, not the pose.
+- What sets the per-look ranks apart is the skin measures (sole roll, skin bow). They are rough: cloth weighted to a
+  foot or calf (capes, robes, Sigrun's and Aurelio's hems) throws sole roll far off (Grandpa's 74.5° left sole roll is
+  his slipper turned 30° by the clip; 3.5° at rest). Read the table's joint columns as the clip, the skin columns as
+  the body, and check a high skin number on the sheet.
+
+**Elbows: the arm IK's pole decides them, and with the default pole every body's elbows point out and down.**
+
+- Left (support) elbow 10-22° from straight down, right (shooting) elbow 47-61° (straight out is 90°): none in or up,
+  no spread with body width (narrow and broad bodies alike), so (b) as "wrong for narrow or broad bodies" is not borne
+  out in Character Select's pose.
+- Switch: the pole moved with the look's tune (`TUNE='{"elbowOut":-0.9,"elbowDown":-0.6}'`) turns the right elbow up and
+  in: Tomo 58.9° → −139.4°, Grandpa 59.9° → −138.8°, Space Marine 60.7° → −136.4°; the left (its own fixed pole) stays.
+  So the elbow is the pole's, and the default (`ELBOW_POLE_OUT` 0.45 out, `ELBOW_POLE_DOWN` 0.18 down, about 68° from
+  down) holds the shooting elbow high and out, nearly level, on every body: if that is what reads as "Tomo's elbows bend
+  wrong", it is the constant, not his rig. Not confirmed from the owner's screenshot; no look measured an in or up elbow.
+- (A neutral tune, `elbowOut −0.45, elbowDown −0.18`, puts the pole on the shoulder and changes nothing: the solver
+  keeps the previous bend.)
+
+Pictures (scratchpad, not in the repo): `before_after.jpg` (rows Tomo, Grandpa, Space Marine; columns: legs as shipped,
+legs at rest, elbows default, pole moved) and `limb-sheet.jpg` (the worst 20 and Elder Tomo, front, side, upper front
+and support side), in `/tmp/claude-0/-home-user/99559628-4a1b-594f-bb6f-7638c8757e80/scratchpad/legs/`.
+
+For the fix (lane B): the legs' stance in the standing armed clips (or a pass straightening the knees and squaring the
+feet when standing still), not a per-rig correction; the elbow pole's out/down ratio if the owner wants it lower.
+
 ## Table, worst first
 
 <!-- limb-table -->
