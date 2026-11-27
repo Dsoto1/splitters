@@ -601,7 +601,7 @@ export class GameSession {
   /** Random weapon pickups holding something other than what was placed (snapshot `pw`). */
   private pickupItems = new Map<string, string>();
   /** Weapons the fallen dropped, lying now (snapshot `dw`). */
-  private drops: readonly [number, string, number, number, number, number][] = [];
+  private drops: readonly (readonly [number, string, number, number, number, number, number?])[] = [];
   /** The weapon the player asked for, until the host has switched to it (weaponRequest.ts). */
   private readonly weaponAsk = new WeaponRequest();
   /** Ground hazards from the latest snapshot, and your own status effects. */
@@ -4435,7 +4435,7 @@ export class GameSession {
       this.view.applyPropStates(this.scenario.entities);
     }
     this.view.updatePickups(this.taken, now, this.pickupItems);
-    this.view.updateDrops(this.drops);
+    this.view.updateDrops(this.drops, now);
     const shells = this.interp.sampleProjectiles(now);
     this.view.updateProjectiles(shells, this.slot);
     this.view.updateZones(this.zones, now);

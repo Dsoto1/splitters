@@ -76,7 +76,7 @@ import {
 import { dealPickup, rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
-import { DROP_LIE_SECONDS, DROP_REACH, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
+import { DROP_BESIDE, DROP_CLIMB, DROP_FALL_TICKS, DROP_LIE_SECONDS, DROP_REACH, DROP_SETTLE_TICKS, DROP_SHORE, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
 import { eyePoint, eyeScaleOf, rollRaise, dodgeKindOf } from './moves.ts';
 import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
@@ -5664,15 +5664,37 @@ export class Match {
       return;
     }
     const [hx, , hz] = m.def.half;
-    for (const o of [[-(hx + 0.9), 0, 0], [hx + 0.9, 0, 0], [0, 0, -(hz + 0.9)], [0, 0, hz + 0.9]] as const) {
+    let spots: (readonly [number, number, number])[] = [[-(hx + 0.9), 0, 0], [hx + 0.9, 0, 0], [0, 0, -(hz + 0.9)], [0, 0, hz + 0.9]];
+    // Moving (owner, 2026-11-27: jumping out of a moving speeder killed them): out behind it, back along the way it is
+    // going (not just its tail: a hovercraft slides), then the sides that aren't ahead of it; never in front.
+    const vel = m.vel ?? { x: Math.sin(m.yaw) * m.speed, z: Math.cos(m.yaw) * m.speed };
+    const speed = Math.hypot(vel.x, vel.z);
+    if (m.def.vehicle && speed > EXIT_BEHIND_SPEED) {
+      const sn = Math.sin(m.yaw);
+      const cs = Math.cos(m.yaw);
+      // Its way in its own axes (mountToWorld's inverse).
+      const ux = (vel.x * cs - vel.z * sn) / speed;
+      const uz = (vel.x * sn + vel.z * cs) / speed;
+      const k = 1 / Math.max(Math.abs(ux) / (hx + 0.9), Math.abs(uz) / (hz + 0.9));
+      const ahead = (o: readonly [number, number, number]) => (o[0] * ux + o[2] * uz) / Math.hypot(o[0], o[2]);
+      spots = [[-ux * k, 0, -uz * k] as const, ...spots.filter((o) => ahead(o) < 0.5).sort((a, b) => ahead(a) - ahead(b))];
+    }
+    for (const o of spots) {
       const spot = mountToWorld(m.pos, m.yaw, o);
       // Room to stand: nothing solid from the knees to above the head (a ray starting inside a wall hits at once).
       if (this.physics.raycastHit({ x: spot.x, y: spot.y + 0.4, z: spot.z }, { x: 0, y: 1, z: 0 }, PLAYER.height)) continue;
       if (!this.exitReachable(m, o, spot)) continue;
       c.move = this.bailOut({ x: spot.x, y: spot.y + 0.3, z: spot.z });
+      this.exitSafe(m, c);
       return;
     }
     c.move = this.bailOut({ x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z });
+    this.exitSafe(m, c);
+  }
+
+  /** Who just got out of a vehicle can't be run over by it for EXIT_SAFE_TICKS (it glides on as they step down). */
+  private exitSafe(m: MountRt, c: Combatant): void {
+    if (m.def.vehicle) m.runOver.set(c.slot, Math.max(m.runOver.get(c.slot) ?? 0, this.tick + EXIT_SAFE_TICKS));
   }
 
   /**
@@ -5684,7 +5706,8 @@ export class Match {
    */
   private exitReachable(m: MountRt, o: readonly [number, number, number], spot: Vec3): boolean {
     const len = Math.hypot(o[0], o[2]);
-    const face = Math.abs(o[0]) > 0 ? m.def.half[0] : m.def.half[2];
+    // (Where the line out from the middle crosses the hull's side: a corner-ward spot behind a sliding hull too.)
+    const face = Math.min(Math.abs(o[0]) > 1e-6 ? (m.def.half[0] * len) / Math.abs(o[0]) : Infinity, Math.abs(o[2]) > 1e-6 ? (m.def.half[2] * len) / Math.abs(o[2]) : Infinity);
     const dir = { x: (spot.x - m.pos.x) / len, y: 0, z: (spot.z - m.pos.z) / len };
     const reach = len - face + PLAYER.radius;
     for (const h of [0.5, 1.2]) {
@@ -7037,10 +7060,10 @@ export class Match {
     const item = w && dropItem(w.def);
     if (!w || !item) return;
     const at = c.move.pos;
-    const down = this.physics.raycastHit({ x: at.x, y: at.y + 0.5, z: at.z }, { x: 0, y: -1, z: 0 }, DROP_REACH);
-    if (!down) return;
+    const pos = this.dropSpot(at);
+    if (!pos) return;
     if (this.drops.length >= MAX_DROPS) this.drops.splice(0, this.drops.length - MAX_DROPS + 1);
-    this.drops.push({ id: this.nextDropId++, def: w.def, item, mag: w.mag, reserve: w.reserve, alt: w.alt, pos: { x: at.x, y: at.y + 0.5 - down.dist, z: at.z }, yaw: c.yaw, until: this.tick + Math.round(DROP_LIE_SECONDS * TICK_RATE) });
+    this.drops.push({ id: this.nextDropId++, def: w.def, item, mag: w.mag, reserve: w.reserve, alt: w.alt, pos, yaw: c.yaw, until: this.tick + Math.round(DROP_LIE_SECONDS * TICK_RATE), ...this.dropFall(at.y, pos.y) });
     // (The fallen's inventory stays as it was until they respawn with a fresh loadout: the rest is recycled.)
   }
 
@@ -7069,16 +7092,107 @@ export class Match {
     return true;
   }
 
-  /** Dropped weapons lying past their time go. */
+  /** A drop's fall (shown by clients for DROP_FALL_TICKS): from `from` down to `to`, when it fell any way. */
+  private dropFall(from: number, to: number): Pick<WeaponDrop, 'fromY' | 'fellAt'> {
+    return from - to > 0.05 ? { fromY: from, fellAt: this.tick } : {};
+  }
+
+  /** Vehicles' and turrets' boxes: a drop never lies on them (they drive off or go). */
+  private readonly mountBody = (handle: number): boolean => this.mounts.some((m) => m.body.handle === handle);
+
+  /**
+   * Where a weapon dropped at `at` lies (owner, 2026-11-27): on the first walkable top surface under the spot (a
+   * floor inside a building, the ground under a mid-air death; a rider's just beside the vehicle), never on a vehicle
+   * or a turret. Over nothing (off a ledge into the void), the nearest floor within DROP_SHORE in sight of the spot and
+   * about level with it. In water (or lava, acid, swamp) none: shore drops drew bots off their routes (Sunken
+   * Kingdom's CTF survey, seeds 1-10: 1 match of 10 with a capture against 4 before; none in water, 6).
+   */
+  private dropSpot(at: Vec3): Vec3 | null {
+    const wet = (x: number, y: number, z: number) => this.liquids.length > 0 && !!liquidAt(this.liquids, { x, y: y + 0.15, z });
+    const lies = (x: number, y: number, z: number, reach: number): Vec3 | null => {
+      const d = this.physics.dropGround({ x, y, z }, reach, this.mountBody);
+      return d === null ? null : { x, y: y - d, z };
+    };
+    if (wet(at.x, at.y, at.z)) return null;
+    const top = at.y + 0.5;
+    const under = lies(at.x, top, at.z, DROP_REACH);
+    if (under) {
+      if (wet(under.x, under.y, under.z)) return null;
+      // Under a vehicle (a rider's seat over its bed): just beside it, on the seat's side, where it can be seen and taken.
+      const out = this.besideMount(under);
+      const beside = out && lies(out.x, Math.max(top, out.y + DROP_CLIMB), out.z, DROP_REACH);
+      // (About level with the ground under it, and dry: not on a wall the vehicle is parked against, nor down a drop.)
+      return beside && Math.abs(beside.y - under.y) < 0.6 && !wet(beside.x, beside.y, beside.z) ? beside : under;
+    }
+    // Over nothing: the nearest dry floor around, in sight and about level (the ledge fallen off).
+    for (let r = 1; r <= DROP_SHORE; r++) {
+      let best: Vec3 | null = null;
+      let bestD = Infinity;
+      const n = 8 + r * 4;
+      for (let i = 0; i < n; i++) {
+        const a = (i / n) * Math.PI * 2;
+        const x = at.x + Math.cos(a) * r;
+        const z = at.z + Math.sin(a) * r;
+        const p = lies(x, at.y + DROP_CLIMB, z, DROP_CLIMB * 2);
+        if (!p || wet(p.x, p.y, p.z) || !this.physics.lineOfSight({ x: at.x, y: at.y + 0.6, z: at.z }, { x, y: p.y + 0.6, z })) continue;
+        const d = Math.abs(p.y - at.y);
+        if (d < bestD) {
+          best = p;
+          bestD = d;
+        }
+      }
+      if (best) return best;
+    }
+    return null;
+  }
+
+  /** A spot on the ground under a mount's hull: the nearest spot just outside its footprint (else null). */
+  private besideMount(p: Vec3): Vec3 | null {
+    for (const m of this.mounts) {
+      if (!m.alive) continue;
+      const [hx, hy, hz] = m.def.half;
+      if (p.y < m.pos.y - 0.5 || p.y > m.pos.y + hy * 2) continue;
+      const s = Math.sin(m.yaw);
+      const c = Math.cos(m.yaw);
+      // Into the hull's own axes (sim/mounts.ts mountToWorld: right is (cos, -sin), forward (sin, cos)).
+      const dx = p.x - m.pos.x;
+      const dz = p.z - m.pos.z;
+      const lx = dx * c - dz * s;
+      const lz = dx * s + dz * c;
+      if (Math.abs(lx) > hx || Math.abs(lz) > hz) continue;
+      const side = hx - Math.abs(lx) <= hz - Math.abs(lz);
+      const o: [number, number, number] = side ? [(lx < 0 ? -1 : 1) * (hx + DROP_BESIDE), 0, lz] : [lx, 0, (lz < 0 ? -1 : 1) * (hz + DROP_BESIDE)];
+      return mountToWorld({ x: m.pos.x, y: p.y, z: m.pos.z }, m.yaw, o);
+    }
+    return null;
+  }
+
+  /**
+   * Dropped weapons lying past their time go. Twice a second each is checked for what it lies on: gone (a crate
+   * broken, a door swung, a wall knocked down), it falls to what is under it now (or goes, with nothing).
+   */
   private stepDrops(): void {
     if (!this.drops.length) return;
+    if (this.tick % DROP_SETTLE_TICKS === 0) {
+      for (const d of this.drops) {
+        if (this.physics.dropGround({ x: d.pos.x, y: d.pos.y + 0.3, z: d.pos.z }, 0.45, this.mountBody) !== null) continue;
+        const pos = this.dropSpot({ x: d.pos.x, y: d.pos.y - 0.2, z: d.pos.z });
+        if (!pos) {
+          d.until = -1;
+          continue;
+        }
+        Object.assign(d, this.dropFall(d.pos.y, pos.y));
+        d.pos = pos;
+      }
+    }
     const keep = this.drops.filter((d) => d.until > this.tick);
     if (keep.length !== this.drops.length) this.drops.splice(0, this.drops.length, ...keep);
   }
 
   /** Dropped weapons lying now, for the snapshot (`dw`): [id, item ID, x, y, z, yaw]. */
-  dropSnapshots(): [number, string, number, number, number, number][] {
-    return this.drops.map((d) => [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw)]);
+  dropSnapshots(): ([number, string, number, number, number, number] | [number, string, number, number, number, number, number])[] {
+    // (A drop that just fell carries the height it fell from for a moment: clients show the fall.)
+    return this.drops.map((d) => (d.fromY !== undefined && d.fellAt !== undefined && this.tick - d.fellAt < DROP_FALL_TICKS ? [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw), r3(d.fromY)] : [d.id, d.item.id, r3(d.pos.x), r3(d.pos.y), r3(d.pos.z), r3(d.yaw)]));
   }
 
   /** Work out what a pickup rolls from (the weapon set, its own category, or the host's mix-up), and roll it afresh when that changed. */
@@ -8080,6 +8194,22 @@ export class Match {
   }
 
   /**
+   * In water inside the map's bounds, or on a floor under it with open water up to it (Norman Shores' seabed): in play
+   * for the out-of-play watch (owner, 2026-11-27: swimming or going under there was warned, then returned). There is no
+   * navmesh down there and no walking route out, but you can always swim back up.
+   */
+  private inOpenWater(p: Vec3): boolean {
+    if (!this.liquids.length || !this.insideBounds(p)) return false;
+    for (const l of this.liquids) {
+      if (p.x < l.min.x || p.x > l.max.x || p.z < l.min.z || p.z > l.max.z || p.y > l.max.y) continue;
+      if (p.y + 0.3 >= l.min.y) return true;
+      // Under it: nothing solid between you and the water (not a sealed floor under the pool).
+      if (this.physics.moveRay({ x: p.x, y: p.y + 0.3, z: p.z }, { x: 0, y: 1, z: 0 }, l.min.y - p.y - 0.3) === null) return true;
+    }
+    return false;
+  }
+
+  /**
    * Nobody stays outside the play area (crawled out through a gap, thrown over a fence, landed there): standing outside
    * it for OUT_OF_BOUNDS.warn they're told, calmly (a message, no flash: Reduce flashing), and after OUT_OF_BOUNDS.back
    * they're put back on the nearest clear ground inside it, as they are (no death, nothing taken). Checked every
@@ -8094,7 +8224,7 @@ export class Match {
       }
       // In the air: neither in nor out (a jump, a fall); the count waits for the ground.
       if (!c.move.grounded) continue;
-      if (this.inPlay(c.move.pos)) {
+      if (this.inPlay(c.move.pos) || this.inOpenWater(c.move.pos)) {
         c.outsideTicks = 0;
         continue;
       }
@@ -8883,6 +9013,10 @@ const NO_BORES: readonly GroundCut[] = [];
  * `warn` seconds and put back inside after `back` seconds.
  */
 export const OUT_OF_BOUNDS = { every: 30, warn: 1, back: 6 } as const;
+/** Getting out of a vehicle going faster than this (m/s), you're put out behind it (Match.leaveMount). */
+const EXIT_BEHIND_SPEED = 3;
+/** ...and it can't run you over for this long (ticks) after (it glides on as you step down). */
+const EXIT_SAFE_TICKS = 60;
 
 /** Bots this close (m) to a portal's edge always make the exact move (Match.relaxedMove). */
 const RELAXED_PORTAL = 6;

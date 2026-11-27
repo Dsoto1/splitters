@@ -490,7 +490,9 @@ async function editorFlow(browser) {
   const stopped = await page.waitForFunction(() => window.__navTestPressed?.after && document.getElementById('editor').hidden && window.__cs?.local, null, { timeout: T(30000) }).then(() => page.evaluate(() => window.__navTestPressed), () => null);
   check(stopped && stopped.after.stops === stopped.stopsBefore + 1 && !stopped.after.running && !stopped.after.worker, `Test stops the navigation check still running (${JSON.stringify(stopped)})`);
   await frames(page, 10);
+  // Esc in a Test already in play opens the pause menu; F5 goes back then.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   // Back in MapMaker the stopped check runs again, in a new worker, to its end.
   const rechecked = await page.waitForFunction(() => !window.__editor.checks.navRunning && !!window.__editor.checks.navWorker, null, { timeout: T(60000) }).then(() => true, () => false);
@@ -584,6 +586,31 @@ async function editorFlow(browser) {
   check(types.length === 12 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: twelve types (Toys, Pirates and Holiday since 2026-11-26, Historical since 2026-11-27), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
+  // Map settings → Teams → Layout (owner, 2026-11-26, "4b"): only the common layouts as chips; a map saved with an odd
+  // one shows it first, lit; other mixes from the steppers.
+  const modesBefore = (await doc()).metadata.supportedModes;
+  await page.evaluate((before) => window.__editor.run('Mode', { kind: 'setMetadata', before: { supportedModes: before }, after: { supportedModes: ['core.tdm', ...before.filter((m) => m !== 'core.tdm')] } }), modesBefore);
+  await page.evaluate(() => window.__editor.run('Set teams', { kind: 'setTeamSetup', before: window.__editor.doc.teamSetup, after: { sizes: [2, 2, 2, 2, 2, 2, 2, 2] } }));
+  // Edits reach Map settings on MapMaker's next frame (EditorApp.frame → refresh → MapSettingsView.refresh), so each
+  // read waits for the view to show the edit rather than reading straight after it.
+  await openMapSettings(page);
+  const chipsOf = () => page.evaluate(() => [...document.querySelectorAll('#ed-team-preset button')].map((b) => `${b.textContent}${b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true' ? '*' : ''}${b.dataset.odd ? '!' : ''}`));
+  const shows = (lit, steppers) => page.waitForFunction(([lit, n]) => document.querySelector('#ed-team-preset button.on')?.dataset.value === lit && document.querySelectorAll('#ed-map-settings [data-team]').length === n, [lit, steppers], { timeout: T(5000) }).then(() => true, () => false);
+  const oddShown = await shows('2,2,2,2,2,2,2,2', 8);
+  const oddChips = await chipsOf();
+  // A click on a chip in the open view: the lit chip and the team steppers follow, the view left open.
+  await page.click('#ed-team-preset button[data-value="4,4"]');
+  const picked = { doc: await page.waitForFunction(() => window.__editor.doc.teamSetup?.sizes.join(',') === '4,4', null, { timeout: T(5000) }).then(() => true, () => false), view: await shows('4,4', 2) };
+  const commonChips = await chipsOf();
+  // And drawn afresh (closed and opened again) it shows the same.
+  await page.click('#ed-ms-close');
+  await openMapSettings(page);
+  await page.waitForSelector('#ed-team-preset', { state: 'attached', timeout: T(10000) });
+  const reopened = await chipsOf();
+  const want = ['1v1', '2v2', '4v4*', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4'];
+  check(oddShown && picked.doc && picked.view && JSON.stringify(oddChips) === JSON.stringify(['2v2v2v2v2v2v2v2*!', '1v1', '2v2', '4v4', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']) && JSON.stringify(commonChips) === JSON.stringify(want) && JSON.stringify(reopened) === JSON.stringify(want), `Map settings' team Layout chips are the common ones; a saved odd layout shows first, lit; a chip clicked in the open view lights and sets its layout, steppers too (${JSON.stringify({ oddShown, oddChips, picked, commonChips, reopened })})`);
+  for (let i = 0; i < 3; i++) await page.keyboard.press('Control+KeyZ');
+  check(JSON.stringify((await doc()).metadata.supportedModes) === JSON.stringify(modesBefore), 'undo takes the teams and mode back');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
   await page.click('#ed-home');
   await page.click('#ed-quit-discard');
@@ -1993,7 +2020,9 @@ async function editorTourChecks(browser) {
   await page.click('#ed-test');
   const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
   check(started && (await tour()).stored === 'done', `PLAY TEST starts the match; the tour is remembered as done (${started})`);
+  // Esc in a Test already in play opens the pause menu; F5 goes back then.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   await frames(page, 2);
   t = await tour();
@@ -2373,10 +2402,30 @@ async function editorLayoutChecks(browser) {
   await shot('view-menu');
   await page.keyboard.press('Escape');
   const closed = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, focus: document.activeElement?.id, tool: window.__editor.tool.kind }));
-  check(menuShown.open && menuShown.expanded === 'true' && firstFocus === 'ed-grid' && secondFocus === 'ed-grid-full' && JSON.stringify(menuShown.items) === JSON.stringify(['ed-grid:true', 'ed-grid-full:false', 'ed-overlaps:false', 'ed-plan:false', 'ed-layer-tile:true', 'ed-layer-prop:true', 'ed-layer-pickup:true', 'ed-layer-logic:true', 'ed-layer-spawn:true']) && !closed.open && closed.focus === 'ed-view-btn', `the View menu opens from its button with the arrow keys, lists grid, full grid, overlaps, plan view and the map layers, and Esc closes it to its button (${JSON.stringify({ menuShown, firstFocus, secondFocus, closed })})`);
+  check(menuShown.open && menuShown.expanded === 'true' && firstFocus === 'ed-grid' && secondFocus === 'ed-grid-full' && JSON.stringify(menuShown.items) === JSON.stringify(['ed-grid:true', 'ed-grid-full:false', 'ed-overlaps:false', 'ed-breakwall-marks:true', 'ed-plan:false', 'ed-layer-tile:true', 'ed-layer-prop:true', 'ed-layer-pickup:true', 'ed-layer-logic:true', 'ed-layer-spawn:true']) && !closed.open && closed.focus === 'ed-view-btn', `the View menu opens from its button with the arrow keys, lists grid, full grid, overlaps, breakable walls, plan view and the map layers, and Esc closes it to its button (${JSON.stringify({ menuShown, firstFocus, secondFocus, closed })})`);
   await viewItem(page, 'ed-overlaps');
   const overlapsOn = await page.evaluate(() => window.__editor.checks.overlapsOn && document.getElementById('ed-overlaps').getAttribute('aria-checked') === 'true');
   await viewItem(page, 'ed-overlaps');
+  // View → Breakable walls (QUEUE, owner 2026-11-26): every tile's walls made breakable, the editor-only mark shows on
+  // them (orange hatching and a dashed outline); switched off it hides, and photo mode hides it too.
+  await page.evaluate(() => {
+    const tiles = window.__editor.doc.classicStructure.tiles;
+    window.__editor.run('Make walls breakable', { kind: 'updateTiles', before: tiles, after: tiles.map((t) => ({ ...t, breakWalls: {} })) });
+  });
+  await frames(page, 2);
+  const enabled = () => page.evaluate(() => window.__editor.view.breakMarks.meshes.map((m) => m.isEnabled()));
+  const marked = { count: await page.evaluate(() => window.__editor.view.breakMarks.count), on: await enabled() };
+  await viewItem(page, 'ed-breakwall-marks');
+  const marksOff = { on: await enabled(), aria: await page.getAttribute('#ed-breakwall-marks', 'aria-checked') };
+  await viewItem(page, 'ed-breakwall-marks');
+  await page.evaluate(() => window.__editor.view.photoMode(true));
+  const marksPhoto = await enabled();
+  await page.evaluate(() => window.__editor.view.photoMode(false));
+  const marksBack = await enabled();
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  const marksGone = await page.evaluate(() => window.__editor.view.breakMarks.count);
+  check(marked.count > 0 && marked.on.length === 2 && marked.on.every(Boolean) && marksOff.on.every((v) => !v) && marksOff.aria === 'false' && marksPhoto.every((v) => !v) && marksBack.every(Boolean) && marksGone === 0, `View → Breakable walls marks the walls that break, off hides it, photo mode hides it, undo clears it (${JSON.stringify({ marked, marksOff, marksPhoto, marksBack, marksGone })})`);
   // (The reloads above started a fresh map: its own spawn.)
   const spawnNow = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
   await viewItem(page, 'ed-layer-spawn');
@@ -5219,7 +5268,10 @@ async function editorWorkflowChecks(browser) {
   await frames(page, 10);
   // The view as you play it (headless pages have no pointer lock, so the pause menu is up: hidden for the picture).
   await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' }).then((h) => shot('play-from-here').then(() => h.evaluate((el) => el.remove())));
+  // Esc while Test still loads or counts down goes back to MapMaker; once in play (a quick load) it opens the pause
+  // menu, and F5 goes back (as the editor flow's Test).
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   await frames(page, 2);
   // Back in MapMaker, the ended match is gone from memory: no disposed scene left in the heap after a collection
@@ -8210,6 +8262,128 @@ async function physicsfxFlow(browser) {
  * 17. One flow that long can't be packed and a retry of it (the whole flow again) ran past the e2e job's 45-minute
  * limit. Now four flows of 5-7 minutes: the beams, and the tracers by build (each its own page load).
  */
+/**
+ * Inside a blast (owner, 2026-11-27: a first-person screenshot, haze and gaps where the room's walls and floor should
+ * be while the camera was inside an explosion; QUEUE "Bugs"). A room of light walls made in MapMaker; you stand in it
+ * facing a wall 6 m off and a launcher's blast goes off at your feet, Reduce flashing on and then off. Frame by frame
+ * (the page's clock stepped, 30 frames a second), the room must still be drawn behind the blast: with the setting on,
+ * in every frame most of the picture is the room as it was before the blast (the blast's pieces fade near the camera
+ * and are drawn over the room, never as solid cards hiding it: godotVfx.ts NEAR_FADE); off, the room shows through the
+ * full-size fireball as it thins. Pictures: blastview-<on|off>-<frame>.png (and the frame before: -ref).
+ */
+async function blastviewFlow(browser) {
+  const [W, H] = [320, 180];
+  const ctx = await browser.newContext({ viewport: { width: 640, height: 360 }, deviceScaleFactor: 1 });
+  await ctx.addInitScript(installFrameClock);
+  const page = await ctx.newPage();
+  const errors = [];
+  page.on('pageerror', (e) => errors.push(process.env.E2E_STACKS ? e.stack : e.message));
+  await page.goto(`${CLIENT}/?mode=editor&test=1`);
+  await page.waitForFunction(() => window.__editor, null, { timeout: T(30000) });
+  page.once('dialog', (d) => d.accept());
+  await newMap(page, 96);
+  const made = await page.evaluate(() => {
+    const ed = window.__editor;
+    const block = (id, at, size, tint) => ({ id, kind: 'block', position: at, size, yaw: 0, material: null, tint, behaviour: 'solid', trigger: 'step', delaySeconds: 0.8, respawnSeconds: null, health: 5000 });
+    // A room 10 m across round 0 0 -20, open to the sky: a pale wall ahead (north), a darker one to each side.
+    const entities = [block('bv_n', [0, 0, -25], [10.4, 3.4, 0.4], '#d8c8a8'), block('bv_w', [-5, 0, -20], [0.4, 3.4, 10.4], '#8f9aa8'), block('bv_e', [5, 0, -20], [0.4, 3.4, 10.4], '#8f9aa8'), block('bv_floor', [0, 0, -20], [10, 0.1, 10], '#6f6a62')];
+    const ok = ed.run('Blast view room', { kind: 'batch', commands: [{ kind: 'addEntities', entities }] });
+    return { ok, walls: ed.doc.entities.filter((e) => e.id.startsWith('bv_')).length };
+  });
+  check(made.ok && made.walls === 4, `MapMaker makes a room of walls (${JSON.stringify(made)})`);
+  // (PLAY TEST, as its button does.)
+  await page.evaluate(() => document.getElementById('ed-test').click());
+  const playing = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(60000) }).then(() => true, () => false);
+  check(playing, 'the room plays (MapMaker TEST)');
+  if (!playing) {
+    await page.screenshot({ path: `${ARTIFACTS}/blastview-noplay.png` }).catch(() => {});
+    console.log('blastview errors', errors.slice(0, 5));
+    return void (await ctx.close());
+  }
+  await playWithoutMouse(page);
+  await holdBots(page);
+  // You stand in the room 7 m from the north wall, looking at it, never dying; the bots far off.
+  await sim(page, (m, me) => {
+    clearInterval(self.__bvPin);
+    const pin = () => {
+      me.move = { ...me.move, pos: { x: 0, y: 0.05, z: -18 }, velY: 0, vx: 0, vz: 0, grounded: true };
+      me.maxHealth = me.health = 100000;
+      for (const [i, b] of m.combatants().filter((c) => c.bot).entries()) b.move = { ...b.move, pos: { x: 60 + i * 2, y: 0, z: 60 }, velY: 0, grounded: true };
+    };
+    pin();
+    self.__bvPin = setInterval(pin, 1000 / 60);
+  });
+  await page.evaluate(() => Object.assign(window.__cs.input, { yaw: Math.PI, pitch: -0.12 }));
+  // The explosion pack in, and the view settled on the room.
+  const ready = await page.waitForFunction(() => {
+    const e = window.__cs.view.cameraPosition();
+    return Math.abs(e.z + 18) < 0.2 && window.__cs.view.vfxReady?.('explosion_fx') !== false;
+  }, null, { timeout: T(30000) }).then(() => true, () => false);
+  check(ready, 'you stand in the room, the explosion effects loaded');
+  await frames(page, 20);
+  const grab = (n) =>
+    page.evaluate(([n, W, H]) => {
+      const thrown = [];
+      for (let i = 0; i < n; i++) thrown.push(...window.__frameClock.step(1000 / 30));
+      const canvas = window.__cs.view.scene.getEngine().getRenderingCanvas();
+      const out = (window.__bvCanvas ??= Object.assign(document.createElement('canvas'), { width: W, height: H }));
+      const g = out.getContext('2d', { willReadFrequently: true });
+      g.drawImage(canvas, 0, 0, W, H);
+      const px = g.getImageData(0, 0, W, H).data;
+      return { png: out.toDataURL('image/png'), px: Array.from(px), thrown };
+    }, [n, W, H]);
+  const setFlashing = (on) =>
+    page.evaluate((on) => {
+      const box = document.getElementById('reduce-flashing');
+      if (box.checked === on) return;
+      box.checked = on;
+      box.dispatchEvent(new Event('change'));
+    }, on);
+  const dir = process.env.E2E_SHOTS ?? ARTIFACTS;
+  mkdirSync(dir, { recursive: true });
+  const save = (name, png) => writeFileSync(`${dir}/${name}.png`, Buffer.from(png.split(',')[1], 'base64'));
+  await page.evaluate(() => window.__frameClock.freeze());
+  const results = {};
+  for (const on of [true, false]) {
+    await setFlashing(on);
+    const ref = await grab(2);
+    save(`blastview-${on ? 'on' : 'off'}-ref`, ref.png);
+    // A launcher's blast at your feet, half a metre ahead: you are inside its fireball and smoke.
+    const played = await page.evaluate(() => {
+      const v = window.__cs.view;
+      const e = v.cameraPosition();
+      const before = v.vfx.count;
+      v.explosion({ x: e.x, y: e.y - 1.3, z: e.z - 0.5 }, 4.5, 'core.launcher');
+      return v.vfx.count > before;
+    });
+    check(played, `the launcher's explosion effect plays (Reduce flashing ${on ? 'on' : 'off'})`);
+    const rows = [];
+    for (const f of [1, 2, 3, 4, 6, 8, 10, 13, 16, 20, 25, 30, 40, 50]) {
+      const at = rows.length ? f - rows.at(-1).f : f;
+      const shot = await grab(at);
+      // How much of the picture is the room as it was (each pixel within 48 of the frame before the blast, summed over
+      // r g b).
+      let same = 0;
+      for (let i = 0; i < shot.px.length; i += 4) if (Math.abs(shot.px[i] - ref.px[i]) + Math.abs(shot.px[i + 1] - ref.px[i + 1]) + Math.abs(shot.px[i + 2] - ref.px[i + 2]) < 48) same++;
+      rows.push({ f, same: +(same / (W * H)).toFixed(2), thrown: shot.thrown.length });
+      save(`blastview-${on ? 'on' : 'off'}-${String(f).padStart(2, '0')}`, shot.png);
+    }
+    results[on ? 'on' : 'off'] = rows;
+    // (The blast over before the next.)
+    await grab(90);
+  }
+  console.log(`blastview ${JSON.stringify(results)}`);
+  const worst = (rows) => Math.min(...rows.map((r) => r.same));
+  check(worst(results.on) >= 0.5, `Reduce flashing on: inside a blast the room still draws behind it in every frame (least of the picture the room as it was: ${worst(results.on)}; ${JSON.stringify(results.on.map((r) => r.same))})`);
+  // With the setting off the blast is drawn full size and bright, the camera deep in its fireball: the room shows through
+  // it as it thins (before the fix, 4 % of the picture until 0.8 s: its cards were solid slabs hiding the walls).
+  const from = (rows, f) => Math.min(...rows.filter((r) => r.f >= f).map((r) => r.same));
+  check(from(results.off, 13) >= 0.2 && from(results.off, 30) >= 0.4, `Reduce flashing off: inside a blast the room shows through it as it thins (least from 0.43 s: ${from(results.off, 13)}, from 1 s: ${from(results.off, 30)}; ${JSON.stringify(results.off.map((r) => r.same))})`);
+  check(errors.length === 0, `no page errors (${errors.join('; ')})`);
+  await sim(page, () => clearInterval(self.__bvPin)).catch(() => {});
+  await ctx.close();
+}
+
 async function beamsFlow(browser) {
   await beamMuzzleChecks(browser);
 }
@@ -13072,7 +13246,7 @@ const FLASHING_PARTS = {
   flashing2: { night: ['muzzle', 'pair', 'jackpot', 'fight', 'rankup', 'glint'] },
   flashing3: { night: ['rain', 'snow', 'loot', 'fixtures', 'status', 'bolts'] },
   flashing4: { night: ['blood', 'alarm'], day: ['lowhealth', 'scope', 'frozen'] },
-  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups'] },
+  flashing5: { day: ['shelves', 'tunnel', 'lootlight', 'hitkick', 'powerups', 'inside'] },
 };
 
 /**
@@ -13104,7 +13278,7 @@ const FLASHING_DAY = {
       return { ok, tiles: ed.doc.classicStructure.tiles.filter((t) => t.id.startsWith('day_')).length, lights: ed.doc.entities.filter((e) => e.id.startsWith('day_light_')).length, pickups: ed.doc.entities.filter((e) => e.id.startsWith('day_pickup_')).length, shelves: ed.doc.entities.filter((e) => e.id.startsWith('day_shelf_')).length, sky: ed.doc.backdrop?.sky ?? 'day' };
     }),
   made: (m) => m.ok && m.tiles === 5 && m.lights === 3 && m.pickups === 4 && m.shelves === 10 && m.sky !== 'night',
-  moments: ({ page, stage, step, frameMs }) => {
+  moments: ({ page, stage, step, frameMs, blast }) => {
     // Sprinting (8 m/s): out over the first second, back in over the second.
     const zAt = (f) => (f < 30 ? -13 - (8 * f) / 30 : -21 + (8 * (f - 30)) / 30);
     const at = {};
@@ -13283,6 +13457,18 @@ const FLASHING_DAY = {
           }),
         sees: (_on, s) => s.gold && s.phantom,
         after: () => sim(page, (m) => (clearInterval(self.__phantomKnife), m.combatants().filter((c) => c.bot).forEach((b) => (b.power.overdrive = b.power.phantom = 0)))),
+      },
+      // Inside a blast (owner, 2026-11-27: walls and floor vanished for a moment from inside one): a launcher's blast at
+      // your feet by day, twice a second apart, the camera inside its fireball and smoke (the near pieces fade, a calm
+      // smoke haze comes up and goes: game/godotVfx.ts NEAR_FADE, view.ts blast haze).
+      {
+        name: 'inside',
+        label: 'inside a blast: two launcher blasts at your feet by day, a second apart',
+        weapon: 'core.arc_caster',
+        me: [-24.4, 0, -14],
+        look: { yaw: Math.PI, pitch: -0.12 },
+        bots: [],
+        at: { 4: () => blast([-24.4, 0.3, -14.5]), 34: () => blast([-24.2, 0.3, -14.4]) },
       },
       // The hit camera kick (game/hitKick.ts, punchier hits of 2026-11-16): standing out in the day 4 m from the south
       // portal, looking into the tunnel (the dark bore in the sunlit headwall: the picture's biggest brightness edge,
@@ -13550,7 +13736,7 @@ async function flashingScene(browser, scene, names) {
   const blast = (at) => sim(page, (m, _me, at) => m.scenario.host.blast({ x: at[0], y: at[1], z: at[2] }, 4.5, 100, 15, null, 'core.launcher'), at);
   // The moments (a few metres apart in the scene; 2 s each, setting on then off). A moment with something to do on
   // every frame gives `stepAt(f)`: its work and the frame's step in one trip to the page (it returns the step's errors).
-  const all = (scene ? scene.moments({ page, stage, aim, step, frameMs }) : [
+  const all = (scene ? scene.moments({ page, stage, aim, step, frameMs, blast }) : [
     {
       name: 'arc',
       label: 'an arc fight up close (an Arc Turret locked on you 4.5 m off, your Arc Caster on three bots between you)',
@@ -18155,7 +18341,7 @@ try {
   const open = instrumentBrowser(browser);
   // E2E_ONLY=editor,characters runs a subset; E2E_SHARD=2/8 one of CI's parallel groups (balanced by e2e/timings.json;
   // CI's plan job passes each shard's flows in E2E_ONLY itself).
-  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, iphone: iphoneFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, armory: armoryFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
+  const flows = { editor: editorFlow, editorux: editoruxFlow, editorpieces: editorpiecesFlow, editortools: editortoolsFlow, editorenv: editorenvFlow, offline: offlineFlow, mobile: mobileFlow, iphone: iphoneFlow, vault: vaultFlow, outpost: outpostFlow, sandgate: sandgateFlow, citadel: citadelFlow, canyon: canyonFlow, scenery: sceneryFlow, setpieces: setpiecesFlow, physicsfx: physicsfxFlow, blastview: blastviewFlow, beams: beamsFlow, tracers: tracersFlow, tracers2: tracers2Flow, tracers3: tracers3Flow, teams: teamsFlow, colourvision: colourvisionFlow, weaponsets: weaponsetsFlow, ctf: ctfFlow, forts: fortsFlow, breakthrough: breakthroughFlow, roulette: rouletteFlow, arsenal: arsenalFlow, vehicles: vehiclesFlow, traffic: trafficFlow, zombies: zombiesFlow, classes: classesFlow, coverage: coverageFlow, ...Object.fromEntries(MAP_FLOWS.map((name, part) => [name, (b) => mapsFlow(b, part)])), firstperson: firstpersonFlow, ...Object.fromEntries(CHARACTER_FLOWS.map((name, part) => [name, (b) => charactersFlow(b, part)])), online: onlineFlow, hostgame: hostgameFlow, hostcontrols: hostcontrolsFlow, party: partyFlow, lobby: lobbyFlow, community: communityFlow, handoff: handoffFlow, dedicatedhost: dedicatedhostFlow, hostpage: hostpageFlow, webgpu: webgpuFlow, visual: visualFlow, environment: environmentFlow, ...Object.fromEntries(FLASHING_FLOWS.map((name) => [name, flashingFlow(name)])), newplayer: newplayerFlow, story: storyFlow, fireteams: fireteamsFlow, slidepeek: slidepeekFlow, dodgeroll: dodgerollFlow, weaponmanager: weaponmanagerFlow, profiles: profilesFlow, padsetup: padsetupFlow, testrange: testrangeFlow, practicerange: practicerangeFlow, armory: armoryFlow, crashreport: crashreportFlow, captions: captionsFlow, chat: chatFlow, chathost: chathostFlow };
   // e2e/flowMap.mjs (change-based selection, shards) must know every flow, and only those.
   const known = new Set(FLOWS);
   const drift = [...Object.keys(flows).filter((f) => !known.has(f)), ...FLOWS.filter((f) => !(f in flows))];
