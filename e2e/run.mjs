@@ -490,7 +490,9 @@ async function editorFlow(browser) {
   const stopped = await page.waitForFunction(() => window.__navTestPressed?.after && document.getElementById('editor').hidden && window.__cs?.local, null, { timeout: T(30000) }).then(() => page.evaluate(() => window.__navTestPressed), () => null);
   check(stopped && stopped.after.stops === stopped.stopsBefore + 1 && !stopped.after.running && !stopped.after.worker, `Test stops the navigation check still running (${JSON.stringify(stopped)})`);
   await frames(page, 10);
+  // Esc in a Test already in play opens the pause menu; F5 goes back then.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   // Back in MapMaker the stopped check runs again, in a new worker, to its end.
   const rechecked = await page.waitForFunction(() => !window.__editor.checks.navRunning && !!window.__editor.checks.navWorker, null, { timeout: T(60000) }).then(() => true, () => false);
@@ -584,6 +586,31 @@ async function editorFlow(browser) {
   check(types.length === 12 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: twelve types (Toys, Pirates and Holiday since 2026-11-26, Historical since 2026-11-27), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
+  // Map settings → Teams → Layout (owner, 2026-11-26, "4b"): only the common layouts as chips; a map saved with an odd
+  // one shows it first, lit; other mixes from the steppers.
+  const modesBefore = (await doc()).metadata.supportedModes;
+  await page.evaluate((before) => window.__editor.run('Mode', { kind: 'setMetadata', before: { supportedModes: before }, after: { supportedModes: ['core.tdm', ...before.filter((m) => m !== 'core.tdm')] } }), modesBefore);
+  await page.evaluate(() => window.__editor.run('Set teams', { kind: 'setTeamSetup', before: window.__editor.doc.teamSetup, after: { sizes: [2, 2, 2, 2, 2, 2, 2, 2] } }));
+  // Edits reach Map settings on MapMaker's next frame (EditorApp.frame → refresh → MapSettingsView.refresh), so each
+  // read waits for the view to show the edit rather than reading straight after it.
+  await openMapSettings(page);
+  const chipsOf = () => page.evaluate(() => [...document.querySelectorAll('#ed-team-preset button')].map((b) => `${b.textContent}${b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true' ? '*' : ''}${b.dataset.odd ? '!' : ''}`));
+  const shows = (lit, steppers) => page.waitForFunction(([lit, n]) => document.querySelector('#ed-team-preset button.on')?.dataset.value === lit && document.querySelectorAll('#ed-map-settings [data-team]').length === n, [lit, steppers], { timeout: T(5000) }).then(() => true, () => false);
+  const oddShown = await shows('2,2,2,2,2,2,2,2', 8);
+  const oddChips = await chipsOf();
+  // A click on a chip in the open view: the lit chip and the team steppers follow, the view left open.
+  await page.click('#ed-team-preset button[data-value="4,4"]');
+  const picked = { doc: await page.waitForFunction(() => window.__editor.doc.teamSetup?.sizes.join(',') === '4,4', null, { timeout: T(5000) }).then(() => true, () => false), view: await shows('4,4', 2) };
+  const commonChips = await chipsOf();
+  // And drawn afresh (closed and opened again) it shows the same.
+  await page.click('#ed-ms-close');
+  await openMapSettings(page);
+  await page.waitForSelector('#ed-team-preset', { state: 'attached', timeout: T(10000) });
+  const reopened = await chipsOf();
+  const want = ['1v1', '2v2', '4v4*', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4'];
+  check(oddShown && picked.doc && picked.view && JSON.stringify(oddChips) === JSON.stringify(['2v2v2v2v2v2v2v2*!', '1v1', '2v2', '4v4', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']) && JSON.stringify(commonChips) === JSON.stringify(want) && JSON.stringify(reopened) === JSON.stringify(want), `Map settings' team Layout chips are the common ones; a saved odd layout shows first, lit; a chip clicked in the open view lights and sets its layout, steppers too (${JSON.stringify({ oddShown, oddChips, picked, commonChips, reopened })})`);
+  for (let i = 0; i < 3; i++) await page.keyboard.press('Control+KeyZ');
+  check(JSON.stringify((await doc()).metadata.supportedModes) === JSON.stringify(modesBefore), 'undo takes the teams and mode back');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
   await page.click('#ed-home');
   await page.click('#ed-quit-discard');
@@ -1993,7 +2020,9 @@ async function editorTourChecks(browser) {
   await page.click('#ed-test');
   const started = await page.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) }).then(() => true, () => false);
   check(started && (await tour()).stored === 'done', `PLAY TEST starts the match; the tour is remembered as done (${started})`);
+  // Esc in a Test already in play opens the pause menu; F5 goes back then.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   await frames(page, 2);
   t = await tour();
@@ -2373,10 +2402,30 @@ async function editorLayoutChecks(browser) {
   await shot('view-menu');
   await page.keyboard.press('Escape');
   const closed = await page.evaluate(() => ({ open: !document.getElementById('ed-view-menu').hidden, focus: document.activeElement?.id, tool: window.__editor.tool.kind }));
-  check(menuShown.open && menuShown.expanded === 'true' && firstFocus === 'ed-grid' && secondFocus === 'ed-grid-full' && JSON.stringify(menuShown.items) === JSON.stringify(['ed-grid:true', 'ed-grid-full:false', 'ed-overlaps:false', 'ed-plan:false', 'ed-layer-tile:true', 'ed-layer-prop:true', 'ed-layer-pickup:true', 'ed-layer-logic:true', 'ed-layer-spawn:true']) && !closed.open && closed.focus === 'ed-view-btn', `the View menu opens from its button with the arrow keys, lists grid, full grid, overlaps, plan view and the map layers, and Esc closes it to its button (${JSON.stringify({ menuShown, firstFocus, secondFocus, closed })})`);
+  check(menuShown.open && menuShown.expanded === 'true' && firstFocus === 'ed-grid' && secondFocus === 'ed-grid-full' && JSON.stringify(menuShown.items) === JSON.stringify(['ed-grid:true', 'ed-grid-full:false', 'ed-overlaps:false', 'ed-breakwall-marks:true', 'ed-plan:false', 'ed-layer-tile:true', 'ed-layer-prop:true', 'ed-layer-pickup:true', 'ed-layer-logic:true', 'ed-layer-spawn:true']) && !closed.open && closed.focus === 'ed-view-btn', `the View menu opens from its button with the arrow keys, lists grid, full grid, overlaps, breakable walls, plan view and the map layers, and Esc closes it to its button (${JSON.stringify({ menuShown, firstFocus, secondFocus, closed })})`);
   await viewItem(page, 'ed-overlaps');
   const overlapsOn = await page.evaluate(() => window.__editor.checks.overlapsOn && document.getElementById('ed-overlaps').getAttribute('aria-checked') === 'true');
   await viewItem(page, 'ed-overlaps');
+  // View → Breakable walls (QUEUE, owner 2026-11-26): every tile's walls made breakable, the editor-only mark shows on
+  // them (orange hatching and a dashed outline); switched off it hides, and photo mode hides it too.
+  await page.evaluate(() => {
+    const tiles = window.__editor.doc.classicStructure.tiles;
+    window.__editor.run('Make walls breakable', { kind: 'updateTiles', before: tiles, after: tiles.map((t) => ({ ...t, breakWalls: {} })) });
+  });
+  await frames(page, 2);
+  const enabled = () => page.evaluate(() => window.__editor.view.breakMarks.meshes.map((m) => m.isEnabled()));
+  const marked = { count: await page.evaluate(() => window.__editor.view.breakMarks.count), on: await enabled() };
+  await viewItem(page, 'ed-breakwall-marks');
+  const marksOff = { on: await enabled(), aria: await page.getAttribute('#ed-breakwall-marks', 'aria-checked') };
+  await viewItem(page, 'ed-breakwall-marks');
+  await page.evaluate(() => window.__editor.view.photoMode(true));
+  const marksPhoto = await enabled();
+  await page.evaluate(() => window.__editor.view.photoMode(false));
+  const marksBack = await enabled();
+  await page.keyboard.press('Control+KeyZ');
+  await frames(page, 2);
+  const marksGone = await page.evaluate(() => window.__editor.view.breakMarks.count);
+  check(marked.count > 0 && marked.on.length === 2 && marked.on.every(Boolean) && marksOff.on.every((v) => !v) && marksOff.aria === 'false' && marksPhoto.every((v) => !v) && marksBack.every(Boolean) && marksGone === 0, `View → Breakable walls marks the walls that break, off hides it, photo mode hides it, undo clears it (${JSON.stringify({ marked, marksOff, marksPhoto, marksBack, marksGone })})`);
   // (The reloads above started a fresh map: its own spawn.)
   const spawnNow = await page.evaluate(() => window.__editor.doc.entities.find((e) => e.kind === 'spawn')?.id);
   await viewItem(page, 'ed-layer-spawn');
@@ -5219,7 +5268,10 @@ async function editorWorkflowChecks(browser) {
   await frames(page, 10);
   // The view as you play it (headless pages have no pointer lock, so the pause menu is up: hidden for the picture).
   await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' }).then((h) => shot('play-from-here').then(() => h.evaluate((el) => el.remove())));
+  // Esc while Test still loads or counts down goes back to MapMaker; once in play (a quick load) it opens the pause
+  // menu, and F5 goes back (as the editor flow's Test).
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   await frames(page, 2);
   // Back in MapMaker, the ended match is gone from memory: no disposed scene left in the heap after a collection
