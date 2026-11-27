@@ -6,6 +6,7 @@
 //
 //   pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
 //   node tools/content/limb-audit.mjs http://localhost:4860 <out dir>
+//   node tools/content/limb-audit.mjs --table <out dir>      the table again from <out dir>/limbs.json
 //
 // ONLY=<look ids> for some; PICTURES=1 also saves each one front and side (whole body) and front and support side
 // (upper body) as <out>/pics/<look>_{front,side,upper,support}.png; TUNE='{"elbowOut":0.1}' measures with that
@@ -15,9 +16,16 @@ import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { chromium } from 'playwright';
-import { limbMeasures } from './limbs.mjs';
+import { limbMeasures, limbTable } from './limbs.mjs';
 
 const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const DOC = join(ROOT, 'docs/CHARACTER_LIMBS.md');
+const writeTable = (rows) => writeFileSync(DOC, readFileSync(DOC, 'utf8').replace(/<!-- limb-table -->[\s\S]*<!-- \/limb-table -->/, `<!-- limb-table -->\n${limbTable(rows)}\n<!-- /limb-table -->`));
+// `--table <dir>`: rewrite the doc's table from a run's <dir>/limbs.json, without measuring again.
+if (process.argv[2] === '--table') {
+  writeTable(JSON.parse(readFileSync(join(resolve(process.argv[3]), 'limbs.json'), 'utf8')));
+  process.exit(0);
+}
 const base = process.argv[2] ?? 'http://localhost:4860';
 const out = resolve(process.argv[3] ?? join(tmpdir(), 'tiletrigger-limbs'));
 if (!relative(ROOT, out).startsWith('..')) throw new Error(`the audit's output goes outside the repo, not ${out}`);
@@ -63,18 +71,6 @@ for (const l of looks) {
 await browser.close();
 writeFileSync(join(out, 'limbs.json'), JSON.stringify(rows, null, 1));
 
-// The table, worst first (legs, then elbows).
-const f = (v) => (v === null || v === undefined ? '–' : String(v));
-const side = (m, k) => `${f(m.l[k])} / ${f(m.r[k])}`;
-rows.sort((a, b) => b.legScore + b.elbowScore - (a.legScore + a.elbowScore));
-const table = [
-  '| # | Look | Legs | Elbows | knee bow L/R | shin out L/R | knee points L/R | foot yaw L/R | sole roll L/R | skin bow L/R | elbow L/R |',
-  '|---|---|---|---|---|---|---|---|---|---|---|',
-  ...rows.map((r, i) => `| ${i + 1} | ${r.name} (\`${r.id}\`) | ${r.legScore} | ${r.elbowScore} | ${side(r.legs, 'kneeBow')} | ${side(r.legs, 'shinOut')} | ${side(r.legs, 'kneePoint')} | ${side(r.legs, 'footYaw')} | ${side(r.legs, 'footRoll')} | ${side(r.legs, 'skinBow')} | ${f(r.arms.l.elbow)} / ${f(r.arms.r.elbow)} |`),
-].join('\n');
-if (!only && !tune) {
-  const doc = join(ROOT, 'docs/CHARACTER_LIMBS.md');
-  const text = readFileSync(doc, 'utf8');
-  writeFileSync(doc, text.replace(/<!-- limb-table -->[\s\S]*<!-- \/limb-table -->/, `<!-- limb-table -->\n${table}\n<!-- /limb-table -->`));
-} else console.log(table);
+if (!only && !tune) writeTable(rows);
+else console.log(limbTable(rows));
 if (errors.length) console.error(`page errors: ${errors.join('; ')}`);

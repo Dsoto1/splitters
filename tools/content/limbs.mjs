@@ -116,3 +116,56 @@ export function limbMeasures({ joints, skin = {} }) {
   const elbowScore = Math.max(excess(arms.l.elbow), excess(arms.r.elbow));
   return { legs, arms, legScore: round(legScore), elbowScore: round(elbowScore) };
 }
+
+const median = (xs) => {
+  const s = xs.filter((x) => x !== null && Number.isFinite(x)).sort((a, b) => a - b);
+  return s.length ? s[s.length >> 1] : 0;
+};
+/** The measures a character's legs are ranked by: how far each is from the roster's median (the shared clips' own pose). */
+const LEG_KEYS = [
+  ['kneeBow', 1],
+  ['shinOut', 1],
+  ['kneePoint', 1 / 3],
+  ['footYaw', 1 / 3],
+  ['footRoll', 1],
+  ['skinBow', 1],
+];
+
+/**
+ * Rows ({ legs, arms, elbowScore, ... } from limbMeasures) ranked worst first. Every pickable body plays the same
+ * clips on joints at the rig's rest rotations, so their joints' pose is nearly the same; what sets one apart is how far
+ * it is from the roster's median: `score.legs` is the largest such distance (knee points and foot yaw a third), with
+ * `score.worst` naming it. Elbows past the wrong line come first.
+ */
+export function rankLimbs(rows) {
+  const med = {};
+  for (const [k] of LEG_KEYS) for (const s of ['l', 'r']) med[`${k}_${s}`] = median(rows.map((r) => r.legs[s][k]));
+  for (const r of rows) {
+    let legs = 0;
+    let worst = '';
+    for (const [k, w] of LEG_KEYS)
+      for (const s of ['l', 'r']) {
+        const v = r.legs[s][k];
+        if (v === null) continue;
+        const d = Math.abs(v - med[`${k}_${s}`]) * w;
+        if (d > legs) ((legs = d), (worst = `${k} ${s.toUpperCase()}`));
+      }
+    r.score = { legs: round(legs), worst };
+  }
+  return [...rows].sort((a, b) => b.elbowScore - a.elbowScore || b.score.legs - a.score.legs);
+}
+
+/** The audit's table (markdown), worst first, with the roster's medians on top. */
+export function limbTable(rows) {
+  const ranked = rankLimbs(rows);
+  const f = (v) => (v === null || v === undefined ? '–' : String(v));
+  const pair = (r, k) => `${f(r.legs.l[k])} / ${f(r.legs.r[k])}`;
+  const med = (k, s) => median(rows.map((r) => r.legs[s][k]));
+  const medArm = (s) => median(rows.map((r) => r.arms[s].elbow));
+  return [
+    '| # | Look | Legs (off median) | worst | Elbows | knee bow L/R | shin out L/R | knee points L/R | foot yaw L/R | sole roll L/R | skin bow L/R | elbow L/R |',
+    '|---|---|---|---|---|---|---|---|---|---|---|---|',
+    `| | **roster median** (${rows.length}) | | | | ${med('kneeBow', 'l')} / ${med('kneeBow', 'r')} | ${med('shinOut', 'l')} / ${med('shinOut', 'r')} | ${med('kneePoint', 'l')} / ${med('kneePoint', 'r')} | ${med('footYaw', 'l')} / ${med('footYaw', 'r')} | ${med('footRoll', 'l')} / ${med('footRoll', 'r')} | ${med('skinBow', 'l')} / ${med('skinBow', 'r')} | ${medArm('l')} / ${medArm('r')} |`,
+    ...ranked.map((r, i) => `| ${i + 1} | ${r.name} (\`${r.id}\`) | ${r.score.legs} | ${r.score.worst} | ${r.elbowScore} | ${pair(r, 'kneeBow')} | ${pair(r, 'shinOut')} | ${pair(r, 'kneePoint')} | ${pair(r, 'footYaw')} | ${pair(r, 'footRoll')} | ${pair(r, 'skinBow')} | ${f(r.arms.l.elbow)} / ${f(r.arms.r.elbow)} |`),
+  ].join('\n');
+}
