@@ -3,7 +3,7 @@ import { NullEngine } from '@babylonjs/core/Engines/nullEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
-import { shareWristTwist, wristTwist } from '../src/game/characterAnimator.ts';
+import { shareWristTwist, wristTwist } from '../src/game/standLegs.ts';
 import { swingTwist } from '../src/tools/limbProbe.ts';
 
 const rad = (d: number) => (d * Math.PI) / 180;

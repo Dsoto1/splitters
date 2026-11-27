@@ -131,3 +131,29 @@ export function standLegs(space: LegSpace, legs: { l: Leg; r: Leg }, upWorld: Ve
   standLeg(space, legs.l, up, across.negate(), fw, weight);
   standLeg(space, legs.r, up, across, fw, weight);
 }
+
+/** A hand's twist on its forearm off its rest (radians, about the forearm's line, in the forearm's frame), or null. */
+export function wristTwist(lower: TransformNode, hand: TransformNode, rest: Quaternion | undefined): number | null {
+  const q = hand.rotationQuaternion;
+  if (!q || !rest || hand.parent !== lower || hand.position.lengthSquared() < 1e-10) return null;
+  const d = q.multiply(Quaternion.Inverse(rest));
+  if (d.w < 0) d.scaleInPlace(-1);
+  const u = hand.position.normalizeToNew();
+  return 2 * Math.atan2(d.x * u.x + d.y * u.y + d.z * u.z, d.w);
+}
+/**
+ * The forearm rolled about its own line (toward the wrist) by `share` of the hand's twist, and the hand turned back
+ * by as much: the hand's place and turn in the world are unchanged, the twist is shared (both in the joints' own
+ * frames, so whichever way the skeleton is mirrored).
+ */
+export function shareWristTwist(lower: TransformNode, hand: TransformNode, rest: Quaternion | undefined, share: number): void {
+  const t = wristTwist(lower, hand, rest);
+  const lq = lower.rotationQuaternion;
+  const hq = hand.rotationQuaternion;
+  if (t === null || !lq || !hq) return;
+  const by = share * t;
+  if (Math.abs(by) < 1e-3) return;
+  const u = hand.position.normalizeToNew();
+  lq.multiplyInPlace(Quaternion.RotationAxis(u, by));
+  Quaternion.RotationAxis(u, -by).multiplyToRef(hq, hq);
+}

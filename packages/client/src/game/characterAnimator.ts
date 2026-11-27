@@ -117,7 +117,17 @@ const RATIO_EPSILON = 0.004;
  * goes sideways slid the planted foot at the full ground speed.
  */
 import { HIP_TURN_MAX } from './riderPlacement.ts';
-import { standLegs, type Leg } from './standLegs.ts';
+import type { Leg } from './standLegs.ts';
+/**
+ * The standing legs and the support wrist's twist (standLegs.ts), loaded after the first animator is built rather than
+ * with the menu (the first visit's JS budget, docs/LOADING.md): until it is in, the clips' pose is drawn as it is.
+ */
+let limbPass: typeof import('./standLegs.ts') | null = null;
+let limbPassLoading: Promise<void> | null = null;
+/** The limb pass loaded (tests and tools await it; animators start it themselves). */
+export function loadLimbPass(): Promise<void> {
+  return (limbPassLoading ??= import('./standLegs.ts').then((m) => void (limbPass = m)));
+}
 /** Moving more than this share of a half turn away from facing plays the gait backwards (and stops below the second). */
 const BACK_START = 0.6;
 const BACK_STAY = 0.52;
@@ -515,6 +525,7 @@ export class CharacterAnimator {
     };
     const [ll, lr] = [leg('l'), leg('r')];
     this.standing = ll && lr ? { l: ll, r: lr } : null;
+    void loadLimbPass();
     for (const c of LOOPS) this.weights.set(c, 0);
     for (const c of ['walk', 'run', 'sprint', 'jump_air'] as const) {
       const g = ch.clips.get(c);
@@ -1965,7 +1976,7 @@ export class CharacterAnimator {
     }
     // Standing still: the clips' bowed knees and splayed feet squared (standLegs.ts; far off, coarse detail, left be).
     const stand = this.detail === 'coarse' || !this.skelRoot ? 0 : this.standWeight() * standShare;
-    if (stand > 0.001 && this.standing) standLegs(new SkeletonSpace(this.skelRoot!), this.standing, up, forward, stand);
+    if (stand > 0.001 && this.standing && limbPass) limbPass.standLegs(new SkeletonSpace(this.skelRoot!), this.standing, up, forward, stand);
     // An authored clip holding the upper body (a clip set's shooting walks) has its own torso turn, which isn't the aim
     // pose's: the shoulders are brought back to the aim pose's line (measured from it) by as much as the clip holds.
     const chest = this.chestFix(rootRot, hipTurn);
@@ -3420,34 +3431,9 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
  * share of the hand's twist off its rest, turned about its own line; the hand is then set back as it was (on the gun).
  */
 const FOREARM_TWIST_SHARE = 0.4;
-/** A hand's twist on its forearm off its rest (radians, about the forearm's line, in the forearm's frame), or null. */
-export function wristTwist(lower: TransformNode, hand: TransformNode, rest: Quaternion | undefined): number | null {
-  const q = hand.rotationQuaternion;
-  if (!q || !rest || hand.parent !== lower || hand.position.lengthSquared() < 1e-10) return null;
-  const d = q.multiply(Quaternion.Inverse(rest));
-  if (d.w < 0) d.scaleInPlace(-1);
-  const u = hand.position.normalizeToNew();
-  return 2 * Math.atan2(d.x * u.x + d.y * u.y + d.z * u.z, d.w);
-}
-/**
- * The forearm rolled about its own line (toward the wrist) by `share` of the hand's twist, and the hand turned back
- * by as much: the hand's place and turn in the world are unchanged, the twist is shared (both in the joints' own
- * frames, so whichever way the skeleton is mirrored).
- */
-export function shareWristTwist(lower: TransformNode, hand: TransformNode, rest: Quaternion | undefined, share: number): void {
-  const t = wristTwist(lower, hand, rest);
-  const lq = lower.rotationQuaternion;
-  const hq = hand.rotationQuaternion;
-  if (t === null || !lq || !hq) return;
-  const by = share * t;
-  if (Math.abs(by) < 1e-3) return;
-  const u = hand.position.normalizeToNew();
-  lq.multiplyInPlace(Quaternion.RotationAxis(u, by));
-  Quaternion.RotationAxis(u, -by).multiplyToRef(hq, hq);
-}
 function shareTwist(arm: Arm, weight: number): void {
-  if (standShare <= 0) return;
-  shareWristTwist(arm.lower, arm.hand, arm.handRest, FOREARM_TWIST_SHARE * weight);
+  if (standShare <= 0 || !limbPass) return;
+  limbPass.shareWristTwist(arm.lower, arm.hand, arm.handRest, FOREARM_TWIST_SHARE * weight);
   refreshArm(arm);
 }
 
