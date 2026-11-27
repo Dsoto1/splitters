@@ -127,7 +127,7 @@ What flickered, and what the setting does to each:
 | Fast beam weapons (Arc Caster, lasers) | a beam flash per shot | the same steady beam |
 | An arc turret's charge | its glow and ball flicker 7 times a second; the pack's crackling ball of lightning | steady glow, the plain ball |
 | Electric fence wires (border and placed) | hum at 2 and 7.5 Hz plus random crackles | a steady glow breathing slowly |
-| Blasts (`blastFx`, the plain fireball, vehicle explosions) | full brightness at once; a white-hot flash ball on vehicles | dimmed the nearer they are to the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6 radii) and drawn smaller there (`blastSize`: half size within 0.6 radii, full beyond 3.6 radii, so the camera is never inside a fireball whose sheets sweep across the whole view: four grenades 3-5 m off read up to 7 transitions a second at full size, none at half), brought up over 0.12 s (`GodotVfx` gain and fade-in: each brightness step a copy of the effect's materials; additive pieces are scaled down, pieces drawn over the scene (smoke, debris, cut-out fireballs) only have their bright parts capped, at 0.3 + 0.7 × gain, so smoke keeps its grey), no white flash ball |
+| Blasts (`blastFx`, the plain fireball, vehicle explosions) | full brightness at once; a white-hot flash ball on vehicles | dimmed the nearer they are to the camera (`blastStrength`: 30 % within 0.6 radii, full beyond 3.6 radii) and drawn smaller there (`blastSize`: half size within 0.6 radii, full beyond 3.6 radii, so the camera is never inside a fireball whose sheets sweep across the whole view: four grenades 3-5 m off read up to 7 transitions a second at full size, none at half), brought up over 0.12 s (`GodotVfx` gain and fade-in: each brightness step a copy of the effect's materials; additive pieces are scaled down, pieces drawn over the scene (smoke, debris, cut-out fireballs) only have their bright parts capped, at 0.3 + 0.7 × gain, so smoke keeps its grey), no white flash ball. Either way (since 2026-11-27) a blast's pieces fade out as they near the camera (`godotVfx.ts` `NEAR_FADE`: gone within 0.6 m, whole from 2.8 m) and are drawn over the scene without writing depth, and its bright parts keep their hue under the cap (scaled down, not clipped per channel, which turned a dimmed fireball olive); from inside one the view hazes a little in a dark grey (`blastHaze.ts`: at most 0.3 of a smoke grenade's haze, eased in, slower with the setting on: 0.8 a second against 1.5) instead of its cards filling the view as solid slabs (owner, 2026-11-27: walls and floor seemed to vanish). Its moment: `inside`; the e2e flow `blastview` checks the room still draws behind it |
 | Muzzle flashes (yours and others') | as the pack draws them | 75 % size, 45 % opacity (`SAFE_MUZZLE`) |
 | A pair's muzzle flashes (dual wielding, your own two guns in first person; `pairView.ts` `PairFlashGate`) | every round of both guns flashes | the two guns share one flash, each at `SAFE_MUZZLE`: never two at once, never more often than one gun's rounds come (a round's flash is left out when either gun flashed within the gun's firing interval; both triggers on one tick take turns). Its moment: `pair` |
 | Someone else's pair's muzzle flashes (dual wielding in third person: another player's two guns, or yours in third person; `view.ts` `remoteFlash`) | every round of both guns flashes at its own gun's muzzle | the same shared flash per character (`PairFlashGate`, one per character): both guns' rounds arriving in one snapshot take turns, never two at once, never more often than one gun's rounds. Its moment: `pairtp` |
@@ -166,7 +166,7 @@ the scenes its moments need:
 | `flashing2` | muzzle, pair, jackpot, fight, rankup, glint | |
 | `flashing3` | rain, snow, loot, fixtures, status, bolts | |
 | `flashing4` | blood, alarm | lowhealth, scope |
-| `flashing5` | | shelves, tunnel, lootlight, hitkick, powerups |
+| `flashing5` | | shelves, tunnel, lootlight, hitkick, powerups, inside |
 
 **A new moment goes in the shortest flow** (`e2e/timings.json`): add it to the scene, then its name to that flow's
 list in `FLASHING_PARTS` (a moment in no flow fails the check). All five are mapped wherever the check is
@@ -190,6 +190,7 @@ with the HUD's hurt tint (and a scope's surround and shadow) drawn over it, at 1
 - by day (its second scene): sprinting out of a lit tunnel and back, and four pickups' glows coming up on white tiles
   (`lootlight`), where the rings must read too: WCAG contrast at least 1.3 on average over each ring with the setting
   on (`lootRingContrast`: the pickups' models hidden, the frame with the glows against the frame without).
+- by day, two launcher blasts at your feet a second apart, the camera inside their fireballs and smoke (`inside`).
 
 The measure is WCAG 2.3.1 ("Three Flashes or Below Threshold"), the way photosensitivity analysers apply it:
 - relative luminance per pixel; a frame's change is the largest change at least **a quarter of the screen** made

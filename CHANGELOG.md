@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Inside an explosion the room stays in view.** Its fire and smoke fade as they reach the camera and a light dark-grey haze comes up instead, so walls and floor no longer seem to vanish behind flat slabs; with Reduce flashing on a dimmed fireball keeps its orange.
 - **Dropped guns land on the ground.** A gun dropped by someone killed in a vehicle seat, mid-jump, off a ledge or blown into the air falls to the floor under them (inside a building, its floor) instead of hanging where they died; from water it lies on the nearest dry floor, over nothing it's gone, and one whose crate or floor breaks falls with it.
 - **Characters load before the rest of the map on a first visit.** Your own body and everyone's in the match now download ahead of the props and guns, so on a slow line players and bots show up as themselves by the start instead of staying coloured capsules for half a minute or more.
 - **Characters come back after the graphics card resets.** When the browser loses and restores the game's graphics, each character shows as a capsule until its textures are rebuilt, instead of vanishing; bullet holes and static shadows are rebuilt too, and the performance report records each reset.
