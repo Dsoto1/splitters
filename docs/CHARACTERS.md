@@ -250,8 +250,8 @@ own files download (one download per file, shared by the prefetch and the pick; 
 character shown stays until the new one is built, its shaders compiled while hidden, and fades in; a pick still
 loading after 150 ms shows a thin steady cyan bar under the hero's feet, filled by the bytes in, fading out as the body
 fades in (nothing for a character already loaded; no pulse or blink: Reduce flashing). Measured at 10 Mbit/s, 40 ms
-(software GL): a first pick took 2.6-3.5 s; after resting on the portrait 0.5-1.5 s, a neighbour of one already seen
-0.5-1.1 s.
+(software GL, so the build and the first frame are slow): a first pick took 2.6-3.5 s; after resting 2.5 s on the
+portrait 1.5-2.4 s, a neighbour of a portrait already rested on 0.5-1.5 s, a repeat 0.2-0.5 s.
 
 ### Tier
 
