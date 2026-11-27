@@ -28,6 +28,7 @@ import { dropPointCaches, withoutPointCaches } from './pointCache.ts';
 import { OwnedAssets } from './ownedAssets.ts';
 import { perfOn } from '../game/perfSwitches.ts';
 import type { ClipLoop } from '../game/gait.ts';
+import type { FileFetcher } from './fileFetcher.ts';
 
 /** Beyond this camera distance (metres) characters draw their low-detail meshes (further through a scope: setCharacterLodZoom). */
 export const LOD_DISTANCE = 18;
@@ -217,16 +218,47 @@ export class CharacterLibrary {
     const key = `gear:${name}`;
     let p = this.files.get(key) as Promise<AssetContainer | null> | undefined;
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${GEAR_MODEL_BASE}${name}.glb`), this.scene, GLB).then(freeIfSceneGone(this.scene), () => null);
+      p = this.loadUrl(versioned(`${GEAR_MODEL_BASE}${name}.glb`), GEAR_MODEL_BASE).then(freeIfSceneGone(this.scene), () => null);
       this.files.set(key, p as Promise<AssetContainer>);
     }
     return p;
   }
 
+  /**
+   * Fetches the files for this library (Character Select: shared with its prefetch, with progress); unset, the
+   * loader fetches each file itself.
+   */
+  fetcher: FileFetcher | null = null;
+
+  /** A file's container: from the fetcher's bytes when there is one (its own fetch if that fails), else by URL. */
+  private loadUrl(url: string, rootUrl: string): Promise<AssetContainer> {
+    const byUrl = () => LoadAssetContainerAsync(url, this.scene, GLB);
+    if (!this.fetcher) return byUrl();
+    return this.fetcher.get(url, 'now').then(
+      (buf) => (this.fetcher?.take(url), LoadAssetContainerAsync(new Uint8Array(buf), this.scene, { ...GLB, rootUrl })),
+      byUrl,
+    );
+  }
+
+  /**
+   * The files a look's body still needs (full URLs; nothing for a creature or an NPC soldier's skin): what
+   * Character Select prefetches on a hover and measures its loading bar by.
+   */
+  filesFor(lookId: string): string[] {
+    if (npcLookRole(lookId)) return [];
+    const l = getLook(lookId);
+    const files = ['rig.glb', ...(l.whole ? l.parts : [...l.parts, l.head, ...l.hair.filter((h) => h !== BEARD)]).map((p) => `${p}.glb`)];
+    const set = clipSetOf(l);
+    if (set) files.push(clipSetFile(set));
+    const out = files.filter((f) => !this.files.has(f)).map((f) => versioned(`${CHARACTER_BASE}${f}`));
+    if (!l.whole) for (const g of gearModels(l)) if (!this.files.has(`gear:${g}`)) out.push(versioned(`${GEAR_MODEL_BASE}${g}.glb`));
+    return out;
+  }
+
   private load(file: string): Promise<AssetContainer> {
     let p = this.files.get(file);
     if (!p) {
-      p = LoadAssetContainerAsync(versioned(`${CHARACTER_BASE}${file}`), this.scene, GLB).then(freeIfSceneGone(this.scene));
+      p = this.loadUrl(versioned(`${CHARACTER_BASE}${file}`), CHARACTER_BASE).then(freeIfSceneGone(this.scene));
       // The file's own meshes (kept for the match, every body is cloned from them) need no picking points either.
       if (perfOn('bodypoints')) p = p.then((c) => (dropPointCaches(c.meshes), c));
       this.files.set(file, p);
