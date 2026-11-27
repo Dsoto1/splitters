@@ -7,6 +7,8 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Characters load before the rest of the map on a first visit.** Your own body and everyone's in the match now download ahead of the props and guns, so on a slow line players and bots show up as themselves by the start instead of staying coloured capsules for half a minute or more.
+- **Characters come back after the graphics card resets.** When the browser loses and restores the game's graphics, each character shows as a capsule until its textures are rebuilt, instead of vanishing; bullet holes and static shadows are rebuilt too, and the performance report records each reset.
 - **Phones: Add to Home Screen plays full screen.** The game installs as a web app (its own icon, landscape, no browser bars); an iPhone in Safari shows a one-time line saying how ("Share → Add to Home Screen").
 - **Phones: no more accidental zoom.** A double tap or a pinch no longer zooms the page, in menus or in a match; under a notch or beside the home bar the menus and controls keep clear of it.
 - **Phones: fewer, smaller buttons.** A phone starts on Small buttons (a size you pick wins); Use, Reload and Throw appear only when they can act (something in reach, a gun not full, a grenade in hand) and fade in and out; dragging anywhere off the buttons turns the view; the first match points to Options → Controls → Touch.

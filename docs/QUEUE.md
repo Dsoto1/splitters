@@ -56,6 +56,7 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
+- `wip/fixes-20261127b` · 4eb233ac · 46020427744 (attempt 2: hostgame's dual-wield setup, "no open floor 3 m from the friend", red once) — characters first on a first visit; characters back after a lost WebGL context
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
