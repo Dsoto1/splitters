@@ -155,7 +155,14 @@ describe('character manifests', () => {
     expect(spec.rigJoints.Bone_001).toBe('Hips');
     expect(looksSource(list)).toMatch(/w\('core\.rollerbot'.*locomotion: 'roll'/);
     expect(manifestProblems(roller, 'meshy_rollerbot.json')).toEqual([]);
-    expect(manifestProblems({ ...roller, locomotion: 'hover' }, 'meshy_rollerbot.json').join('\n')).toMatch(/locomotion: roll/);
+    expect(manifestProblems({ ...roller, locomotion: 'fly' }, 'meshy_rollerbot.json').join('\n')).toMatch(/locomotion: roll or hover/);
+    // Hovering (owner, 2026-11-27): a height with it, and only with it.
+    expect(manifestProblems({ ...roller, hover: 0.3 }, 'meshy_rollerbot.json').join('\n')).toMatch(/hover: with locomotion hover/);
+    expect(manifestProblems({ ...roller, locomotion: 'hover', hover: 2 }, 'meshy_rollerbot.json').join('\n')).toMatch(/hover: with locomotion hover/);
+    expect(manifestProblems({ ...roller, locomotion: 'hover', hover: 0.3 }, 'meshy_rollerbot.json')).toEqual([]);
+    const vanguard = list.find((m) => m.id === 'meshy_vanguard');
+    expect(looksSource(list)).toMatch(/w\('core\.vanguard'.*locomotion: 'hover', hover: 0\.3/);
+    expect(vanguard.locomotion).toBe('hover');
     const twice = { ...roller.source.joints, Bone_000: 'Hips' };
     expect(manifestProblems({ ...roller, source: { ...roller.source, joints: twice } }, 'meshy_rollerbot.json').join('\n')).toMatch(/each Meshy joint once/);
     expect(manifestProblems({ ...roller, source: { ...roller.source, joints: { Bone_000: 'Pelvis' } } }, 'meshy_rollerbot.json').join('\n')).toMatch(/source.joints/);
