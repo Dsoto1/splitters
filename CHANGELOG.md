@@ -8,7 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **MapMaker's team Layout chips: just the common ones.** 1v1, 2v2, 4v4, 8v8, 2v2v2, 3v3v3, 2v2v2v2 and 4v4v4v4; any other mix is set with the team steppers, and a map saved with one shows it as its own lit chip.
-- **MapMaker shows which walls break.** Breakable walls carry a faint amber tint and a dashed outline in MapMaker's 3D view (View → Breakable walls turns it off); never in play or Test.
+- **MapMaker shows which walls break.** Breakable walls are hatched in orange, with a dashed outline, in MapMaker's 3D view (View → Breakable walls turns it off); never in play or Test.
 - **Phones: Add to Home Screen plays full screen.** The game installs as a web app (its own icon, landscape, no browser bars); an iPhone in Safari shows a one-time line saying how ("Share → Add to Home Screen").
 - **Phones: no more accidental zoom.** A double tap or a pinch no longer zooms the page, in menus or in a match; under a notch or beside the home bar the menus and controls keep clear of it.
 - **Phones: fewer, smaller buttons.** A phone starts on Small buttons (a size you pick wins); Use, Reload and Throw appear only when they can act (something in reach, a gun not full, a grenade in hand) and fade in and out; dragging anywhere off the buttons turns the view; the first match points to Options → Controls → Touch.

@@ -2390,7 +2390,7 @@ async function editorLayoutChecks(browser) {
   const overlapsOn = await page.evaluate(() => window.__editor.checks.overlapsOn && document.getElementById('ed-overlaps').getAttribute('aria-checked') === 'true');
   await viewItem(page, 'ed-overlaps');
   // View → Breakable walls (QUEUE, owner 2026-11-26): every tile's walls made breakable, the editor-only mark shows on
-  // them (amber tint and dashed outline); switched off it hides, and photo mode hides it too.
+  // them (orange hatching and a dashed outline); switched off it hides, and photo mode hides it too.
   await page.evaluate(() => {
     const tiles = window.__editor.doc.classicStructure.tiles;
     window.__editor.run('Make walls breakable', { kind: 'updateTiles', before: tiles, after: tiles.map((t) => ({ ...t, breakWalls: {} })) });

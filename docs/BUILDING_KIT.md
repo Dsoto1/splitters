@@ -369,8 +369,8 @@ beside one side in a single-cell tile's Walls rows; **Health** (300 unless set; 
 placement's) `breakWalls: { sides?, health?, shots? }`.
 
 **The mark** (owner, 2026-11-26; `editor/breakWallMarks.ts`): in MapMaker's 3D view every breakable wall's faces carry a
-faint amber tint and a steady dashed amber outline (both faces, the wall's own boxes, so a doorway in it shows as
-its gap), drawn with the level's depth. View → **Breakable walls** switches it off and on (on each visit); it hides
+faint orange tint, thin diagonal orange hatching and a steady dashed outline round the whole wall (both faces; a
+doorway or window in it stays clear; an arch's thin slices are only inside the outline), drawn with the level's depth. View → **Breakable walls** switches it off and on (on each visit); it hides
 with the Tiles layer and in the map's picture, and play, Test and the menu's map views never draw it. Nothing blinks.
 
 - A wall between two pieces is one wall: it breaks (both faces) if either side is marked. A piece with a facade and a

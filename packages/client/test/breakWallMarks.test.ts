@@ -4,7 +4,7 @@ import { readFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import { buildMapGeometry, type MapDocument, type WorldBox } from '@tiletrigger/shared';
-import { MARK_DASH, MARK_GAP, MARK_LIFT, breakWallMarkFaces, breakWallMarkKey, breakWallMarkLines, dashes } from '../src/editor/breakWallMarks.ts';
+import { MARK_DASH, MARK_GAP, MARK_HATCH, MARK_LIFT, breakWallMarkFaces, breakWallMarkKey, breakWallMarkLines, dashes, hatchLines, sectionOutlines } from '../src/editor/breakWallMarks.ts';
 
 const wall = (min: [number, number, number], max: [number, number, number], extra: Partial<WorldBox> = {}): WorldBox => ({ min, max, kind: 'wall', sourceId: 't', ...extra });
 
@@ -32,8 +32,33 @@ describe('breakable-wall mark', () => {
     const short = dashes([0, 0, 0], [0.1, 0, 0]);
     expect(short).toHaveLength(1);
     expect(short[0]![1][0]).toBeCloseTo(0.1);
-    const faces = breakWallMarkFaces([wall([0, 0, 0], [4, 3, 0.2], { breakWall: 0 })]);
-    expect(breakWallMarkLines(faces).length).toBe(2 * 2 * (dashes([0, 0, 0], [4, 0, 0]).length + dashes([0, 0, 0], [0, 3, 0]).length));
+  });
+
+  it('outlines a wall once round all its pieces (a window in it), per face', () => {
+    // A wall in two pieces either side of a window, one section, and a second wall of its own.
+    const faces = breakWallMarkFaces([wall([0, 0, 0], [1.5, 3, 0.2], { breakWall: 0 }), wall([2.5, 0, 0], [4, 3, 0.2], { breakWall: 0 }), wall([1.5, 0, 0], [2.5, 1, 0.2], { breakWall: 0 }), wall([4, 0, 0], [4.2, 3, 4], { breakWall: 1 })]);
+    const outlines = sectionOutlines(faces);
+    expect(outlines).toHaveLength(4);
+    expect(outlines[0]![0]).toEqual([0, 0, -MARK_LIFT]);
+    expect(outlines[0]![2]).toEqual([4, 3, -MARK_LIFT]);
+  });
+
+  it('hatches each face with diagonals that run on across its pieces, clipped to it', () => {
+    const [f] = breakWallMarkFaces([wall([0, 0, 0], [4, 3, 0.2], { breakWall: 0 })]);
+    const h = hatchLines(f!);
+    expect(h.length).toBeGreaterThan(Math.floor(7 / MARK_HATCH) - 2);
+    for (const [a, b] of h) {
+      for (const p of [a, b]) {
+        expect(p[0]).toBeGreaterThanOrEqual(-1e-9);
+        expect(p[0]).toBeLessThanOrEqual(4 + 1e-9);
+        expect(p[1]).toBeGreaterThanOrEqual(-1e-9);
+        expect(p[1]).toBeLessThanOrEqual(3 + 1e-9);
+        expect((p[0] + p[1]) / MARK_HATCH).toBeCloseTo(Math.round((a[0] + a[1]) / MARK_HATCH));
+      }
+    }
+    // A thin slice (an arch's) is only inside its wall's outline: no hatching of its own.
+    expect(hatchLines(breakWallMarkFaces([wall([0, 2, 0], [0.1, 3, 0.2], { breakWall: 0 })])[0]!)).toEqual([]);
+    expect(breakWallMarkLines([f!]).length).toBe(h.length + 2 * (dashes([0, 0, 0], [4, 0, 0]).length + dashes([0, 0, 0], [0, 3, 0]).length));
   });
 
   it('keys only the marked walls (a prop moving changes nothing)', () => {

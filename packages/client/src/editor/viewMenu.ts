@@ -29,7 +29,7 @@ export class ViewMenu {
     const grid = menuItem('ed-grid', 'Grid', { checkbox: true, title: "Grid lines on the level being edited, round where you're looking (the playable boundary and build limit always show)", onClick: () => this.setGrid(!grid.classList.contains('on')) });
     const full = menuItem('ed-grid-full', 'Full grid', { checkbox: true, title: 'Full grid: the grid over the whole build area, out to the build limit (off: just round where you are looking)', onClick: () => this.setGridFull(!this.app.view.area.gridFull) });
     const overlaps = menuItem('ed-overlaps', 'Overlaps', { checkbox: true, title: "Highlight places where a block's face lies in the same plane as another piece's (only one look shows there)", onClick: () => this.setOverlaps(!this.app.checks.overlapsOn) });
-    const breakWalls = menuItem('ed-breakwall-marks', 'Breakable walls', { checkbox: true, title: 'Mark the walls a blast breaks (amber, dashed): MapMaker only, never in play, Test or the map picture', onClick: () => this.setBreakWallMarks(!this.app.view.breakMarks.shown) });
+    const breakWalls = menuItem('ed-breakwall-marks', 'Breakable walls', { checkbox: true, title: 'Mark the walls a blast breaks (orange hatching, dashed outline): MapMaker only, never in play, Test or the map picture', onClick: () => this.setBreakWallMarks(!this.app.view.breakMarks.shown) });
     const plan = menuItem('ed-plan', 'Plan view', { checkbox: true, key: 'K', title: 'Plan view: the level being edited from straight above, with spawns, objectives and pickups', onClick: () => this.app.plan.toggle() });
     setChecked(grid, true);
     setChecked(full, false);

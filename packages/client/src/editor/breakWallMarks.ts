@@ -15,15 +15,35 @@ export const MARK_LIFT = 0.025;
 /** The dashed outline: dash and gap along each edge, in metres. */
 export const MARK_DASH = 0.35;
 export const MARK_GAP = 0.2;
-/** Amber: a calm, steady colour (no blinking, nothing bright: Reduce flashing). */
-const MARK_COLOR = '#f0a830';
+/** Orange: a calm, steady colour (no blinking, nothing bright: Reduce flashing). */
+const MARK_COLOR = '#e8780e';
 
-/** One face of a breakable wall box: its four corners (in order round it), and its width and height. */
+/** One face of a breakable wall box: its four corners (in order round it), its span along the wall and up, and its plane. */
 export interface MarkFace {
   corners: [P3, P3, P3, P3];
   width: number;
   height: number;
+  /** Which world axis the wall runs along ('x': a face at constant z), where its face plane is, and its section. */
+  along: 'x' | 'z';
+  plane: number;
+  u0: number;
+  u1: number;
+  y0: number;
+  y1: number;
+  k: number;
 }
+
+/**
+ * A face narrower or shorter than this (an arch's thin slices, a sliver beside a window) is only inside its wall's
+ * outline: tinting and hatching each slice stacked up into a busy, dark patch.
+ */
+export const MARK_MIN = 0.25;
+export const markedFace = (f: MarkFace): boolean => f.width >= MARK_MIN && f.height >= MARK_MIN;
+
+/** Spacing of the diagonal hatching across a marked wall, in metres (along the wall). */
+export const MARK_HATCH = 0.7;
+
+const point = (along: 'x' | 'z', u: number, y: number, plane: number): P3 => (along === 'x' ? [u, y, plane] : [plane, y, u]);
 
 /**
  * The faces MapMaker marks on breakable walls (format v54; shared map/geometry.ts tags a breakable side's wall boxes
@@ -39,10 +59,10 @@ export function breakWallMarkFaces(boxes: readonly WorldBox[]): MarkFace[] {
     const h = y1 - y0;
     if (h <= 0.01) continue;
     // The wall runs along its longer side; it is marked on both faces across its thickness.
-    if (x1 - x0 >= z1 - z0) {
-      for (const z of [z0 - MARK_LIFT, z1 + MARK_LIFT]) out.push({ corners: [[x0, y0, z], [x1, y0, z], [x1, y1, z], [x0, y1, z]], width: x1 - x0, height: h });
-    } else {
-      for (const x of [x0 - MARK_LIFT, x1 + MARK_LIFT]) out.push({ corners: [[x, y0, z0], [x, y0, z1], [x, y1, z1], [x, y1, z0]], width: z1 - z0, height: h });
+    const along: 'x' | 'z' = x1 - x0 >= z1 - z0 ? 'x' : 'z';
+    const [u0, u1, p0, p1] = along === 'x' ? [x0, x1, z0, z1] : [z0, z1, x0, x1];
+    for (const plane of [p0 - MARK_LIFT, p1 + MARK_LIFT]) {
+      out.push({ corners: [point(along, u0, y0, plane), point(along, u1, y0, plane), point(along, u1, y1, plane), point(along, u0, y1, plane)], width: u1 - u0, height: h, along, plane, u0, u1, y0, y1, k: b.breakWall });
     }
   }
   return out;
@@ -63,9 +83,49 @@ export function dashes(a: P3, b: P3, dash = MARK_DASH, gap = MARK_GAP): [P3, P3]
   return out;
 }
 
-/** The line segments of the marks: each face's dashed outline. */
+/**
+ * Diagonal hatching on a face: lines u + y = c (c a whole number of MARK_HATCH steps, so the lines run on from one box
+ * of a wall to the next), clipped to the face.
+ */
+export function hatchLines(f: MarkFace, step = MARK_HATCH): [P3, P3][] {
+  const out: [P3, P3][] = [];
+  if (!markedFace(f)) return out;
+  for (let c = Math.ceil((f.u0 + f.y0) / step) * step; c <= f.u1 + f.y1; c += step) {
+    // Where u + y = c meets the face: u from max(u0, c - y1) to min(u1, c - y0).
+    const ua = Math.max(f.u0, c - f.y1);
+    const ub = Math.min(f.u1, c - f.y0);
+    if (ub - ua < 0.05) continue;
+    out.push([point(f.along, ua, c - ua, f.plane), point(f.along, ub, c - ub, f.plane)]);
+  }
+  return out;
+}
+
+/**
+ * The outline of each marked wall face: one dashed rectangle round all the boxes of a section on one side of it (so a
+ * wall with a window in it is outlined once, round the whole, not round each piece of it).
+ */
+export function sectionOutlines(faces: readonly MarkFace[]): [P3, P3, P3, P3][] {
+  const groups = new Map<string, MarkFace[]>();
+  for (const f of faces) {
+    const key = `${f.k}:${f.along}:${f.plane.toFixed(2)}`;
+    const g = groups.get(key);
+    if (g) g.push(f);
+    else groups.set(key, [f]);
+  }
+  return [...groups.values()].map((g) => {
+    const { along, plane } = g[0]!;
+    const u0 = Math.min(...g.map((f) => f.u0));
+    const u1 = Math.max(...g.map((f) => f.u1));
+    const y0 = Math.min(...g.map((f) => f.y0));
+    const y1 = Math.max(...g.map((f) => f.y1));
+    return [point(along, u0, y0, plane), point(along, u1, y0, plane), point(along, u1, y1, plane), point(along, u0, y1, plane)];
+  });
+}
+
+/** The line segments of the marks: each section's dashed outline and the hatching across its faces. */
 export function breakWallMarkLines(faces: readonly MarkFace[]): [P3, P3][] {
-  return faces.flatMap((f) => f.corners.flatMap((c, i) => dashes(c, f.corners[(i + 1) % 4]!)));
+  const outlines = sectionOutlines(faces).flatMap((c) => c.flatMap((p, i) => dashes(p, c[(i + 1) % 4]!)));
+  return [...outlines, ...faces.flatMap((f) => hatchLines(f))];
 }
 
 /** A key for the marked boxes, so the marks are only built again when they change. */
@@ -78,7 +138,7 @@ export function breakWallMarkKey(boxes: readonly WorldBox[]): string {
 
 /**
  * MapMaker's breakable-wall mark (owner, 2026-11-26, QUEUE "Breakable walls: a mark in MapMaker's 3D view"): a faint
- * amber tint on every breakable wall face and a steady dashed outline round it, so which walls break shows without
+ * orange tint and diagonal hatching on every breakable wall face and a steady dashed outline round each wall, so which walls break shows without
  * opening the inspector. Editor-only (game/view.ts never builds it): not in play, Test or a map's picture. Drawn
  * with the level's depth (a wall in front hides it), never blinking.
  */
@@ -110,7 +170,7 @@ export class BreakWallMarks {
     if (!faces.length) return;
     const positions: number[] = [];
     const indices: number[] = [];
-    for (const f of faces) {
+    for (const f of faces.filter(markedFace)) {
       const base = positions.length / 3;
       for (const c of f.corners) positions.push(...c);
       indices.push(base, base + 1, base + 2, base, base + 2, base + 3);
@@ -126,7 +186,7 @@ export class BreakWallMarks {
     mat.specularColor = Color3.Black();
     mat.disableLighting = true;
     mat.backFaceCulling = false;
-    mat.alpha = 0.16;
+    mat.alpha = 0.22;
     tint.material = mat;
     tint.isPickable = false;
     const c = Color3.FromHexString(MARK_COLOR);
