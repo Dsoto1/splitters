@@ -930,6 +930,9 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
 /* Over the hero, right of the grid: drag to turn them round. */
 .char-spin { position: fixed; top: 12vh; bottom: 16vh; right: 0; left: calc(min(900px, 64vw) + 64px); cursor: grab; touch-action: none; display: flex; align-items: flex-end; justify-content: center; }
 .char-spin:active { cursor: grabbing; }
+/* The loading bar under the hero's feet while a picked character loads (menuScene.ts drawBar places it, fills it and fades it): thin, steady, never pulsing. */
+.char-loadbar { position: fixed; left: 0; top: 0; width: 96px; height: 3px; margin: 0 0 0 -48px; border-radius: 2px; background: rgba(142, 162, 192, 0.22); overflow: hidden; pointer-events: none; opacity: 0; z-index: 2; }
+.char-loadbar i { display: block; height: 100%; background: var(--cyan); opacity: 0.8; transform: scaleX(0); transform-origin: left; }
 .char-spin .spin-bar { display: flex; align-items: center; gap: 10px; padding: 4px 8px; background: var(--glass); border: 1px solid var(--line); border-radius: 999px; font-size: 12px; opacity: 0.75; }
 .char-spin .spin-bar:hover { opacity: 1; }
 .char-spin .spin-btn { min-width: 34px; min-height: 34px; padding: 0; border-radius: 50%; font-size: 18px; line-height: 1; }

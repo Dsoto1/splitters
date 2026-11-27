@@ -242,6 +242,8 @@ const MAP_TABS: readonly (readonly [MapTab, string])[] = [['all', 'All maps'], [
 /** The group main.ts gives the player's own maps. */
 const OWN_GROUP = 'Your';
 const RECENT_MAPS = 12;
+/** How long (ms) the pointer or the focus rests on a Character Select tile before its files are fetched. */
+const PREFETCH_DWELL_MS = 120;
 const BROWSE_KEY = 'tiletrigger.mapBrowse';
 function loadBrowsePrefs(): MapBrowsePrefs {
   const d: MapBrowsePrefs = { sort: 'featured', view: 'grid', favs: [], modes: [], recent: [] };
@@ -667,6 +669,8 @@ export class FrontEnd {
     this.footer.dataset.screen = screen;
     this.scene.setLook(this.previewed ?? this.look);
     this.scene.setShot(screen === 'home' ? 'home' : 'side');
+    this.scene.setLoadBar(null);
+    clearTimeout(this.prefetchTimer);
     this.body.replaceChildren(this.build(screen));
     this.footerHints.replaceChildren(...this.hints(screen));
     if (screen === 'home' && this.quickOpen) this.body.querySelector<HTMLButtonElement>(`#quick-play [data-mode="${loadQuickPrefs().mode ?? 'core.tdm'}"]`)?.focus({ preventScroll: true });
@@ -2743,6 +2747,11 @@ export class FrontEnd {
       // them round. Enter / A again on the one shown, a double-click or the Choose button picks them.
       tile.addEventListener('click', (e) => (e.detail === 0 && this.previewed === c.id ? this.select(c.id) : this.preview(c.id)));
       tile.addEventListener('dblclick', () => this.select(c.id));
+      // Resting on a tile (the pointer, or keyboard / controller focus) fetches that character's files, and its
+      // row neighbours' after it: a pick then has them, or most of them, already.
+      tile.addEventListener('pointerenter', () => this.prefetchSoon(tile));
+      tile.addEventListener('focus', () => this.prefetchSoon(tile));
+      tile.addEventListener('pointerleave', () => clearTimeout(this.prefetchTimer));
       return tile;
     };
     for (const s of sections) {
@@ -2821,7 +2830,24 @@ export class FrontEnd {
 
     const info = el('div', { class: `char-info panel${this.charSheet ? ' sheet-open' : ''}`, id: 'char-info' });
     this.fillInfo(info, selected);
-    return el('div', { class: 'screen characters' }, this.head('Character <em>Select</em>'), jump, grid, info, this.spinZone());
+    // The loading bar under the hero's feet while a pick loads (MenuScene places and fills it).
+    const bar = el('div', { class: 'char-loadbar', id: 'char-loadbar' }, el('i'));
+    bar.setAttribute('aria-hidden', 'true');
+    this.scene.setLoadBar(bar);
+    return el('div', { class: 'screen characters' }, this.head('Character <em>Select</em>'), jump, grid, info, this.spinZone(), bar);
+  }
+
+  private prefetchTimer = 0;
+
+  /** After a short rest on a tile, prefetch its character (and, at low priority, the tiles either side of it). */
+  private prefetchSoon(tile: HTMLElement): void {
+    clearTimeout(this.prefetchTimer);
+    this.prefetchTimer = window.setTimeout(() => {
+      const id = tile.dataset.look;
+      if (!id || !tile.isConnected) return;
+      const near = [tile.previousElementSibling, tile.nextElementSibling].flatMap((t) => (t instanceof HTMLElement && t.dataset.look && !t.hidden ? [t.dataset.look] : []));
+      this.scene.prefetch(id, near);
+    }, PREFETCH_DWELL_MS);
   }
 
   /** The section at the top of the grid's view (the last one once the grid is scrolled to its end). */
