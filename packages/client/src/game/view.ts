@@ -2110,6 +2110,7 @@ export class GameView {
       this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);
       if (load === this.viewLoad) show(v);
+      void this.spentFor(def, node);
       // Medium and High: the sharper copy of the same model for your own hands, swapped in once it has loaded.
       const held = heldModel(def, this.atmosphere.quality);
       if (held) this.sharpenViewmodel(def, v, held);
@@ -2125,32 +2126,16 @@ export class GameView {
    * muzzle and bob carry over. Made once per kept copy (a sharper copy swapped in takes it along when disposed).
    */
   spendViewmodel(def: WeaponDefinition, ms: number): void {
-    const spent = def.view.spent;
     const v = this.viewmodels.get(def.id);
-    if (!spent || !v) return;
+    const made = v && this.spentFor(def, v.node);
+    if (!v || !made) return;
     const host = v.node;
     const shown = (fired: boolean, model: TransformNode) => {
       if (host.isDisposed() || model.isDisposed()) return;
       for (const m of host.getChildMeshes()) if (!m.isDescendantOf(model)) m.isVisible = !fired;
       model.setEnabled(fired);
+      if (fired) this.spentShown = def.id;
     };
-    let made = this.spentViews.get(host);
-    if (!made) {
-      const quality = this.atmosphere.quality;
-      const path = (quality !== 'low' && spent.held?.[quality]) || spent.model;
-      made = this.models.instantiate(path, `view_${def.id}_spent`).then((node) => {
-        if (host.isDisposed()) {
-          node.dispose();
-          throw new Error('gone');
-        }
-        node.parent = host;
-        for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-        node.setEnabled(false);
-        return node;
-      });
-      this.spentViews.set(host, made);
-      host.onDisposeObservable.addOnce(() => this.spentViews.delete(host));
-    }
     const until = performance.now() + ms;
     this.spentUntil.set(host, until);
     void made.then(
@@ -2163,6 +2148,40 @@ export class GameView {
       () => undefined,
     );
   }
+
+  /**
+   * The spent model hung, hidden, under a kept viewmodel `host` (made when the gun is drawn, so the first shot swaps
+   * at once), and the claw it fires loaded too. Null for a gun without `view.spent`.
+   */
+  private spentFor(def: WeaponDefinition, host: TransformNode): Promise<TransformNode> | null {
+    const spent = def.view.spent;
+    if (!spent) return null;
+    let made = this.spentViews.get(host);
+    if (made) return made;
+    if (def.view.hookModel) void this.models.load(def.view.hookModel).catch(() => undefined);
+    const quality = this.atmosphere.quality;
+    const path = (quality !== 'low' && spent.held?.[quality]) || spent.model;
+    made = this.models.instantiate(path, `view_${def.id}_spent`).then((node) => {
+      if (host.isDisposed()) {
+        node.dispose();
+        throw new Error(`${def.id}: its viewmodel went before the spent model came in`);
+      }
+      node.parent = host;
+      for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+      node.setEnabled(false);
+      return node;
+    });
+    made.catch(() => undefined);
+    this.spentViews.set(host, made);
+    host.onDisposeObservable.addOnce(() => {
+      this.spentViews.delete(host);
+      this.spentUntil.delete(host);
+    });
+    return made;
+  }
+
+  /** The last gun whose spent model was shown (tests). */
+  spentShown: string | null = null;
 
   /** The spent model under each kept viewmodel (spendViewmodel), and until when it shows. */
   private readonly spentViews = new Map<TransformNode, Promise<TransformNode>>();
@@ -2300,6 +2319,7 @@ export class GameView {
         takeOverViewmodel(old, node);
         v.node = node;
         this.viewmodelPaths.set(def.id, path);
+        void this.spentFor(def, node);
         if (this.viewmodel === old) {
           this.viewmodel = node;
           // Its optic's parts are the new copy's: found again with the aim's placement.
