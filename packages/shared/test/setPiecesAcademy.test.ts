@@ -162,15 +162,13 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
     ],
   },
   // St. John's step 5 (Stangeland / Cord): the classroom bay. Along the hall (as far as the closed east end allows);
-  // into each classroom at its back door, to the back by the windows, and out. (The front aisle along the hall wall is
-  // shut by the open door's leaf when it stands on the aisle's side, the south room's, or the north one's mirrored: the
-  // leaf ends 0.66 m short of the desks; doorLeafBots.test, "a classroom's front aisle".)
+  // into each classroom at its back door, to the back by the windows, along the front aisle past the rows, and out.
   'setpiece.classroom_bay': {
-    chains: [[[-7, 0, 4], [0, 0, 4], [3, 0, 4]], ...[true, false].map((north): P3[] => (north ? [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [0, 0, 4]] : [[0, 0, 4], [2.4, 0, 1.2], [2.4, 0, -2.6], [0, 0, 4]]))],
+    chains: [[[-7, 0, 4], [0, 0, 4], [3, 0, 4]], ...[true, false].map((north): P3[] => (north ? [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]] : [[0, 0, 4], [2.4, 0, 1.2], [2.4, 0, -2.6], [-2.2, 0, 1.4], [0, 0, 4]]))],
   },
   // St. John's step 5b: the court door. Along the hall; in under the arch to the hall; into the north classroom.
   'setpiece.classroom_entry_bay': {
-    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [0, 0, 4]]],
+    chains: [[[-7, 0, 4], [0, 0, 4], [7, 0, 4]], [[0, 0, -7], [0, 0, -1], [0, 0, 4]], [[0, 0, 4], [2.4, 0, 6.8], [2.4, 0, 10.6], [-2.2, 0, 6.6], [0, 0, 4]]],
   },
   // St. John's step 6 (Welles): the mess hall bay. Along its middle and both sides past the tables and benches.
   // (With each choice of its Long walls here; the step 7d options, which move the floor, the furniture and the west
@@ -988,9 +986,10 @@ describe('what the bays are made of, and what they cost', () => {
     expect(made('setpiece.stair_end_bay')).toMatchObject({ tiles: 3, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.stair_end_bay_3')).toMatchObject({ tiles: 4, doors: 0, tileIds: ['core.room', 'core.stairwell'] });
     expect(made('setpiece.dorm_office_bay')).toMatchObject({ tiles: 11, doors: 0, tileIds: ['core.room', 'core.stairs'] });
-    // A classroom bay: two rooms of 7 props (door, three rows of four desks, the teacher's desk, chalkboard, screen).
+    // A classroom bay: two rooms of 7 props (door, three rows of desks (the one by the door a row of three, its hall end
+    // free past the open leaf), the teacher's desk, chalkboard, screen).
     expect(made('setpiece.classroom_bay')).toMatchObject({ tiles: 2, blocks: 10, props: 14, doors: 0, lights: 1, tileIds: ['core.room'] });
-    expect(made('setpiece.classroom_bay').models).toEqual(['kit.board.chalk', 'kit.board.screen', 'kit.door.oak_open', 'kit.table.desk', 'kit.table.school_desks']);
+    expect(made('setpiece.classroom_bay').models).toEqual(['kit.board.chalk', 'kit.board.screen', 'kit.door.oak_open', 'kit.table.desk', 'kit.table.school_desks', 'kit.table.school_desks_three_left', 'kit.table.school_desks_three_right']);
     // St. John's step 5b: pennants are off unless a placement turns them on (the owner: a handful of rooms).
     expect(made('setpiece.classroom_entry_bay')).toMatchObject({ tiles: 2, props: 9, lights: 1, tileIds: ['core.room'] });
     // St. John's step 6: a mess hall bay is two piers, two long tables with four benches, a chandelier and a banner, one

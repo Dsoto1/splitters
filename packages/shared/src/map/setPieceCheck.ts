@@ -89,6 +89,7 @@ export function checkSetPieceDefinition(def: SetPieceDefinition, opts: { packs?:
     }
     if (part.kind === 'prop') {
       const prop = getProp(part.model);
+      if (part.mirrorModel && !getProp(part.mirrorModel)) out.push(`${where}: its mirrorModel ${part.mirrorModel} is not a prop`);
       if (!prop) out.push(`${where}: ${part.model} is not a prop`);
       else {
         // Its own box, turned as it stands (a bed against the wall at the footprint's edge is inside it).
