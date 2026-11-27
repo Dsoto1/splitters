@@ -1814,7 +1814,7 @@ export class FrontEnd {
       'div',
       { class: `screen play${this.sheetOpen ? ' sheet-open' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, kindBar, mapBar, catBar, cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-kindrow' }, kindBar, catBar), mapBar, cards), panel),
     );
   }
 

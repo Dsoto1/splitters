@@ -306,6 +306,13 @@ html.calm .setup .go.primary { box-shadow: 0 0 8px rgba(0, 209, 255, 0.18); }
    Arenas · Arcade · Battlegrounds · Custom. Story's rows (frontend/setupSectors.ts): a row per sector, its maps then
    its Unknown / convergence tile. */
 .map-browse [hidden] { display: none !important; }
+/* The tabs and Custom's category chips: one box, laid out as separate rows (tabs, the list's bar, chips) except on a
+   phone held sideways, where they share one row above the bar (the grid keeps two rows in view). */
+.map-kindrow { display: contents; }
+.map-kinds { order: 0; }
+.map-browse > .map-bar { order: 1; }
+.map-cats { order: 2; }
+.map-cards { order: 3; }
 .map-kinds { flex: none; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
 .map-kind { position: relative; flex: 1 1 auto; min-width: 0; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 22px 8px 8px; background: var(--surface-1); text-transform: uppercase; }
 .map-kind .kind-icon { width: 17px; height: 17px; color: var(--cyan); flex: none; }
@@ -779,6 +786,16 @@ html.calm .setup .go.primary { box-shadow: 0 0 8px rgba(0, 209, 255, 0.18); }
   .screen.play .map-tools { flex: 0 1 auto; }
   .screen.play #map-search { flex: 0 1 140px; }
   .screen.play .setup { height: calc(100vh - 8px); height: calc(100dvh - 8px); --peek: 54px; }
+  /* The tabs and the category chips share one short row: the tabs show their icons (the one picked its name too). */
+  .map-kindrow { order: 0; display: flex; gap: 6px; min-width: 0; }
+  .map-kinds { flex: none; border-bottom: 0; padding-bottom: 0; gap: 4px; }
+  .map-kind { padding: 4px 8px; }
+  .map-kind .kind-n { display: none; }
+  .map-kind:not(.on) .kind-label { display: none; }
+  .map-cats { flex: 1 1 0; min-width: 0; gap: 4px; }
+  .map-cat { flex-direction: row; min-width: 0; padding: 4px 8px; gap: 5px; }
+  .map-cat .cat-icon { width: 15px; height: 15px; }
+  .map-cat .cat-n { position: static; }
 }
 /* Little room (down to 640 × 360, a phone sideways): tighter screen, header, tabs and sections, small mode tiles; the setup body scrolls and the foot stays. */
 @media (max-height: 600px), (max-width: 700px) {
