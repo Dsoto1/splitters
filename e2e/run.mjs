@@ -6169,6 +6169,25 @@ async function offlineFlow(browser) {
   check(historic.on === 'historic' && historic.cards.length === historic.count && historic.cards.includes('gallows_yard') && historic.cards.includes('market_town') && !historic.cards.includes('sandgate') && !historic.cards.includes('training_range'), `Historic lists its maps only, its count on the tab (${historic.cards.join(', ')})`);
   check(!all.some((c) => c.map === 'training_range'), 'the Training Range is not in the map grid (it moves to the loadout screen)');
   check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All maps lists every map again (${back})`);
+  // The tabs over everything (shared map/setupKinds.ts; docs/CAMPAIGN.md, "Match Setup by sector"): Story · Arenas ·
+  // Arcade · Battlegrounds · Custom, Custom (every map) on first; Arenas, Arcade and Battlegrounds split the built-in
+  // maps by their modes and size, one each; Story is a row per sector (its maps, then an Unknown tile).
+  const kindTabs = await page.$$eval('#map-kinds .map-kind', (b) => b.map((x) => `${x.dataset.kind}${x.classList.contains('on') ? '*' : ''}`));
+  const kindCards = async (k) => {
+    await page.click(`#map-kind-${k}`);
+    await page.waitForFunction((k) => document.querySelector('#map-kinds .map-kind.on')?.dataset.kind === k && (k !== 'story' || document.querySelector('#map-cards .sector-row')), k, { timeout: T(10000) });
+    return page.evaluate(() => ({ cards: [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.dataset.map), n: Number(document.querySelector('#map-kinds .map-kind.on .kind-n')?.textContent), cats: !!document.getElementById('map-cats')?.offsetParent, tabs: !!document.getElementById('map-tabs')?.offsetParent, bar: !!document.querySelector('.map-bar')?.offsetParent }));
+  };
+  const arenas = await kindCards('arenas');
+  const arcadeK = await kindCards('arcade');
+  const grounds = await kindCards('battlegrounds');
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-battlegrounds.png` });
+  const storyK = await kindCards('story');
+  const rowsK = await page.evaluate(() => [...document.querySelectorAll('#map-cards .sector-row')].map((r) => ({ id: r.id, maps: r.querySelectorAll('.map-card').length, unknown: r.querySelectorAll('.sector-tile.unknown').length })));
+  const customK = await kindCards('custom');
+  check(kindTabs.join() === 'story,arenas,arcade,battlegrounds,custom*' && arenas.cards.length + arcadeK.cards.length + grounds.cards.length === all.length && customK.cards.length === all.length, `the tabs Story · Arenas · Arcade · Battlegrounds · Custom (Custom first); the three split every map, Custom holds them all (${JSON.stringify({ kindTabs, arenas: arenas.cards.length, arcade: arcadeK.cards.length, grounds: grounds.cards.length, all: all.length })})`);
+  check(arenas.cards.includes('sandgate') && !arenas.cards.includes('st_johns') && grounds.cards.includes('st_johns') && arcadeK.cards.includes('grid_rings') && arenas.n === arenas.cards.length && !arenas.cats && !arenas.tabs && arenas.bar && customK.cats && customK.tabs, `Arenas, Arcade and Battlegrounds by the rule, their counts on the tabs; the categories and which-maps tabs are Custom's (${JSON.stringify({ arenas: arenas.n, arcade: arcadeK.cards, cats: [arenas.cats, customK.cats] })})`);
+  check(!storyK.bar && rowsK.length >= 3 && rowsK.every((r) => r.maps >= 1 && r.unknown >= 1) && rowsK[0].id === 'setup-sector-jade_empire', `Story lists a row per sector: its maps, then an Unknown tile (${JSON.stringify(rowsK)})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -12693,6 +12712,31 @@ async function storyFlow(browser) {
   const refused = await page.waitForFunction(() => /Win Vinefall Sanctum in Story/.test(document.getElementById('menu-status').textContent), null, { timeout: T(10000) }).then(() => true, () => false);
   const stillMenu = await page.evaluate(() => !document.getElementById('menu').hidden && !window.__cs);
   check(refused && stillMenu && locked.length >= 5 && !locked.includes('Cradle of Idols'), `Match Setup dims the Story maps not won and won't host one (${JSON.stringify({ refused, stillMenu, locked })})`);
+  // Match Setup's Story tab: a row per sector from the data: Cradle of Idols won, Vinefall Sanctum next in Story (still
+  // locked for hosting until won), Step Temple locked; the other sectors' first maps open; an Unknown tile each.
+  await page.click('#map-kind-story');
+  await page.waitForSelector('#setup-sector-jade_empire .map-card');
+  const rows = await page.evaluate(() =>
+    [...document.querySelectorAll('#map-cards .sector-row')].map((r) => ({
+      id: r.id.replace('setup-sector-', ''),
+      maps: [...r.querySelectorAll('.map-card')].map((c) => `${c.dataset.map}:${c.classList.contains('locked') ? 'locked' : 'open'}:${c.querySelector('.card-note')?.textContent ?? ''}`),
+      unknown: r.querySelectorAll('.sector-tile.unknown').length,
+      status: r.querySelector('.sector-status')?.textContent,
+    })),
+  );
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-story.png` });
+  const jade = rows.find((r) => r.id === 'jade_empire');
+  check(
+    rows.map((r) => r.id).join() === 'jade_empire,lockdown,neon_tomorrow' &&
+      jade?.maps.join() === 'jungle_steps:open:Won ✓,vinefall_sanctum:locked:Next in Story,step_temple:locked:Locked: Story' &&
+      /In Progress/.test(jade.status) &&
+      rows.every((r) => r.unknown === 1 && (r.id === 'jade_empire' || /:open:$/.test(r.maps[0] ?? ''))),
+    `Match Setup's Story tab: a row per sector, its maps (the first open, the next dimmed until won in Story), an Unknown tile (${JSON.stringify(rows)})`,
+  );
+  // A locked map's card still picks it (joining is never refused); Start won't host it.
+  await page.click('#setup-sector-jade_empire .map-card[data-map="step_temple"]');
+  const picked = await page.evaluate(() => window.__front.setup?.map ?? JSON.parse(localStorage.getItem('cs.arcade') ?? '{}').map);
+  check(picked === 'step_temple', `a locked Story map's card still picks it (${picked})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }

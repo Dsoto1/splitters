@@ -302,6 +302,44 @@ html.calm .setup .go.primary { box-shadow: 0 0 8px rgba(0, 209, 255, 0.18); }
 .map-cat.on { border-color: var(--cyan); background: rgba(0, 209, 255, 0.16); box-shadow: inset 0 0 0 1px var(--cyan); }
 .map-cat.all .cat-icon { color: var(--warning); }
 .map-cat.all.on { border-color: var(--warning); background: rgba(241, 196, 15, 0.12); box-shadow: inset 0 0 0 1px var(--warning); }
+/* Match Setup's tabs over everything (frontend/mapCategoriesUi.ts drawKindTabs; shared map/setupKinds.ts): Story ·
+   Arenas · Arcade · Battlegrounds · Custom. Story's rows (frontend/setupSectors.ts): a row per sector, its maps then
+   its Unknown / convergence tile. */
+.map-browse [hidden] { display: none !important; }
+.map-kinds { flex: none; display: flex; gap: 6px; overflow-x: auto; scrollbar-width: thin; border-bottom: 1px solid var(--line); padding-bottom: 6px; }
+.map-kind { flex: 1 1 0; min-width: 104px; display: flex; align-items: center; justify-content: center; gap: 7px; padding: 8px 10px; background: var(--surface-1); text-transform: uppercase; }
+.map-kind .kind-icon { width: 18px; height: 18px; color: var(--cyan); flex: none; }
+.map-kind .kind-label { font: 700 13px var(--font-display); letter-spacing: 0.05em; white-space: nowrap; }
+.map-kind .kind-n { color: var(--muted); font: 600 10px var(--font-display); letter-spacing: 0.02em; white-space: nowrap; }
+.map-kind:hover { border-color: rgba(0, 209, 255, 0.6); }
+.map-kind.on { border-color: var(--cyan); background: rgba(0, 209, 255, 0.16); box-shadow: inset 0 0 0 1px var(--cyan); }
+.map-cards.story { display: flex; flex-direction: column; gap: 16px; }
+.map-cards.story.list .map-card { flex-direction: column; align-items: stretch; }
+.map-cards.story.list .card-pic { width: 100%; }
+.map-cards.story.list .card-fav { top: 6px; right: 6px; transform: none; }
+.sector-hint { margin: 0; color: var(--muted); font-size: 13px; }
+.sector-row { display: flex; flex-direction: column; gap: 8px; }
+.sector-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 14px; }
+.sector-head > b { font: italic 700 20px var(--font-display); text-transform: uppercase; letter-spacing: 0.02em; }
+.sector-kind { color: var(--cyan); font: 700 11px var(--font-display); letter-spacing: 0.12em; text-transform: uppercase; }
+.sector-status { padding: 1px 7px; font: 700 11px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; border: 1px solid currentColor; border-radius: 3px; color: var(--cyan); }
+.sector-status.in-progress { color: var(--orange); }
+.sector-status.repaired { color: var(--success); }
+.sector-maps { display: grid; grid-template-columns: repeat(var(--tiles, 4), minmax(0, 1fr)); gap: 12px; align-items: stretch; }
+.sector-maps .map-card { min-width: 0; }
+.sector-tile { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 10px; text-align: center; color: var(--text); min-height: 120px; }
+.sector-tile b { font: 700 28px var(--font-display); line-height: 1; }
+.sector-tile span { font: 700 14px var(--font-display); letter-spacing: 0.08em; text-transform: uppercase; }
+.sector-tile small { color: var(--muted); font-size: 12px; }
+.sector-tile.unknown { border-style: dashed; color: var(--muted); }
+.sector-tile.known { border-color: var(--purple); cursor: pointer; }
+.sector-tile.known b { color: var(--purple); }
+.sector-tile.known:hover, .sector-tile.known:focus-visible { background: rgba(135, 101, 255, 0.12); outline: none; }
+@media (max-width: 760px) {
+  .map-kind { min-width: 84px; padding: 6px 6px; gap: 4px; flex-direction: column; }
+  .map-kind .kind-label { font-size: 11px; }
+  .sector-maps { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
 .map-cat.all.on .cat-n { color: var(--text); }
 .card-note.community { background: var(--orange); }
 .map-group { grid-column: 1 / -1; margin: 10px 0 0; font: 700 14px var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; color: var(--muted); border-bottom: 1px solid rgba(255, 255, 255, 0.12); padding-bottom: 6px; }
