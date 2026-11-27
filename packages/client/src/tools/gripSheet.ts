@@ -13,7 +13,7 @@ import { CreateLines } from '@babylonjs/core/Meshes/Builders/linesBuilder';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { LinesMesh } from '@babylonjs/core/Meshes/linesMesh';
 import { muzzlePoint } from '../game/muzzlePoint.ts';
-import { CORE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@tiletrigger/shared';
+import { CORE_LOOKS, PICKABLE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@tiletrigger/shared';
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { gripInside } from './gripInside.ts';
@@ -30,6 +30,7 @@ import { auditGrip } from './gripAudit.ts';
 import { setPalmRule, skinHandFrame } from '../game/handProbe.ts';
 import type { CharacterInstance, HandData } from '../content/characters.ts';
 import type { WeaponHold } from '@tiletrigger/shared';
+import { limbSamples } from './limbProbe.ts';
 
 /** How a pose is shown: the character from outside, its own first-person arms from the eye, or its whole body from the eye (full-body first person). */
 export type GripView = 'third' | 'first' | 'body';
@@ -343,7 +344,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     creature: poseCreature,
     /** The posed creature's animator (`__grips.creature`). */
     creatureAnim: () => creature?.anim ?? null,
-    looks: () => CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, parts: l.parts })),
+    looks: () => CORE_LOOKS.map((l) => ({ id: l.id, name: l.name, parts: l.parts, pickable: PICKABLE_LOOKS.includes(l) })),
     pose,
     head,
     /** First person: how far (model m) each palm is from its point on the gun (0: on it). */
@@ -567,6 +568,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     },
     /** Before/after: hands built from now on read their palms by `rule` (`joints`, the default, or `old`). */
     palmRule: (rule: 'joints' | 'old') => setPalmRule(rule),
+    /** The posed character's limbs, joints and skin (third person; tools/content/limb-audit.mjs). */
+    limbs: () => (posed ? limbSamples(posed.ch) : null),
     /** World positions of the posed character's joints (third person), by name. */
     joints: (): Record<string, [number, number, number]> =>
       Object.fromEntries(
