@@ -56,7 +56,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/stjohns-14` · deb0d367 · run 46066243281 (St. John's step 14: Clock Tower, forward, the skyway through its back hall, the Carriageway's west door gone; the 7c double door left for its own step)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -240,6 +239,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-27** `wip/stjohns-14` (green deb0d367, run 46066243281), landed alone by the splitters lead: St. John's step 14: the new Clock Tower, forward set piece (tower half a cell out, a back hall at 4 and 8 m), the Carriageway's East side Open on the first floor, so the skyway runs through to the bathroom hall and Welles; the swinging door under the skyway removed. The 7c double door is not built yet: its kit draft is `docs/map-briefs/st_johns/7c-double-door-draft.patch` (a Stairwell open under, a Double door choice, a left-hand open Slim Oak Door).
 - **2026-11-27** `wip/fixes-20261126b` (green 1c4a6183, run 45914831668), landed alone by the splitters lead: the hostcontrols Bots-window flake fixed in the flow (a late mouse lock made two Esc presses land inside the game's 250 ms guard); St. Jasper's classrooms: the door-side desk row is a row of three with its hall-end desk left out and moved 0.18 m toward the windows, so players and bots pass the open leaf (new kit families and set-piece `mirrorModel`).
 - 2026-11-26 · B · Impact effects by material: splinters, grit and dust, clods, leaves, glass and ice shards; holes by surface; calmer metal sparks with Reduce flashing; brick/rock, thin metal and ice sound sets; ice its own surface (green 19641e14, run 45906960798; landed alone). Owner questions open: gravel's own sounds, metal sparks under Reduce flashing, the ice sound.
 - 2026-11-26 · B · The pause menu's Host tab is Match Setup itself: its four tabs, each setting marked Now or At restart, one button ("Apply now" / "Restart with these"), kick/ban and rotation kept (train `check/train-20261126-210012`, green 87e38208, run 45895062747). Owner questions open: "Save for next match" gone; dedicated servers keep the old panel; no Save preset in the pause menu; some restarts reload.
