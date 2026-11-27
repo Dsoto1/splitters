@@ -83,7 +83,7 @@ export function drawKindTabs(bar: HTMLElement, o: KindTabsOptions): void {
       b.setAttribute('aria-selected', String(on));
       b.title = `${d.label}: ${d.blurb}`;
       const n = o.counts(d.id);
-      b.append(glyph(KIND_ICONS[d.id], 'glyph kind-icon'), make('span', 'kind-label', d.label), make('small', 'kind-n', d.id === 'story' ? `${n} sector${n === 1 ? '' : 's'}` : String(n)));
+      b.append(glyph(KIND_ICONS[d.id], 'glyph kind-icon'), make('span', 'kind-label', d.label), make('small', 'kind-n', String(n)));
       b.addEventListener('click', () => o.onPick(d.id));
       return b;
     }),

@@ -1699,7 +1699,8 @@ export class FrontEnd {
           card.dataset.lock = lock;
           card.title = `${lock} You can still join a match on it.`;
         }
-        lazy(card, draw);
+        // (Watched once it is in the list: the caller appends it.)
+        queueMicrotask(() => lazy(card, draw));
         return card;
       };
       if (kind === 'story') {
