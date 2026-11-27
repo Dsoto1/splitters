@@ -108,7 +108,8 @@ describe('zones come from the shape a ray meets', () => {
   it('every stance has shapes for every look on the roster', () => {
     for (const [key, box] of Object.entries(MEASURED_HITBOXES)) {
       expect(box.stand.head ?? box.stand.torso, key).toBeTruthy();
-      if (!box.creature) {
+      // A hovering look is drawn upright in every stance: its standing shapes stand in (crouch and prone null).
+      if (!box.creature && !box.hover) {
         expect(box.crouch, key).not.toBeNull();
         expect(box.prone, key).not.toBeNull();
       }

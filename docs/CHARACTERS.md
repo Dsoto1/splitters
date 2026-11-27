@@ -148,10 +148,10 @@ are Agency too. Shingle Point's Bot characters are Soldiers only (set in MapMake
 
 **Bot types (owner, 2026-11-19).** Match Setup's Bots & AI tab, the pause menu's Host tab and MapMaker's map
 settings pick random bots' characters with one tick-box per bot type (`BOT_TYPES`: Soldiers, Spies, Everyday Folk,
-Outer Space, Legends, Animalia, Machines, Horrors; every one ticked: all; All and None to start over). The old
-"Named as" sets fold into a type (`THEME_BOT_TYPES`: pirate, knight, ninja, wizard, barbarian, myth → Legends; the
-animals → Animalia; undead, spooky, goblin → Horrors; robot → Machines; alien → Outer Space; cowboy, gangster,
-townsfolk → Everyday Folk; soldier → Soldiers), so saved setups, links, server rules and maps that named one load
+Outer Space, Legends, Historical, Pirates, Animalia, Toys, Holiday, Machines, Horrors; every one ticked: all; All and None to start over). The old
+"Named as" sets fold into a type (`THEME_BOT_TYPES`: pirate, wizard, myth → Legends; knight, ninja, barbarian, cowboy →
+Historical (2026-11-27); the animals → Animalia; undead, spooky, goblin → Horrors; robot → Machines; alien → Outer
+Space; gangster, townsfolk → Everyday Folk; soldier → Soldiers), so saved setups, links, server rules and maps that named one load
 as that type (`validBotCast`, `normalizeSetup`). Under the types, plain switches: **Ranks & badges** (the Options
 setting, `game/ranksSetting.ts`) and **Themed names** (`MatchSetup.themedNames`, `MatchRules.themedNames`; off:
 random bots take the general names, `BOT_NAMES`).
@@ -176,6 +176,7 @@ enemies where enemy markers are shown; hidden as the arrow is, under smoke or a 
 | Toys (`toys`, 2026-11-26) | toy brick | Wind-Up | Tin Toy | Plaything | Favourite | Best-Seller | Collectible | Keepsake | Heirloom | Toy of the Year |
 | Pirates (`pirates`, 2026-11-26) | anchor | Deckhand | Powder Monkey | Rigger | Gunner | Boatswain | Quartermaster | First Mate | Captain | Pirate King |
 | Holiday (`holiday`, 2026-11-26) | gift | Guest | Reveller | Caroler | Merrymaker | Host | Toastmaster | Grand Marshal | Guest of Honour | Holiday Legend |
+| Historical (`historical`, 2026-11-27) | column | Commoner | Militia | Shieldbearer | Veteran | Centurion | Chieftain | Warlord | Conqueror | Immortal |
 
 The first and last titles are the owner's ("as written is fine"); the steps between are the lead's (the Toys' nine all
 the lead's, 2026-11-26). **A name's own title gives way** (owner, 2026-11-26: "so they dont duplicate and instead actually
@@ -210,16 +211,22 @@ out: a soft glow, no flash. The flicker check's `rankup` moment records it.
 **Order in a section.** By name, unless a manifest sets `sortAs` (the name it is listed as): the owner swapped Spud
 Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 
-| Group (`id`) | Who |
+The sections as Character Select lists them (2026-11-27, after the Historical row; variant looks sit under their base, MapMaker-only looks are not on Character Select):
+
+| Section (`id`) | Who, in order |
 |---|---|
-| Soldiers & Spies (`soldiers`) | Azure Sentinel, Customs Agent Zhao, Desert Ranger, Dummy (NPC skin), Flt. Lt. Ember, Grunt '68, Kenji, Pemberton, Sentinel in Green, Stealth Operative, Tactical Soldier, Virtua Soldier, Warrior Sentinel, WWII Infantry, and from 2026-11-25 Cpl. Tinwhistle, Pvt. Pete Plastic, and from the second batch Capt. Elias Harrowgate, Col. Josiah Beaumont, Pfc. Danny Okerlund, Lien Vo |
-| Everyday Folk (`folk`) | Biker Gang Girl, Cal, Chef Basile, Coffee Brown, Dusty Ranger, Hazmat Joe, Imperial Guard, King Aldric, Lancer Mei, Merrow the Wise, Mister Lanky, Old King Halvard, Old Timer, Orange Suit Engineer, Patches, Rosa Rivets, Ser Brannock, Sgt. Mackie, Shaka Mpande, Sir Galloway, Spike Scavenger, The Butcher, The Dapper, The Mechanic, The Prospector, The Racer, Thornweaver (the plains huntress model since 2026-11-25), Cutter McCrae (2026-11-25), Velvet Vance |
-| Outer Space (`space`) | Alien Biker, Alien Encounter, Spud Marshal, Beanie Alien, Reef Wanderer, Ricochet, Shadow Enforcer, Space Marine, Spacewalker, Star Voyager, Starfarer, Steampunk Warrior, The Visitor, Blix Orrin (from the Chrono Crew, 2026-11-25) |
-| Chrono Crew (`chrono`, a collection) | Clio Everwhen and Sarge Tobias Crane first (owner, 2026-11-25), then Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell (the K9, 2026-11-25), Vesper Quill, Wren Halloway (their group is Outer Space); the 14th place an Unknown tile kept for the Inquisitor |
-| Legends (`legends`) | Anoobys (new model 2026-11-25), Bronzer, Brother Silencio, Cap'n Rusty Barnacle, Elder Tomo (new model 2026-11-25), Frost Viking, Grandpa Chains, Honest Abe, Iron Knight, Luther Vanguard, Sun Warrior, The Purple Comet, and from 2026-11-25 Ignatius Slagg (from Horrors & Creatures), Silas Coilwhisper, Talon Skycrest, Balam Nightclaw, Tetl Stonewarden |
-| Animalia (`animals`) | Rascal McGraw (id `core.bandit`), Barnaby Bruin, Boglurker, Croakley, Cyber Lion, Ellis Velvetrope (was Elephant Warrior), Fishy Fred, Gorilla G, Greyfang, Rollo Splitworth (was Hyena Warrior), Kesi Tallgrass (was Lion in a Suit), Octo Buddy, Newt Calloway (id `core.warlord`), Scamp, Seetah J. Chloth, Shiba, Warrior of the Skies, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too), El Zarpazo, Puddles Ironbill (was Juice); new models 2026-11-25 for Boglurker, Croakley, Cyber Lion, Gorilla G, Greyfang |
-| Machines (`machines`) | Armored Sentinel, Baseball Robot, Botboy, Botney Mullz, CRT Robot, Emerald Robot, Field Medic Automaton, Inspector Bigotes, Steel Guardian, T-TreeFitty, Fuse Hollister (from the Chrono Crew, 2026-11-25) |
-| Horrors & Creatures (`horror`) | Bonejack, Cool Hands Rex, Count Bonesworth, Dog Tag Doyle, Fearsome Undead, Freaky Frida, Goblin Gunslinger, Goblin Warlord, Goblina, Gorgle, Grinning Gus, Groaner, Mummy Bot, Pharaoh Mummy Warrior, Pink Mantis, Punkin, Rattles, Scary Larry, Shambler, Snikkit, Spiked Skeleton Biker, Sugar Skull, Teddy, The Hollow Pilgrim, The Masked Figure, Zombie Soldier A |
+| Soldiers & Spies (`soldiers`) | Azure Sentinel, Capt. Elias Harrowgate, Col. Josiah Beaumont, Flt. Lt. Ember, Sgt. Mickey Callahan, Gefr. Otto Brandt, Kenji, Pfc. Danny Okerlund, Lien Vo, Pvt. Hank Dowling, Sgt. Samir Haddad, Stealth Operative |
+| Everyday Folk (`folk`) | Biker Gang Girl, Bronzer, Brother Silencio, Cal, Chef Basile, Cleo Groovestone, Cool Hands Rex, Elder Tomo, Grandpa Chains, Hazmat Joe, Old Timer, Orange Suit Engineer, Patches, Rad Rootley, Rourke, Sgt. Mackie, The Butcher, The Dapper, The Mechanic |
+| Outer Space (`space`) | Blix Orrin, Dusty Orebeck, Iron Knight, Ricochet, Ryker Voss, Space Marine, Spacewalker, Starfarer, The Veiled Vanguard, The Visitor, Zorp Gleebix |
+| Chrono Crew (`chrono`) | Clio Everwhen, Sarge Tobias Crane, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell, Vesper Quill, Wren Halloway |
+| Legends (`legends`) | Tetl Stonewarden, Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine, Sigrun Frostmane, Aurelio Dawnmantle |
+| Historical (`historical`) | Valeria Sandstorm, Imperator Laurel, Astrid Stormbrand, Ulf Ravenshield, Ser Godric Vale, Ser Aldous Lionmane, Emir Tariq Falconsword, Kaiser Ironhelm, Ser Aurelian Dawnshield, Sir Galloway (MapMaker only), Ser Brannock (MapMaker only), Astor Moonvale, Khan of the Steppes, Imperial Guard, Lancer Mei, Balam Nightclaw, Talon Skycrest, General Cherrytree, Poor Richard, Honest Abe, The Rough Rider, Prof. Quanta, Shaka Mpande, Themba Ironspear, Kato Emberline, Dusty Ranger, Cutter McCrae, Silas Coilwhisper, Thornweaver |
+| Pirates (`pirates`) | Cap'n Ezra Blackwake, Mr. Gideon Tarr, Scarlet Brinewell |
+| Animalia (`animals`) | Pip Quickfoot, Rocket Nutley, Rowdy Gnashwell, Rufus Boomtown, Ollie Hootman, Barnaby Burrows, Rascal McGraw, Newt Calloway, Ace Featherstone, Axel Gainz, Barnaby Bruin, Boglurker, Boogie Tuskworth, Buster Haymaker, Chad Croakley, Chompers McFinn, Coach Hank Shelton, Corvin Blackquill, Croakley, Cyber Lion, Det. Drake Montego, Deuce Droopwell, DJ Volta Coilwave, Dr. Hugo Hue, Duke Dashwood, El Zarpazo, Ellis Velvetrope, Fenn Dustwhirl, Fishy Fred, Gorilla G, Greyfang, Kesi Tallgrass, King Waddleston, Master Bodhi, Maximus Cluckworth, Napsworth, Octo Buddy, Ottis Crema, Pink Mantis, Puddles Backspin, Rio Neonwing, Rollo Splitworth, Ryo Snapclaw, Seetah J. Chloth, Shiba, Sterling Purrcival, Tag Malone, Ziggy Bananas |
+| Toys (`toys`) | Bricksby, Clangers, Cpl. Tinwhistle, Pvt. Pete Plastic, Jolly Springjack, Teddy, Tik Winderly |
+| Holiday (`holiday`) | Chilly Flakesworth, Gobbles Plymouth, Hazel Hexley, Hopsworth Eggleton, Jingle Tinsel, Kris Kringleton, Punkin, Uncle Spangle |
+| Machines (`machines`) | Baseball Robot, Botboy, CRT Robot, Emerald Robot, Field Medic Automaton, Fuse Hollister, Inspector Bigotes, Mummy Bot, T-TreeFitty |
+| Horrors & Creatures (`horror`) | Anoobys, Pharaoh Mummy Warrior, Nebka the Unwrapped, Count Bonesworth, Dez Kickley, Dog Tag Doyle, Fearsome Undead (MapMaker only), Freaky Frida, Goblina, Gorgle, Grimspire, Groaner (MapMaker only), Mujina, Shambler (MapMaker only), The Pale Stranger |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
@@ -1817,3 +1824,43 @@ Hand-picked bots (bot sets), Roulette and Random characters are unchanged. Tests
   owned; the owner, 2026-11-26).
 - **Kato Emberline** is `core.kato` (`meshy_kato`); `core.ashwalker` and `core.ashtribal` play him.
 
+
+### The Historical row, Legends slimmed, floaters hover (owner, 2026-11-27)
+
+**Rows.** A new **Historical** row (`historical`, right after Legends in the tab order and on the jump strip): the famous
+real people (made-up names) and the period characters, periods side by side, oldest first (one `CHARACTER_NEIGHBOURS`
+list holds the whole row): Rome, the vikings, the medieval knights and the Crusades, the Mongols and the Asian
+dynasties, Mesoamerica, the famous people (by their own period), Southern Africa, the Wild West and the plains. It is a
+bot type (`historical`; the old knight, ninja, barbarian and cowboy name sets fold into it), its Roulette fallback is
+the crossbow, its rank mark a column (titles in the table above). **Legends** keeps seven, in the owner's order: Tetl
+Stonewarden, Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine, Sigrun Frostmane, Aurelio
+Dawnmantle. Soldiers keep their own row; the mummies and Egypt's undead stay in Horrors. Each call below was made from
+the character's portrait (`packages/client/public/portraits/<look>.webp`, captured by tools/content/capture-portraits.mjs).
+
+| Character (look) | Before | After | Why (from the portrait) |
+|---|---|---|---|
+| Valeria Sandstorm (`core.gladiatrix`), Imperator Laurel (`core.caesar`) | Legends | Historical | Rome: arena fighter, laurel and toga |
+| Astrid Stormbrand (`core.vikingf`), Ulf Ravenshield (`core.vikingm`) | Legends | Historical | vikings (Sigrun Frostmane stays in Legends) |
+| Ser Godric Vale (`core.templar`), Ser Aldous Lionmane (`core.lionheart`), Emir Tariq Falconsword (`core.emir`), Kaiser Ironhelm (`core.gothickaiser`), Ser Aurelian Dawnshield (`core.paladin`) | Legends | Historical | medieval knights and the Crusades |
+| Astor Moonvale (`core.ts2wizard`) | Legends | Historical | a storybook wizard; the owner put him with the medieval knights (2026-11-26) |
+| Sir Galloway (`core.galloway`), Ser Brannock (`core.brannock`) (MapMaker only) | Everyday Folk | Historical | medieval men-at-arms |
+| Khan of the Steppes (`core.khan`), Imperial Guard (`core.imperialguard`), Lancer Mei (`core.mei`) | Legends | Historical | the Mongols and the Asian dynasties |
+| Balam Nightclaw (`core.aztecjaguar`), Talon Skycrest (`core.eagleclan`) | Legends | Historical | Mesoamerica: jaguar and eagle warriors (Tetl stays in Legends) |
+| General Cherrytree, Poor Richard, Honest Abe, The Rough Rider, Prof. Quanta (`core.washington`, `franklin`, `abe`, `roosevelt`, `einstein`) | Legends | Historical | famous real people, in that order |
+| Shaka Mpande (`core.shaka`), Themba Ironspear (`core.zuluwarrior`), Kato Emberline (`core.kato`) | Everyday Folk | Historical | Southern Africa |
+| Dusty Ranger (`core.dustycolt`), Cutter McCrae (`core.outlawranger`), Silas Coilwhisper (`core.snakeshaman`), Thornweaver (`core.thornweaver`) | Everyday Folk | Historical | the Wild West; Thornweaver the plains huntress beside it |
+| Brother Silencio (`core.ansel`), Elder Tomo (`core.elder`), Grandpa Chains (`core.grandpachains`) | Legends | Everyday Folk | the owner's call |
+| Cool Hands Rex (`core.trex`) | Legends | Everyday Folk | a dinosaur in a suit and shades: a gangster, not a legend or a period |
+| The Veiled Vanguard (`core.vanguard`), Iron Knight (`core.knight`) | Legends | Outer Space | the owner's call |
+| Everyone else in Everyday Folk (Biker Gang Girl, Bronzer, Cal, Chef Basile, Cleo Groovestone, Hazmat Joe, Old Timer, Orange Suit Engineer, Patches, Rad Rootley, Rourke, Sgt. Mackie, The Butcher, The Dapper, The Mechanic) | Everyday Folk | Everyday Folk | everyday people |
+
+**Floaters hover.** A manifest's `"locomotion": "hover"` with `"hover"` (metres at a 1.8 m body; 0.3 left out, at
+most 0.8) floats the body clear of the ground as if flying: it glides as a rolling body does (no walk cycle, leaning
+into its motion), drawn `hover` × its size up with a calm bob (2.5 cm up and down over 3.2 s: a slow sine, no flicker),
+in the menu, idle, walking and running (`CharacterAnimator.hover`, `hoverScaleOf`). Seated or seen from its own eyes
+(full-body first person) it eases down; dead it drops to the ground. Its hit shapes are measured that far up
+(tools/content/hitboxes.mjs; `hover` on its entry) and are the standing ones in every stance, since a hovering body is
+drawn upright crouched or prone (it hunches): shots land on what is seen. Its movement, eye and collider are a
+player's as before. The Veiled Vanguard and Mujina hover at 0.3 m; the Baseball Robot, Chilly Flakesworth and the
+others keep `roll` on the ground. A model built with `hover` has its legs riding the pelvis, as a roller's do
+(prepare-meshy-characters.mjs); neither model was rebuilt.

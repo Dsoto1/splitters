@@ -43,7 +43,7 @@ export const nameThemeInfo = (id: string | undefined): { id: string; label: stri
 export const isNameTheme = (x: unknown): x is string => typeof x === 'string' && THEMES_BY_ID.has(x);
 
 /** The theme of a built-in look without one of its own: by what it is (a new soldier skin is a soldier). */
-const GROUP_THEMES: Partial<Record<CharacterGroup, string>> = { soldiers: 'soldier', legends: 'knight', folk: 'townsfolk', horror: 'spooky' };
+const GROUP_THEMES: Partial<Record<CharacterGroup, string>> = { soldiers: 'soldier', legends: 'knight', historical: 'knight', folk: 'townsfolk', horror: 'spooky' };
 
 /** The NPC skins' themes (`npc:<role>` looks; sim/npc.ts). */
 export const NPC_SKIN_THEMES: Readonly<Record<string, string>> = {
@@ -165,6 +165,7 @@ export const BOT_TYPES = [
   { id: 'folk', label: 'Everyday Folk' },
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
+  { id: 'historical', label: 'Historical' },
   { id: 'pirates', label: 'Pirates' },
   { id: 'animals', label: 'Animalia' },
   { id: 'toys', label: 'Toys' },
@@ -191,17 +192,18 @@ export const THEME_BOT_TYPES: Readonly<Record<string, BotTypeId>> = {
   critter: 'animals',
   frog: 'animals',
   pirate: 'legends',
-  knight: 'legends',
-  ninja: 'legends',
+  // Owner, 2026-11-27: the knights, the samurai and lancers, the barbarians and the cowboys are Historical's now.
+  knight: 'historical',
+  ninja: 'historical',
   wizard: 'legends',
-  barbarian: 'legends',
+  barbarian: 'historical',
   myth: 'legends',
   undead: 'horror',
   spooky: 'horror',
   goblin: 'horror',
   robot: 'machines',
   alien: 'space',
-  cowboy: 'folk',
+  cowboy: 'historical',
   gangster: 'folk',
   townsfolk: 'folk',
 };

@@ -10,7 +10,7 @@ Legend: **Replace** = the new model takes the existing gun's place (its rules, s
 | 2 | Micro-Missile Swarm Launcher | Replace | `swarm` |
 | 3 | 40mm Revolving Cylinder Grenade Launcher | Replace | `launcher` (Grenade Launcher) |
 | 4 | Heavy Anti-Armor Rocket Launcher | Replace | `rockets` (Rocket Launcher) |
-| 5 | Modular Classic RPG-7 | Replace | `guided` (Guided Rocket) (owner, "recs") |
+| 5 | Modular Classic RPG-7 | Replace ×3 | one model, three launchers (owner, 2026-11-27): `blast_rockets` (shoots straight), `guided` (guided), and a heat-seeking one (`homing`, as the Swarm Launcher's, on the RPG round) |
 | 6 | Cryo-Gel Slick Sprayer | Replace | `oil_slicker` (it already makes floors slick) |
 | 7 | Monofilament Ricochet Launcher | Replace | `disc_launcher` |
 | 8 | Horizontal Disc Crossbow | Replace | `arena_disc` |
@@ -46,9 +46,9 @@ Legend: **Replace** = the new model takes the existing gun's place (its rules, s
 | 38 | Futuristic Steyr SSG 69 | New gun | precision |
 | 39 | Heavy Anti-Materiel .50 Cal | New gun | precision (heavy) |
 | 40 | Civil War Revolving Percussion Rifle | New gun | marksman |
-| 41 | Western Buffalo Break-Action Cannon | New gun | shotgun (two shells) |
-| 42 | Pirate Blunderbuss Hand Cannon | New gun | shotgun |
-| 43 | Mesoamerican Obsidian Pump Shotgun | New gun | shotgun |
+| 41 | Western Buffalo Break-Action Cannon | Replace | `sawed_off` (owner: sawed-off style) |
+| 42 | Pirate Blunderbuss Hand Cannon | New gun | a sawed-off-style variant (owner), Pirate period |
+| 43 | Mesoamerican Obsidian Pump Shotgun | Replace | `auto_shotgun` (owner) |
 | 44 | Gladiator Net-Slug Scattergun | New gun | shotgun (lever) |
 | 45 | Asian Dynasty Bronze Dragon Pistol | New gun | pistol |
 | 46 | Medieval Siege Culverin Hand Cannon | New gun | revolver (single heavy shot) |
@@ -73,3 +73,19 @@ Legend: **Replace** = the new model takes the existing gun's place (its rules, s
 | 65 | Spigot Rifle/Shotgun Grenade | Projectile model | rifle grenade (for #25's launcher?) |
 
 **Owner (2026-11-27, "recs"): yes, a Historical weapon set.** Period guns pair with the Historical row and the weapon sets (a Historical set: Rome, Vikings, medieval, Dynasty, Mesoamerica, Pirates, Wild West, Civil War, WW2, Vietnam, Desert Storm).
+
+## Added 2026-11-27 evening (owner; uploaded 20:14 UTC)
+
+| Upload | Draft | Existing |
+|---|---|---|
+| Pink Bubble Blaster | Replace | `bubble_blaster` |
+| Tactical Biohazard Goo Gun | Replace | `goo_gun` |
+| Tactical Heavy Flamethrower | Replace | `flamethrower` |
+| Viking Freeze Ray Pistol | Replace | `freeze_ray` (a handgun now; the owner calls it the new freeze ray handgun) |
+| Weapons Ammo Cache (textured, and an untextured `_generate` copy) | Replace | the ammo resupply box pickup; the untextured copy is tinted to fit other uses (team colours, themes) |
+| Tactical Combat Medkit (textured, and an untextured `_generate` copy) | Replace | the health pickup / `medkit` (and Medi-Beam's model); untextured copy tintable likewise |
+
+| Tactical Rotary Minigun (Meshy_AI_tactical_rotary_minigun_3d_20261127…) | Replace | `lmg` (Spin Gun) |
+| Pneumatic Flechette Launcher (a newer file, 2026-11-27 20:14; use it, not the 11-22 one) | New gun | as #27 |
+
+Coming from the owner (2026-11-27): a new Nailgun, the Knife (uploaded, not yet seen in Drive), Grapple Hook versions and its ammo, Battle Axe, Spear. (the sharper-guns pass covers them meanwhile).

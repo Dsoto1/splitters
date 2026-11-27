@@ -123,9 +123,12 @@ import {
   categoryCounts,
   inMapCategory,
   isListedMap,
+  inSetupKind,
+  isSetupKind,
   type MapCategoryTab,
+  type SetupKind,
 } from '@tiletrigger/shared';
-import { drawCategoryTabs } from './mapCategoriesUi.ts';
+import { drawCategoryTabs, drawKindTabs } from './mapCategoriesUi.ts';
 import { myCareer, myCareerDetail, myEmblem, myFavClass, myTitle, setEmblem, setFavClass, setTitle, syncCareer } from '../careerStats.ts';
 import { emblemSvg } from '../game/emblemSvg.ts';
 import { setMyOptic } from '../opticPrefs.ts';
@@ -236,6 +239,8 @@ interface MapBrowsePrefs {
   modes: GameMode[];
   /** The maps played last, newest first (the Recent tab). */
   recent: string[];
+  /** The map list's tab: Story, Arenas, Arcade, Battlegrounds or Custom (shared map/setupKinds.ts). */
+  kind: SetupKind;
 }
 /** The map list's tabs (Match Setup redesign, part 1; the owner's mock-up of 2026-11-11). */
 type MapTab = 'all' | 'mine' | 'featured' | 'recent' | 'favs' | 'picks';
@@ -247,7 +252,8 @@ const RECENT_MAPS = 12;
 const PREFETCH_DWELL_MS = 120;
 const BROWSE_KEY = 'tiletrigger.mapBrowse';
 function loadBrowsePrefs(): MapBrowsePrefs {
-  const d: MapBrowsePrefs = { sort: 'featured', view: 'grid', favs: [], modes: [], recent: [] };
+  // Custom (every map) until a tab is picked: the list as it was before the tabs (an owner question).
+  const d: MapBrowsePrefs = { sort: 'featured', view: 'grid', favs: [], modes: [], recent: [], kind: 'custom' };
   try {
     const p = JSON.parse(localStorage.getItem(BROWSE_KEY) ?? '{}') as Partial<MapBrowsePrefs>;
     return {
@@ -256,6 +262,7 @@ function loadBrowsePrefs(): MapBrowsePrefs {
       favs: Array.isArray(p.favs) ? p.favs.filter((x): x is string => typeof x === 'string').slice(0, 200) : [],
       modes: Array.isArray(p.modes) ? GAME_MODES.filter((g) => (p.modes as unknown[]).includes(g)) : [],
       recent: Array.isArray(p.recent) ? p.recent.filter((x): x is string => typeof x === 'string').slice(0, RECENT_MAPS) : [],
+      kind: isSetupKind(p.kind) ? p.kind : d.kind,
     };
   } catch {
     return d;
@@ -835,7 +842,8 @@ export class FrontEnd {
         return true;
       case PAD.lb:
       case PAD.rb: {
-        const tabs = [...this.body.querySelectorAll<HTMLElement>('#map-cats .map-cat')];
+        // Under Custom they step its categories; under the other tabs, the tabs themselves.
+        const tabs = [...this.body.querySelectorAll<HTMLElement>(this.browse.kind === 'custom' ? '#map-cats .map-cat' : '#map-kinds .map-kind')];
         const at = Math.max(0, tabs.findIndex((t) => t.classList.contains('on')));
         const to = tabs[(at + (button === PAD.rb ? 1 : tabs.length - 1)) % tabs.length];
         // The category's tab (it redraws the cards): the ring goes to the first card it lists.
@@ -881,7 +889,7 @@ export class FrontEnd {
 
   /** What a controller can reach in one of Match Setup's zones (shown, enabled, not in a closed part). */
   private padZone(zone: 'cards' | 'bars' | 'panel'): HTMLElement[] {
-    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '.map-bar :is(button, input, select), #map-cats .map-cat' : '#match-setup :is(button, input, select, summary)';
+    const sel = zone === 'cards' ? '#map-cards .map-card' : zone === 'bars' ? '#map-kinds .map-kind, .map-bar :is(button, input, select), #map-cats .map-cat' : '#match-setup :is(button, input, select, summary)';
     return [...this.body.querySelectorAll<HTMLElement>(sel)].filter((e) => {
       if ((e as HTMLButtonElement).disabled || e.closest('[hidden]') || !e.getClientRects().length) return false;
       // (A phone's sheet, down: its settings are there but hidden; the strip along the bottom stays in reach.)
@@ -895,7 +903,7 @@ export class FrontEnd {
   private padMove(dir: Dir): void {
     const f = document.activeElement as HTMLElement | null;
     const zoneOf = (e: HTMLElement | null): 'cards' | 'bars' | 'panel' | null =>
-      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('.map-bar, #map-cats') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
+      !e ? null : e.closest('#map-cards .map-card') ? 'cards' : e.closest('#map-kinds, .map-bar, #map-cats') ? 'bars' : e.closest('#match-setup') ? 'panel' : null;
     const zone = zoneOf(f);
     if (!zone || !f) return this.padFocus(this.padHome());
     const from = zone === 'cards' ? f.closest<HTMLElement>('.map-card')! : f;
@@ -1646,15 +1654,106 @@ export class FrontEnd {
     const catBar = el('div', { class: 'map-cats', id: 'map-cats', role: 'tablist' });
     catBar.setAttribute('aria-label', 'Map categories');
     const catOf = (m: ArcadeMap) => ({ category: m.metadata.category, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
+    // The map list's tabs over everything (shared map/setupKinds.ts; owner, 2026-11-25): Story (a row per sector, from
+    // the campaign data), Arenas, Arcade and Battlegrounds (by each map's modes and size), Custom (every map: the
+    // which-maps tabs and the category chips are Custom's).
+    const kindBar = el('div', { class: 'map-kinds', id: 'map-kinds', role: 'tablist' });
+    kindBar.setAttribute('aria-label', 'Which maps');
+    const mapBar = el('div', { class: 'map-bar' }, tabs, tools);
+    const kindOf = (m: ArcadeMap) => ({ modes: m.modes, maxPlayers: m.metadata.recommendedPlayers.max, own: m.group === OWN_GROUP, community: m.group === PICK_GROUP });
+    let storyRows: typeof import('./setupSectors.ts') | null = null;
     const drawCards = () => {
       const current = this.currentMap();
       const lazy = lazyPlans(cards);
       const q = this.mapQuery.trim().toLowerCase();
       const favs = new Set(this.browse.favs);
-      const built = this.listedMaps().map((m, i) => ({ m, i }));
-      const tab = this.mapTab;
+      const kind = this.browse.kind;
+      const listed = this.listedMaps();
+      drawKindTabs(kindBar, {
+        kind,
+        counts: (k) => (k === 'story' ? CAMPAIGN.sectors.length : listed.filter((m) => inSetupKind(kindOf(m), k)).length),
+        onPick: (k) => {
+          if (k === this.browse.kind) return;
+          this.browse.kind = k;
+          saveBrowsePrefs(this.browse);
+          this.mapScroll = 0;
+          cards.scrollTop = 0;
+          drawCards();
+        },
+      });
+      mapBar.hidden = kind === 'story';
+      tabs.hidden = catBar.hidden = kind !== 'custom';
+      cards.classList.toggle('story', kind === 'story');
+      // A map's card, picking it on a click; dimmed while it can't be hosted (a Story map not won).
+      const cardFor = (m: ArcadeMap, note: string | undefined): HTMLElement => {
+        const lock = this.hostLock(m);
+        const { card, draw } = mapCard(m, m.key === current.key, note, {
+          on: favs.has(m.key),
+          toggle: () => {
+            const now = !this.browse.favs.includes(m.key);
+            this.browse.favs = now ? [...this.browse.favs, m.key] : this.browse.favs.filter((k) => k !== m.key);
+            saveBrowsePrefs(this.browse);
+            return now;
+          },
+        });
+        card.addEventListener('click', () => {
+          this.pickMap(m.key);
+          this.saveSetup();
+          cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
+          card.classList.add('on');
+          this.setupScroll = 0;
+          // A list filtered to one mode already picked it: that one, when the map plays it.
+          const only = this.browse.modes.length === 1 ? this.browse.modes[0]! : null;
+          if (only && m.modes.includes(only) && this.setup.mode !== only) this.setMode(only);
+          this.refreshSetup();
+          // A phone: the pick pulls the settings up (the strip at the bottom names it; ▼ goes back to the grid).
+          if (narrowSetup()) this.setSheet(true);
+        });
+        if (lock) {
+          card.classList.add('locked');
+          card.dataset.lock = lock;
+          card.title = `${lock} You can still join a match on it.`;
+        }
+        // (Watched once it is in the list: the caller appends it.)
+        queueMicrotask(() => lazy(card, draw));
+        return card;
+      };
+      if (kind === 'story') {
+        // Its own chunk, the first time (the menu's first download stays under budget).
+        const fill = (mod: typeof import('./setupSectors.ts')) =>
+          this.browse.kind === 'story' &&
+          mod.drawStoryRows(cards, {
+            card: (key, note) => {
+              const m = listed.find((x) => x.key === key && !x.group);
+              return m ? cardFor(m, note) : null;
+            },
+            pickConvergence: (c) => {
+              const first = listed.find((x) => x.key === c.maps[0] && !x.group);
+              if (!first) return;
+              this.pickMap(first.key);
+              this.saveSetup();
+              this.setupScroll = 0;
+              this.refreshSetup();
+              drawCards();
+              if (narrowSetup()) this.setSheet(true);
+            },
+            name: (key) => listed.find((x) => x.key === key)?.metadata.name ?? key,
+          });
+        if (storyRows) fill(storyRows);
+        else {
+          cards.replaceChildren(el('p', { class: 'map-empty', textContent: 'Loading the sectors…' }));
+          void import('./setupSectors.ts').then((mod) => {
+            storyRows = mod;
+            if (cards.isConnected && this.browse.kind === 'story') drawCards();
+          });
+        }
+        return;
+      }
+      const built = listed.filter((m) => inSetupKind(kindOf(m), kind)).map((m, i) => ({ m, i }));
+      // (The which-maps tabs and the categories are Custom's: the other tabs list all of theirs.)
+      const tab = kind === 'custom' ? this.mapTab : 'all';
       const recent = this.browse.recent;
-      const cat = this.mapCat;
+      const cat = kind === 'custom' ? this.mapCat : null;
       const inTab = (m: (typeof this.maps)[number]) =>
         tab === 'picks' ? m.group === PICK_GROUP : m.group !== PICK_GROUP && (tab === 'all' || (tab === 'mine' ? m.group === OWN_GROUP : tab === 'featured' ? !m.group && FEATURED_MAPS.includes(m.key) : tab === 'recent' ? recent.includes(m.key) : favs.has(m.key)));
       // The maps the tab, the mode filter and the search leave; Custom also takes the community maps (Community Picks) under
@@ -1698,36 +1797,7 @@ export class FrontEnd {
         }
         const featured = !m.group && FEATURED_MAPS.includes(m.key);
         // Community maps say so on the card (docs/COMMUNITY_MAPS.md; owner: a clear "Community map" label).
-        const lock = this.hostLock(m);
-        const { card, draw } = mapCard(m, m.key === current.key, lock ? 'Locked: Story' : m.group === PICK_GROUP ? 'Community map' : featured ? 'Featured' : undefined, {
-          on: favs.has(m.key),
-          toggle: () => {
-            const now = !this.browse.favs.includes(m.key);
-            this.browse.favs = now ? [...this.browse.favs, m.key] : this.browse.favs.filter((k) => k !== m.key);
-            saveBrowsePrefs(this.browse);
-            return now;
-          },
-        });
-        card.addEventListener('click', () => {
-          this.pickMap(m.key);
-          this.saveSetup();
-          cards.querySelectorAll('.map-card.on').forEach((c) => c.classList.remove('on'));
-          card.classList.add('on');
-          this.setupScroll = 0;
-          // A list filtered to one mode already picked it: that one, when the map plays it.
-          const only = this.browse.modes.length === 1 ? this.browse.modes[0]! : null;
-          if (only && m.modes.includes(only) && this.setup.mode !== only) this.setMode(only);
-          this.refreshSetup();
-          // A phone: the pick pulls the settings up (the strip at the bottom names it; ▼ goes back to the grid).
-          if (narrowSetup()) this.setSheet(true);
-        });
-        if (lock) {
-          card.classList.add('locked');
-          card.dataset.lock = lock;
-          card.title = lock;
-        }
-        cards.append(card);
-        lazy(card, draw);
+        cards.append(cardFor(m, this.hostLock(m) ? 'Locked: Story' : m.group === PICK_GROUP ? 'Community map' : featured ? 'Featured' : undefined));
       }
       const none = q
         ? `No maps match "${this.mapQuery.trim()}".`
@@ -1759,7 +1829,7 @@ export class FrontEnd {
       'div',
       { class: `screen play${this.sheetOpen ? ' sheet-open' : ''}` },
       this.head('Match <em>Setup</em>'),
-      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-bar' }, tabs, tools), catBar, cards), panel),
+      el('div', { class: 'arcade' }, el('div', { class: 'map-browse', id: 'map-browse', role: 'region', ariaLabel: 'Maps' }, el('div', { class: 'map-kindrow' }, kindBar, catBar), mapBar, cards), panel),
     );
   }
 

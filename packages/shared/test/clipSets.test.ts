@@ -22,6 +22,6 @@ describe('clip sets', () => {
     expect(clipSetOf(CORE_LOOKS.find((l) => l.id === 'core.paratrooper')!)).toBe(DEFAULT_CLIP_SET);
     expect(clipSetOf(CORE_LOOKS.find((l) => l.id === 'core.rollerbot')!)).toBeNull();
     // An opted-out look says why in its manifest (clipsWhy); the rest have a set.
-    for (const l of CORE_LOOKS) if (l.locomotion !== 'roll' && l.clips !== false) expect(clipSetOf(l), l.id).toBeTruthy();
+    for (const l of CORE_LOOKS) if (!l.locomotion && l.clips !== false) expect(clipSetOf(l), l.id).toBeTruthy();
   });
 });
