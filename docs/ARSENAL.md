@@ -218,6 +218,33 @@ The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section
 - **Lever action: not made.** The Frontier Rifle is a scoped modern rifle, not a lever gun, and no lever-action model
   is in the repo or the Drive.
 
+## Weapon replacements of 2026-11-27 (batch 1)
+
+The owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows), built by
+`tools/content/prepare-guns.mjs` (pack `meshy-owned-drive-1127`). Each weapon keeps its rules, numbers, sounds and sets;
+only the model, its holds and its muzzle changed, the old model kept as the fallback.
+
+| Download | Now the model of | Build | Sight |
+|---|---|---|---|
+| Singularity Cannon | Singularity Cannon | 14k triangles (2.8k from 12 m) for everyone; your own hands a finer cut, 60k (`heldTriangles`, `heldMaxError` 0.004) at 1024/2048 px; its purple core lit (`glow`, now on the held tiers too) | top rail with flush nubs, no sight of its own (`hasSight` false): a red dot by default, holographic allowed, on the rail (`mount` set by hand: the tool's pick was the stock) |
+| Modular Classic RPG | Blast Rockets, Guided Rocket | 12k / 2.4k; held 50k | its leaf sights are not fitted: launchers still aim over the tube (content/optics.json `none`) |
+| Steampunk Claw Grapple Gun, Loaded and Unloaded; Deployed Grapple Hook | Grapple Hook (now held as a long gun) | 10k / 2k; held 30k, both poses; the claw 4k | none (a tool) |
+| Tactical Combat Medkit | Medkit, Medi-Beam, small health pickup | 7.4k, 1024 px; red crosses recoloured green (owner, 2026-11-03) | — |
+| Weapons Ammo Cache | the Ammo Box pickup (the general one) | 7.5k, its stencilled lettering painted out | — |
+
+**The grapple's two poses.** The loaded gun (claw in) is `view.model`; from a shot until the grapple can fire again
+(its fire interval) your own first-person gun shows the unloaded one (`view.spent`, built in the loaded one's frame:
+`frameOf` and `align`, CONTENT_PIPELINE "The weapons intake's options"), and the fired claw (`view.hookModel`) is
+drawn where the rope bites, its tip in the surface and its cable trailing back along the rope, gone with the rope.
+Other players' guns keep the loaded look.
+
+**Untextured copies.** `pickups/ammo_cache_plain.glb` and `pickups/medkit_plain.glb` (`flat`: one light grey, the
+normal map kept) ship for tinting (team colours, ammo types, themes); nothing draws them yet.
+
+**Pictures** (lane B's scratchpad `weapons1/`): the raw downloads (`raw/`), gridded side and top views of the built
+models (`grid/`), before/after inspect views, first person on High (hip and aimed) and the grip sheets (`batch/`,
+`singularity/`).
+
 ## Weapons intake of 2026-11-18: thirteen new guns, four new models
 
 The owner's Drive folder `weapons and stuff` (24 Meshy models, 2026-11-18; QUEUE "Weapons intake 11-18"). All Meshy
