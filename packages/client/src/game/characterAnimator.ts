@@ -158,6 +158,15 @@ const ROLL_HUNCH_PRONE = 0.32;
 const ROLL_SMOOTH = 10;
 const ROLL_LEAN_EASE = 6;
 const ROLL_TELEPORT = 3;
+/**
+ * Hovering (a look with `locomotion: 'hover'`, owner 2026-11-27: The Veiled Vanguard, Mujina): glides as a rolling body
+ * does, floating its `hover` height (m at 1.8 m, times its size) clear of the ground with a calm bob, HOVER_BOB m up and
+ * down over HOVER_BOB_SECONDS (no flicker: a slow sine, the same under Reduce flashing). Seated, dead or seen from its own
+ * eyes it comes down (HOVER_EASE per second); the hit shapes are measured lifted as much (tools/content/hitboxes.mjs).
+ */
+const HOVER_BOB = 0.025;
+const HOVER_BOB_SECONDS = 3.2;
+const HOVER_EASE = 3;
 /** How fast the gun follows a third-person aim point's turn (MotionState.aimYaw), per second. */
 const AIM_YAW_EASE = 18;
 /** Overlays outweigh locomotion on the upper body. */
@@ -502,6 +511,7 @@ export class CharacterAnimator {
       this.aimUpper.start(true);
     }
     this.clipGait = this.setUpClipGait();
+    if (ch.locomotion === 'hover') this.hoverScale = hoverScaleOf(ch);
     this.play('aim_idle', 1);
     this.observer = scene.onAfterAnimationsObservable.add(() => this.afterAnimations());
     // The gate on every animated node, and the skeleton's matrices held while it is shut.
@@ -891,6 +901,7 @@ export class CharacterAnimator {
     if (s.seated && s.legDrop !== undefined) this.legDrop = s.legDrop;
     if (s.seated) this.straddle = s.straddle ?? 0;
     this.sit += Math.sign(sitTarget - this.sit) * Math.min(Math.abs(sitTarget - this.sit), dt * 6);
+    if (this.hoverScale) this.hover(dt, s);
     this.applyProne();
     if (this.rolls) this.roll(dt, s);
     if (want !== this.current) {
@@ -1478,6 +1489,7 @@ export class CharacterAnimator {
     this.gate.skip = false;
     this.prone = 0;
     this.sit = 0;
+    this.hoverY = this.hoverBase = 0;
     this.applyProne();
     for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
     this.aimUpper?.stop();
@@ -1540,9 +1552,28 @@ export class CharacterAnimator {
     for (const j of this.ch.joints.values()) j.unfreezeWorldMatrix();
   }
 
-  /** A rolling body (the look's `locomotion`): glides, no walk cycle (see ROLL_LEAN_SPEED). */
+  /** A rolling or hovering body (the look's `locomotion`): glides, no walk cycle (see ROLL_LEAN_SPEED). */
   private get rolls(): boolean {
-    return this.ch.locomotion === 'roll';
+    return !!this.ch.locomotion;
+  }
+
+  /** Hovering: metres of lift per metre of `hover` (the body's drawn size over 1.8 m; 0 when it doesn't hover), the bob's time, the eased height and the lift drawn (parent m). */
+  private hoverScale = 0;
+  private hoverT = 0;
+  private hoverBase = 0;
+  private hoverY = 0;
+  private appliedHover = 0;
+
+  /** Hovering: ease toward the look's height (down when seated or seen from its own eyes) and bob slowly about it. */
+  private hover(dt: number, s: MotionState): void {
+    this.hoverT = (this.hoverT + dt) % HOVER_BOB_SECONDS;
+    const up = s.seated || this.fp ? 0 : this.hoverScale;
+    this.hoverBase += ((this.ch.hover ?? 0) * up - this.hoverBase) * Math.min(1, dt * HOVER_EASE);
+    this.hoverY = this.hoverBase + HOVER_BOB * up * Math.sin((this.hoverT / HOVER_BOB_SECONDS) * Math.PI * 2);
+  }
+  /** The lift a hovering body is drawn at now (parent m): 0 for every other body. */
+  get hoverLift(): number {
+    return this.hoverY;
   }
 
   /** Rolling: where the body was (world), its eased velocity and acceleration (m/s, m/s²), and the lean now (radians). */
@@ -1631,8 +1662,9 @@ export class CharacterAnimator {
   private applied = 0;
 
   private applyProne(): void {
-    if (this.prone === this.applied && this.sit === this.appliedSit && this.slideTip === this.appliedSlide && this.tumble === this.appliedTumble && this.stepTip === this.appliedStep) return;
+    if (this.prone === this.applied && this.sit === this.appliedSit && this.slideTip === this.appliedSlide && this.tumble === this.appliedTumble && this.stepTip === this.appliedStep && this.hoverY === this.appliedHover) return;
     this.applied = this.prone;
+    this.appliedHover = this.hoverY;
     this.appliedSit = this.sit;
     this.appliedSlide = this.slideTip;
     this.appliedTumble = this.tumble;
@@ -1646,7 +1678,7 @@ export class CharacterAnimator {
     const drop = ((this.hipHeight ?? HIP_HEIGHT) - SIT_CLEAR) * this.sit;
     // Sliding, the hips drop toward the ground as the body tips back over the feet.
     const slid = this.slideTip / SLIDE_TIP;
-    root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT) - drop - 0.12 * slid, this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone + this.slideTip));
+    root.position.set(this.rootBase.x, this.rootBase.y + 0.12 * (this.prone / PRONE_TILT) - drop - 0.12 * slid + this.hoverY, this.rootBase.z - HIP_HEIGHT * Math.sin(this.prone + this.slideTip));
     // A roll turns the body about its middle toward the way it goes (a step leans it into the step and lifts it a
     // little); the axis lies across that way: rolling ahead (+Z) turns about +X, which tips the top forward.
     const turn = this.tumble + this.stepTip * STEP_LEAN;
@@ -1699,8 +1731,9 @@ export class CharacterAnimator {
     this.dead = true;
     this.endSmoothing();
     this.gate.skip = false;
-    // The ragdoll takes over from wherever the body is.
+    // The ragdoll takes over from wherever the body is (a hovering one drops to the ground).
     this.prone = 0;
+    this.hoverY = this.hoverBase = 0;
     this.applyProne();
     for (const g of this.ch.clips.values()) if (g.isPlaying) g.stop();
     this.aimUpper?.stop();
@@ -2758,6 +2791,21 @@ export const PISTOL = {
 };
 
 /** Down a grip raked back `degrees` from upright (its foot further back), in the world: a hand's knuckle line, index to little finger. */
+/**
+ * A hovering body's lift per metre of its look's `hover` (its parent's metres): the body as fitted and sized (view.ts
+ * fitCharacter, menuScene) stands its size times 1.8 m, so its lift scales with it as its hit shapes do.
+ */
+export function hoverScaleOf(ch: Pick<CharacterInstance, 'root'>): number {
+  const root = ch.root;
+  freshWorld(root);
+  const { min, max } = root.getHierarchyBoundingVectors(true);
+  const parentScale = (root.parent as TransformNode | null)?.absoluteScaling.y || 1;
+  const tall = (max.y - min.y) / parentScale;
+  return tall > 0.3 && Number.isFinite(tall) ? tall / HOVER_STAND : 1;
+}
+/** The standing height every character is fitted to (PLAYER.height). */
+const HOVER_STAND = 1.8;
+
 function rakedLine(gun: { up: Vector3; ahead: Vector3; right: Vector3 }, degrees: number): Vector3 {
   const a = (degrees * Math.PI) / 180;
   return gun.up.scale(-Math.cos(a)).subtract(gun.ahead.scale(Math.sin(a))).normalize();

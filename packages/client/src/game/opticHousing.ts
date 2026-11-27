@@ -146,12 +146,13 @@ function tubeParts(scene: Scene, o: CarriedOptic): Mesh[] {
   const r = g.half[1];
   const out = r + 0.0025;
   const parts: Mesh[] = [];
-  // A low clamp on the gun's top and a tapered riser under the tube (owner, 2026-11-23, "that scope tho": a square
-  // block on a square slab read as crude once the sight picture drew it larger).
-  parts.push(box(scene, 0.024, 0.0045, g.length * 0.7, 0, 0, 0));
+  // A low clamp on the gun's top and a tapered saddle under the tube (owner, 2026-11-23, "that scope tho": a square
+  // block on a square slab read as crude once the sight picture drew it larger). The saddle runs most of the tube's
+  // length, so the tube sits on the gun rather than floating on a post (owner, 2026-11-27, "two sights stacked").
+  parts.push(box(scene, 0.024, 0.0045, g.length * 0.9, 0, 0, 0));
   const lift = g.rise - out + 0.002 - 0.004;
-  const riser = CreateCylinder('opticPart', { height: lift, diameterTop: 0.011, diameterBottom: 0.018, tessellation: 16 }, scene);
-  riser.scaling.z = (g.length * 0.5) / 0.018;
+  const riser = CreateCylinder('opticPart', { height: lift, diameterTop: 0.014, diameterBottom: 0.021, tessellation: 16 }, scene);
+  riser.scaling.z = (g.length * 0.86) / 0.021;
   riser.position.set(0, 0.004 + lift / 2, 0);
   parts.push(riser);
   const tube = CreateCylinder('opticPart', { height: g.length, diameter: out * 2, tessellation: 28, cap: Mesh.NO_CAP, sideOrientation: Mesh.DOUBLESIDE }, scene);

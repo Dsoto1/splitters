@@ -59,8 +59,13 @@ describe("Character Select's groups", () => {
     const at = (g: string) => CORE_LOOKS.filter((l) => l.group === g).map((l) => l.id);
     expect(at('horror')).toEqual(expect.arrayContaining(['core.undeadsoldier', 'core.bonejack', 'core.anubis', 'core.gargoyle']));
     expect(at('animals')).toEqual(expect.arrayContaining(['core.bandit', 'core.koala', 'core.shiba']));
-    expect(at('legends')).toEqual(expect.arrayContaining(['core.knight', 'core.abe', 'core.trex', 'core.khan']));
-    expect(at('folk')).toEqual(expect.arrayContaining(['core.afropi', 'core.radishman', 'core.hazmat', 'core.bronzer']));
+    // Owner, 2026-11-27: Legends keeps seven; the famous real people and the period characters are Historical's.
+    expect(at('legends').sort()).toEqual(['core.abyssalhunter', 'core.basaltguardian', 'core.celestialknight', 'core.frostvalkyrie', 'core.magmajuggernaut', 'core.mystic', 'core.sunpriest']);
+    expect(at('historical')).toEqual(expect.arrayContaining(['core.abe', 'core.franklin', 'core.washington', 'core.roosevelt', 'core.shaka', 'core.khan', 'core.vikingm', 'core.caesar', 'core.templar', 'core.aztecjaguar', 'core.dustycolt']));
+    expect(at('folk')).toEqual(expect.arrayContaining(['core.afropi', 'core.radishman', 'core.hazmat', 'core.bronzer', 'core.ansel', 'core.elder', 'core.grandpachains']));
+    expect(at('space')).toEqual(expect.arrayContaining(['core.vanguard', 'core.knight']));
+    // The mummies and Egyptian undead stay in Horror.
+    expect(at('horror')).toEqual(expect.arrayContaining(['core.anubis', 'core.pharaoh', 'core.ankhmummy']));
     // Creatures merged into Horrors & Creatures, Agents & Spies into Soldiers & Spies (2026-11-17).
     expect(at('horror')).toEqual(expect.arrayContaining(['core.snikkit', 'core.gorgle', 'core.grizzelda']));
     expect(at('machines')).toEqual(expect.arrayContaining(['core.emeraldrobot', 'core.t350', 'core.botboy']));
@@ -98,7 +103,7 @@ describe("Character Select's groups", () => {
 
   it("the owner's categories, in order (Roster Board, 2026-11-14/15; merged 2026-11-17)", () => {
     expect(CHARACTER_GROUPS.map((g) => `${g.id}:${g.label}`)).toEqual([
-      'soldiers:Soldiers & Spies', 'folk:Everyday Folk', 'space:Outer Space', 'legends:Legends', 'pirates:Pirates',
+      'soldiers:Soldiers & Spies', 'folk:Everyday Folk', 'space:Outer Space', 'legends:Legends', 'historical:Historical', 'pirates:Pirates',
       'animals:Animalia', 'toys:Toys', 'holiday:Holiday', 'machines:Machines', 'horror:Horrors & Creatures',
     ]);
     // Uncle Bao and the Rusty Mech are off the roster; a saved choice plays the nearest kept look.
@@ -165,7 +170,7 @@ describe("Character Select's groups", () => {
     for (const t of toys) expect(t.branch, t.id).toBeUndefined();
   });
 
-  it('like histories sit side by side, the famous real people together in Legends (owner, 2026-11-26)', () => {
+  it('like histories sit side by side, the Historical row by period oldest first (owner, 2026-11-26 and 11-27)', () => {
     const sections = characterSections(CORE_LOOKS.filter((l) => !l.variantOf).map((l) => ({ id: l.id, name: l.name, group: characterSectionOf(l) ?? 'mine', ...(l.sortAs ? { sortAs: l.sortAs } : {}) })));
     for (const list of CHARACTER_NEIGHBOURS) {
       const sec = sections.find((s) => s.looks.some((l) => l.id === list[0]))!;
@@ -174,9 +179,13 @@ describe("Character Select's groups", () => {
       const at = sec.looks.findIndex((l) => l.id === list[0]);
       expect(sec.looks.slice(at, at + list.length).map((l) => l.id)).toEqual([...list]);
     }
-    const legends = sections.find((s) => s.id === 'legends')!.looks.map((l) => l.id);
+    const historical = sections.find((s) => s.id === 'historical')!.looks.map((l) => l.id);
     const famous = ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'];
-    expect(legends.slice(legends.indexOf(famous[0]!), legends.indexOf(famous[0]!) + 5)).toEqual(famous);
+    expect(historical.slice(historical.indexOf(famous[0]!), historical.indexOf(famous[0]!) + 5)).toEqual(famous);
+    // Rome first, the Wild West last; every Historical character in the row's own list (none left to sort by name).
+    expect(historical[0]).toBe('core.gladiatrix');
+    expect(historical.at(-1)).toBe('core.thornweaver');
+    expect(sections.findIndex((s) => s.id === 'historical')).toBe(sections.findIndex((s) => s.id === 'legends') + 1);
   });
 
   it("retired looks that aren't the owner's own models are gone entirely, and every removed one plays one of the owner's own (owner, 2026-11-25)", () => {

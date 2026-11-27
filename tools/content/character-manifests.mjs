@@ -39,8 +39,14 @@ const PACK = { owned: 'meshy-owned', CC0: 'meshy-community-characters' };
 const KINDS = new Set(['character', 'creature']);
 const USES = new Set(['player', 'npc', 'player+npc', 'npc+player']);
 const FIXES = new Set(['triangles', 'surface', 'seamWeld', 'lean', 'cloth', 'tail', 'feet', 'centre', 'scrubBlue', 'recolor', 'hands', 'armCloth', 'skinClean', 'handsShare', 'headShare', 'face', 'plugs', 'lod', 'normalSize', 'hold', 'holdPistol', 'grip', 'skin', 'fingers', 'rejoint']);
-/** How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls. */
-const LOCOMOTION = new Set(['roll']);
+/**
+ * How a character gets about: left out, it walks on the rig's clips; `roll`, it has no legs (a ball, a wheel) and rolls;
+ * `hover`, it floats clear of the ground as if flying (owner, 2026-11-27: The Veiled Vanguard, Mujina), `hover` metres up.
+ */
+const LOCOMOTION = new Set(['roll', 'hover']);
+/** A hovering body's height over the ground (m at a 1.8 m body; its size class scales it) when the manifest leaves it out, and the most it may ask. */
+export const HOVER_DEFAULT = 0.3;
+const HOVER_MAX = 0.8;
 /** The rig's body joints (no fingers): what a hard part can ride (`fixes.skin.rigid`). */
 export const RIG_BODY_JOINTS = ['pelvis', 'spine_01', 'spine_02', 'spine_03', 'neck_01', 'Head', ...['l', 'r'].flatMap((s) => ['clavicle', 'upperarm', 'lowerarm', 'hand', 'thigh', 'calf', 'foot', 'ball'].map((j) => `${j}_${s}`))];
 /** The clips a clip set (`clipsFrom`, tools/content/clip-set.mjs) can hold, as the game asks for them (characterAnimator.ts). */
@@ -52,7 +58,7 @@ const HEX = /^#[0-9a-f]{6}$/;
 /** Character Select's groups (what a character is); the same list as CHARACTER_GROUPS in packages/shared/src/content/looks.ts (a test keeps them equal). */
 /** A character's tier (CHARACTER_TIERS in packages/shared/src/content/looks.ts; a test keeps them equal): left out, core. */
 export const TIERS = ['core', 'experimental'];
-export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'pirates', 'animals', 'toys', 'holiday', 'machines', 'horror'];
+export const GROUPS = ['soldiers', 'folk', 'space', 'legends', 'historical', 'pirates', 'animals', 'toys', 'holiday', 'machines', 'horror'];
 /** Character Select's collections (CHARACTER_COLLECTIONS in looks.ts, a test keeps them equal): a section of its own for a set of characters, whatever their tier; `collection` in a manifest. */
 export const COLLECTIONS = ['chrono'];
 /** Soldiers & Spies' sub-designators (`branch`; CHARACTER_BRANCHES in looks.ts, a test keeps them equal): every character in `soldiers` names one, no other does. */
@@ -164,7 +170,8 @@ export function manifestProblems(m, file = `${m?.id}.json`) {
   need(m.nameTheme === undefined || NAME_THEMES.includes(m.nameTheme), `nameTheme: the kind of creature, for its bots' names (${NAME_THEMES.join(', ')}); left out: its group's (soldiers: soldier)`);
   need(m.body === 'male' || m.body === 'female', 'body: male or female');
   need(m.size === undefined || m.size === 'small' || m.size === 'large', 'size: small, large or left out');
-  need(m.locomotion === undefined || LOCOMOTION.has(m.locomotion), `locomotion: ${[...LOCOMOTION].join(' or ')} (no legs to walk on: it rolls or glides on what it has), or left out (walks)`);
+  need(m.locomotion === undefined || LOCOMOTION.has(m.locomotion), `locomotion: ${[...LOCOMOTION].join(' or ')} (no legs to walk on: it rolls or glides on what it has, or floats), or left out (walks)`);
+  need(m.hover === undefined || (m.locomotion === 'hover' && typeof m.hover === 'number' && m.hover > 0 && m.hover <= HOVER_MAX), `hover: with locomotion hover, how high it floats (m at a 1.8 m body, up to ${HOVER_MAX}; left out ${HOVER_DEFAULT})`);
   if (m.clipsFrom !== undefined) {
     const e = Object.entries(m.clipsFrom ?? {});
     need(m.clipsFrom && typeof m.clipsFrom === 'object' && e.length > 0 && e.every(([k, v]) => CLIP_SET_CLIPS.includes(k) && typeof v === 'string' && v.length > 0), `clipsFrom: { "<clip>": "<the download's clip name>" } for clips ${CLIP_SET_CLIPS.join(', ')} (its download's authored clips, retargeted onto the rig as <id>_clips.glb)`);
@@ -491,7 +498,7 @@ function lookLine(m) {
   // The common fields come from w() (looksSource): the menu's first script carries every look, so each line holds only
   // what is its own (the universal arms of its body are w()'s default).
   const plainWhole = whole === `whole: { arms: ${q(universalArms(m))} }`;
-  const parts = [...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), ...(plainWhole ? [] : [whole]), ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.collection ? [`collection: ${q(m.collection)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.variant ? [`variant: ${q(m.variant)}`] : []), ...(m.variantOf ? [`variantOf: ${q(m.variantOf)}`] : []), ...(m.npcOnly ? ['npcOnly: true'] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
+  const parts = [...(m.size ? [`size: ${q(m.size)}`] : []), ...(m.locomotion ? [`locomotion: ${q(m.locomotion)}`] : []), ...(m.locomotion === 'hover' ? [`hover: ${m.hover ?? HOVER_DEFAULT}`] : []), ...(m.clips ? [`clips: ${q(m.clips)}`] : m.clips === false ? ['clips: false'] : []), ...(plainWhole ? [] : [whole]), ...(m.group ? [`group: ${q(m.group)}`] : []), ...(m.branch ? [`branch: ${q(m.branch)}`] : []), ...(m.collection ? [`collection: ${q(m.collection)}`] : []), ...(m.sortAs ? [`sortAs: ${q(m.sortAs)}`] : []), ...(m.variant ? [`variant: ${q(m.variant)}`] : []), ...(m.variantOf ? [`variantOf: ${q(m.variantOf)}`] : []), ...(m.npcOnly ? ['npcOnly: true'] : []), ...(m.tier === 'experimental' ? [`tier: ${q(m.tier)}`] : []), ...(m.nameTheme ? [`nameTheme: ${q(m.nameTheme)}`] : []), ...(m.stats ? [`stats: { ${STAT_ORDER.filter((k) => m.stats[k] !== undefined).map((k) => `${k}: ${m.stats[k]}`).join(', ')} }`] : [])];
   return `  w(${q(m.look)}, ${q(m.name)}, ${q(m.body)}, ${q(m.id)}${parts.length ? `, { ${parts.join(', ')} }` : ''}),`;
 }
 

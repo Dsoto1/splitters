@@ -58,7 +58,7 @@ export interface WeaponOptics {
 /** Per hand-held gun that carries an optic (iron sights included). */
 export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.amarillo': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.0914, 0.126], scale: 0.85 } },
-  'core.arc_caster': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.22251, -0.034], scale: 0.85, eye: -0.334 } },
+  'core.arc_caster': { default: 'holo', allowed: ['holo', 'reddot'], window: { at: [0, 0.189, -0.118], half: [0.024, 0.024], round: true } },
   'core.arena_disc': { default: 'holo', allowed: ['holo', 'reddot'], mount: { at: [0, 0.21297, 0.066], scale: 1.2, eye: -0.234 } },
   'core.auto_shotgun': { default: 'irons', allowed: ['irons', 'reddot', 'holo'], mount: { at: [0, 0.09775, -0.098], scale: 1.2, eye: -0.398 } },
   'core.battle_rifle': { default: 'scope', allowed: ['scope'], mag: 3.5 },
@@ -93,7 +93,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.smg': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.08672, -0.128], scale: 1.16, eye: -0.428 } },
   'core.sniper': { default: 'sniper', allowed: ['sniper'], mag: 3.95 },
   'core.twin_rifle': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.127, -0.108], half: [0.015, 0.015], round: true } },
-  'core.woodland_smg': { default: 'reddot', allowed: ['reddot', 'irons', 'holo', 'x2'], mount: { at: [0, 0.10268, -0.032], scale: 0.99, eye: -0.422 } },
+  'core.woodland_smg': { default: 'irons', allowed: ['irons'] },
 };
 
 /** The weapons without one, and why: they keep the aim they had (or never aim: mounted, melee, tools). */
