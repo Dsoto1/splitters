@@ -589,20 +589,24 @@ async function editorFlow(browser) {
   const modesBefore = (await doc()).metadata.supportedModes;
   await page.evaluate((before) => window.__editor.run('Mode', { kind: 'setMetadata', before: { supportedModes: before }, after: { supportedModes: ['core.tdm', ...before.filter((m) => m !== 'core.tdm')] } }), modesBefore);
   await page.evaluate(() => window.__editor.run('Set teams', { kind: 'setTeamSetup', before: window.__editor.doc.teamSetup, after: { sizes: [2, 2, 2, 2, 2, 2, 2, 2] } }));
-  // Map settings drawn afresh for each look (closed first if open: an edit made from outside them doesn't redraw them).
-  const freshSettings = async () => {
-    if (await page.evaluate(() => document.getElementById('ed-map-settings')?.hidden === false)) await page.click('#ed-ms-close');
-    await openMapSettings(page);
-    await page.waitForSelector('#ed-team-preset', { state: 'attached', timeout: T(10000) });
-  };
-  await freshSettings();
+  // Edits reach Map settings on MapMaker's next frame (EditorApp.frame → refresh → MapSettingsView.refresh), so each
+  // read waits for the view to show the edit rather than reading straight after it.
+  await openMapSettings(page);
   const chipsOf = () => page.evaluate(() => [...document.querySelectorAll('#ed-team-preset button')].map((b) => `${b.textContent}${b.classList.contains('on') || b.getAttribute('aria-pressed') === 'true' ? '*' : ''}${b.dataset.odd ? '!' : ''}`));
+  const shows = (lit, steppers) => page.waitForFunction(([lit, n]) => document.querySelector('#ed-team-preset button.on')?.dataset.value === lit && document.querySelectorAll('#ed-map-settings [data-team]').length === n, [lit, steppers], { timeout: T(5000) }).then(() => true, () => false);
+  const oddShown = await shows('2,2,2,2,2,2,2,2', 8);
   const oddChips = await chipsOf();
+  // A click on a chip in the open view: the lit chip and the team steppers follow, the view left open.
   await page.click('#ed-team-preset button[data-value="4,4"]');
-  const picked = await page.waitForFunction(() => window.__editor.doc.teamSetup?.sizes.join(',') === '4,4', null, { timeout: T(5000) }).then(() => true, () => false);
-  await freshSettings();
+  const picked = { doc: await page.waitForFunction(() => window.__editor.doc.teamSetup?.sizes.join(',') === '4,4', null, { timeout: T(5000) }).then(() => true, () => false), view: await shows('4,4', 2) };
   const commonChips = await chipsOf();
-  check(picked && JSON.stringify(oddChips) === JSON.stringify(['2v2v2v2v2v2v2v2*!', '1v1', '2v2', '4v4', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']) && JSON.stringify(commonChips) === JSON.stringify(['1v1', '2v2', '4v4*', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']), `Map settings' team Layout chips are the common ones; a saved odd layout shows first, lit; a chip sets the layout (${JSON.stringify({ oddChips, picked, commonChips })})`);
+  // And drawn afresh (closed and opened again) it shows the same.
+  await page.click('#ed-ms-close');
+  await openMapSettings(page);
+  await page.waitForSelector('#ed-team-preset', { state: 'attached', timeout: T(10000) });
+  const reopened = await chipsOf();
+  const want = ['1v1', '2v2', '4v4*', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4'];
+  check(oddShown && picked.doc && picked.view && JSON.stringify(oddChips) === JSON.stringify(['2v2v2v2v2v2v2v2*!', '1v1', '2v2', '4v4', '8v8', '2v2v2', '3v3v3', '2v2v2v2', '4v4v4v4']) && JSON.stringify(commonChips) === JSON.stringify(want) && JSON.stringify(reopened) === JSON.stringify(want), `Map settings' team Layout chips are the common ones; a saved odd layout shows first, lit; a chip clicked in the open view lights and sets its layout, steppers too (${JSON.stringify({ oddShown, oddChips, picked, commonChips, reopened })})`);
   for (let i = 0; i < 3; i++) await page.keyboard.press('Control+KeyZ');
   check(JSON.stringify((await doc()).metadata.supportedModes) === JSON.stringify(modesBefore), 'undo takes the teams and mode back');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
