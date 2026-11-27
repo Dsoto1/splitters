@@ -56,7 +56,6 @@ Everything else keeps its place below these.
 
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
-- `wip/fixes-20261126b` · 1c4a6183 · 45914831668 (lane A fix batch 11-26b: the hostcontrols Bots-window flake (e2e only); the classroom's row of three desks by the door (owner); attempt 1, full suite)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -222,6 +221,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-27** `wip/fixes-20261126b` (green 1c4a6183, run 45914831668), landed alone by the splitters lead: the hostcontrols Bots-window flake fixed in the flow (a late mouse lock made two Esc presses land inside the game's 250 ms guard); St. Jasper's classrooms: the door-side desk row is a row of three with its hall-end desk left out and moved 0.18 m toward the windows, so players and bots pass the open leaf (new kit families and set-piece `mirrorModel`).
 - 2026-11-26 · B · Impact effects by material: splinters, grit and dust, clods, leaves, glass and ice shards; holes by surface; calmer metal sparks with Reduce flashing; brick/rock, thin metal and ice sound sets; ice its own surface (green 19641e14, run 45906960798; landed alone). Owner questions open: gravel's own sounds, metal sparks under Reduce flashing, the ice sound.
 - 2026-11-26 · B · The pause menu's Host tab is Match Setup itself: its four tabs, each setting marked Now or At restart, one button ("Apply now" / "Restart with these"), kick/ban and rotation kept (train `check/train-20261126-210012`, green 87e38208, run 45895062747). Owner questions open: "Save for next match" gone; dedicated servers keep the old panel; no Save preset in the pause menu; some restarts reload.
 - 2026-11-26 · B · Character round (b): Kato on Ashwalker's place and Shaka his own, ranks and titled names (Toys ranks, no doubled titles), Pete Plastic's green blood, The Veiled Vanguard (floats), T-TreeFitty's new model and 5 looks, Fishy Fred's pistol hand (train `check/train-20261126-200214`, green 92915b43, run 45888074167). The evening's changes follow on `wip/chars-1126c`.
