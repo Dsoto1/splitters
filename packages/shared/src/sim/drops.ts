@@ -4,7 +4,8 @@
  * exactly that ammo; the rest of what they carried is recycled. The match
  * (sim/match.ts) owns the lying drops; this module decides what drops and
  * what a pickup of one takes. A drop lies on the first walkable floor under
- * where its owner died, never on a vehicle or a turret (owner, 2026-11-27:
+ * where its owner died (just beside a vehicle's hull, not under it), never on
+ * a vehicle or a turret (owner, 2026-11-27:
  * riders' guns hung in the air at the Hauler's seats); from water, on the
  * nearest dry floor within DROP_SHORE; over nothing, none (match.ts dropSpot).
  * Clients draw its fall (`dw`'s seventh field, for DROP_FALL_TICKS).
@@ -20,6 +21,8 @@ export const MAX_DROPS = 24;
 export const DROP_REACH = 40;
 /** In water or over nothing, a drop lies on the nearest dry floor within this far (m) instead, in sight of the spot. */
 export const DROP_SHORE = 6;
+/** A drop that would lie under a vehicle lies this far (m) beside its hull instead (a rider's, on the seat's side). */
+export const DROP_BESIDE = 0.45;
 /** ...and no more than this far (m) above or below it. */
 export const DROP_CLIMB = 2.5;
 /** Clients are told for this long (ticks) the height a new or fallen drop came down from (they show the fall). */

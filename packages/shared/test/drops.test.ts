@@ -238,10 +238,15 @@ describe('weapon drops land on the ground', () => {
     // (The yard is flat: its floor as it is in the open.)
     const ground = floorY(match, 4, 4);
     expect(Math.abs(d.pos.y - ground)).toBeLessThan(0.05);
-    // Under the seat (the yard’s floor, below the Hauler’s bed), and the fall from it is in the snapshot.
-    expect(d.pos.x).toBeCloseTo(seat.x);
-    expect(d.pos.z).toBeCloseTo(seat.z);
-    expect(d.pos.y).toBeLessThan(MOUNT_DEFS.hauler.half[1]);
+    // On the yard’s floor below the seat, just beside the Hauler’s hull on the seat’s side (where it can be seen and
+    // taken, not under the truck), and the fall from the seat is in the snapshot.
+    const half = MOUNT_DEFS.hauler.half;
+    expect(d.pos.y).toBeLessThan(half[1]);
+    expect(Math.hypot(d.pos.x - seat.x, d.pos.z - seat.z)).toBeLessThan(Math.max(half[0], half[2]) + 0.5);
+    // (Parked at 12 0 18 turned a quarter: its length along x, its sides at z 18 ± half[0].)
+    const inside = Math.abs(d.pos.x - 12) < half[2] && Math.abs(d.pos.z - 18) < half[0];
+    expect(inside).toBe(false);
+    expect(Math.abs(d.pos.x - 12) <= half[2] + 0.5 && Math.abs(d.pos.z - 18) <= half[0] + 0.5).toBe(true);
     expect(match.snapshot([]).dw![0]![6]).toBeCloseTo(seat.y, 2);
   });
 

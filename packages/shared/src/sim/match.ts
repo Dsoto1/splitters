@@ -76,7 +76,7 @@ import {
 import { dealPickup, rollPickup } from './pickupRoll.ts';
 import { AMMO_BOX_HALF, AMMO_BOX_ITEM, AMMO_BOX_REACH, AMMO_BOX_WAIT, BOT_RESUPPLY_REACH, COOK_OFF, DEPLOYED_BOX, PLACED_BOX, cookOff, isAmmoBoxPickup, resupplyLoadout, resupplyPoint, resupplyReach } from './resupply.ts';
 import { setAllowsDrop, setLoadout, setPickupPool, setSpawnWeapons, weaponSetInPlay, type WeaponSetDef } from './weaponSets.ts';
-import { DROP_CLIMB, DROP_FALL_TICKS, DROP_LIE_SECONDS, DROP_REACH, DROP_SETTLE_TICKS, DROP_SHORE, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
+import { DROP_BESIDE, DROP_CLIMB, DROP_FALL_TICKS, DROP_LIE_SECONDS, DROP_REACH, DROP_SETTLE_TICKS, DROP_SHORE, MAX_DROPS, chooseDrop, dropItem, dropSpent, takeDropAmmo, type WeaponDrop } from './drops.ts';
 import { bodyHeightOf, eyeHeightOf, stanceOf, BUTTON_USE_HOLD } from './movement.ts';
 import { eyePoint, eyeScaleOf, rollRaise, dodgeKindOf } from './moves.ts';
 import { HOLD_HEAL_SCALE, HOLD_HEAL_SLACK, HOLD_KINDS, isHoldHealTool, startHold, stepHold, type HoldCancel, type HoldUse } from './holdUse.ts';
@@ -7090,7 +7090,13 @@ export class Match {
     };
     const top = at.y + 0.5;
     const under = lies(at.x, top, at.z, DROP_REACH);
-    if (under) return under;
+    if (under) {
+      // Under a vehicle (a rider's seat over its bed): just beside it, on the seat's side, where it can be seen and taken.
+      const out = this.besideMount(under);
+      const beside = out && lies(out.x, Math.max(top, out.y + DROP_CLIMB), out.z, DROP_REACH);
+      // (About level with the ground under it: not on a wall the vehicle is parked against, nor down a drop.)
+      return beside && Math.abs(beside.y - under.y) < 0.6 ? beside : under;
+    }
     // In water or over nothing: the nearest dry floor around, in sight and about level (a shore, the ledge fallen off).
     const wet = this.liquids.length ? liquidAt(this.liquids, { x: at.x, y: at.y + 0.15, z: at.z }) : null;
     const level = wet ? Math.max(at.y, wet.max.y) : at.y;
@@ -7111,6 +7117,27 @@ export class Match {
         }
       }
       if (best) return best;
+    }
+    return null;
+  }
+
+  /** A spot on the ground under a mount's hull: the nearest spot just outside its footprint (else null). */
+  private besideMount(p: Vec3): Vec3 | null {
+    for (const m of this.mounts) {
+      if (!m.alive) continue;
+      const [hx, hy, hz] = m.def.half;
+      if (p.y < m.pos.y - 0.5 || p.y > m.pos.y + hy * 2) continue;
+      const s = Math.sin(m.yaw);
+      const c = Math.cos(m.yaw);
+      // Into the hull's own axes (sim/mounts.ts mountToWorld: right is (cos, -sin), forward (sin, cos)).
+      const dx = p.x - m.pos.x;
+      const dz = p.z - m.pos.z;
+      const lx = dx * c - dz * s;
+      const lz = dx * s + dz * c;
+      if (Math.abs(lx) > hx || Math.abs(lz) > hz) continue;
+      const side = hx - Math.abs(lx) <= hz - Math.abs(lz);
+      const o: [number, number, number] = side ? [(lx < 0 ? -1 : 1) * (hx + DROP_BESIDE), 0, lz] : [lx, 0, (lz < 0 ? -1 : 1) * (hz + DROP_BESIDE)];
+      return mountToWorld({ x: m.pos.x, y: p.y, z: m.pos.z }, m.yaw, o);
     }
     return null;
   }
