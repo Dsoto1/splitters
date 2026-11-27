@@ -13,7 +13,7 @@ export const VIEW_LAYERS: readonly [string, string][] = [
 ];
 
 /**
- * The top bar's View menu (MapMaker UI spec Phase 1, the owner's answer 5): the grid, the full grid and overlaps
+ * The top bar's View menu (MapMaker UI spec Phase 1, the owner's answer 5): the grid, the full grid, overlaps, the breakable-wall mark
  * (top-bar toggles before), the plan view (K) and the map layers (Map properties before: they only change what
  * MapMaker shows, never the map). Each item is a checkbox; the ids are the old toggles', so their actions read the same.
  */
@@ -29,12 +29,14 @@ export class ViewMenu {
     const grid = menuItem('ed-grid', 'Grid', { checkbox: true, title: "Grid lines on the level being edited, round where you're looking (the playable boundary and build limit always show)", onClick: () => this.setGrid(!grid.classList.contains('on')) });
     const full = menuItem('ed-grid-full', 'Full grid', { checkbox: true, title: 'Full grid: the grid over the whole build area, out to the build limit (off: just round where you are looking)', onClick: () => this.setGridFull(!this.app.view.area.gridFull) });
     const overlaps = menuItem('ed-overlaps', 'Overlaps', { checkbox: true, title: "Highlight places where a block's face lies in the same plane as another piece's (only one look shows there)", onClick: () => this.setOverlaps(!this.app.checks.overlapsOn) });
+    const breakWalls = menuItem('ed-breakwall-marks', 'Breakable walls', { checkbox: true, title: 'Mark the walls a blast breaks (amber, dashed): MapMaker only, never in play, Test or the map picture', onClick: () => this.setBreakWallMarks(!this.app.view.breakMarks.shown) });
     const plan = menuItem('ed-plan', 'Plan view', { checkbox: true, key: 'K', title: 'Plan view: the level being edited from straight above, with spawns, objectives and pickups', onClick: () => this.app.plan.toggle() });
     setChecked(grid, true);
     setChecked(full, false);
     setChecked(overlaps, false);
+    setChecked(breakWalls, true);
     setChecked(plan, false);
-    menu.append(grid, full, overlaps, plan, menuHeading('Map layers (MapMaker only)'));
+    menu.append(grid, full, overlaps, breakWalls, plan, menuHeading('Map layers (MapMaker only)'));
     for (const [key, label] of VIEW_LAYERS) {
       const item = menuItem(`ed-layer-${key}`, label, { checkbox: true, title: `Show or hide ${label.toLowerCase()} in MapMaker (the map keeps them)`, onClick: () => this.setLayer(key, this.app.view.hiddenLayers.has(key)) });
       item.dataset.layer = key;
@@ -79,6 +81,12 @@ export class ViewMenu {
     this.app.checks.overlapsOn = on;
     setChecked($('ed-overlaps'), on);
     this.app.view.setOverlaps(on ? this.app.checks.zSpots : null);
+  }
+
+  /** Breakable walls: the editor-only mark on walls that break (editorView breakMarks), on unless switched off. */
+  setBreakWallMarks(on: boolean): void {
+    this.app.view.breakMarks.setOn(on);
+    setChecked($('ed-breakwall-marks'), on);
   }
 
   setLayer(key: string, shown: boolean): void {

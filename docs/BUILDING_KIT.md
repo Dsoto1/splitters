@@ -13,7 +13,7 @@ is still there; this says where each one is now.
   **Structure theme** chip (it opens Map settings at the theme: painting Phase 3); TEST's **bots** and **skill** (not saved with the map: the map's own bots are in Map settings → Gameplay →
   Bots); ▶ Here and ▶ PLAY TEST. On a narrow window it tightens in steps (`fitTopBar`, `fit-1`…`fit-7`); at 1280 px and
   up nothing is cut off. Under about 1,000 px the theme chip goes first (the theme is in Map settings), then the bots.
-- **View ▾** (`viewMenu.ts`): Grid, Full grid, Overlaps, **Plan view** (K) and the **map layers** (Tiles, Props,
+- **View ▾** (`viewMenu.ts`): Grid, Full grid, Overlaps, **Breakable walls** (the mark below; on), **Plan view** (K) and the **map layers** (Tiles, Props,
   Pickups, Logic & traps, Spawn points). They only change what MapMaker shows; none is saved in the map. The arrow keys
   move in the menu, Esc closes it.
 - **Left rail** (`leftRail.ts`): **Map** (Map settings), **Assets** (opens the asset browser, the palette; with it
@@ -38,7 +38,7 @@ is still there; this says where each one is now.
   until it is widened again (not kept); a dragged width is fitted to 45 % of a smaller window (UI Phase 5). Its edge
   also takes the arrow keys, Home and End.
 - **Kept in this browser** (UI Phase 5, `viewPrefs.ts`, `tiletrigger.editor.view`): View → Grid, Full grid and Snap.
-  Overlaps, the map layers and the plan view start fresh each visit.
+  Overlaps, Breakable walls, the map layers and the plan view start fresh each visit.
 - **Tile View and the minimap from the keyboard** (UI Phase 5, `planKeys.ts`): Tab into either; Tile View's **]** / **[**
   pick the next or previous thing or wall side and **Enter** goes to its fields; both take **+ / −**, **Home** and
   **Alt+arrows** (the minimap the plain arrows too); the minimap's **Enter** opens Tile View. All in the `?` list.
@@ -367,6 +367,11 @@ step (b); built 2026-11-25): **Breakable walls** for the selected tiles and set 
 beside one side in a single-cell tile's Walls rows; **Health** (300 unless set; a grenade does about 100 close by) and
 **Shots break it too** (off: explosives only: grenades, rockets, barrels). The map keeps it as a tile's (or a set piece
 placement's) `breakWalls: { sides?, health?, shots? }`.
+
+**The mark** (owner, 2026-11-26; `editor/breakWallMarks.ts`): in MapMaker's 3D view every breakable wall's faces carry a
+faint amber tint and a steady dashed amber outline (both faces, the wall's own boxes, so a doorway in it shows as
+its gap), drawn with the level's depth. View → **Breakable walls** switches it off and on (on each visit); it hides
+with the Tiles layer and in the map's picture, and play, Test and the menu's map views never draw it. Nothing blinks.
 
 - A wall between two pieces is one wall: it breaks (both faces) if either side is marked. A piece with a facade and a
   see-through side (bars, fences) never breaks; a validator warning says so. At most 64 sections a map play
