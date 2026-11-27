@@ -127,7 +127,7 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
     const file = JSON.parse(readFileSync(new URL('../../../content/optics.json', import.meta.url), 'utf8')) as { weapons: Record<string, { hasSight?: string | false }> };
     const built = (k: OpticKindId) => ['tube', 'frame', 'magtube'].includes(OPTIC_KINDS[k].housing);
     const own = Object.keys(file.weapons).filter((id) => file.weapons[id]!.hasSight === 'optic').sort();
-    expect(own).toEqual(['core.arc_caster', 'core.battle_rifle', 'core.blaster_x42', 'core.crossbow', 'core.desert_carbine', 'core.lever_action', 'core.marksman', 'core.nova6', 'core.plasma', 'core.railgun', 'core.sniper', 'core.twin_rifle']);
+    expect(own).toEqual(['core.arc_caster', 'core.battle_rifle', 'core.blaster_x42', 'core.desert_carbine', 'core.lever_action', 'core.marksman', 'core.nova6', 'core.plasma', 'core.railgun', 'core.sniper', 'core.twin_rifle']);
     for (const [id, e] of Object.entries(file.weapons)) {
       expect(['optic', 'irons', false], `${id}: hasSight`).toContain(e.hasSight);
       const w = WEAPON_OPTICS[id]!;

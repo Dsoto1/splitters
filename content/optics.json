@@ -78,7 +78,7 @@
     "core.railgun": { "hasSight": "optic", "default": "sniper", "allowed": ["sniper"] },
     "core.nova6": { "hasSight": "optic", "default": "scope", "allowed": ["scope"] },
     "core.lever_action": { "hasSight": "optic", "default": "scope", "allowed": ["scope"] },
-    "core.crossbow": { "hasSight": "optic", "default": "scope", "allowed": ["scope"] },
+    "core.crossbow": { "hasSight": "irons", "default": "scope", "allowed": ["scope"] },
     "core.woodland_smg": { "hasSight": "irons", "default": "irons", "allowed": ["irons"] },
     "core.desert_carbine": {
       "hasSight": "optic",

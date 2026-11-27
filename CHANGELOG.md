@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **One sight per gun.** The Woodland SMG aims down its own iron sights and the Arc Caster through its own scope tube, instead of an added red dot or holographic box stacked on top; added red dots sit on the gun rather than on a post.
 - **Phones: Add to Home Screen plays full screen.** The game installs as a web app (its own icon, landscape, no browser bars); an iPhone in Safari shows a one-time line saying how ("Share → Add to Home Screen").
 - **Phones: no more accidental zoom.** A double tap or a pinch no longer zooms the page, in menus or in a match; under a notch or beside the home bar the menus and controls keep clear of it.
 - **Phones: fewer, smaller buttons.** A phone starts on Small buttons (a size you pick wins); Use, Reload and Throw appear only when they can act (something in reach, a gun not full, a grenade in hand) and fade in and out; dragging anywhere off the buttons turns the view; the first match points to Options → Controls → Touch.

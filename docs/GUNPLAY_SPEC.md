@@ -930,9 +930,9 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 
 | Optic (kind) | Reticle | Guns | Zoom |
 |---|---|---|---|
-| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Burst Rifle | 1.52× |
+| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Burst Rifle, Woodland SMG (since 2026-11-27) | 1.52× |
 | Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off | 1.52× |
-| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Arc Caster, Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (its model's own sight box) | 1.52× |
+| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (its model's own sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
 | 2-3× optic (`scope`) | a chevron with holdover ticks | Battle Rifle (3.5×, the model's tube), Marksman Rifle (2.19×, the scope overlay) | as before |
 | Sniper scope (`sniper`) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
 | none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Singularity Cannon, Flare Gun, Gilded Pistol, Spear | 1.52× |
@@ -942,6 +942,18 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
   body stand in the line (the z range the check along the barrel leaves out). Such a gun may offer a red dot or a
   holographic mark in it (only the mark changes; nothing is built): the Desert Carbine's holographic sight, the
   Twin-Shot Rifle's red dot tube and the Blaster X-42's scope tube carry a red dot by default (owner, 2026-11-22, "2a").
+- **One sight at a time** (owner, 2026-11-27, "two sights stacked": the Woodland SMG's red dot on a riser over its own
+  rear sight, the Arc Caster's holographic box on top of its own scope tube, "looks very odd"). Every gun in `weapons`
+  says what its model has of its own, `hasSight`: `"optic"` (a scope, a red dot or holographic sight, or a sight box:
+  the Arc Caster, Plasma Rifle, Desert Carbine, Twin-Shot Rifle, Blaster X-42 and the scoped guns), `"irons"` (iron
+  sights only) or false (none: Bubble Blaster, Sawed-Off, Flak Cannon, Disc Launcher, Arena Disc, Laser Rifle), each
+  read off the model on the sight sheet (`__sights.inspect('rear' | 'side' | 'top')` shows the shown gun from outside).
+  A gun with an optic of its own aims down it (its `window`, its own tube or its scope) and `tools/content/optics.mjs`
+  refuses any housing built in code for it, default or allowed (`packages/client/test/optics.test.ts` holds the list).
+  The Woodland SMG aims down its iron sights and offers no housing: one would stand on its raised rear sight. A saved
+  pick a gun no longer offers falls back to its default (`optics.ts opticOf`; the host's check does the same). The red
+  dot's tube now sits on a tapered saddle along most of its length instead of a short post, so it reads as seated on the
+  gun's top.
 - **The table** is `content/optics.json`: `kinds` (reticle, housing, aimed field of view: `adsFov` for 1× sights, a
   `mag` range for magnified ones, the glass's size and the mark's) and `weapons` (`default` and `allowed`: those the loadout
   may pick, below, "Optic choice"), `none` with reasons. `tools/content/optics.mjs` (run by
@@ -1099,10 +1111,10 @@ changes is what you see: the sight picture, the reticle and, with the 2x optic, 
 | Shotgun, Auto Shotgun, Runebreaker, Nailgun, Freeze Ray, Goo Gun | iron sights, red dot, holographic |
 | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, Laser Blaster | iron sights, red dot |
 | Bubble Blaster | red dot, holographic |
-| Woodland SMG | red dot, iron sights, holographic, 2x (owner, 2026-11-22: a red dot by default) |
 | Desert Carbine, Twin-Shot Rifle, Blaster X-42 | red dot, holographic (in the model's own sight) |
-| Arc Caster, Flak Cannon, Disc Launcher, Arena Disc | holographic, red dot |
-| none: Sawed-Off (red dot), Plasma Rifle (its own sight box), Flintlock Pistol (irons) | |
+| Arc Caster | holographic, red dot (in the model's own scope tube, since 2026-11-27) |
+| Flak Cannon, Disc Launcher, Arena Disc | holographic, red dot |
+| none: Sawed-Off (red dot), Plasma Rifle (its own sight box), Flintlock Pistol (irons), Woodland SMG (irons, since 2026-11-27: a housing stood on its rear sight) | |
 | none: snipers and every gun with a scope of its own (Battle Rifle, Marksman, Nova 6, Lever-Action, Crossbow, Sniper Rifle, Railgun) | they keep their scope |
 
 - **The 2x optic** (kind `x2`, housing `magtube`, `power` 2: twice the hip view, a little more than the sights' 1.52x)

@@ -322,7 +322,7 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
       }
     }
     if (entry.window && has !== 'optic') problems.push(`${at}: a \`window\` is the model's own sight: mark it hasSight "optic"`);
-    if ((w.view?.optic || allowed.some((a) => kinds[a]?.housing === 'model')) && has !== 'optic') problems.push(`${at}: it aims through its model's own tube: mark it hasSight "optic"`);
+    if (w.view?.optic && has !== 'optic') problems.push(`${at}: it aims through its model's own tube: mark it hasSight "optic"`);
     if (has === false && fits[w.id]) problems.push(`${at}: it has a sight fit (content/sight-fit.json), so its model has sights: hasSight "irons" or "optic"`);
     if (allowed.some((a) => kinds[a]?.housing === 'none') && has === false) problems.push(`${at}: iron sights need sights on the model: hasSight "irons" or "optic"`);
     const row = { default: entry.default, allowed: [...allowed] };
