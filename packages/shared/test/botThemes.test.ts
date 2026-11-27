@@ -231,7 +231,7 @@ describe('bot characters: soldiers only', () => {
     expect(botCastLabel(['soldiers'])).toBe('Soldiers & Spies');
     expect(botCastLabel(['army'])).toBe('Soldiers');
     expect(botCastLabel(['agency', 'animals'])).toBe('Spies + Animalia');
-    expect(botCastLabel(['army', 'agency', 'folk', 'space', 'legends', 'pirates', 'animals', 'toys', 'holiday', 'machines', 'horror'])).toBe('All characters');
+    expect(botCastLabel(['army', 'agency', 'folk', 'space', 'legends', 'historical', 'pirates', 'animals', 'toys', 'holiday', 'machines', 'horror'])).toBe('All characters');
     // Bot types as tick-boxes: all ticked is all, Soldiers and Spies together are Soldiers & Spies.
     expect(botTypesOf(undefined)).toHaveLength(BOT_TYPES.length);
     expect(botTypesOf(['soldiers', 'cat'])).toEqual(['army', 'agency', 'animals']);

@@ -14,6 +14,7 @@ import { Texture } from '@babylonjs/core/Materials/Textures/texture';
 import { MultiMaterial } from '@babylonjs/core/Materials/multiMaterial';
 import type { PBRMaterial } from '@babylonjs/core/Materials/PBR/pbrMaterial';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import type { LoadOrder } from './loadOrder.ts';
 import { freeIfSceneGone } from './sceneGone.ts';
 import './gltf.ts';
 import { NPC_LOOK_COLORS, NPC_ROLE_SPECS, PLAYER, clipSetOf, firstPersonArms, getLook, npcLookRole, materialTint, textureFor, type BodyType, type CharacterLook, type GripTune } from '@tiletrigger/shared';
@@ -136,8 +137,9 @@ export interface CharacterInstance {
   holdPistol?: { forward?: number; down?: number; out?: number };
   /** This body's own hands and arms on a gun against everyone's (the look's `whole.grip`, GripTune). */
   grip?: GripTune;
-  /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle. */
-  locomotion?: 'roll';
+  /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle; `hover` glides `hover` m up (at 1.8 m). */
+  locomotion?: 'roll' | 'hover';
+  hover?: number;
   /** The look's authored clip set (`clips`), loaded: each clip's natural speed, length and left-foot touchdown (gait.ts ClipLoop). */
   clipLoops?: Partial<Record<Clip, ClipLoop>>;
   dispose(): void;
@@ -230,9 +232,13 @@ export class CharacterLibrary {
    */
   fetcher: FileFetcher | null = null;
 
+  /** A match's download order (GameView): characters' files go first (loadOrder.ts); unset, files load as asked. */
+  order: Pick<LoadOrder, 'first'> | null = null;
+
   /** A file's container: from the fetcher's bytes when there is one (its own fetch if that fails), else by URL. */
   private loadUrl(url: string, rootUrl: string): Promise<AssetContainer> {
-    const byUrl = () => LoadAssetContainerAsync(url, this.scene, GLB);
+    // A match's characters download before its other models (loadOrder.ts).
+    const byUrl = () => (this.order ? this.order.first((bytesIn) => LoadAssetContainerAsync(url, this.scene, { ...GLB, onProgress: (e) => e.lengthComputable && e.loaded >= e.total && bytesIn() })) : LoadAssetContainerAsync(url, this.scene, GLB));
     if (!this.fetcher) return byUrl();
     return this.fetcher.get(url, 'now').then(
       (buf) => (this.fetcher?.take(url), LoadAssetContainerAsync(new Uint8Array(buf), this.scene, { ...GLB, rootUrl })),
@@ -310,6 +316,7 @@ export class CharacterLibrary {
     let holdPistol: CharacterInstance['holdPistol'];
     let grip: CharacterInstance['grip'];
     let locomotion: CharacterInstance['locomotion'];
+    let hover: CharacterInstance['hover'];
     let clipLoops: CharacterInstance['clipLoops'];
 
     if (spec.npc) {
@@ -371,6 +378,7 @@ export class CharacterLibrary {
         // The fitted offsets under the manifest's own (hand-set ones the audit kept, curls, rolls).
         grip = fit?.grip || look.whole?.grip ? { ...fit?.grip, ...look.whole?.grip } : undefined;
         locomotion = look.locomotion;
+        hover = look.locomotion === 'hover' ? look.hover : undefined;
       }
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
       const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair.filter((h) => h !== BEARD)];
@@ -494,6 +502,7 @@ export class CharacterLibrary {
       ...(holdPistol ? { holdPistol } : {}),
       ...(grip ? { grip } : {}),
       ...(locomotion ? { locomotion } : {}),
+      ...(hover ? { hover } : {}),
       ...(clipLoops ? { clipLoops } : {}),
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();

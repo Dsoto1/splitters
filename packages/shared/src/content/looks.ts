@@ -53,9 +53,13 @@ export interface CharacterLook {
   size?: 'small' | 'large';
   /**
    * How the body gets about: absent, it walks (the rig's gait clips); `roll`, it has no legs to walk on (a robot on a
-   * ball) and glides, leaning into its motion and its turns (CharacterAnimator). `locomotion` in its manifest.
+   * ball) and glides, leaning into its motion and its turns (CharacterAnimator); `hover`, it glides the same way
+   * floating `hover` metres clear of the ground with a slow bob, as if flying (owner, 2026-11-27: The Veiled
+   * Vanguard, Mujina; its hit shapes are measured lifted as much). `locomotion` and `hover` in its manifest.
    */
-  locomotion?: 'roll';
+  locomotion?: 'roll' | 'hover';
+  /** With `locomotion: 'hover'`: how high the body floats (m at a 1.8 m body; its size scales it). */
+  hover?: number;
   /**
    * The authored clip set this body moves with while it holds a gun and walks or runs upright (characters/<set>_clips.glb,
    * tools/content/clip-set.mjs: walk and run legs, the upper body walking and running while shooting, walking back
@@ -155,6 +159,9 @@ export const CHARACTER_GROUPS = [
   { id: 'folk', label: 'Everyday Folk' },
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
+  // Owner, 2026-11-27: a Historical row next to Legends (the famous real people and the period characters, periods
+  // side by side oldest first: CHARACTER_NEIGHBOURS); Legends keeps its seven.
+  { id: 'historical', label: 'Historical' },
   // Owner, 2026-11-26 (evening): the pirates get a row of their own.
   { id: 'pirates', label: 'Pirates' },
   { id: 'animals', label: 'Animalia' },
@@ -213,17 +220,19 @@ export const MINE_SECTION = 'mine';
  */
 export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   ['core.anubis', 'core.pharaoh', 'core.ankhmummy'], // Egypt: Anoobys, Pharaoh Mummy Warrior, Nebka the Unwrapped
-  // Owner, 2026-11-26: like histories side by side within each row, and the well-known real people together in Legends
-  // in their time order.
-  ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'], // famous real people, by period
-  ['core.aztecjaguar', 'core.eagleclan', 'core.sunpriest', 'core.basaltguardian'], // Mesoamerica
-  ['core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.knight', 'core.paladin', 'core.ts2wizard', 'core.ansel'], // Medieval and the Crusades (owner, 2026-11-26: Astor Moonvale and Brother Silencio with them)
-  ['core.abyssalhunter', 'core.celestialknight', 'core.magmajuggernaut', 'core.mystic'], // owner, 2026-11-26: Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine together
-  ['core.frostvalkyrie', 'core.vikingf', 'core.vikingm'], // vikings (owner, 2026-11-26): Sigrun Frostmane, Astrid Stormbrand, Ulf Ravenshield
-  ['core.khan', 'core.imperialguard', 'core.mei'], // the Asian dynasties (owner, 2026-11-26): the Khan, Imperial Guard, Lancer Mei
-  ['core.gladiatrix', 'core.caesar'], // Rome's arena (owner, 2026-11-26): Valeria Sandstorm, Imperator Laurel
-  ['core.dustycolt', 'core.outlawranger', 'core.snakeshaman'], // the Wild West (owner, 2026-11-26: Silas Coilwhisper with them)
-  ['core.shaka', 'core.zuluwarrior', 'core.kato'], // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
+  // Owner, 2026-11-27: Legends keeps seven, in the owner's order.
+  ['core.basaltguardian', 'core.abyssalhunter', 'core.celestialknight', 'core.magmajuggernaut', 'core.mystic', 'core.frostvalkyrie', 'core.sunpriest'],
+  // Owner, 2026-11-27: the Historical row, periods side by side, oldest first (one list: the whole row in this order).
+  [
+    'core.gladiatrix', 'core.caesar', // Rome's arena: Valeria Sandstorm, Imperator Laurel
+    'core.vikingf', 'core.vikingm', // vikings: Astrid Stormbrand, Ulf Ravenshield
+    'core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.paladin', 'core.galloway', 'core.brannock', 'core.ts2wizard', // medieval and the Crusades (Sir Galloway and Ser Brannock are MapMaker's only)
+    'core.khan', 'core.imperialguard', 'core.mei', // the Mongols and the Asian dynasties
+    'core.aztecjaguar', 'core.eagleclan', // Mesoamerica: Balam Nightclaw, Talon Skycrest
+    'core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein', // famous real people, by period
+    'core.shaka', 'core.zuluwarrior', 'core.kato', // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
+    'core.dustycolt', 'core.outlawranger', 'core.snakeshaman', 'core.thornweaver', // the Wild West and the plains
+  ],
   ['core.unionofficer', 'core.rebelcommander'], // the Civil War
   ['core.paratrooper', 'core.germanpara'], // WW2
   ['core.vietnamsoldier', 'core.vcscout'], // Vietnam
@@ -582,9 +591,9 @@ const ALL_LOOKS: readonly CharacterLook[] = [
  */
 export const DEFAULT_CLIP_SET = 'shooter';
 
-/** The clip set a look moves with (`clips`, else DEFAULT_CLIP_SET), or null: opted out, or a rolling body (no legs). */
+/** The clip set a look moves with (`clips`, else DEFAULT_CLIP_SET), or null: opted out, or a rolling or hovering body (no walk cycle). */
 export function clipSetOf(look: Pick<CharacterLook, 'clips' | 'locomotion'>): string | null {
-  if (look.clips === false || look.locomotion === 'roll') return null;
+  if (look.clips === false || look.locomotion) return null;
   return look.clips ?? DEFAULT_CLIP_SET;
 }
 

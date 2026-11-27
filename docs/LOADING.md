@@ -186,3 +186,29 @@ so it looks and feels right"; the fix batch of 2026-11-18):
    countdown ends), one calm line says "Click to fight" ("Tap to fight" on a phone; "Click or press A to fight" with a
    controller), steady, no flash (`GameSession.showFightHint`, `.fight-hint`); a click, a key or A / Start takes the
    mouse. Esc there opens the pause menu, as in play; once in play, losing the mouse pauses as before.
+
+### What downloads first (fix batch of 2026-11-27, `content/loadOrder.ts`)
+
+A first visit's line is shared by everything asked for at once, and the browser serves requests in the order asked.
+The map asked for every gun as it built (`GameView.buildMap` warms them all) a moment before the roster named the
+bots' looks, so the characters' files (and the code that decodes their textures) waited behind 30 MB of guns: on a
+throttled first visit the bots stayed capsules for half a minute of play, and your own body for more (owner,
+2026-11-27, St. John's). Now:
+
+- From the welcome (`GameSession`, before `buildMap`), `view.loadOrder.hold(90 s)`: while character files are on
+  their way (`CharacterLibrary`, `CreatureLibrary`: `order.first`), every other model (`ModelLibrary`, the
+  environment's plants: `order.other`) starts at most two at a time, the map's own props, kit and plants (rank 0)
+  before guns and vehicles (rank 1); the rest go as soon as no character file is left (after a 3 s grace for the
+  roster's looks). Nothing starves: two always run. Your own look goes first in `prepareMatch`, and the guns you
+  start with first among the guns.
+- The start gate is unchanged (it waits for your body's files among the rest, 25 s at most on the client, the
+  server's 30 s).
+
+Measured (`training_range`, 4 bots, cold, SwiftShader, 80 ms RTT; seconds from the match's start, negative: before it):
+
+| Line | Your body, before → after | Every bot's body, before → after | Map props done, before → after |
+|---|---|---|---|
+| 8 Mbit | +8.5 → −23 | +29 → −13 to −18 (every character drawn by +1 to +4: the range's dummies come in at their spawn) | 45 → 15-19 s in |
+| 3 Mbit | +86 → −12 | +103 → +4 to +9 | 107 → 37 s in |
+
+The match itself starts at about the same time (38-45 s at 8 Mbit, 51-54 s at 3 Mbit).

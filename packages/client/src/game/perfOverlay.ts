@@ -2,6 +2,7 @@ import { poseReportLines } from './poseCheck.ts';
 import { COUNT, SYS, perfProbe, type FrameSample } from './perfProbe.ts';
 import { currentFrameCap, loadGraphicsQuality, loadRenderScale } from './graphicsSettings.ts';
 import { memoryLine } from '../memoryReadout.ts';
+import { contextLossLine } from './contextLosses.ts';
 
 export { loadPerfOverlay, savePerfOverlay } from './perfPrefs.ts';
 
@@ -265,6 +266,8 @@ export class PerfOverlay {
       `effects   ${count('effects')}`,
       `per frame ${(['animated', 'skinned', 'ragdolls', 'lasting', 'built'] as const).map((k) => `${k} ${perFrame(k)}`).join(', ')}`,
       `memory    ${memoryLine()}`,
+      // Each time the GPU dropped the page's WebGL context, and how long until it and the characters came back.
+      `context   ${contextLossLine()}`,
       '',
       // A body drawn in a T-pose, from this or an earlier game (poseCheck.ts).
       ...poseReportLines(),

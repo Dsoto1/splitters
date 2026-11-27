@@ -458,7 +458,10 @@ async function editorFlow(browser) {
   const shown = rolled ? await page.waitForFunction((r) => window.__cs.view.pickupItem(r[0]) === r[1], [randomPickup.id, rolled], { timeout: T(10000) }).then(() => true, () => false) : false;
   check(SNIPERS.includes(rolled) && shown, `a random pickup holds a weapon of its category in TEST, and that is what's drawn (${rolled}, drawn ${shown})`);
   await frames(page, 10);
+  // Esc while Test still loads or counts down goes back to MapMaker; once in play (a quick load) it opens the pause
+  // menu, and F5 goes back.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   check(await page.evaluate(() => window.__editor.history.canUndo), 'returns to the editor with history intact');
@@ -570,7 +573,7 @@ async function editorFlow(browser) {
   // It is kept with the map (the draft store saves the whole document, as Save and Export do).
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
-  // Map properties → Bots → Bot characters: the eleven bot types (Toys since 2026-11-26, Pirates and Holiday since that evening), all ticked; None, then Soldiers: the map keeps it (one undo step).
+  // Map properties → Bots → Bot characters: the twelve bot types (Toys since 2026-11-26, Pirates and Holiday since that evening, Historical since 2026-11-27), all ticked; None, then Soldiers: the map keeps it (one undo step).
   await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
   const types = await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`));
@@ -578,7 +581,7 @@ async function editorFlow(browser) {
   await page.evaluate(() => document.getElementById('ed-cast-army').click());
   await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
   const cast = { types, doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]:checked')].map((b) => b.dataset.type)) };
-  check(types.length === 11 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: eleven types (Toys, Pirates and Holiday since 2026-11-26), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
+  check(types.length === 12 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: twelve types (Toys, Pirates and Holiday since 2026-11-26, Historical since 2026-11-27), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Quit without saving goes to the menu and drops the draft; MapMaker from the menu starts blank again.
@@ -6002,7 +6005,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,pirates,animals,toys,holiday,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,historical,pirates,animals,toys,holiday,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -6169,6 +6172,26 @@ async function offlineFlow(browser) {
   check(historic.on === 'historic' && historic.cards.length === historic.count && historic.cards.includes('gallows_yard') && historic.cards.includes('market_town') && !historic.cards.includes('sandgate') && !historic.cards.includes('training_range'), `Historic lists its maps only, its count on the tab (${historic.cards.join(', ')})`);
   check(!all.some((c) => c.map === 'training_range'), 'the Training Range is not in the map grid (it moves to the loadout screen)');
   check(custom.cards === 0 && /your own MapMaker maps/.test(custom.empty) && back === all.length, `Custom holds your own and community maps (none here: ${JSON.stringify(custom)}); All maps lists every map again (${back})`);
+  // The tabs over everything (shared map/setupKinds.ts; docs/CAMPAIGN.md, "Match Setup by sector"): Story · Arenas ·
+  // Arcade · Battlegrounds · Custom, Custom (every map) on first; Arenas, Arcade and Battlegrounds split the built-in
+  // maps by their modes and size, one each; Story is a row per sector (its maps, then an Unknown tile).
+  const kindTabs = await page.$$eval('#map-kinds .map-kind', (b) => b.map((x) => `${x.dataset.kind}${x.classList.contains('on') ? '*' : ''}`));
+  const kindCards = async (k) => {
+    await page.click(`#map-kind-${k}`);
+    await page.waitForFunction((k) => document.querySelector('#map-kinds .map-kind.on')?.dataset.kind === k && (k !== 'story' || document.querySelector('#map-cards .sector-row')), k, { timeout: T(10000) });
+    return page.evaluate(() => ({ cards: [...document.querySelectorAll('#map-cards .map-card')].map((c) => c.dataset.map), n: Number(document.querySelector('#map-kinds .map-kind.on .kind-n')?.textContent), cats: !!document.getElementById('map-cats')?.offsetParent, tabs: !!document.getElementById('map-tabs')?.offsetParent, bar: !!document.querySelector('.map-bar')?.offsetParent }));
+  };
+  const arenas = await kindCards('arenas');
+  const arcadeK = await kindCards('arcade');
+  const grounds = await kindCards('battlegrounds');
+  if (process.env.E2E_SHOTS) await page.waitForFunction(() => [...document.querySelectorAll('#map-cards .map-card .map-thumb.pic img')].slice(0, 8).every((i) => i.complete && i.naturalWidth > 0), null, { timeout: T(20000) }).catch(() => {});
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-battlegrounds.png`, timeout: T(60000) }).catch(() => {});
+  const storyK = await kindCards('story');
+  const rowsK = await page.evaluate(() => [...document.querySelectorAll('#map-cards .sector-row')].map((r) => ({ id: r.id, maps: r.querySelectorAll('.map-card').length, unknown: r.querySelectorAll('.sector-tile.unknown').length })));
+  const customK = await kindCards('custom');
+  check(kindTabs.join() === 'story,arenas,arcade,battlegrounds,custom*' && arenas.cards.length + arcadeK.cards.length + grounds.cards.length === all.length && customK.cards.length === all.length, `the tabs Story · Arenas · Arcade · Battlegrounds · Custom (Custom first); the three split every map, Custom holds them all (${JSON.stringify({ kindTabs, arenas: arenas.cards.length, arcade: arcadeK.cards.length, grounds: grounds.cards.length, all: all.length })})`);
+  check(arenas.cards.includes('sandgate') && !arenas.cards.includes('st_johns') && grounds.cards.includes('st_johns') && arcadeK.cards.includes('grid_rings') && arenas.n === arenas.cards.length && !arenas.cats && !arenas.tabs && arenas.bar && customK.cats && customK.tabs, `Arenas, Arcade and Battlegrounds by the rule, their counts on the tabs; the categories and which-maps tabs are Custom's (${JSON.stringify({ arenas: arenas.n, arcade: arcadeK.cards, cats: [arenas.cats, customK.cats] })})`);
+  check(!storyK.bar && rowsK.length >= 3 && rowsK.every((r) => r.maps >= 1 && r.unknown >= 1) && rowsK[0].id === 'setup-sector-jade_empire', `Story lists a row per sector: its maps, then an Unknown tile (${JSON.stringify(rowsK)})`);
   await page.fill('#map-search', 'sandg');
   const found = await page.$$eval('#map-cards .map-card', (cs) => cs.map((c) => c.dataset.map));
   check(found.includes('sandgate') && found.length < 4, `searching finds the map by name (${found.join(', ')})`);
@@ -9037,9 +9060,9 @@ async function botCastFlow(browser) {
   await page.click('#nav-play');
   await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
-  // The eleven bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
+  // The twelve bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
   const offered = await page.evaluate(() => ({ types: [...document.querySelectorAll('#arcade-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`), ranks: document.getElementById('arcade-ranks')?.checked, names: document.getElementById('arcade-names')?.checked }));
-  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,pirates:1,animals:1,toys:1,holiday:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the eleven bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
+  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,historical:1,pirates:1,animals:1,toys:1,holiday:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the twelve bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
   // Unticking all but one keeps one (the last can't go); None, then Soldiers: Army only.
   await page.evaluate(() => document.getElementById('arcade-cast-none').click());
   await page.evaluate(() => document.getElementById('arcade-cast-army').click());
@@ -10119,7 +10142,7 @@ async function arsenalFlow(browser) {
   await page.evaluate(() => document.querySelector('#pause [data-tab="settings"]')?.click());
   await page.$eval('#perf-report', (b) => b.click());
   const report = await page.$eval('#perf-report-text', (e) => e.value);
-  check(/performance report/.test(report) && /^Frames +\d+ over/m.test(report) && /^GPU /m.test(report), `the pause menu copies a performance report (${report.split('\n')[0]})`);
+  check(/performance report/.test(report) && /^Frames +\d+ over/m.test(report) && /^GPU /m.test(report) && /^context +WebGL context not lost$/m.test(report), `the pause menu copies a performance report, with its context line (${report.split('\n')[0]}; ${report.split('\n').find((l) => l.startsWith('context'))})`);
   await page.keyboard.press('F3');
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
@@ -10397,6 +10420,25 @@ async function arsenalFlow(browser) {
   const sheepDrawn = sheepOut && await page.waitForFunction(() => window.__cs.view.thrownModelSizes().some((s) => s.look === 'sheep'), null, { timeout: T(20000) }).then(() => true, () => false);
   const sheepSize = await page.evaluate(() => window.__cs.view.thrownModelSizes().filter((s) => s.look === 'sheep').map((s) => s.tall));
   check(sheepOut && sheepDrawn && sheepSize.length > 0 && sheepSize.every((t) => t > 0.3 && t < 1), `a thrown sheep is drawn as its model, 0.3-1 m tall (0.7 in its bind pose, lower in its walk) (thrown ${sheepOut}, drawn ${sheepDrawn}, ${sheepSize.join(', ')} m)`);
+  // A lost WebGL context (a GPU reset, out of video memory) and its return: the characters' KTX2 maps are transcoded
+  // again, their capsules standing in meanwhile, and then every body is drawn again (they vanished till then, owner
+  // 2026-11-27); the performance report records the loss (view.ts contextRestored, contextLosses.ts).
+  const lostCtx = await page.evaluate(() => {
+    const ext = window.__cs.view.scene.getEngine()._gl?.getExtension('WEBGL_lose_context');
+    window.__loseCtx = ext;
+    ext?.loseContext();
+    return !!ext;
+  });
+  if (lostCtx) {
+    const wentAway = await page.waitForFunction(() => window.__cs.view.scene.getEngine()._contextWasLost, null, { timeout: T(10000) }).then(() => true, () => false);
+    await page.evaluate(() => window.__loseCtx.restoreContext());
+    const back = await page.waitForFunction(() => !window.__cs.view.scene.getEngine()._contextWasLost, null, { timeout: T(20000) }).then(() => true, () => false);
+    const redrawn = back && (await page.waitForFunction(() => !window.__cs.view.contextState().restoring, null, { timeout: T(60000) }).then(() => true, () => false));
+    const state = await page.evaluate(() => window.__cs.view.contextState());
+    // (The report's line as the report writes it: the report itself was copied above, with its "not lost" line.)
+    const line = state.line;
+    check(wentAway && back && redrawn && state.bodies > 0 && state.rebuilding === 0 && /WebGL context lost 1 time: .*back after .*characters drawn again after/.test(line), `after a lost WebGL context comes back every character is drawn again, and the performance report's context line says so (lost ${wentAway}, back ${back}, redrawn ${redrawn}, ${JSON.stringify(state)}; "${line}")`);
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await thirdPersonShot(browser);
@@ -12693,6 +12735,32 @@ async function storyFlow(browser) {
   const refused = await page.waitForFunction(() => /Win Vinefall Sanctum in Story/.test(document.getElementById('menu-status').textContent), null, { timeout: T(10000) }).then(() => true, () => false);
   const stillMenu = await page.evaluate(() => !document.getElementById('menu').hidden && !window.__cs);
   check(refused && stillMenu && locked.length >= 5 && !locked.includes('Cradle of Idols'), `Match Setup dims the Story maps not won and won't host one (${JSON.stringify({ refused, stillMenu, locked })})`);
+  // Match Setup's Story tab: a row per sector from the data: Cradle of Idols won, Vinefall Sanctum next in Story (still
+  // locked for hosting until won), Step Temple locked; the other sectors' first maps open; an Unknown tile each.
+  await page.click('#map-kind-story');
+  await page.waitForSelector('#setup-sector-jade_empire .map-card');
+  const rows = await page.evaluate(() =>
+    [...document.querySelectorAll('#map-cards .sector-row')].map((r) => ({
+      id: r.id.replace('setup-sector-', ''),
+      maps: [...r.querySelectorAll('.map-card')].map((c) => `${c.dataset.map}:${c.classList.contains('locked') ? 'locked' : 'open'}:${c.querySelector('.card-note')?.textContent ?? ''}`),
+      unknown: r.querySelectorAll('.sector-tile.unknown').length,
+      status: r.querySelector('.sector-status')?.textContent,
+    })),
+  );
+  if (process.env.E2E_SHOTS) await page.waitForFunction(() => [...document.querySelectorAll('#map-cards .sector-row .map-card .map-thumb.pic img')].every((i) => i.complete && i.naturalWidth > 0), null, { timeout: T(20000) }).catch(() => {});
+  if (process.env.E2E_SHOTS) await page.screenshot({ path: `${process.env.E2E_SHOTS}/setup-story.png`, timeout: T(60000) }).catch(() => {});
+  const jade = rows.find((r) => r.id === 'jade_empire');
+  check(
+    rows.map((r) => r.id).join() === 'jade_empire,lockdown,neon_tomorrow' &&
+      jade?.maps.join() === 'jungle_steps:open:Won ✓,vinefall_sanctum:locked:Next in Story,step_temple:locked:Locked: Story' &&
+      /In Progress/.test(jade.status) &&
+      rows.every((r) => r.unknown === 1 && (r.id === 'jade_empire' || /:open:$/.test(r.maps[0] ?? ''))),
+    `Match Setup's Story tab: a row per sector, its maps (the first open, the next dimmed until won in Story), an Unknown tile (${JSON.stringify(rows)})`,
+  );
+  // A locked map's card still picks it (joining is never refused); Start won't host it.
+  await page.click('#setup-sector-jade_empire .map-card[data-map="step_temple"]');
+  const picked = await page.evaluate(() => window.__front.setup?.map ?? JSON.parse(localStorage.getItem('cs.arcade') ?? '{}').map);
+  check(picked === 'step_temple', `a locked Story map's card still picks it (${picked})`);
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
 }
