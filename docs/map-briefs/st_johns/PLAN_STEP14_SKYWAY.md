@@ -102,3 +102,28 @@ door wall widened to 3 m. It is set on (0, -9) first.
 3. **Remove the Carriageway's swinging west door** (`setpiece_khjt0z69qh` part 2, `overrides.hide`); keep the propped one.
 4. Back hall's ground floor: not asked (default: closed).
 5. The **7c double door at the skyway's west end** (Stair End Bay at (0, -9), first floor), in this step.
+
+## As built (2026-11-27, `wip/stjohns-14`)
+
+- **Clock Tower, forward** (`setpiece.clock_tower_forward`, tile `gothic.clock_tower_forward` in map/packTiles2.ts,
+  1 x 2 cells, Towers in the palette): the Clock Tower with Hall floors moved 4 m south over its front cell, its
+  landings at 4 and 8 m opening onto a back hall (the back cell's north half: solid to the 4 m floor, a floor at 8 m,
+  a roof at 12 m, walled west to 1.2 m short of the north edge, where a Dorm Bay's hall comes in, and east over 8 m;
+  its first floor's east side the piece's option: Wall, or Open). The hall opening runs over the stair's top step
+  (to x -0.72: through the 0.5 m wall the 2.2 m opening left the navmesh too narrow a way). The tower's 0.6 m west
+  slot is closed. Walks: setPiecesAcademy.test.ts, "the clock tower, forward" (alone: the landings and the back hall;
+  in Welles's west end: the court door to both landings, the back hall, the bathroom hall and Welles's hall at 4 and
+  8 m, the skyway through into all of them and down the tower, the perch, the passage below).
+- **The Carriageway's East side: Open**: the ground floor walled, the room over the arch open east.
+- **Placed** (steps-14.json, the MapMaker driver: Delete, the Set pieces tab with R and a click, the inspector's
+  Options and Parts): the Clock Tower (`setpiece_y05akewn0t`) out; the Clock Tower, forward (`setpiece_cv0hpwxrs1`)
+  at (2, -9) turned half round, East Open; the Carriageway East Open and its West door (part 2) unticked. Coverage
+  map: the new piece at (4, -49).
+- **Checks:** validate-map 0 issues; nav-audit 0 traps, 46 islands; on the map as played bots path from the court to
+  both landings, the back hall, the bathroom hall and Welles's hall at 4 and 8 m, the skyway to the back hall, to
+  Welles and to the stair bay, the perch, and through the passage below.
+- **Not built: the 7c double door.** It needs a kit change of its own: a Stairwell with its upper flight open
+  underneath (drafted: `core.stairwell_open_under`, the upper flight's top five steps on a floor 2.75 m up) and a
+  Stair End Bay (3 floors) First-floor door choice "Double door" (the door wall widened to 3 m, z 4.55 to 7.55), and
+  a left-hand open Slim Oak Door for the second leaf (the door generator hangs leaves on the +x jamb only, and a
+  turned leaf would stand outside the bay's footprint). Left for its own step.
