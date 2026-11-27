@@ -9,7 +9,7 @@ import { FileFetcher } from '../src/content/fileFetcher.ts';
 /** A fake fetch whose responses finish when the test says, each a body of `size` bytes in two chunks. */
 function fakeFetch(size = 100) {
   const calls: { url: string; priority?: string; aborted: () => boolean; finish: () => void }[] = [];
-  const fetch = ((url: string, init: RequestInit & { priority?: string }) => {
+  const fetchImpl = ((url: string, init: RequestInit & { priority?: string }): Promise<Response> => {
     let finish!: () => void;
     const done = new Promise<void>((r) => (finish = r));
     calls.push({ url, priority: init.priority, aborted: () => !!init.signal?.aborted, finish });
@@ -28,7 +28,7 @@ function fakeFetch(size = 100) {
     };
     return Promise.resolve({ ok: true, status: 200, headers: new Headers({ 'content-length': String(size) }), body } as unknown as Response);
   }) as unknown as typeof fetch;
-  return { fetch, calls };
+  return { fetch: fetchImpl, calls };
 }
 
 const tick = () => new Promise((r) => setTimeout(r, 0));
