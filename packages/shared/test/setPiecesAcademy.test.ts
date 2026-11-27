@@ -191,6 +191,19 @@ const WALKS: Record<string, { chains: P3[][]; shut?: { from: P3; to: P3[] }; cli
     // (Its Stair "Hall floors" is walked in its place below: "the clock tower with floors".)
     options: ['faces'],
   },
+  // St. John's step 14: the tower half a cell forward (its door 4 m further south), its landings at 4 and 8 m onto
+  // the back hall behind it (z 7.9 to 12), and across the back hall; up to the perch.
+  'setpiece.clock_tower_forward': {
+    chains: [
+      [[-2.3, 0, -2.5], [-2.3, 0, 1.8], [-2.3, 4, 6.3], [0, 4, 10], [2.4, 4, 10.4]],
+      [[-2.3, 0, 1.8], [-2.3, 8, 6.3], [0, 8, 10], [2.4, 8, 10.4]],
+    ],
+    // (The 12 m landing and the perch are walked in Welles's west end below: alone, the navmesh's regions cut the
+    // stair over 8 m in this turn.)
+    // Nobody gets into the back hall's solid ground floor.
+    shut: { from: [-2.3, 0, -2.5], to: [[0, 0, 10]] },
+    options: ['east'],
+  },
   // St. John's step 10: a dorm hall's end beside a tower. Along the hall from the next bay's mouth to the end; into
   // the end room at one door, across it past the desks and out at the other.
   'setpiece.dorm_bay_end': {
@@ -552,6 +565,59 @@ describe('the clock tower with floors (St. John\'s step 10: one stair for the to
     for (const cx of [6, 10]) expect(miss(nav, v([8, 0, 2.7]), v([cx, 0, -1.0])), `the ground end room by its door at x ${cx}`).toBeLessThan(1.2);
     // The bridge's passage still runs through north to south (its east side walled against the tower).
     expect(miss(nav, v([0, 0, 14]), v([0, 0, 2])), 'through the carriageway').toBeLessThan(1.2);
+    nav.destroy();
+  });
+});
+
+/**
+ * Welles's west end after St. John's step 14 (owner, 2026-11-27, layout A): the Clock Tower, forward at (1, 2) turned
+ * half round (its back hall in the south half of (1, 1), the tower over the line between them), the Carriageway at
+ * (0, 1) with its East side Open (the skyway, its first floor, runs on into the back hall), the hall's end and bays as
+ * wellesWest's.
+ */
+function wellesWestForward(): SetPiecePlacement[] {
+  return wellesWest().map((p) =>
+    p.id === 'tower' ? { ...p, piece: 'setpiece.clock_tower_forward', y: 2, overrides: { options: { east: 'open' } } } : p.id === 'bridge' ? { ...p, overrides: { options: { east: 'open' } } } : p,
+  );
+}
+
+describe("the clock tower, forward (St. John's step 14: the tower half a cell out, the skyway through its back hall)", () => {
+  it('stays inside its two cells; the back hall solid at the ground, floored at 4 and 8 m, roofed at 12 m', () => {
+    const map = mapOf([{ id: 'tower', piece: 'setpiece.clock_tower_forward', x: 0, y: 0, z: 0, rotation: 0, mirror: false, pack: 'collegiate' }]);
+    const boxes = buildMapGeometry(map).filter((b) => b.sourceId?.startsWith('sp_tower'));
+    for (const b of boxes) {
+      expect(Math.min(b.min[0], b.min[2])).toBeGreaterThanOrEqual(-4.001);
+      expect(b.max[0]).toBeLessThanOrEqual(4.001);
+      expect(b.max[2]).toBeLessThanOrEqual(12.001);
+    }
+    const top = (x: number, z: number, below: number) => Math.max(...boxes.filter((b) => b.min[0] < x && b.max[0] > x && b.min[2] < z && b.max[2] > z && b.max[1] <= below + 1e-6).map((b) => b.max[1]));
+    expect(top(0, 10, 4)).toBeCloseTo(4);
+    expect(top(0, 10, 8)).toBeCloseTo(8);
+    expect(top(0, 10, 12.5)).toBeCloseTo(12.3);
+    // Solid from the ground: the lowest box under the back hall's middle starts at 0.
+    expect(Math.min(...boxes.filter((b) => b.min[0] < 0 && b.max[0] > 0 && b.min[2] < 10 && b.max[2] > 10).map((b) => b.min[1]))).toBeLessThanOrEqual(0);
+  });
+
+  it("Welles's west end: the court door to both landings and the back hall; the skyway through it to the bathroom hall and Welles's hall; the hall's end; the passage below", { timeout: 240_000 }, () => {
+    const map = mapOf(wellesWestForward());
+    const nav = navOf(map);
+    // The tower (centre 8, 12; turned half round: its door north at z 15.65, x 9.2 to 11.4).
+    expect(miss(nav, v([10.3, 0, 18.5]), v([10.3, 0, 14.2])), 'in at the court door').toBeLessThan(1.2);
+    for (const y of [4, 8]) {
+      expect(miss(nav, v([10.3, 0, 14.2]), v([10.3, y, 9.7])), `up to the landing at ${y} m`).toBeLessThan(1.2);
+      expect(miss(nav, v([10.3, y, 9.7]), v([8, y, 6])), `the landing at ${y} m to the back hall`).toBeLessThan(1.2);
+      // The back hall to the hall's end (the bathroom hall, z 1.4 to 4) and on along Welles's hall.
+      expect(miss(nav, v([8, y, 6]), v([5.4, y, 2.7])), `the back hall at ${y} m to the hall's end`).toBeLessThan(1.2);
+      expect(miss(nav, v([8, y, 6]), v([26, y, 4])), `the back hall at ${y} m to Welles's hall`).toBeLessThan(1.2);
+    }
+    // The skyway (the Carriageway's first floor) runs on east into the back hall, and to the tower's stair.
+    expect(miss(nav, v([0, 4, 8]), v([8, 4, 6])), 'the skyway into the back hall').toBeLessThan(1.2);
+    expect(miss(nav, v([0, 4, 8]), v([26, 4, 4])), "the skyway to Welles's hall").toBeLessThan(1.2);
+    expect(miss(nav, v([0, 4, 8]), v([10.3, 0, 14.2])), 'the skyway down the tower to its door').toBeLessThan(1.2);
+    expect(miss(nav, v([10.3, 0, 14.2]), v([9.2, 17.75, 14.3])), 'up to the perch').toBeLessThan(1.2);
+    // The ground: the passage still runs through, its east side walled; the hall's end in at its door.
+    expect(miss(nav, v([0, 0, 14]), v([0, 0, 2])), 'through the carriageway').toBeLessThan(1.2);
+    expect(miss(nav, v([1.5, 0, 2.7]), v([8, 0, 2.7])), "in at the hall's end").toBeLessThan(1.2);
     nav.destroy();
   });
 });

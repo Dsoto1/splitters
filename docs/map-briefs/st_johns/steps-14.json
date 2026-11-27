@@ -1,0 +1,46 @@
+{
+  "$comment": "St. John's step 14 (the skyway, the clock tower and the stair door; owner's answers 2026-11-27, PLAN_STEP14_SKYWAY.md, layout A): the ordered MapMaker steps, as a driver replays them on the map (Import; the Outliner's search and a click on the row; Delete; the Set pieces tab with R and a click on the cell; the set piece inspector's Options and its Parts checkboxes; Export). Ids are the map's as it stood on main when the step was built. `coverage`: the steps on the coverage map (maps/test_coverage.json), if its unit test asks for the new piece or option.",
+  "steps": [
+    {
+      "op": "delete",
+      "id": "setpiece_y05akewn0t",
+      "what": "the Clock Tower at (2, -10) (Stair: Hall floors, turned half round): it comes back half a cell out as the Clock Tower, forward"
+    },
+    {
+      "op": "place",
+      "piece": "setpiece.clock_tower_forward",
+      "x": 2,
+      "y": -9,
+      "rot": 2,
+      "options": {
+        "east": "open"
+      },
+      "what": "the Clock Tower, forward, anchored at (2, -9) and turned half round: the tower over the line between (2, -9) and (2, -10), its court door 4 m nearer the walk, the back hall in the south half of (2, -10) at 4 and 8 m meeting the bathroom hall (the Dorm Bay End at (2, -11)) and Welles's hall; its first floor open west onto the skyway"
+    },
+    {
+      "op": "option",
+      "id": "setpiece_khjt0z69qh",
+      "name": "east",
+      "value": "open",
+      "what": "the Carriageway at (1, -10): East side Open: the skyway (its first floor) runs on east into the tower's back hall; the ground passage keeps its east wall"
+    },
+    {
+      "op": "hide",
+      "id": "setpiece_khjt0z69qh",
+      "parts": [
+        2
+      ],
+      "what": "the Carriageway's West door (part 2), the swinging door under the skyway back to back with the Stair End Bay's propped-open one: left out of this piece"
+    }
+  ],
+  "coverage": [
+    {
+      "op": "place",
+      "piece": "setpiece.clock_tower_forward",
+      "x": 4,
+      "y": -49,
+      "rot": 0,
+      "what": "the Clock Tower, forward, east of the coverage map's Clock Tower on free ground (one of every piece: coverageMap.test.ts)"
+    }
+  ]
+}
