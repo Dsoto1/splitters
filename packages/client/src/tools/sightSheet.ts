@@ -21,6 +21,7 @@ import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
 import { createViewCamera, poseCamera } from '../game/cameraPose.ts';
+import { FreeCamera } from '@babylonjs/core/Cameras/freeCamera';
 import { fitFirstPersonArms } from '../game/firstPersonArms.ts';
 import { DEFAULT_FOV } from '../game/view.ts';
 import { ADS_FOV, SIGHT_TOLERANCE_DEG, aimPlacement, blendPlacement, offAxis, placed, sightError, sightPicture, type GunBounds, type GunPlacement } from '../game/sightPose.ts';
@@ -495,7 +496,48 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
     return { rear: px(fit.rear), front: px(fit.front) };
   }
 
+  /**
+   * The shown gun from outside (pictures of a model's own sights): `rear` from behind and a little above, `side` from its
+   * right, `top` from above, framed on its bounds; null back to the eye. The arms are hidden while inspecting.
+   */
+  let inspector: FreeCamera | null = null;
+  async function inspect(view: 'rear' | 'side' | 'top' | null): Promise<void> {
+    await queue;
+    if (!view || !shown) {
+      scene.activeCamera = eye;
+      place();
+      await settle(2);
+      return;
+    }
+    shown.arms?.setEnabled(false);
+    // The gun itself, not a scope's view: no overlay, the gun drawn, its window's clip off.
+    scopeEl.hidden = true;
+    opticEl.hidden = true;
+    shown.viewRoot.setEnabled(true);
+    shown.mask?.setEnabled(false);
+    shown.node.getChildMeshes().find((m) => m.name === CLIP_NAME)?.setEnabled(false);
+    shown.node.computeWorldMatrix(true);
+    const b = shown.node.getHierarchyBoundingVectors(true);
+    const centre = b.min.add(b.max).scale(0.5);
+    const size = b.max.subtract(b.min).length();
+    // The gun's own axes in the world (it hangs from the eye, aimed along +z).
+    const m = shown.node.getWorldMatrix();
+    const fwd = Vector3.TransformNormal(new Vector3(0, 0, 1), m).normalize();
+    const up = Vector3.TransformNormal(new Vector3(0, 1, 0), m).normalize();
+    const right = Vector3.Cross(up, fwd).normalize();
+    const dir = view === 'rear' ? fwd.scale(-1).add(up.scale(0.18)) : view === 'side' ? right : up.add(fwd.scale(-0.02));
+    inspector ??= new FreeCamera('inspect', Vector3.Zero(), scene);
+    inspector.minZ = 0.005;
+    inspector.fov = 0.5;
+    inspector.position = centre.add(dir.normalize().scale(size * (view === 'rear' ? 1.6 : 2.1)));
+    inspector.upVector = view === 'top' ? fwd : up;
+    inspector.setTarget(view === 'rear' ? centre.add(up.scale(size * 0.08)) : centre);
+    scene.activeCamera = inspector;
+    await settle(3);
+  }
+
   const api = {
+    inspect,
     /** Every weapon with how it aims. */
     list: (): SightRow[] => rows,
     /** The weapons the sheet has a page for (they aim with the gun in view). */

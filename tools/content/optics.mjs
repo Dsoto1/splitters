@@ -32,6 +32,8 @@ export const HOUSINGS = ['none', 'tube', 'frame', 'magtube', 'model', 'overlay']
 export const BUILT = ['tube', 'frame', 'magtube'];
 /** A housing built in code that magnifies: its view is the model optic's frame (client game/opticView.ts), its zoom the kind's `power`. */
 export const MAGNIFIED_BUILT = 'magtube';
+/** A gun's `hasSight` mark: what its model has of its own (an optical sight or sight box, iron sights only, none). */
+export const SIGHT_MARKS = ['optic', 'irons', false];
 /** A gun this long (m) carries a housing at scale 1; shorter and longer guns scale theirs, within SCALE. */
 const SCALE_LENGTH = 0.75;
 const SCALE = [0.85, 1.2];
@@ -307,6 +309,22 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
       continue;
     }
     if (!allowed.includes(entry.default)) problems.push(`${at}: its default (${entry.default}) is not among its allowed optics`);
+    // What the model carries of its own (owner, 2026-11-27, "two sights stacked"): a gun shows its own sight or an added
+    // one, never both. `optic`: a scope, a red dot or holographic sight, or a sight box of its own: it aims down that
+    // (irons, its `window`, its own tube or scope) and no housing is built on it; `irons`: iron sights only (a housing
+    // built in code may stand on its top, seated, the sights under it); false: no sights at all.
+    const has = entry.hasSight;
+    if (!SIGHT_MARKS.includes(has)) problems.push(`${at} needs \`hasSight\`: what the model has of its own: "optic" (a scope, red dot, holographic sight or sight box), "irons" (iron sights only) or false (none), read off the model on the sight sheet (?mode=sights, __sights.inspect)`);
+    if (has === 'optic') {
+      for (const a of allowed) {
+        const k = kinds[a];
+        if (k && BUILT.includes(k.housing) && (!entry.window || k.housing === MAGNIFIED_BUILT)) problems.push(`${at}: its model has a sight of its own (hasSight "optic"), so it cannot also carry a code-built ${a} (two sights stacked): aim down its own sight (irons, or a \`window\` on it) and leave the ${a} out of \`allowed\``);
+      }
+    }
+    if (entry.window && has !== 'optic') problems.push(`${at}: a \`window\` is the model's own sight: mark it hasSight "optic"`);
+    if (w.view?.optic && has !== 'optic') problems.push(`${at}: it aims through its model's own tube: mark it hasSight "optic"`);
+    if (has === false && fits[w.id]) problems.push(`${at}: it has a sight fit (content/sight-fit.json), so its model has sights: hasSight "irons" or "optic"`);
+    if (allowed.some((a) => kinds[a]?.housing === 'none') && has === false) problems.push(`${at}: iron sights need sights on the model: hasSight "irons" or "optic"`);
     const row = { default: entry.default, allowed: [...allowed] };
     let tris = null;
     let bounds = null;
