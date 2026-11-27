@@ -19,7 +19,6 @@ import { applyToneMapping } from '../game/graphicsSettings.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { CharacterAnimator, type MotionState } from '../game/characterAnimator.ts';
 import { testMode } from '../testMode.ts';
-import { FileFetcher } from '../content/fileFetcher.ts';
 
 /** Browser tests (?test=1) compare screenshots: the drift and the hero's idle stop this far in, whatever the machine's speed. */
 const STILL_AT = testMode() ? 0.5 : Infinity;
@@ -144,7 +143,10 @@ export class MenuScene {
     });
     this.characters = new CharacterLibrary(this.scene);
     // One download per file, shared by Character Select's prefetch and its picks (and the loading bar's progress).
-    this.characters.fetcher = new FileFetcher({ max: 2 });
+    // Its own small chunk, after the menu's first: the menu's own hero loads by URL as before.
+    void import('../content/fileFetcher.ts').then(({ FileFetcher }) => {
+      if (!this.scene.isDisposed) this.characters.fetcher ??= new FileFetcher({ max: 2 });
+    });
     this.models = new ModelLibrary(this.scene);
   }
 

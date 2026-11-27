@@ -2,8 +2,8 @@
  * Fetches model files ahead of need and hands their bytes to a loader once: Character Select's prefetch (a tile
  * hovered or focused) and its click share one download per file, with its progress (the preview's loading bar).
  *
- * - `now` (a click) starts at once; `soon` (the tile under the pointer) and `later` (its row neighbours) wait for
- *   one of `max` slots, `soon` first.
+ * - `now` (a click) starts at once and holds back the rest; `soon` (the tile under the pointer) starts once no click
+ *   is downloading, `later` (its row neighbours) once nothing more urgent is; at most `max` prefetches run.
  * - `want` keeps only the prefetches still wanted: queued ones not named go, and running `later` ones are aborted.
  * - Bytes fetched and not yet taken are kept up to `keepBytes` (oldest dropped first); `take` hands them over and
  *   forgets them (the loader keeps its parsed copy).
@@ -107,12 +107,24 @@ export class FileFetcher {
     e.reject(new Error('prefetch dropped'));
   }
 
+  /**
+   * Start what may start: a click's files at once; the hovered tile's once no click is downloading; neighbours only
+   * when nothing more urgent is waiting or running (a shared connection gives each download a share, so a neighbour
+   * running beside the pick would slow the pick). At most `max` prefetches run.
+   */
   private pump(): void {
-    const queued = [...this.entries.values()].filter((e) => e.state === 'queued').sort((a, b) => RANK[a.priority] - RANK[b.priority]);
-    let running = [...this.entries.values()].filter((e) => e.state === 'running' && e.priority !== 'now').length;
+    const all = [...this.entries.values()];
+    // A click under way: neighbours running beside it are dropped (they're wanted again on the next rest).
+    if (all.some((e) => e.state !== 'done' && e.priority === 'now')) for (const e of all) if (e.state === 'running' && e.priority === 'later') this.drop(e);
+    const live = [...this.entries.values()];
+    const queued = live.filter((e) => e.state === 'queued').sort((a, b) => RANK[a.priority] - RANK[b.priority]);
+    let running = live.filter((e) => e.state === 'running' && e.priority !== 'now').length;
+    const urgent = (rank: number) => live.some((e) => e.state !== 'done' && RANK[e.priority] < rank);
     for (const e of queued) {
-      if (e.priority !== 'now' && running >= this.max) continue;
-      if (e.priority !== 'now') running++;
+      if (e.priority !== 'now') {
+        if (running >= this.max || urgent(RANK[e.priority])) continue;
+        running++;
+      }
       this.start(e);
     }
   }

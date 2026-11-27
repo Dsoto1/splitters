@@ -1,5 +1,5 @@
 /**
- * Character Select's file fetcher (content/fileFetcher.ts): prefetches wait for a slot (a click doesn't), one
+ * Character Select's file fetcher (content/fileFetcher.ts): prefetches wait for a slot and for more urgent files (a click doesn't wait), one
  * download per file shared by a prefetch and the pick, prefetches no longer wanted are dropped, progress counts the
  * bytes in, and bytes not taken are kept only up to a budget.
  */
@@ -34,24 +34,31 @@ function fakeFetch(size = 100) {
 const tick = () => new Promise((r) => setTimeout(r, 0));
 
 describe('FileFetcher', () => {
-  it('runs at most `max` prefetches at once, soon before later; a click starts at once', async () => {
+  it('runs at most `max` prefetches; neighbours wait for the hovered tile, everything for a click', async () => {
     const f = fakeFetch();
     const ff = new FileFetcher({ max: 2, fetch: f.fetch });
-    ff.get('l1', 'later');
-    ff.get('l2', 'later');
     ff.get('s1', 'soon');
+    ff.get('l1', 'later');
     await tick();
-    expect(f.calls.map((c) => c.url)).toEqual(['l1', 'l2']);
-    ff.get('now1', 'now');
-    await tick();
-    expect(f.calls.map((c) => c.url)).toEqual(['l1', 'l2', 'now1']);
-    expect(f.calls[0]!.priority).toBe('low');
-    expect(f.calls[2]!.priority).toBe('high');
+    // The neighbour waits while the hovered tile's file downloads.
+    expect(f.calls.map((c) => c.url)).toEqual(['s1']);
+    expect(f.calls[0]!.priority).toBe('high');
     f.calls[0]!.finish();
     await tick();
     await tick();
-    // The freed slot goes to the waiting `soon`.
-    expect(f.calls.map((c) => c.url)).toContain('s1');
+    expect(f.calls.map((c) => c.url)).toEqual(['s1', 'l1']);
+    expect(f.calls[1]!.priority).toBe('low');
+    // A click starts at once, drops the neighbour running beside it, and holds back the next hovered tile.
+    ff.get('now1', 'now');
+    ff.get('s2', 'soon');
+    await tick();
+    expect(f.calls.map((c) => c.url)).toEqual(['s1', 'l1', 'now1']);
+    expect(f.calls[1]!.aborted()).toBe(true);
+    expect(ff.has('l1')).toBe(false);
+    f.calls[2]!.finish();
+    await tick();
+    await tick();
+    expect(f.calls.map((c) => c.url)).toEqual(['s1', 'l1', 'now1', 's2']);
   });
 
   it('shares one download between a prefetch and the pick, with its progress', async () => {
