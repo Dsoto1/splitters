@@ -419,6 +419,11 @@ export class Atmosphere {
     this.sun.position = at.subtract(dir.scale(200));
   }
 
+  /** A lost WebGL context came back (GameView): the static shadow cache's own depth copy is made again. */
+  restored(): void {
+    this.cache?.restored();
+  }
+
   dispose(): void {
     for (const o of this.observers) o.remove();
     for (const b of this.batches) for (const p of b.proxies) p.dispose();

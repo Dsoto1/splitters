@@ -295,6 +295,12 @@ const DODGE_VIEW_ROLL = 0.035;
 const ROLL_VIEW_ROLL = 0.06;
 /** How long a board that has just joined the loading screen stays before the countdown (ms). */
 const LOADING_BOARD_HOLD_MS = 1600;
+/**
+ * How long after the welcome other downloads may be held behind the characters' (content/loadOrder.ts: only while
+ * character files are on their way, and two at a time even then, so nothing starves). On a 3 Mbit line the bots'
+ * bodies take most of a minute; a 20 s cap let sixty guns in beside them, and they took half a minute more.
+ */
+const MATCH_CHARACTERS_FIRST_MS = 90000;
 /** A slow load puts the board on the loading screen this long after the files start coming in (ms), half way or not. */
 const LOADING_STAGE_AFTER_MS = 4000;
 
@@ -2546,6 +2552,22 @@ export class GameSession {
         cachedWallSections(loaded.map, geometry);
         this.map = loaded.map;
         this.hostPanel.setMap(loaded.map);
+        // The characters' files first, from here (the map asks for its props and every gun as it builds): prepareMatch.
+        // The match's own guns (what everyone starts with, the set's, the pickups') go with the map's props, ahead of
+        // the rest (buildMap warms every gun in the game after them): a bot whose gun was still waiting stood unarmed.
+        this.view.loadOrder.hold(MATCH_CHARACTERS_FIRST_MS);
+        {
+          const set = weaponSetInPlay(msg.rules, loaded.map);
+          const ids = new Set([...(set ? setSpawnWeapons(set, msg.rules) : msg.rules.startingWeapons), ...(set ? (setWeaponsInPlay(set, msg.rules) ?? []) : [])]);
+          for (const e of loaded.map.entities) {
+            if (e.kind !== 'pickup') continue;
+            const fx = getItem(e.item)?.effect;
+            const pool = setPickupPool(set, e, !!msg.rules.mixPickups);
+            if (fx?.kind === 'weapon' && !pool) ids.add(fx.weapon);
+            for (const item of pool ?? []) if (item.effect.kind === 'weapon') ids.add(item.effect.weapon);
+          }
+          for (const id of ids) void this.view.models.load(getWeapon(id).view.model, true).catch(() => undefined);
+        }
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
@@ -3221,8 +3243,14 @@ export class GameSession {
     // The roster comes straight after the welcome.
     for (let i = 0; i < 40 && this.looks.size === 0; i++) await new Promise((r) => setTimeout(r, 50));
     const jobs: Promise<unknown>[] = [];
+    // What you'll see first downloads first: your own body, then everyone's in the match (the roster's looks, and
+    // the bots' as they join), and only then the map's props, the guns and the other models, a couple at a time
+    // beside them (content/loadOrder.ts). On a first visit they all shared the line at once, and the bots stayed
+    // capsules for half a minute of play (owner, 2026-11-27). The hold starts at the welcome, before the map builds
+    // (its props and every gun: MATCH_CHARACTERS_FIRST_MS); the start gate's own cap (25 s) is as it was.
     // Roulette: the cards everyone is dealt next as well (the spawn events name them), so the first lives load with the map.
-    for (const look of new Set([...this.looks.values(), ...this.rlUpcoming])) jobs.push(this.view.characters.preload({ look }));
+    const mine = this.looks.get(this.slot);
+    for (const look of new Set([...(mine ? [mine] : []), ...this.looks.values(), ...this.rlUpcoming])) jobs.push(this.view.characters.preload({ look }));
     jobs.push(this.view.characters.preload({ npc: { color: '#888888', scale: 1, female: true } }));
     // The zombies' six characters, loaded before the first wave: a zombie whose model was still on its way was a
     // capsule, and one shot in that state dropped like a box (owner, 2026-11-12).
@@ -3320,6 +3348,8 @@ export class GameSession {
     // Never stall the start on one slow file.
     await Promise.race([all, new Promise((r) => setTimeout(r, 25000))]);
     started = true;
+    // Character files still on their way keep the other models behind them; new ones from here don't (loadOrder.ts).
+    this.view.loadOrder.settle();
     if (this.closed) return;
     // Loaded. A board that has only just appeared stays a moment, so it can be read, before the countdown (not in
     // MapMaker's Test or a browser test: nothing to wait for there).

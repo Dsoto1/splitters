@@ -458,7 +458,10 @@ async function editorFlow(browser) {
   const shown = rolled ? await page.waitForFunction((r) => window.__cs.view.pickupItem(r[0]) === r[1], [randomPickup.id, rolled], { timeout: T(10000) }).then(() => true, () => false) : false;
   check(SNIPERS.includes(rolled) && shown, `a random pickup holds a weapon of its category in TEST, and that is what's drawn (${rolled}, drawn ${shown})`);
   await frames(page, 10);
+  // Esc while Test still loads or counts down goes back to MapMaker; once in play (a quick load) it opens the pause
+  // menu, and F5 goes back.
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   check(await page.evaluate(() => window.__editor.history.canUndo), 'returns to the editor with history intact');
@@ -10139,7 +10142,7 @@ async function arsenalFlow(browser) {
   await page.evaluate(() => document.querySelector('#pause [data-tab="settings"]')?.click());
   await page.$eval('#perf-report', (b) => b.click());
   const report = await page.$eval('#perf-report-text', (e) => e.value);
-  check(/performance report/.test(report) && /^Frames +\d+ over/m.test(report) && /^GPU /m.test(report), `the pause menu copies a performance report (${report.split('\n')[0]})`);
+  check(/performance report/.test(report) && /^Frames +\d+ over/m.test(report) && /^GPU /m.test(report) && /^context +WebGL context not lost$/m.test(report), `the pause menu copies a performance report, with its context line (${report.split('\n')[0]}; ${report.split('\n').find((l) => l.startsWith('context'))})`);
   await page.keyboard.press('F3');
   // Fire a spread of the new weapons (scripted input: headless browsers have no pointer lock).
   for (const id of ['core.flamethrower', 'core.oil_slicker', 'core.laser_rifle', 'core.railgun', 'core.bubble_blaster', 'core.swarm', 'core.disc_launcher', 'core.arc_caster', 'core.goo_gun', 'core.burst_rifle']) {
@@ -10417,6 +10420,25 @@ async function arsenalFlow(browser) {
   const sheepDrawn = sheepOut && await page.waitForFunction(() => window.__cs.view.thrownModelSizes().some((s) => s.look === 'sheep'), null, { timeout: T(20000) }).then(() => true, () => false);
   const sheepSize = await page.evaluate(() => window.__cs.view.thrownModelSizes().filter((s) => s.look === 'sheep').map((s) => s.tall));
   check(sheepOut && sheepDrawn && sheepSize.length > 0 && sheepSize.every((t) => t > 0.3 && t < 1), `a thrown sheep is drawn as its model, 0.3-1 m tall (0.7 in its bind pose, lower in its walk) (thrown ${sheepOut}, drawn ${sheepDrawn}, ${sheepSize.join(', ')} m)`);
+  // A lost WebGL context (a GPU reset, out of video memory) and its return: the characters' KTX2 maps are transcoded
+  // again, their capsules standing in meanwhile, and then every body is drawn again (they vanished till then, owner
+  // 2026-11-27); the performance report records the loss (view.ts contextRestored, contextLosses.ts).
+  const lostCtx = await page.evaluate(() => {
+    const ext = window.__cs.view.scene.getEngine()._gl?.getExtension('WEBGL_lose_context');
+    window.__loseCtx = ext;
+    ext?.loseContext();
+    return !!ext;
+  });
+  if (lostCtx) {
+    const wentAway = await page.waitForFunction(() => window.__cs.view.scene.getEngine()._contextWasLost, null, { timeout: T(10000) }).then(() => true, () => false);
+    await page.evaluate(() => window.__loseCtx.restoreContext());
+    const back = await page.waitForFunction(() => !window.__cs.view.scene.getEngine()._contextWasLost, null, { timeout: T(20000) }).then(() => true, () => false);
+    const redrawn = back && (await page.waitForFunction(() => !window.__cs.view.contextState().restoring, null, { timeout: T(60000) }).then(() => true, () => false));
+    const state = await page.evaluate(() => window.__cs.view.contextState());
+    // (The report's line as the report writes it: the report itself was copied above, with its "not lost" line.)
+    const line = state.line;
+    check(wentAway && back && redrawn && state.bodies > 0 && state.rebuilding === 0 && /WebGL context lost 1 time: .*back after .*characters drawn again after/.test(line), `after a lost WebGL context comes back every character is drawn again, and the performance report's context line says so (lost ${wentAway}, back ${back}, redrawn ${redrawn}, ${JSON.stringify(state)}; "${line}")`);
+  }
   check(errors.length === 0, `no page errors (${errors.join('; ')})`);
   await page.context().close();
   await thirdPersonShot(browser);
