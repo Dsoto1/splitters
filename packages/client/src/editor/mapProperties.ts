@@ -44,7 +44,6 @@ import {
   setupFamily,
   SKIES,
   SKY_IDS,
-  teamLayoutChoices,
   teamLayoutLabel,
   TERRAIN_MATERIAL_LABELS,
   validBotCast,
@@ -81,6 +80,7 @@ import type { EditorApp } from './editorApp.ts';
 import { button, escapeHtml, numberInput, row, small, text } from './editorDom.ts';
 import { CARD_HIDDEN_KINDS, SHIPPED_IDS } from './editorParts.ts';
 import { thumbnailSection, type ThumbHost } from './makerThumb.ts';
+import { teamLayoutChoices } from './teamLayouts.ts';
 import { ALSO_MODES, BOUNDARY_CHOICES, BOUNDARY_HEIGHT, BOUNDARY_MARGIN, MAIN_MODES } from './newMapSetup.ts';
 import { removedModesRow } from './removedModes.ts';
 import { skyWeatherSection, type SkyWeatherHost } from './skyWeatherSection.ts';

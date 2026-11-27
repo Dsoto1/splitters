@@ -117,20 +117,10 @@ export function mapTeams(map: MapDocument, count = map.teamSetup?.sizes.length ?
   return [...named, ...rest].slice(0, Math.max(2, Math.min(MAX_TEAMS, count)));
 }
 
-/**
- * Team layouts offered in one click in MapMaker: only the common ones (owner, 2026-11-26, "4b"); any other mix
- * (2v2v2v2v2v2v2v2, 1v3 and the like) is set with the team steppers, as Match Setup does.
- */
+/** Team layouts offered in one click in MapMaker and the Arcade (any other mix can be set by hand). */
 export const TEAM_PRESETS: readonly (readonly number[])[] = [
-  [1, 1], [2, 2], [4, 4], [8, 8], [2, 2, 2], [3, 3, 3], [2, 2, 2, 2], [4, 4, 4, 4],
+  [1, 1], [2, 2], [4, 4], [8, 8], [2, 2, 2], [3, 3, 3], [2, 2, 2, 2], [4, 4, 4, 4], [2, 2, 2, 2, 2, 2, 2, 2], [2, 2, 2, 2, 2, 2, 12], [1, 3], [4, 12],
 ];
-
-/** MapMaker's Layout chips for a map set up as `sizes`: the common layouts, and that one first when it's another (a saved odd layout still shows, lit). */
-export function teamLayoutChoices(sizes: readonly number[]): { sizes: readonly number[]; odd: boolean }[] {
-  const key = sizes.join(',');
-  const common = TEAM_PRESETS.map((p) => ({ sizes: p, odd: false }));
-  return sizes.length && !TEAM_PRESETS.some((p) => p.join(',') === key) ? [{ sizes, odd: true }, ...common] : common;
-}
 
 /** Short "2v2v4" style label for a team layout. */
 export const teamLayoutLabel = (sizes: readonly number[]): string => sizes.join('v');
