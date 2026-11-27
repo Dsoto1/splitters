@@ -5662,15 +5662,37 @@ export class Match {
       return;
     }
     const [hx, , hz] = m.def.half;
-    for (const o of [[-(hx + 0.9), 0, 0], [hx + 0.9, 0, 0], [0, 0, -(hz + 0.9)], [0, 0, hz + 0.9]] as const) {
+    let spots: (readonly [number, number, number])[] = [[-(hx + 0.9), 0, 0], [hx + 0.9, 0, 0], [0, 0, -(hz + 0.9)], [0, 0, hz + 0.9]];
+    // Moving (owner, 2026-11-27: jumping out of a moving speeder killed them): out behind it, back along the way it is
+    // going (not just its tail: a hovercraft slides), then the sides that aren't ahead of it; never in front.
+    const vel = m.vel ?? { x: Math.sin(m.yaw) * m.speed, z: Math.cos(m.yaw) * m.speed };
+    const speed = Math.hypot(vel.x, vel.z);
+    if (m.def.vehicle && speed > EXIT_BEHIND_SPEED) {
+      const sn = Math.sin(m.yaw);
+      const cs = Math.cos(m.yaw);
+      // Its way in its own axes (mountToWorld's inverse).
+      const ux = (vel.x * cs - vel.z * sn) / speed;
+      const uz = (vel.x * sn + vel.z * cs) / speed;
+      const k = 1 / Math.max(Math.abs(ux) / (hx + 0.9), Math.abs(uz) / (hz + 0.9));
+      const ahead = (o: readonly [number, number, number]) => (o[0] * ux + o[2] * uz) / Math.hypot(o[0], o[2]);
+      spots = [[-ux * k, 0, -uz * k] as const, ...spots.filter((o) => ahead(o) < 0.5).sort((a, b) => ahead(a) - ahead(b))];
+    }
+    for (const o of spots) {
       const spot = mountToWorld(m.pos, m.yaw, o);
       // Room to stand: nothing solid from the knees to above the head (a ray starting inside a wall hits at once).
       if (this.physics.raycastHit({ x: spot.x, y: spot.y + 0.4, z: spot.z }, { x: 0, y: 1, z: 0 }, PLAYER.height)) continue;
       if (!this.exitReachable(m, o, spot)) continue;
       c.move = this.bailOut({ x: spot.x, y: spot.y + 0.3, z: spot.z });
+      this.exitSafe(m, c);
       return;
     }
     c.move = this.bailOut({ x: m.pos.x, y: m.pos.y + m.def.half[1] * 2 + 0.2, z: m.pos.z });
+    this.exitSafe(m, c);
+  }
+
+  /** Who just got out of a vehicle can't be run over by it for EXIT_SAFE_TICKS (it glides on as they step down). */
+  private exitSafe(m: MountRt, c: Combatant): void {
+    if (m.def.vehicle) m.runOver.set(c.slot, Math.max(m.runOver.get(c.slot) ?? 0, this.tick + EXIT_SAFE_TICKS));
   }
 
   /**
@@ -5682,7 +5704,8 @@ export class Match {
    */
   private exitReachable(m: MountRt, o: readonly [number, number, number], spot: Vec3): boolean {
     const len = Math.hypot(o[0], o[2]);
-    const face = Math.abs(o[0]) > 0 ? m.def.half[0] : m.def.half[2];
+    // (Where the line out from the middle crosses the hull's side: a corner-ward spot behind a sliding hull too.)
+    const face = Math.min(Math.abs(o[0]) > 1e-6 ? (m.def.half[0] * len) / Math.abs(o[0]) : Infinity, Math.abs(o[2]) > 1e-6 ? (m.def.half[2] * len) / Math.abs(o[2]) : Infinity);
     const dir = { x: (spot.x - m.pos.x) / len, y: 0, z: (spot.z - m.pos.z) / len };
     const reach = len - face + PLAYER.radius;
     for (const h of [0.5, 1.2]) {
@@ -8960,6 +8983,10 @@ const NO_BORES: readonly GroundCut[] = [];
  * `warn` seconds and put back inside after `back` seconds.
  */
 export const OUT_OF_BOUNDS = { every: 30, warn: 1, back: 6 } as const;
+/** Getting out of a vehicle going faster than this (m/s), you're put out behind it (Match.leaveMount). */
+const EXIT_BEHIND_SPEED = 3;
+/** ...and it can't run you over for this long (ticks) after (it glides on as you step down). */
+const EXIT_SAFE_TICKS = 60;
 
 /** Bots this close (m) to a portal's edge always make the exact move (Match.relaxedMove). */
 const RELAXED_PORTAL = 6;
