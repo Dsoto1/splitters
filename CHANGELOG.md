@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Characters stand straighter.** Standing still, every character's knees sit over its feet and its toes point nearly ahead (no more bowed legs and splayed ankles); the shooting elbow hangs a little lower; the hand under a rifle's or shotgun's handguard turns along the forearm instead of wringing the wrist (first and third person).
 - **Match Setup by sector.** The map list has the tabs Story · Arenas · Arcade · Battlegrounds · Custom: Story shows each Story sector as a row (its maps in order, the ones not won yet dimmed and locked for hosting, then its Unknown tile); Arenas, Arcade and Battlegrounds sort the maps by their modes and size; Custom is every map, as before.
 - **Characters load before the rest of the map on a first visit.** Your own body and everyone's in the match now download ahead of the props and guns, so on a slow line players and bots show up as themselves by the start instead of staying coloured capsules for half a minute or more.
 - **Characters come back after the graphics card resets.** When the browser loses and restores the game's graphics, each character shows as a capsule until its textures are rebuilt, instead of vanishing; bullet holes and static shadows are rebuilt too, and the performance report records each reset.
