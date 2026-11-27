@@ -7077,29 +7077,29 @@ export class Match {
 
   /**
    * Where a weapon dropped at `at` lies (owner, 2026-11-27): on the first walkable top surface under the spot (a
-   * floor inside a building, the ground under a vehicle's seat, under a mid-air death), never on a vehicle or a
-   * turret; in water or with nothing under it (off the map), the nearest dry spot within DROP_SHORE that is in sight
-   * of the spot, about level with it; else null (no drop).
+   * floor inside a building, the ground under a mid-air death; a rider's just beside the vehicle), never on a vehicle
+   * or a turret. Over nothing (off a ledge into the void), the nearest floor within DROP_SHORE in sight of the spot and
+   * about level with it. In water (or lava, acid, swamp) none: shore drops drew bots off their routes (Sunken
+   * Kingdom's CTF survey, seeds 1-10: 1 match of 10 with a capture against 4 before; none in water, 6).
    */
   private dropSpot(at: Vec3): Vec3 | null {
+    const wet = (x: number, y: number, z: number) => this.liquids.length > 0 && !!liquidAt(this.liquids, { x, y: y + 0.15, z });
     const lies = (x: number, y: number, z: number, reach: number): Vec3 | null => {
       const d = this.physics.dropGround({ x, y, z }, reach, this.mountBody);
-      if (d === null) return null;
-      const p = { x, y: y - d, z };
-      return this.liquids.length && liquidAt(this.liquids, { x, y: p.y + 0.15, z }) ? null : p;
+      return d === null ? null : { x, y: y - d, z };
     };
+    if (wet(at.x, at.y, at.z)) return null;
     const top = at.y + 0.5;
     const under = lies(at.x, top, at.z, DROP_REACH);
     if (under) {
+      if (wet(under.x, under.y, under.z)) return null;
       // Under a vehicle (a rider's seat over its bed): just beside it, on the seat's side, where it can be seen and taken.
       const out = this.besideMount(under);
       const beside = out && lies(out.x, Math.max(top, out.y + DROP_CLIMB), out.z, DROP_REACH);
-      // (About level with the ground under it: not on a wall the vehicle is parked against, nor down a drop.)
-      return beside && Math.abs(beside.y - under.y) < 0.6 ? beside : under;
+      // (About level with the ground under it, and dry: not on a wall the vehicle is parked against, nor down a drop.)
+      return beside && Math.abs(beside.y - under.y) < 0.6 && !wet(beside.x, beside.y, beside.z) ? beside : under;
     }
-    // In water or over nothing: the nearest dry floor around, in sight and about level (a shore, the ledge fallen off).
-    const wet = this.liquids.length ? liquidAt(this.liquids, { x: at.x, y: at.y + 0.15, z: at.z }) : null;
-    const level = wet ? Math.max(at.y, wet.max.y) : at.y;
+    // Over nothing: the nearest dry floor around, in sight and about level (the ledge fallen off).
     for (let r = 1; r <= DROP_SHORE; r++) {
       let best: Vec3 | null = null;
       let bestD = Infinity;
@@ -7108,9 +7108,9 @@ export class Match {
         const a = (i / n) * Math.PI * 2;
         const x = at.x + Math.cos(a) * r;
         const z = at.z + Math.sin(a) * r;
-        const p = lies(x, level + DROP_CLIMB, z, DROP_CLIMB * 2);
-        if (!p || !this.physics.lineOfSight({ x: at.x, y: level + 0.6, z: at.z }, { x, y: p.y + 0.6, z })) continue;
-        const d = Math.abs(p.y - level);
+        const p = lies(x, at.y + DROP_CLIMB, z, DROP_CLIMB * 2);
+        if (!p || wet(p.x, p.y, p.z) || !this.physics.lineOfSight({ x: at.x, y: at.y + 0.6, z: at.z }, { x, y: p.y + 0.6, z })) continue;
+        const d = Math.abs(p.y - at.y);
         if (d < bestD) {
           best = p;
           bestD = d;

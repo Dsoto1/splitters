@@ -6,8 +6,8 @@
  * what a pickup of one takes. A drop lies on the first walkable floor under
  * where its owner died (just beside a vehicle's hull, not under it), never on
  * a vehicle or a turret (owner, 2026-11-27:
- * riders' guns hung in the air at the Hauler's seats); from water, on the
- * nearest dry floor within DROP_SHORE; over nothing, none (match.ts dropSpot).
+ * riders' guns hung in the air at the Hauler's seats); over nothing, on the
+ * nearest floor within DROP_SHORE, else none; in water, none (match.ts dropSpot).
  * Clients draw its fall (`dw`'s seventh field, for DROP_FALL_TICKS).
  */
 import { getItem, type ItemDefinition } from './items.ts';
@@ -19,7 +19,7 @@ export const DROP_LIE_SECONDS = 30;
 export const MAX_DROPS = 24;
 /** A drop lies where the ground is found within this far below the body (m); over the void there is none. */
 export const DROP_REACH = 40;
-/** In water or over nothing, a drop lies on the nearest dry floor within this far (m) instead, in sight of the spot. */
+/** Over nothing (off a ledge), a drop lies on the nearest floor within this far (m) instead, in sight of the spot. */
 export const DROP_SHORE = 6;
 /** A drop that would lie under a vehicle lies this far (m) beside its hull instead (a rider's, on the seat's side). */
 export const DROP_BESIDE = 0.45;

@@ -276,16 +276,18 @@ describe('weapon drops land on the ground', () => {
     expect(match.drops).toHaveLength(0);
   });
 
-  it('in water: the nearest dry floor (the pool’s edge), not the bottom of the pool', () => {
+  it('in water: no drop (a gun on the shore drew bots off their routes)', () => {
     const pool: MapEntity = { id: 'pool', kind: 'water', position: [24, 0, 36], size: [5, 1.5, 5], liquid: 'water' } as MapEntity;
     const { match, killer, victim } = yard([pool]);
     victim.move = { pos: { x: 24, y: 0.2, z: 36 }, velY: 0, grounded: false };
     kill(match, victim, killer);
-    expect(match.drops).toHaveLength(1);
-    const d = match.drops[0]!;
-    // Out of the water (2.5 m from the middle), at most 3-4 m off.
-    expect(Math.max(Math.abs(d.pos.x - 24), Math.abs(d.pos.z - 36))).toBeGreaterThan(2.5);
-    expect(Math.hypot(d.pos.x - 24, d.pos.z - 36)).toBeLessThanOrEqual(4.01);
+    expect(match.drops).toHaveLength(0);
+    // Blown up over the pool: it would land in the water, so none either.
+    arm(victim, 'core.rifle', 20, 20);
+    victim.alive = true;
+    victim.move = { pos: { x: 24.5, y: 4, z: 36 }, velY: 0, grounded: false };
+    kill(match, victim, killer);
+    expect(match.drops).toHaveLength(0);
   });
 
   it('what it lay on goes (a crate broken): it falls to the floor under it', () => {
