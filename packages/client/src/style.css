@@ -104,7 +104,8 @@ input:focus, select:focus, textarea:focus { outline: 1px solid var(--cyan); bord
 #menu { position: fixed; inset: 0; color: var(--text); background: radial-gradient(120% 90% at 70% 40%, rgba(11, 15, 26, 0) 0 40%, rgba(11, 15, 26, 0.65) 75%, rgba(11, 15, 26, 0.92)), linear-gradient(90deg, rgba(11, 15, 26, 0.92) 0 18%, rgba(11, 15, 26, 0.35) 45%, rgba(11, 15, 26, 0) 70%); }
 #menu .screen { position: absolute; inset: 0; padding: 34px 44px 70px; }
 /* Under a notch or beside the home bar (viewport-fit=cover, index.html): the screens keep clear; the backdrop runs on. */
-#menu > .screen { left: env(safe-area-inset-left); right: env(safe-area-inset-right); bottom: env(safe-area-inset-bottom); }
+#menu .screens > .screen { left: env(safe-area-inset-left); right: env(safe-area-inset-right); bottom: env(safe-area-inset-bottom); }
+#menu .menu-footer { left: env(safe-area-inset-left); right: env(safe-area-inset-right); }
 .logo { margin: 0; font: italic 700 clamp(44px, 6.2vw, 86px)/0.95 var(--font-display); letter-spacing: -0.01em; transform: skewX(-8deg); text-transform: uppercase; filter: drop-shadow(0 4px 0 rgba(0, 0, 0, 0.55)) drop-shadow(0 10px 22px rgba(0, 0, 0, 0.6)); user-select: none; }
 .logo .tile { white-space: pre;  background: linear-gradient(180deg, #ffffff 0 45%, #b8c6dd 55%, #e6f0ff); -webkit-background-clip: text; background-clip: text; color: transparent; }
 .logo .trigger { background: linear-gradient(180deg, #ffd27a 0 35%, #ff8a2a 60%, #ff4d2e); -webkit-background-clip: text; background-clip: text; color: transparent; }
@@ -2051,8 +2052,12 @@ html.touch.tc-left #ammo { right: auto; left: calc(14px + env(safe-area-inset-le
 #touch-ui .tc-cluster > .tc-btn.on, #touch-ui .tc-pad:active { opacity: 1; }
 /* The context buttons (Use, Reload, Throw) when they can't act: faded out and out of the way, easing in and out (no
    flash: a quarter second's fade, the same with Reduce flashing on). */
-#touch-ui .tc-cluster > .tc-btn { transition: opacity 0.25s ease, transform 0.25s ease, background-color 0.08s; }
-#touch-ui .tc-cluster > .tc-btn.tc-idle { opacity: 0; transform: scale(0.8); pointer-events: none; }
+#touch-ui .tc-cluster > .tc-btn { transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s, background-color 0.08s; }
+#touch-ui .tc-cluster > .tc-btn.tc-idle { opacity: 0; transform: scale(0.85); pointer-events: none; visibility: hidden; transition: opacity 0.25s ease, transform 0.25s ease, visibility 0s linear 0.25s; }
+/* The labels keep the 12 px floor whatever the cluster's scale (Small draws it at 85 %). */
+#touch-ui .tc-cluster > .tc-btn:not(.tc-fire) { font-size: calc(12px / var(--tc-scale, 1)); }
+/* Small (html.tc-small): the ammo panel (drawn full size) clears the smaller Weapons ring it would otherwise touch. */
+html.touch.tc-small #ammo { bottom: 196px; }
 /* The first match on a phone: one line pointing to the button settings, under the scorebar, fading out. */
 #touch-ui .tc-note { position: absolute; left: 50%; top: 74px; transform: translateX(-50%); max-width: calc(100vw - 260px); padding: 6px 12px; border-radius: 6px; background: rgba(11, 15, 26, 0.78); color: var(--text); font: 600 13px var(--font-display); letter-spacing: 0.02em; text-align: center; pointer-events: none; transition: opacity 0.5s ease; }
 #touch-ui .tc-note.gone { opacity: 0; }
@@ -2104,7 +2109,7 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
   html.touch #touch-rotate small { color: var(--muted); font-size: 14px; }
 }
 /* An iPhone in Safari (phone.ts): the Add to Home Screen line, once, on the menu, until dismissed. */
-#home-tip { position: fixed; z-index: 45; left: 50%; bottom: calc(12px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px); padding: 6px 6px 6px 14px; border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 8px; background: rgba(11, 15, 26, 0.9); color: var(--text); font: 600 13px var(--font-display); transition: opacity 0.3s ease; }
+#home-tip { position: fixed; z-index: 45; left: 50%; bottom: calc(58px + env(safe-area-inset-bottom)); transform: translateX(-50%); display: flex; align-items: center; gap: 10px; max-width: calc(100vw - 32px); padding: 6px 6px 6px 14px; border: 1px solid rgba(0, 209, 255, 0.35); border-radius: 8px; background: rgba(11, 15, 26, 0.9); color: var(--text); font: 600 13px var(--font-display); transition: opacity 0.3s ease; }
 #home-tip b { color: var(--cyan); font-weight: 700; }
 #home-tip button { min-width: 36px; min-height: 36px; padding: 0; font-size: 18px; line-height: 1; }
 #home-tip.gone { opacity: 0; }

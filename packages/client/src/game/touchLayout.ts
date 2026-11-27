@@ -111,11 +111,13 @@ export function touchScale(size: TouchSize, height: number): number {
 }
 
 /**
- * Put a layout on the page: `--tc-scale` and `--tc-opacity` on the root (the HUD's ammo panel follows the scale) and
- * `tc-left` on it for left-handed.
+ * Put a layout on the page: `--tc-scale` and `--tc-opacity` on the root (the HUD's ammo panel follows the scale),
+ * `tc-left` on it for left-handed and `tc-small` under Medium.
  */
 export function applyTouchLayout(root: HTMLElement, layout: Readonly<TouchLayout>, height: number): void {
   root.style.setProperty('--tc-scale', String(touchScale(layout.size, height)));
   root.style.setProperty('--tc-opacity', String(layout.opacity));
   root.classList.toggle('tc-left', layout.leftHanded);
+  // Under Medium: the HUD's ammo panel moves to clear the smaller cluster (style.css).
+  root.classList.toggle('tc-small', touchScale(layout.size, height) < 1);
 }
