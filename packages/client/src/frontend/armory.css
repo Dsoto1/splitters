@@ -1,0 +1,24 @@
+/*
+ * The Armory (frontend/armory.ts): Character Select's layout and classes (style.css), with weapon pictures in its
+ * tiles and the details panel's sights and buttons. Loaded with the page, not with the menu.
+ */
+.armory .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(132px, 1fr)); }
+.armory .char-tile { aspect-ratio: 4 / 3; }
+.armory .char-tile .armory-icon { position: absolute; inset: 6px 8px 20px; width: calc(100% - 16px); height: calc(100% - 26px); object-fit: contain; }
+.armory .char-tile.previewing { border-color: var(--cyan); box-shadow: inset 0 0 0 1px var(--cyan); }
+.armory .char-info { grid-template-columns: minmax(0, 1fr) auto auto auto; }
+.armory .char-info .armory-role { color: var(--text); }
+.armory .char-info .armory-range { font-size: 12px; }
+.armory .armory-sights { display: grid; gap: 6px; max-width: 190px; }
+.armory .armory-sights select { max-width: 190px; }
+.armory .armory-sights small { color: var(--muted); font-size: 11px; }
+.armory .armory-spin { left: calc(min(900px, 64vw) + 24px); }
+@media (max-width: 1100px), (max-height: 600px) {
+  .armory .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(96px, 1fr)); }
+  .armory .char-info .armory-sights { display: none; }
+}
+/* A phone: the sheet shows Try it in the range with the name while it's down; the rest once it's up. */
+html.touch .armory .char-info:not(.sheet-open) .char-actions #armory-try { display: revert; }
+html.touch .armory .char-info .armory-sights { display: none; }
+html.touch .armory .char-info.sheet-open .armory-sights { display: grid; grid-area: loadout; max-width: none; }
+html.touch .armory .char-sec-tiles { grid-template-columns: repeat(auto-fill, minmax(88px, 1fr)); }

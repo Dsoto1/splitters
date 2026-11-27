@@ -396,6 +396,8 @@ export interface Combatant {
   stats: CharacterStats;
   /** Random characters (rules.randomCharacters): the look it chose, kept while it plays random ones; and lives begun. */
   ownLook?: string;
+  /** A weapon put in hand at each spawn (the Armory's Try it in the range: Match holdOnSpawn). */
+  hand?: string;
   lives?: number;
   /** Lives begun in this match (1 from the first spawn): a weapon set's random spawn gun is rolled for each (sim/weaponSets.ts). */
   spawns?: number;
@@ -7300,6 +7302,7 @@ export class Match {
     c.bumpedAt = -1e9;
     // Classes: the class's loadout, health and speed replace all that.
     this.classes?.onSpawn(c);
+    if (c.hand) this.give(c, c.hand);
     // Roulette: the character's signature weapon in hand, a jackpot's armour, a tiny body, spawn protection.
     const rl = this.roulette && !c.cls && c.kind !== 'npc' ? this.roulette : null;
     if (rl) {
@@ -7375,6 +7378,17 @@ export class Match {
     }
     // A grenade or two of the life's kind, dealt from the set's (frags without a set's own; the rest are pickups after that).
     c.throwable = kit.throwable ? { ...kit.throwable } : null;
+  }
+
+  /** The Armory's Try it in the range: `id` in hand now (when alive) and at every spawn after; an unknown weapon is ignored. */
+  holdOnSpawn(c: Combatant, id: string): void {
+    try {
+      getWeapon(id);
+    } catch {
+      return;
+    }
+    c.hand = id;
+    if (c.alive) this.give(c, id);
   }
 
   /** A weapon in hand at spawn (Roulette's signature): added full (or topped up when carried), and held. */

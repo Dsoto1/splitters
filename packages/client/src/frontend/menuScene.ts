@@ -64,6 +64,8 @@ export class MenuScene {
   /** The shot's own turn (HERO_YAW or HERO_YAW_SELECT), eased toward `baseGoal` with the camera. */
   private baseYaw = HERO_YAW;
   private baseGoal = HERO_YAW;
+  /** The Armory (armory.ts) shows a weapon on the plinth: the hero is hidden meanwhile. */
+  hideHero = false;
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
@@ -327,9 +329,9 @@ export class MenuScene {
   }
 
   /** Where the hero stands on screen: beside the home menu, or pushed right of a wide panel. */
-  setShot(shot: 'home' | 'side'): void {
-    // Looking down -Z, screen right is world -X: a positive target x puts the hero right of centre.
-    this.goal = shot === 'home' ? { x: 0.2, tx: 0.55, y: 1.3, ty: 1.02, z: 3.3 } : { x: 1.5, tx: 1.85, y: 1.15, ty: 0.95, z: 4.4 };
+  setShot(shot: 'home' | 'side' | 'armory'): void {
+    // Looking down -Z, screen right is world -X: a positive target x puts the hero right of centre (the Armory: closer, at a weapon's height).
+    this.goal = shot === 'home' ? { x: 0.2, tx: 0.55, y: 1.3, ty: 1.02, z: 3.3 } : shot === 'side' ? { x: 1.5, tx: 1.85, y: 1.15, ty: 0.95, z: 4.4 } : { x: 0.7, tx: 0.95, y: 1.3, ty: 1.12, z: 2.4 };
     this.baseGoal = shot === 'home' ? HERO_YAW : HERO_YAW_SELECT;
   }
 
@@ -349,7 +351,10 @@ export class MenuScene {
       this.yawSpeed *= Math.exp(-dt * 3);
       if (Math.abs(this.yawSpeed) < 0.05) this.yawSpeed = 0;
     }
-    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = this.baseYaw + this.yaw;
+    if (this.heroRoot && !this.heroRoot.isDisposed()) {
+      this.heroRoot.rotation.y = this.baseYaw + this.yaw;
+      this.heroRoot.setEnabled(!this.hideHero);
+    }
     if (this.anim) {
       const step = Math.max(0, Math.min(dt, STILL_AT - this.heroT));
       this.heroT += step;

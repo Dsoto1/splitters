@@ -155,6 +155,7 @@ import type { MapMeta } from '../mapIndex.ts';
 import { GLYPHS, botTypePicker, choice, field, fitChip, fitList, fold as foldEl, glyph, inert, infoTip, limitsText, numbered, numberedRow, optionSwitch, powerupSwitches, ruleSwitch, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
+import type { ArmoryPage } from './armory.ts';
 import { weaponIcon } from './weaponIcons.ts';
 import { autoReloadOn, damageNumbersOn, saveAutoReload, saveDamageNumbers, saveSprayReadout, sprayReadoutOn } from '../game/combatReadouts.ts';
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
@@ -353,11 +354,11 @@ export interface FrontEndHooks {
   playTutorial(): void;
   /** Profile → Favourite loadout → Test weapons: the Training Range alone, offline, with your loadout (main.ts playRange). */
   playRange(): void;
-  /** Quick Play → Practice range: the Practice range alone, offline, no bots (main.ts playRange). */
-  playPractice(): void;
+  /** Quick Play → Practice range: the Practice range alone, offline, no bots (main.ts playRange); the Armory's Try it: with `weapon` in hand. */
+  playPractice(weapon?: string): void;
 }
 
-type ScreenId = 'home' | 'story' | 'play' | 'characters' | 'online' | 'options' | 'profile';
+type ScreenId = 'home' | 'story' | 'play' | 'characters' | 'online' | 'options' | 'profile' | 'armory';
 /** Profile's career tabs (player profiles, Phase 3). */
 type CareerTab = 'overview' | 'modes' | 'weapons' | 'history';
 
@@ -543,6 +544,8 @@ export class FrontEnd {
   private charFavsOnly = false;
   /** A phone's Character Select: the details sheet is pulled up (style.css; docs/MOBILE_AUDIT.md, proposal 4). */
   private charSheet = false;
+  /** The Armory while it's up (armory.ts, its own chunk: it takes its keys and buttons first). */
+  private armory: ArmoryPage | null = null;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
   /** The footer's fullscreen hint label shown now, and whether the page listener for it is on. */
   private fsLabel: HTMLElement | null = null;
@@ -634,7 +637,7 @@ export class FrontEnd {
     this.notice = null;
     this.previewed = null;
     this.scene.setLook(this.look);
-    this.go(this.screen === 'characters' ? 'characters' : 'home');
+    this.go(this.screen === 'characters' || this.screen === 'armory' ? this.screen : 'home');
   }
 
   /** Make a look yours: kept in this browser and worn on the menu. */
@@ -654,6 +657,8 @@ export class FrontEnd {
 
   private go(screen: ScreenId): void {
     clearInterval(this.browserTimer);
+    this.armory?.leave();
+    this.armory = null;
     if (this.screen === 'characters' && screen !== 'characters') this.scene.resetSpin();
     // The character shown stays while you switch Character Select's tabs; leaving (or coming back) shows your own.
     if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
@@ -730,6 +735,10 @@ export class FrontEnd {
           main('Choose', 'Choose the character shown (Enter, controller A)', () => this.select(this.previewed ?? this.look)),
         ];
         break;
+      case 'armory':
+        moves.push(cycle('Category'));
+        acts = [main('Try it', 'Try the weapon shown in the Practice range (Enter, controller A on the one shown)', () => this.armory?.tryIt())];
+        break;
       case 'profile':
         acts = [hintButton('hint-change', glyphs('C', 'Y', 'y'), 'Change character', 'Open Character Select (C, controller Y)', () => this.go('characters'))];
         break;
@@ -757,7 +766,7 @@ export class FrontEnd {
   /** Where Back goes from this screen (for its tooltip): the main menu, or the screen that opened Character Select. */
   private backTarget(): string {
     const to = this.screen === 'characters' ? this.charFrom : 'home';
-    const names: Record<ScreenId, string> = { home: 'the main menu', story: 'Story', profile: 'your profile', online: 'Online', options: 'Options', play: 'match setup', characters: 'the main menu' };
+    const names: Record<ScreenId, string> = { home: 'the main menu', story: 'Story', profile: 'your profile', online: 'Online', options: 'Options', play: 'match setup', characters: 'the main menu', armory: 'the main menu' };
     return names[to];
   }
 
@@ -791,7 +800,7 @@ export class FrontEnd {
       this.go('options');
     } else if (this.screen === 'characters') {
       this.stepSection(dir);
-    }
+    } else this.armory?.cycle(dir);
   }
 
   /**
@@ -940,7 +949,7 @@ export class FrontEnd {
 
   /** A controller in the menus: the d-pad moves, A presses, B goes back, LB / RB switch. */
   private onPad(button: number): void {
-    if (this.root.hidden) return;
+    if (this.root.hidden || (!document.querySelector('dialog[open]') && this.armory?.pad(button))) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
     // Match Setup has its own (padPlay): a grid and a panel moved over in two dimensions.
     if (this.screen === 'play' && !document.getElementById('bm-pick-wrap') && !document.getElementById('bot-manager') && !document.querySelector('dialog[open]') && this.padPlay(button)) return;
@@ -1000,6 +1009,11 @@ export class FrontEnd {
         return this.options();
       case 'profile':
         return this.profile();
+      case 'armory': {
+        const page = el('div', { class: 'screen characters armory' }, this.head('Weapon <em>Armory</em>'));
+        void import('./armory.ts').then((m) => page.isConnected && (this.armory = m.mountArmory(page, { scene: this.scene, audio: this.audio, play: (w) => this.hooks.playPractice(w) })));
+        return page;
+      }
     }
   }
 
@@ -1013,6 +1027,7 @@ export class FrontEnd {
     { id: 'nav-online', label: 'Online', act: () => this.go('online') },
     { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor(), minor: true },
     { id: 'nav-characters', label: 'Characters', act: () => this.go('characters'), minor: true },
+    { id: 'nav-armory', label: 'Armory', act: () => this.go('armory'), minor: true },
     { id: 'nav-options', label: 'Options', act: () => this.go('options'), minor: true },
   ];
 
@@ -3965,7 +3980,7 @@ export class FrontEnd {
   private onKey(e: KeyboardEvent): void {
     if (this.root.hidden || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
     // A window open over the menu (Filter maps) takes the keys: Escape closes it, not the screen under it.
-    if (document.querySelector('dialog[open]')) return;
+    if (document.querySelector('dialog[open]') || (e.key !== 'Escape' && this.armory?.key(e))) return;
     if (e.key === 'Escape') {
       // One level per press, and never a press the browser used (leaving fullscreen, a held Esc repeating).
       if (browserTookEscape(e)) return;
