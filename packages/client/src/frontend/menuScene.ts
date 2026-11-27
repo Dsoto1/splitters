@@ -243,7 +243,7 @@ export class MenuScene {
       const node = await this.models.instantiate(w.view.model, `menuHeroRifle_${token}`).catch(() => null);
       if (token !== this.token) return node?.dispose();
       if (node) anim.hold(node, w.view.hold);
-      this.appear([...ch.meshes, ...(node?.getChildMeshes() ?? [])]);
+      return this.appear([...ch.meshes, ...(node?.getChildMeshes() ?? [])]);
     });
     this.settle(token);
   }
@@ -271,9 +271,15 @@ export class MenuScene {
     for (const m of meshes) m.visibility = 0;
   }
 
-  /** Fade a hero in once its clips have posed it (two animation ticks from now). */
-  private appear(meshes: AbstractMesh[]): void {
+  /**
+   * Fade a hero in once its shaders are built and its clips have posed it (two animation ticks from then). A new
+   * body's shaders compiled on the first frame it was drawn: a frame of most of a second on a slow machine, the old
+   * body gone and the new one not yet there. Built while it is hidden, the one shown stays meanwhile.
+   */
+  private async appear(meshes: AbstractMesh[]): Promise<void> {
     const token = this.token;
+    await this.compile(meshes);
+    if (token !== this.token || this.scene.isDisposed) return;
     let ticks = 0;
     const obs = this.scene.onAfterAnimationsObservable.add(() => {
       if (++ticks < 2) return;
@@ -283,6 +289,25 @@ export class MenuScene {
       for (const a of this.leaving.splice(0)) a.dispose();
       if (this.loading?.token === token) this.loading.doneAt = performance.now();
     });
+  }
+
+  /**
+   * Build a hidden body's shaders for the fade (see-through) and for after it (solid): each mesh asked whether it is
+   * ready to draw both ways, a frame apart, until it is (at most about two seconds; it fades in regardless then).
+   */
+  private async compile(meshes: AbstractMesh[]): Promise<void> {
+    const ready = () =>
+      meshes.every((m) => {
+        if (m.isDisposed()) return true;
+        const was = m.visibility;
+        m.visibility = 0.5;
+        const fading = m.isReady(true);
+        m.visibility = 1;
+        const solid = m.isReady(true);
+        m.visibility = was;
+        return fading && solid;
+      });
+    for (let i = 0; i < 120 && !this.scene.isDisposed && !ready(); i++) await new Promise((r) => this.scene.onAfterRenderObservable.addOnce(r));
   }
 
   /**
