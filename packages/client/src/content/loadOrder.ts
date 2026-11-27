@@ -16,7 +16,8 @@ export class LoadOrder {
   private until = 0;
   private graceUntil = 0;
   private running = 0;
-  private readonly waiting: (() => void)[] = [];
+  /** Waiting downloads, the map's before the rest, each in the order asked. */
+  private readonly waiting: { rank: number; go: () => void }[] = [];
   private timer: ReturnType<typeof setTimeout> | null = null;
 
   constructor(
@@ -67,11 +68,15 @@ export class LoadOrder {
     return p;
   }
 
-  /** Any other download: started now, or when its turn comes while the characters' are held first. */
-  other<T>(start: () => Promise<T>): Promise<T> {
+  /**
+   * Any other download: started now, or when its turn comes while the characters' are held first. Rank 0 (the map's
+   * own props, kit and plants: small, and the level looks bare without them) goes before rank 1 (guns, vehicles, the
+   * rest: the bulk of the bytes).
+   */
+  other<T>(start: () => Promise<T>, rank = 1): Promise<T> {
     if (!this.held && !this.waiting.length) return start();
     return new Promise<T>((resolve, reject) => {
-      this.waiting.push(() => {
+      const go = () => {
         this.running++;
         const done = () => {
           this.running--;
@@ -85,14 +90,18 @@ export class LoadOrder {
         }
         p.then(done, done);
         p.then(resolve, reject);
-      });
+      };
+      // After every waiting download of its rank or a nearer one.
+      let at = this.waiting.length;
+      while (at > 0 && this.waiting[at - 1]!.rank > rank) at--;
+      this.waiting.splice(at, 0, { rank, go });
       this.pump();
     });
   }
 
   private pump(): void {
     const held = this.held;
-    while (this.waiting.length && (!held || this.running < this.share)) this.waiting.shift()!();
+    while (this.waiting.length && (!held || this.running < this.share)) this.waiting.shift()!.go();
     // Wake when the hold's grace or cap passes, to start what waits.
     if (this.timer) clearTimeout(this.timer);
     this.timer = null;
@@ -117,5 +126,5 @@ export function loadOrderOf(scene: object): LoadOrder | null {
 /** A character's file (a body, its parts, gear, clips, a creature): never waits. */
 export const firstLoad = <T>(scene: object, start: () => Promise<T>): Promise<T> => orders.get(scene)?.first(start) ?? start();
 
-/** Any other model's file (props, guns, vehicles, the environment's plants): behind the characters while held. */
-export const otherLoad = <T>(scene: object, start: () => Promise<T>): Promise<T> => orders.get(scene)?.other(start) ?? start();
+/** Any other model's file (props, guns, vehicles, the environment's plants): behind the characters while held (rank: LoadOrder.other). */
+export const otherLoad = <T>(scene: object, start: () => Promise<T>, rank = 1): Promise<T> => orders.get(scene)?.other(start, rank) ?? start();

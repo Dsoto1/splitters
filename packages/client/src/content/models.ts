@@ -55,8 +55,10 @@ export class ModelLibrary {
     }
     if (!p) {
       // Behind a match's characters while they load first (loadOrder.ts).
-      const url = versioned(/^(props|kit|creatures|city|packs|env)\//.test(path) ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`);
-      p = (this.order ? this.order.other(() => LoadAssetContainerAsync(url, this.scene, GLB)) : LoadAssetContainerAsync(url, this.scene, GLB)).then(async (c) => {
+      const own = /^(props|kit|creatures|city|packs|env)\//.test(path);
+      const url = versioned(own ? `${import.meta.env.BASE_URL}${path}` : `${MODEL_BASE}${path}`);
+      // (The map's own pieces before guns and vehicles.)
+      p = (this.order ? this.order.other(() => LoadAssetContainerAsync(url, this.scene, GLB), own ? 0 : 1) : LoadAssetContainerAsync(url, this.scene, GLB)).then(async (c) => {
         // The scene went while the file loaded: free it now (sceneGone.ts) and make nothing more in that scene.
         if (this.scene.isDisposed) return freeIfSceneGone(this.scene)(c);
         this.lods.set(path, takeLods(c));

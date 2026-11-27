@@ -2546,6 +2546,8 @@ export class GameSession {
         cachedWallSections(loaded.map, geometry);
         this.map = loaded.map;
         this.hostPanel.setMap(loaded.map);
+        // The characters' files first, from here (the map asks for its props and every gun as it builds): prepareMatch.
+        this.view.loadOrder.hold(MATCH_CHARACTERS_FIRST_MS);
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).
@@ -3224,8 +3226,8 @@ export class GameSession {
     // What you'll see first downloads first: your own body, then everyone's in the match (the roster's looks, and
     // the bots' as they join), and only then the map's props, the guns and the other models, a couple at a time
     // beside them (content/loadOrder.ts). On a first visit they all shared the line at once, and the bots stayed
-    // capsules for half a minute of play (owner, 2026-11-27). Held 20 s at most; the start gate's cap is 25 s.
-    this.view.loadOrder.hold(MATCH_CHARACTERS_FIRST_MS);
+    // capsules for half a minute of play (owner, 2026-11-27). Held 20 s at most (from the welcome, before the map
+    // builds: its props and every gun); the start gate's cap is 25 s.
     // Roulette: the cards everyone is dealt next as well (the spawn events name them), so the first lives load with the map.
     const mine = this.looks.get(this.slot);
     for (const look of new Set([...(mine ? [mine] : []), ...this.looks.values(), ...this.rlUpcoming])) jobs.push(this.view.characters.preload({ look }));

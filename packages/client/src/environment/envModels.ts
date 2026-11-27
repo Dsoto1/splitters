@@ -33,7 +33,7 @@ export interface EnvModel {
  * (the importer's mirror baked in, so it is game space: what the collision shapes use).
  */
 export async function loadEnvModel(scene: Scene, file: string): Promise<EnvModel> {
-  const container: AssetContainer = await otherLoad(scene, () => LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${file}`), scene, GLB)).then(freeIfSceneGone(scene));
+  const container: AssetContainer = await otherLoad(scene, () => LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${file}`), scene, GLB), 0).then(freeIfSceneGone(scene));
   const byLevel = new Map<number, { distance: number; crossed: boolean; parts: EnvPart[] }>();
   for (const m of container.meshes) {
     if (!(m instanceof Mesh) || !m.getTotalVertices()) continue;

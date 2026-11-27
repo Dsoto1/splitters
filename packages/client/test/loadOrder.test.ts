@@ -118,3 +118,29 @@ describe('LoadOrder: characters first while a match loads', () => {
     expect(log).toEqual(['bad', 'next']);
   });
 });
+
+describe('LoadOrder: the map before the guns', () => {
+  it('serves waiting map pieces before waiting guns, each in the order asked', async () => {
+    let now = 0;
+    const order = new LoadOrder(1, () => now);
+    const log: string[] = [];
+    order.hold(20000, 3000);
+    const body = download(log, 'body');
+    const bodyP = order.first(body.start);
+    const gun1 = download(log, 'gun1');
+    void order.other(gun1.start, 1);
+    void order.other(download(log, 'gun2').start, 1);
+    void order.other(download(log, 'prop1').start, 0);
+    void order.other(download(log, 'gun3').start, 1);
+    void order.other(download(log, 'prop2').start, 0);
+    expect(log).toEqual(['body', 'gun1']);
+    gun1.finish();
+    await flush();
+    expect(log).toEqual(['body', 'gun1', 'prop1']);
+    now = 4000;
+    body.finish();
+    await bodyP;
+    await flush();
+    expect(log).toEqual(['body', 'gun1', 'prop1', 'prop2', 'gun2', 'gun3']);
+  });
+});
