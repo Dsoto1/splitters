@@ -10,7 +10,7 @@ Legend: **Replace** = the new model takes the existing gun's place (its rules, s
 | 2 | Micro-Missile Swarm Launcher | Replace | `swarm` |
 | 3 | 40mm Revolving Cylinder Grenade Launcher | Replace | `launcher` (Grenade Launcher) |
 | 4 | Heavy Anti-Armor Rocket Launcher | Replace | `rockets` (Rocket Launcher) |
-| 5 | Modular Classic RPG-7 | Replace | `guided` (Guided Rocket)? or `blast_rockets` |
+| 5 | Modular Classic RPG-7 | Replace | `guided` (Guided Rocket) (owner, "recs") |
 | 6 | Cryo-Gel Slick Sprayer | Replace | `oil_slicker` (it already makes floors slick) |
 | 7 | Monofilament Ricochet Launcher | Replace | `disc_launcher` |
 | 8 | Horizontal Disc Crossbow | Replace | `arena_disc` |
@@ -72,4 +72,4 @@ Legend: **Replace** = the new model takes the existing gun's place (its rules, s
 | 64 | RPG-7 PG-7V Rocket | Projectile model | the RPG's round |
 | 65 | Spigot Rifle/Shotgun Grenade | Projectile model | rifle grenade (for #25's launcher?) |
 
-Period guns pair with the Historical row and the weapon sets (a Historical set: Rome, Vikings, medieval, Dynasty, Mesoamerica, Pirates, Wild West, Civil War, WW2, Vietnam, Desert Storm).
+**Owner (2026-11-27, "recs"): yes, a Historical weapon set.** Period guns pair with the Historical row and the weapon sets (a Historical set: Rome, Vikings, medieval, Dynasty, Mesoamerica, Pirates, Wild West, Civil War, WW2, Vietnam, Desert Storm).
