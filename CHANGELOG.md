@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **St. Jasper's: the skyway goes through.** The clock tower stands half a tile further out into the court, and the skyway over the carriageway now runs on behind it into a back hall that meets the tower's stair and Welles's halls on both upper floors; the extra door under the skyway is gone. MapMaker has the new set piece **Clock Tower, forward** and the Carriageway's East side **Open**.
 - **Match Setup by sector.** The map list has the tabs Story · Arenas · Arcade · Battlegrounds · Custom: Story shows each Story sector as a row (its maps in order, the ones not won yet dimmed and locked for hosting, then its Unknown tile); Arenas, Arcade and Battlegrounds sort the maps by their modes and size; Custom is every map, as before.
 - **Characters load before the rest of the map on a first visit.** Your own body and everyone's in the match now download ahead of the props and guns, so on a slow line players and bots show up as themselves by the start instead of staying coloured capsules for half a minute or more.
 - **Characters come back after the graphics card resets.** When the browser loses and restores the game's graphics, each character shows as a capsule until its textures are rebuilt, instead of vanishing; bullet holes and static shadows are rebuilt too, and the performance report records each reset.

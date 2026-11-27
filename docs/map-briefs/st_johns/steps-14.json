@@ -37,10 +37,10 @@
     {
       "op": "place",
       "piece": "setpiece.clock_tower_forward",
-      "x": 1,
-      "y": -48,
+      "x": 4,
+      "y": -49,
       "rot": 0,
-      "what": "the Clock Tower, forward, beside the coverage map's Clock Tower (one of every piece: coverageMap.test.ts)"
+      "what": "the Clock Tower, forward, east of the coverage map's Clock Tower on free ground (one of every piece: coverageMap.test.ts)"
     }
   ]
 }
