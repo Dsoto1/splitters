@@ -201,7 +201,7 @@ export const STYLE_PACKS: readonly StylePack[] = [
     blurb: 'A manor of dark panelling and damask, a galleried library, a crypt, a cemetery with its mausoleum, hedge mazes and iron railings. Secret bookcases, moving shelves, rotten floors and candles that gutter on cue.',
     themes: ['core.gothic_estate', 'core.manor', 'core.castle'],
     tiles: [
-      'gothic.library', 'gothic.crypt', 'gothic.mausoleum', 'gothic.cemetery', 'gothic.hedge_maze', 'gothic.hedge_garden', 'gothic.iron_fence', 'gothic.iron_gate', 'gothic.clock_tower', 'gothic.clock_tower_floors',
+      'gothic.library', 'gothic.crypt', 'gothic.mausoleum', 'gothic.cemetery', 'gothic.hedge_maze', 'gothic.hedge_garden', 'gothic.iron_fence', 'gothic.iron_gate', 'gothic.clock_tower', 'gothic.clock_tower_floors', 'gothic.clock_tower_forward',
       'core.room', 'core.room_long', 'core.room_large', 'core.hall', 'core.room_tall', 'core.stairwell', 'core.corridor_clear', 'core.corridor_windows', 'core.balcony', 'core.yard', 'core.terrace',
     ],
     props: /* @__PURE__ */ props(

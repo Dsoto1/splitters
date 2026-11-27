@@ -382,6 +382,7 @@ function gothicTiles(): TileDefinition[] {
     },
     clockTower(),
     clockTower(true),
+    clockTower(true, true),
   ];
 }
 
@@ -481,6 +482,26 @@ function clockTowerFloorsStair(): Box[] {
 }
 
 /**
+ * The back hall of the Clock Tower, forward (St. John's step 14, owner 2026-11-27): the half cell behind the tower moved
+ * half a cell out, z 7.9 (the tower's back wall) to 12 (the back cell's north edge), the tile's width. Closed at the
+ * ground (solid masonry to the 4 m floor, as a hall's closed ground floor), a floor at 8 m, a roof at 12 m; the west side
+ * walled 4 to 12 m but for its last 1.2 m north (a Dorm Bay's hall, which straddles its cells' line, comes in there), the east walled 8 to 12 m (over a Carriageway's roof; its first
+ * floor, 4 to 8 m, is left to the set piece: a wall, or open into a Carriageway's opened east side), the north open
+ * (the hall's end it meets). The tower's landings at 4 and 8 m open onto it at the north-west corner.
+ */
+function backHall(): Box[] {
+  const Z0 = 7.9;
+  return [
+    b(-4, 0, Z0, 4, 3.7, 12, 'wall'),
+    b(-4, 3.7, Z0, 4, 4, 12, 'floor'),
+    b(-4, 7.7, Z0, 4, 8, 12, 'floor'),
+    b(-4, 12, Z0, 4, 12.3, 12, 'floor'),
+    b(-4, 4, Z0, -3.7, 12, 10.8, 'wall'),
+    b(3.7, 8, Z0, 4, 12, 12, 'wall'),
+  ];
+}
+
+/**
  * Clock Tower (St. John's step 6, docs/map-briefs/st_johns/PLAN_2026-11-12.md: "a climbable square tower with a belfry,
  * four clock faces, crenellated top"): 1 cell, 6 levels. A door 2.4 m wide in the south wall; a stair winding round a solid
  * stone core (clockTowerStair: a flight along each wall, a landing in each corner, 4 m or more over every step) up to
@@ -490,7 +511,7 @@ function clockTowerFloorsStair(): Box[] {
  * crenellated parapet and corner pinnacles to 24 m. Lancet slits light the stair. Walls, trim, stair and floors
  * take the placement's surfaces (a set piece's stone, trim and paving), so it dresses as the hall it stands by.
  */
-function clockTower(floors = false): TileDefinition {
+function clockTower(floors = false, forward = false): TileDefinition {
   const TOP = floors ? CLOCK_TOWER_FLOORS_PERCH : 17.5;
   const SILL = 18.5;
   const HEAD = 20.9;
@@ -507,14 +528,17 @@ function clockTower(floors = false): TileDefinition {
   // way in at the north-west corner on each landing (the corner itself open, from the north wall's west end round
   // to the hall's width on the west wall); the door at the south wall's west end, 2.8 m; lancets only where they
   // look out.
-  const hall = (y: number): Opening[] => [[-3.9, -1.2, y, y + 2.6]];
+  // Forward (the back hall behind): the opening runs on over the stair's top step (3.75 and 7.75 m), so the way out
+  // through the 0.5 m wall keeps room for bots between the tower's west wall and its jamb.
+  const J = forward ? -0.72 : -1.2;
+  const hall = (y: number): Opening[] => [[-3.9, J, y, y + 2.6]];
   const out: Box[] = [
     ...shaft('x', -3.65, -3.9, 3.9, [floors ? [-3.4, -0.6, 0, 2.9] : [-1.2, 1.2, 0, 2.9], lancet(6.0), lancet(11.0), ...belfry]),
     ...shaft('x', 3.65, -3.9, 3.9, floors ? [...CLOCK_TOWER_GALLERIES.flatMap(hall), lancet(12.25), ...belfry] : [lancet(7.25), lancet(12.25), ...belfry]),
-    ...shaft('z', -3.65, -3.4, 3.4, floors ? [...CLOCK_TOWER_GALLERIES.map((y): Opening => [2.8, 3.4, y, y + 2.6]), ...belfry] : [lancet(9.0), ...belfry]),
+    ...shaft('z', -3.65, -3.4, 3.4, forward ? belfry : floors ? [...CLOCK_TOWER_GALLERIES.map((y): Opening => [2.8, 3.4, y, y + 2.6]), ...belfry] : [lancet(9.0), ...belfry]),
     ...shaft('z', 3.65, -3.4, 3.4, floors ? [lancet(10.5), ...belfry] : [lancet(4.0), lancet(10.5), ...belfry]),
     // Thresholds over the walls' footing in the hall's way in, out to the cell's edge (the hall's floor meets them).
-    ...(floors ? CLOCK_TOWER_GALLERIES.flatMap((y) => [b(-4, y - 0.3, 3.4, -1.2, y, 4), b(-4, y - 0.3, 2.8, -3.4, y, 3.4)]) : []),
+    ...(floors ? CLOCK_TOWER_GALLERIES.flatMap((y) => [b(-4, y - 0.3, 3.4, J, y, 4), ...(forward ? [] : [b(-4, y - 0.3, 2.8, -3.4, y, 3.4)])]) : []),
     // The stair round its core; the core's top is part of the belfry floor.
     ...steps,
     b(-CLOCK_TOWER_CORE, 0, -CLOCK_TOWER_CORE, CLOCK_TOWER_CORE, TOP, CLOCK_TOWER_CORE),
@@ -566,6 +590,25 @@ function clockTower(floors = false): TileDefinition {
       piece(u0 - 0.12, u1 + 0.12, HEAD, HEAD + 0.12, s > 0 ? 0.25 : -0.35, s > 0 ? 0.35 : -0.25);
       piece(u0 - 0.06, u1 + 0.06, SILL - 0.1, SILL, s > 0 ? 0.25 : -0.33, s > 0 ? 0.33 : -0.25);
     }
+  }
+  if (forward) {
+    // The tower half a cell forward (south) over the cell in front, and the back hall behind it (z 7.9 to 12).
+    const moved: Box[] = out.map((o) => ({ ...o, min: [o.min[0], o.min[1], o.min[2] + 4], max: [o.max[0], o.max[1], o.max[2] + 4] }));
+    return {
+      id: 'gothic.clock_tower_forward',
+      category: 'Vertical',
+      displayName: 'Clock Tower, forward',
+      blurb: "The Clock Tower with floors half a cell forward, 1 × 2 cells: the tower over the front cell's back half and the back cell's front, a back hall behind it at 4 and 8 m (its landings open onto it), solid at the ground, roofed at 12 m, open north (a hall's end) and walled west",
+      cells: footprint(1, 2, 6),
+      floors: [0],
+      ports: [{ side: 'S', level: 0 }, { side: 'N', level: 1, cell: [0, 1] }, { side: 'N', level: 2, cell: [0, 1] }, { side: 'E', level: 1, cell: [0, 1] }],
+      open: true,
+      edgeDefault: 'open',
+      solids: [
+        ...moved,
+        ...backHall(),
+      ],
+    };
   }
   if (floors) {
     return {
