@@ -87,10 +87,13 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   let creature: { anim: CreatureAnimator; dispose(): void } | null = null;
   let creatures: CreatureLibrary | null = null;
 
+  // The limb audit's switch (`__grips.legsAtRest`): the legs put back at their rest rotations after the clips have been
+  // evaluated (scene.render animates them; this runs after that, before drawing). The tool's own, not the game's.
+  scene.onBeforeRenderObservable.add(() => {
+    if (legsAtRest && legRest) for (const [j, q] of legRest) j.rotationQuaternion?.copyFrom(q);
+  });
   engine.runRenderLoop(() => {
     current?.anim.update(1 / 30, { ...still, pitch: eyePitch });
-    // The limb audit's switch (`__grips.legsAtRest`): the legs put back at their rest rotations after the clips (the tool's own, not the game's).
-    if (legsAtRest && legRest) for (const [j, q] of legRest) j.rotationQuaternion?.copyFrom(q);
     creature?.anim.update(1 / 30, { ...still, pitch: eyePitch });
     for (const a of crowd) a.update(1 / 30, { ...still, pitch: eyePitch });
     if (fireRate > 0 && current && frames - firedAt >= 30 / fireRate) {
