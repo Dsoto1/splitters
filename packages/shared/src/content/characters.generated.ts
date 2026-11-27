@@ -194,7 +194,7 @@ export const WHOLE_BODY_LOOKS: readonly CharacterLook[] = [
   w('core.t350_suit', 'Suit T-TreeFitty', 'male', 'meshy_t350_suit', { size: 'large', group: 'machines', variant: 'Suit', variantOf: 'core.t350', nameTheme: 'robot' }),
   w('core.skeleton_civilwar', 'Bugler Bonesby', 'male', 'meshy_skeleton_civilwar', { group: 'horror', variant: 'Civil War', variantOf: 'core.undeadsoldier', nameTheme: 'undead' }),
   w('core.stranger', 'The Pale Stranger', 'male', 'meshy_stranger', { group: 'horror', nameTheme: 'spooky' }),
-  w('core.facelessspirit', 'Mujina', 'female', 'meshy_facelessspirit', { group: 'horror', nameTheme: 'myth' }),
+  w('core.facelessspirit', 'Mujina', 'female', 'meshy_facelessspirit', { locomotion: 'roll', group: 'horror', nameTheme: 'myth' }),
   w('core.gargoyle', 'Grimspire', 'male', 'meshy_gargoyle', { group: 'horror', nameTheme: 'myth' }),
   w('core.vikingf', 'Astrid Stormbrand', 'female', 'meshy_vikingf', { group: 'legends', nameTheme: 'barbarian' }),
   w('core.vikingm', 'Ulf Ravenshield', 'male', 'meshy_vikingm', { group: 'legends', nameTheme: 'barbarian' }),
