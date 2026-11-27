@@ -12,7 +12,9 @@
       "x": 2,
       "y": -9,
       "rot": 2,
-      "options": { "east": "open" },
+      "options": {
+        "east": "open"
+      },
       "what": "the Clock Tower, forward, anchored at (2, -9) and turned half round: the tower over the line between (2, -9) and (2, -10), its court door 4 m nearer the walk, the back hall in the south half of (2, -10) at 4 and 8 m meeting the bathroom hall (the Dorm Bay End at (2, -11)) and Welles's hall; its first floor open west onto the skyway"
     },
     {
@@ -25,9 +27,20 @@
     {
       "op": "hide",
       "id": "setpiece_khjt0z69qh",
-      "parts": [2],
+      "parts": [
+        2
+      ],
       "what": "the Carriageway's West door (part 2), the swinging door under the skyway back to back with the Stair End Bay's propped-open one: left out of this piece"
     }
   ],
-  "coverage": []
+  "coverage": [
+    {
+      "op": "place",
+      "piece": "setpiece.clock_tower_forward",
+      "x": 1,
+      "y": -48,
+      "rot": 0,
+      "what": "the Clock Tower, forward, beside the coverage map's Clock Tower (one of every piece: coverageMap.test.ts)"
+    }
+  ]
 }
