@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Random bots wear variant looks.** A bot dealt a character with variant looks (Ziggy's eras, Dog Tag Doyle's skeletons, T-TreeFitty's outfits…) wears one of them at random, the base look included; every character is still as likely as any other, and everyone in the match sees the same looks.
 - **Character Select loads characters faster.** Resting on a portrait starts fetching that character (and the ones beside it), so a pick is usually ready at once; while one still loads, the character shown stays and a thin calm bar under their feet fills, then fades as the new one appears.
 - **St. Jasper's classrooms: the front aisle is open past the open door.** The row of desks by the door has three desks, its hall end free, so players and bots get round the door's leaf (MapMaker: School Desks, row of three).
 - **Bullet hits look and sound like what they hit.** Wood throws long splinters, stone and brick chunky grit, soil clods, leaves flutter down, glass and ice shards; holes take the surface's look; brick and rock, thin metal and ice have hit sounds of their own, and wood, metal and dirt more takes. Bulletproof glass glints pale instead of sparking, and **ice** is its own surface (no sparks, a hard glassy knock). With Reduce flashing on, sparks are thinner.
