@@ -85,6 +85,8 @@ const OPEN_SIDED = [
   // The clock tower (setPiecesAcademy.test.ts walks in at its door and up to the belfry): its door is in the tile's own
   // stone walls, not a tile's edge.
   'setpiece.clock_tower',
+  // Forward (St. John's step 14): the same tower, its back hall open-sided (walked there too).
+  'setpiece.clock_tower_forward',
   'setpiece.command_bunker',
   'setpiece.concrete_frame',
   // A tower of blocks: its door is in its own block walls, not a tile's edge (setPiecesAcademy.test.ts walks it).
