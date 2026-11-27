@@ -241,6 +241,18 @@ leaves your character as it was. Your current one wears a **Chosen** badge.
 Character Select opens from Profile (the main menu's Profile entry → **Change
 character**) or Online; Back and Choose return there.
 
+**Loading a pick** (owner, 2026-11-27: "sometimes it takes awhile to load"). A character's file (a Meshy body is about
+2 MB with its KTX2 maps) downloads the first time it is shown. Resting on a portrait (the pointer, or keyboard /
+controller focus) for 120 ms fetches its files, then its row neighbours' at low priority (`frontend/frontEnd.ts`
+`prefetchSoon`, `MenuScene.prefetch`); `content/fileFetcher.ts` runs at most two prefetches, starts a neighbour only
+when nothing more urgent is waiting, drops prefetches no longer wanted, and holds every prefetch back while a pick's
+own files download (one download per file, shared by the prefetch and the pick; untaken bytes kept up to 24 MB). The
+character shown stays until the new one is built, its shaders compiled while hidden, and fades in; a pick still
+loading after 150 ms shows a thin steady cyan bar under the hero's feet, filled by the bytes in, fading out as the body
+fades in (nothing for a character already loaded; no pulse or blink: Reduce flashing). Measured at 10 Mbit/s, 40 ms
+(software GL): a first pick took 2.6-3.5 s; after resting on the portrait 0.5-1.5 s, a neighbour of one already seen
+0.5-1.1 s.
+
 ### Tier
 
 A character is **Core** or **Experimental** (owner, 2026-11-11: the same rules as for maps, docs/BUILDING_KIT.md,
