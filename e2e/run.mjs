@@ -5264,7 +5264,10 @@ async function editorWorkflowChecks(browser) {
   await frames(page, 10);
   // The view as you play it (headless pages have no pointer lock, so the pause menu is up: hidden for the picture).
   await page.addStyleTag({ content: '#pause { visibility: hidden !important; }' }).then((h) => shot('play-from-here').then(() => h.evaluate((el) => el.remove())));
+  // Esc while Test still loads or counts down goes back to MapMaker; once in play (a quick load) it opens the pause
+  // menu, and F5 goes back (as the editor flow's Test).
   await page.keyboard.press('Escape');
+  if (!(await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(3000) }).then(() => true, () => false))) await page.keyboard.press('F5');
   await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
   await frames(page, 2);
   // Back in MapMaker, the ended match is gone from memory: no disposed scene left in the heap after a collection
