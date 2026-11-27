@@ -1,4 +1,4 @@
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import type { Mesh } from '@babylonjs/core/Meshes/mesh';
 import type { CharacterInstance } from '../content/characters.ts';
@@ -76,4 +76,58 @@ export function limbSamples(ch: CharacterInstance): { joints: Record<string, P3>
     skin[bone] = { n: vs.length, upper: mean(sorted.slice(0, half)), lower: mean(sorted.slice(half)), low: mean(lowest), soleLeft: mean(byX.slice(0, tenth)), soleRight: mean(byX.slice(-tenth)) };
   }
   return { joints, skin };
+}
+
+/** The wrists and forearms the wrist measure reads (both sides). */
+const WRIST_JOINTS = ['lowerarm_l', 'hand_l', 'lowerarm_r', 'hand_r'] as const;
+
+/** Each wrist and forearm joint's rotation as the character was built (its rest pose), to measure the turns from. */
+export function restOfArms(ch: CharacterInstance): Map<string, Quaternion> {
+  const out = new Map<string, Quaternion>();
+  for (const n of WRIST_JOINTS) {
+    const q = ch.joints.get(n)?.rotationQuaternion;
+    if (q) out.set(n, q.clone());
+  }
+  return out;
+}
+
+/**
+ * A joint's turn off its rest rotation, split into its twist about its own bone (`along`, its child's offset in its
+ * own frame: a hand's toward its middle knuckle, a forearm's toward the wrist) and the swing left (the bend), degrees.
+ * (d = rest⁻¹·local = swing·twist: the twist turns about the bone first, the swing then bends it.)
+ */
+export function swingTwist(local: Quaternion, rest: Quaternion, along: Vector3): { bend: number; twist: number } {
+  const d = Quaternion.Inverse(rest).multiply(local);
+  if (d.w < 0) d.scaleInPlace(-1);
+  const axis = along.normalizeToNew();
+  const p = d.x * axis.x + d.y * axis.y + d.z * axis.z;
+  let tw = new Quaternion(axis.x * p, axis.y * p, axis.z * p, d.w);
+  const l = tw.length();
+  tw = l < 1e-9 ? Quaternion.Identity() : tw.scale(1 / l);
+  const sw = d.multiply(Quaternion.Inverse(tw));
+  const deg = (q: Quaternion) => (2 * Math.acos(Math.min(1, Math.abs(q.w))) * 180) / Math.PI;
+  const sign = p * tw.w >= 0 ? 1 : -1;
+  return { bend: Math.round(deg(sw) * 10) / 10, twist: Math.round(sign * deg(tw) * 10) / 10 };
+}
+
+/**
+ * The wrists (team tool: `__grips.wrists()`, any view): each hand's bend and twist off its rest pose against its
+ * forearm, and each forearm's twist against its upper arm (a support hand under a handguard, turned palm up: the
+ * turn the wrist's skin takes, and the share the forearm takes of it).
+ */
+export function wristMeasures(ch: CharacterInstance, rest: Map<string, Quaternion>): Record<'l' | 'r', { bend: number; twist: number; forearmTwist: number }> | null {
+  const one = (s: 'l' | 'r') => {
+    const hand = ch.joints.get(`hand_${s}`);
+    const lower = ch.joints.get(`lowerarm_${s}`);
+    const knuckle = ch.joints.get(`middle_01_${s}`) ?? ch.joints.get(`index_01_${s}`);
+    const rh = rest.get(`hand_${s}`);
+    const rl = rest.get(`lowerarm_${s}`);
+    if (!hand?.rotationQuaternion || !lower?.rotationQuaternion || !rh || !rl || !knuckle) return null;
+    const w = swingTwist(hand.rotationQuaternion, rh, knuckle.position);
+    const f = swingTwist(lower.rotationQuaternion, rl, hand.position);
+    return { bend: w.bend, twist: w.twist, forearmTwist: f.twist };
+  };
+  const l = one('l');
+  const r = one('r');
+  return l && r ? { l, r } : null;
 }

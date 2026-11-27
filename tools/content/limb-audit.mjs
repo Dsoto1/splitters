@@ -12,6 +12,9 @@
 // (upper body) as <out>/pics/<look>_{front,side,upper,support}.png; TUNE='{"elbowOut":0.1}' measures with that
 // GripTune on every look (the elbow pole's before/after); LEGS_REST=1 holds the legs at their rest rotations after
 // the clips (the clips' leg pose off: what is left is the body's own); CHROMIUM=<path> uses that browser build.
+// FIX=0 measures with the limbs fix off (`__grips.limbFix(false)`: the clips' standing legs, the old elbow pole, no
+// forearm twist share): the before of docs/CHARACTER_LIMBS.md's "After". WRISTS=<gun ids> also measures each look's
+// wrists holding those guns in first person, arms-only and full body (`__grips.wrists()`: bend and twist off rest).
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -34,6 +37,8 @@ const only = process.env.ONLY?.split(',').filter(Boolean);
 const pictures = process.env.PICTURES === '1';
 const legsRest = process.env.LEGS_REST === '1';
 const tune = process.env.TUNE ? JSON.parse(process.env.TUNE) : null;
+const fixOff = process.env.FIX === '0';
+const wristGuns = process.env.WRISTS?.split(',').filter(Boolean) ?? [];
 mkdirSync(join(out, 'pics'), { recursive: true });
 
 const browser = await chromium.launch({
@@ -45,6 +50,7 @@ const errors = [];
 page.on('pageerror', (e) => errors.push(e.message));
 await page.goto(`${base}/?mode=grips&test=1`, { waitUntil: 'domcontentloaded' });
 await page.waitForFunction(() => window.__grips, null, { timeout: 120_000 });
+if (fixOff) await page.evaluate(() => window.__grips.limbFix(false));
 const looks = (await page.evaluate(() => window.__grips.looks())).filter((l) => (only ? only.includes(l.id) : l.pickable));
 
 const rows = [];
@@ -55,7 +61,8 @@ for (const l of looks) {
     if (legsRest) await page.evaluate(() => window.__grips.legsAtRest(true));
     const raw = await page.evaluate(() => window.__grips.limbs());
     const m = limbMeasures(raw);
-    rows.push({ id: l.id, name: l.name, ...m, raw });
+    const wrists = {};
+    rows.push({ id: l.id, name: l.name, ...m, raw, wrists });
     if (pictures) {
       for (const v of ['front', 'side']) {
         await page.evaluate((from) => window.__grips.body(from), v);
@@ -66,7 +73,13 @@ for (const l of looks) {
         await page.screenshot({ path: join(out, 'pics', `${l.id}_${v}.png`) });
       }
     }
-    console.log(`${l.id}: legs ${m.legScore} elbows ${m.elbowScore}`);
+    for (const gun of wristGuns)
+      for (const view of ['third', 'first', 'body']) {
+        await page.evaluate(([id, g, v]) => window.__grips.pose(id, g, v), [l.id, gun, view]);
+        wrists[`${gun} ${view}`] = await page.evaluate(() => window.__grips.wrists());
+        if (pictures && view !== 'third') await page.screenshot({ path: join(out, 'pics', `${l.id}_${gun}_${view}.png`) });
+      }
+    console.log(`${l.id}: legs ${m.legScore} elbows ${m.elbowScore}${wristGuns.length ? ` wrists ${JSON.stringify(wrists)}` : ''}`);
   } catch (e) {
     console.error(`${l.id}: ${e.message.split('\n')[0]}`);
   }
@@ -74,6 +87,6 @@ for (const l of looks) {
 await browser.close();
 writeFileSync(join(out, 'limbs.json'), JSON.stringify(rows, null, 1));
 
-if (!only && !tune && !legsRest) writeTable(rows);
+if (!only && !tune && !legsRest && !fixOff) writeTable(rows);
 else console.log(limbTable(rows));
 if (errors.length) console.error(`page errors: ${errors.join('; ')}`);

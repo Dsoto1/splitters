@@ -17,7 +17,7 @@ import { CORE_LOOKS, PICKABLE_LOOKS, PLAYER, armsLookFor, getWeapon } from '@til
 import { CharacterLibrary } from '../content/characters.ts';
 import { ModelLibrary } from '../content/models.ts';
 import { gripInside } from './gripInside.ts';
-import { CharacterAnimator, PISTOL, setCurlShare, setPistolTune, type MotionState } from '../game/characterAnimator.ts';
+import { CharacterAnimator, PISTOL, setCurlShare, setPistolTune, setStandShare, type MotionState } from '../game/characterAnimator.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
 import { CreatureLibrary, fitPlayerSkin } from '../content/creatures.ts';
 import type { CreatureModel } from '@tiletrigger/shared';
@@ -30,7 +30,7 @@ import { auditGrip } from './gripAudit.ts';
 import { setPalmRule, skinHandFrame } from '../game/handProbe.ts';
 import type { CharacterInstance, HandData } from '../content/characters.ts';
 import type { WeaponHold } from '@tiletrigger/shared';
-import { limbSamples } from './limbProbe.ts';
+import { limbSamples, restOfArms, wristMeasures } from './limbProbe.ts';
 
 /** How a pose is shown: the character from outside, its own first-person arms from the eye, or its whole body from the eye (full-body first person). */
 export type GripView = 'third' | 'first' | 'body';
@@ -76,6 +76,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   /** `__grips.legsAtRest(true)`: the posed character's legs held at their rest rotations (the clips' leg pose off), and those rotations. */
   let legsAtRest = false;
   let legRest: [TransformNode, Quaternion][] | null = null;
+  /** The posed character (any view) and its arms' rest rotations (`__grips.wrists`). */
+  let wristOf: { ch: CharacterInstance; rest: Map<string, Quaternion> } | null = null;
   /** `__grips.drive`: shots a second fired while driven (0: none), and the frame of the last one. */
   let fireRate = 0;
   let firedAt = 0;
@@ -181,6 +183,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const holder = new TransformNode('grip_body', scene);
       const ch = await characters.create({ look }, 'grip_char');
       tuned(look, ch);
+      wristOf = { ch, rest: restOfArms(ch) };
       fitFirstPersonBody(ch, holder);
       const viewRoot = new TransformNode('grip_view', scene);
       viewRoot.parent = eye;
@@ -213,6 +216,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       ground.setEnabled(true);
       const ch = await characters.create({ look }, 'grip_char');
       tuned(look, ch);
+      wristOf = { ch, rest: restOfArms(ch) };
       legRest = [...ch.joints].filter(([n, j]) => /^(thigh|calf|foot|ball)_/.test(n) && j.rotationQuaternion).map(([, j]) => [j, j.rotationQuaternion!.clone()]);
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       ch.root.scaling.scaleInPlace((PLAYER.height * ch.root.scaling.y) / Math.max(0.5, max.y - min.y));
@@ -247,6 +251,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       const viewRoot = new TransformNode('grip_view', scene);
       viewRoot.parent = eye;
       const ch = await characters.create({ look: armsLookFor(look), armsOnly: true }, 'grip_arms');
+      wristOf = { ch, rest: restOfArms(ch) };
       fitFirstPersonArms(ch, root);
       const node = await models.instantiate(def.view.model, 'grip_viewmodel');
       const bounds = node.getHierarchyBoundingVectors(true);
@@ -581,6 +586,10 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     limbs: () => (posed ? limbSamples(posed.ch) : null),
     /** The limb audit's before/after: hold the posed legs at their rest rotations (true) or let the clips pose them (false). */
     legsAtRest: async (on: boolean) => ((legsAtRest = on), await settle(4)),
+    /** The limbs fix's before/after (docs/CHARACTER_LIMBS.md, "After"): off (false), the clips' standing legs, the old elbow pole and no forearm twist share. Pose again after. */
+    limbFix: (on: boolean) => setStandShare(on ? 1 : 0),
+    /** The posed character's wrists and forearms (any view): bend and twist off rest, degrees (tools/content/limb-audit.mjs `WRISTS=1`). */
+    wrists: () => (wristOf ? wristMeasures(wristOf.ch, wristOf.rest) : null),
     /** World positions of the posed character's joints (third person), by name. */
     joints: (): Record<string, [number, number, number]> =>
       Object.fromEntries(
