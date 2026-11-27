@@ -10,7 +10,7 @@ import { CreateDisc } from '@babylonjs/core/Meshes/Builders/discBuilder';
 import { CreateBox } from '@babylonjs/core/Meshes/Builders/boxBuilder';
 import { StandardMaterial } from '@babylonjs/core/Materials/standardMaterial';
 import type { AbstractMesh } from '@babylonjs/core/Meshes/abstractMesh';
-import type { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
 import { PLAYER, getWeapon, isCreature, lookStats, npcLookRole } from '@tiletrigger/shared';
 import { CreatureLibrary, fitPlayerSkin } from '../content/creatures.ts';
 import { CreatureAnimator } from '../game/creatureAnimator.ts';
@@ -64,8 +64,9 @@ export class MenuScene {
   /** The shot's own turn (HERO_YAW or HERO_YAW_SELECT), eased toward `baseGoal` with the camera. */
   private baseYaw = HERO_YAW;
   private baseGoal = HERO_YAW;
-  /** The Armory (armory.ts) shows a weapon on the plinth: the hero is hidden meanwhile. */
+  /** The Armory (armory.ts) shows a weapon on the plinth: the heroes (the one shown and any fading out) are hidden meanwhile. */
   hideHero = false;
+  private readonly stage: TransformNode;
 
   constructor(engine: AbstractEngine) {
     this.scene = new Scene(engine);
@@ -143,6 +144,7 @@ export class MenuScene {
       v.position.set(x! - w! * 0.38, hgt! * 0.5, z! + w! / 2 + 0.02);
       v.material = cyan;
     });
+    this.stage = new TransformNode('menuStage', this.scene);
     this.characters = new CharacterLibrary(this.scene);
     // One download per file, shared by Character Select's prefetch and its picks (and the loading bar's progress).
     // Its own small chunk, after the menu's first: the menu's own hero loads by URL as before.
@@ -213,6 +215,7 @@ export class MenuScene {
         fitPlayerSkin(ch, PLAYER.height);
         ch.root.rotation.y = this.baseYaw + this.yaw;
         this.heroRoot = ch.root;
+        ch.root.parent = this.stage;
         this.hide(ch.meshes);
         this.retire();
         const anim = new CreatureAnimator(this.scene, ch, true);
@@ -236,6 +239,7 @@ export class MenuScene {
       ch.root.scaling.scaleInPlace((PLAYER.height * lookStats(look).size) / Math.max(0.5, max.y - min.y));
       ch.root.rotation.y = this.baseYaw + this.yaw;
       this.heroRoot = ch.root;
+      ch.root.parent = this.stage;
       this.hide(ch.meshes);
       this.retire();
       const anim = new CharacterAnimator(this.scene, ch);
@@ -351,10 +355,8 @@ export class MenuScene {
       this.yawSpeed *= Math.exp(-dt * 3);
       if (Math.abs(this.yawSpeed) < 0.05) this.yawSpeed = 0;
     }
-    if (this.heroRoot && !this.heroRoot.isDisposed()) {
-      this.heroRoot.rotation.y = this.baseYaw + this.yaw;
-      this.heroRoot.setEnabled(!this.hideHero);
-    }
+    if (this.heroRoot && !this.heroRoot.isDisposed()) this.heroRoot.rotation.y = this.baseYaw + this.yaw;
+    this.stage.setEnabled(!this.hideHero);
     if (this.anim) {
       const step = Math.max(0, Math.min(dt, STILL_AT - this.heroT));
       this.heroT += step;

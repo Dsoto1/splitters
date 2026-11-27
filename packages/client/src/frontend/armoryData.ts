@@ -12,9 +12,9 @@ import { weaponStats, type WeaponStats } from '../tools/weaponTuningData.ts';
  */
 
 /** Each weapon's notes in its content file (`notes.description`, written in the Weapon Manager; `notes.range`). */
-const NOTES = import.meta.glob<Record<string, string> | undefined>('../../../../content/weapons/*.json', { eager: true, import: 'notes' });
+const FILES = import.meta.glob<{ notes?: Record<string, string> }>('../../../../content/weapons/*.json', { eager: true, import: 'default' });
 const NOTE_OF = new Map<string, Record<string, string>>();
-for (const [path, notes] of Object.entries(NOTES)) if (notes) NOTE_OF.set(`core.${path.replace(/^.*\//, '').replace(/\.json$/, '')}`, notes);
+for (const [path, file] of Object.entries(FILES)) if (file.notes) NOTE_OF.set(`core.${path.replace(/^.*\//, '').replace(/\.json$/, '')}`, file.notes);
 
 /**
  * A weapon players can hold and the Armory lists: in a hand (slot > 0: not a mounted gun or a vehicle's), not hidden

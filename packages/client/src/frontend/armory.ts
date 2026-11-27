@@ -1,5 +1,6 @@
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import { TransformNode } from '@babylonjs/core/Meshes/transformNode';
+import { Matrix, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
 import { MODEL_FALLBACKS, getWeapon, type WeaponDefinition } from '@tiletrigger/shared';
 import { GLB, versioned } from '../assetUrl.ts';
@@ -412,8 +413,34 @@ export function mountArmory(root: HTMLElement, host: ArmoryHost): ArmoryPage {
       yawSpeed *= Math.exp(-dt * 3);
       if (Math.abs(yawSpeed) < 0.05) yawSpeed = 0;
     }
-    if (onShow) onShow.node.rotation.y = SHOW_YAW + yaw;
+    if (onShow) {
+      onShow.node.rotation.y = SHOW_YAW + yaw;
+      frameIn(onShow.node);
+    }
   });
+
+  /**
+   * Stand the weapon in the middle of the free space beside the panels (the turn zone), sized to fit it, whatever the
+   * window's shape: a phone held sideways leaves a narrow strip, a wide screen a big one.
+   */
+  const frameIn = (node: TransformNode) => {
+    const cam = scene.activeCamera;
+    const rect = scene.getEngine().getRenderingCanvasClientRect();
+    const zone = spin.getBoundingClientRect();
+    if (!cam || !rect || zone.width < 40 || zone.height < 80) return;
+    const vp = cam.viewport.toGlobal(rect.width, rect.height);
+    const m = cam.getViewMatrix().multiply(cam.getProjectionMatrix());
+    const at = (x: number, y: number) => Vector3.Project(new Vector3(x, y, 0), Matrix.IdentityReadOnly, m, vp);
+    const o = at(0, SHOW_HEIGHT);
+    const perX = at(1, SHOW_HEIGHT).x - o.x;
+    const perY = at(0, SHOW_HEIGHT + 1).y - o.y;
+    if (Math.abs(perX) < 1 || Math.abs(perY) < 1) return;
+    // The turn buttons' bar at the zone's foot stays clear; the weapon turned toward you looks bigger than its side-on size.
+    const room = zone.height - 64;
+    node.position.x = (zone.left - rect.left + zone.width / 2 - o.x) / perX;
+    node.position.y = SHOW_HEIGHT + (zone.top - rect.top + room / 2 - o.y) / perY;
+    node.scaling.setAll(Math.min(1, (zone.width * 0.7) / Math.abs(perX) / SHOW_SIZE, (room * 0.6) / Math.abs(perY) / SHOW_SIZE));
+  };
 
   const show = (id: string) => {
     const d = getWeapon(id);
