@@ -5,6 +5,9 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 History (older Landed notes, finished claims, old owner answers and the earlier sessions' "Start here" sections) lives in `docs/history/handoff-2026-11.md`; nothing was dropped. Keep this file to the current state, live claims, "Checking" lines and the last ~2 days of notes (docs/PROCESS.md, "HANDOFF stays short").
 
+## Characters first, and back after a lost context, `wip/fixes-20261127b` (helper of lane B's splitters22, 2026-11-27)
+- **Claim** (owner, 2026-11-27, "recs": capsules well into a match on St. John's): 1) load what you'll see first: the match's characters (your own body first) before map props and other models, the start gate kept up for your own body within the existing caps (`packages/client/src/game/session.ts` prepareMatch, `game/view.ts` prewarm, `content/characters.ts`, `content/models.ts`, maybe `content/fileFetcher.ts`); 2) characters (and guns, props, the level) drawn again after a WebGL context loss and restore (`game/view.ts`, `content/characters.ts`, the crowd instancing), a context-loss line in the performance report, a unit test or e2e moment. Not `characterAnimator.ts`.
+- **Status:** in work.
 ## Fix batch 2026-11-27, `wip/fixes-20261127` (helper of lane B's splitters22, 2026-11-27)
 - **Claim:** first-visit character loading (owner, 2026-11-27: characters' top half spinning as they first load in, in third person; some models missing at the start): `packages/client/src/game/characterAnimator.ts`, `packages/client/src/game/view.ts` (avatar creation), a unit test, maybe an e2e moment; Mujina floats (`content/characters/meshy_facelessspirit.json`, the generated character table).
 - **Status:** in work.
