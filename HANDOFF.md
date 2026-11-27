@@ -5,6 +5,10 @@ A briefing for the next Claude session or agent picking up this repo. Read
 
 History (older Landed notes, finished claims, old owner answers and the earlier sessions' "Start here" sections) lives in `docs/history/handoff-2026-11.md`; nothing was dropped. Keep this file to the current state, live claims, "Checking" lines and the last ~2 days of notes (docs/PROCESS.md, "HANDOFF stays short").
 
+## Stacked sights, `wip/sights-1127` (helper of lane B's splitters22, 2026-11-27)
+- **Claim** (QUEUE Bugs "Two sights stacked on guns with their own sight", owner 2026-11-27): every gun model checked for a sight or scope of its own; such a gun aims down it (`irons`, or a `window` on the model's sight) and offers no code-built housing; a gun without one has its added housing seated on its top. A per-gun `hasSight` mark in content and a check that fails when a gun with its own sight gets a code-built housing. Files: `content/optics.json`, `tools/content/optics.mjs` (+ its test), `packages/shared/src/content/optics.generated.ts`, maybe `content/sight-fit.json` / `tools/content/sight-fit.mjs` / `sightFit.generated.ts`, client `game/optics.ts`, `game/opticHousing.ts`, `opticPrefs.ts` (fallback for picks no longer allowed), `packages/client/test/optics.test.ts`; docs GUNPLAY_SPEC §15, CHANGELOG, QUEUE. Not touching characterAnimator.ts, view.ts or session.ts.
+- **Status:** in work.
+
 ## Legs and elbows: measure and diagnose, `wip/legs-measure-1127` (lane A, owner 2026-11-27; brief from lane B's lead)
 **Lane A: this is yours. Small and bounded: measure and diagnose only, no fix.** Owner's screenshots (Character Select, Grandpa Chains and Elder Tomo): many characters' knees and ankles bow outward, most at the ankles; some elbows bend wrong (Tomo's elbows and ankles); others stand fine.
 1. A headless measuring tool (reuse `packages/client/src/tools/characterViewer.ts` / `sightSheet.ts` patterns), run on every pickable character: knee and ankle bow in the menu idle pose (angle of shin and foot from the hip-knee-ankle plane, left and right), and elbow direction in the aim pose (does the elbow point out and down, or in or up).
