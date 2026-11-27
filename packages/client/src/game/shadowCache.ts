@@ -266,6 +266,8 @@ export class ShadowCache {
   private readonly states: (CascadeState | null)[];
   private frame = 0;
   private dirtyAll = true;
+  /** No depth copy (it couldn't be made again after a lost context): every layer draws its static casters each frame. */
+  private off = false;
   /** Static draws this run (the perf probe): how many layer redraws, of how many layer renders. */
   readonly stats = { redraws: 0, renders: 0 };
   private readonly lists = { s: [emptyList(), emptyList(), emptyList(), emptyList()], d: [emptyList(), emptyList(), emptyList(), emptyList()] };
@@ -277,7 +279,7 @@ export class ShadowCache {
     private readonly scene: Scene,
     private readonly gen: ShadowGenerator,
     private readonly csm: CsmInternals | null,
-    private readonly depth: DepthCopy,
+    private depth: DepthCopy,
     private readonly layers: number,
   ) {
     this.redraw = new Array<boolean>(layers).fill(true);
@@ -355,6 +357,21 @@ export class ShadowCache {
   /** Whether layer `layer` draws its static casters this frame (else they come from the cache). */
   drawsStatic(layer: number): boolean {
     return this.redraw[layer] ?? true;
+  }
+
+  /**
+   * A lost WebGL context came back (Atmosphere): the cached depth copy's texture and framebuffers were the old
+   * context's (binding them failed: "object does not belong to this context"), so it is made again on the shadow
+   * map's rebuilt depth, and every layer draws its static casters again. Left off (static casters drawn every frame)
+   * when it can't be made.
+   */
+  restored(): void {
+    const map = this.gen.getShadowMap();
+    const rt = map?.renderTarget as unknown as RenderTargetInternals | null;
+    const depth = map && rt ? DepthCopy.create(this.scene.getEngine() as unknown as EngineInternals, rt, this.layers, map.getSize().width) : null;
+    if (depth) this.depth = depth;
+    else this.off = true;
+    this.dirtyAll = true;
   }
 
   /** The static casters changed (a batch of proxies built or rebuilt): every layer draws them again. */
@@ -451,7 +468,7 @@ export class ShadowCache {
     this.frame++;
     this.watchStill();
     const st = this.states[0];
-    const due = this.dirtyAll || !st || refreshDue(this.frame, 0, st.drawn);
+    const due = this.off || this.dirtyAll || !st || refreshDue(this.frame, 0, st.drawn);
     this.redraw[0] = due;
     if (due) {
       this.dirtyAll = false;
@@ -464,7 +481,7 @@ export class ShadowCache {
     const csm = this.csm!;
     this.frame++;
     this.watchStill();
-    const all = this.dirtyAll;
+    const all = this.dirtyAll || this.off;
     this.dirtyAll = false;
     for (let i = 0; i < this.layers; i++) {
       const center = csm._frustumCenter[i]!;

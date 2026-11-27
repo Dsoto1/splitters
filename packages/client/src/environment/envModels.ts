@@ -5,6 +5,7 @@ import { VertexBuffer } from '@babylonjs/core/Buffers/buffer';
 import type { BaseTexture } from '@babylonjs/core/Materials/Textures/baseTexture';
 import type { AssetContainer } from '@babylonjs/core/assetContainer';
 import { LoadAssetContainerAsync } from '@babylonjs/core/Loading/sceneLoader';
+import { otherLoad } from '../content/loadOrder.ts';
 import { freeIfSceneGone } from '../content/sceneGone.ts';
 import '../content/gltf.ts';
 import { GLB, versioned } from '../assetUrl.ts';
@@ -32,7 +33,8 @@ export interface EnvModel {
  * (the importer's mirror baked in, so it is game space: what the collision shapes use).
  */
 export async function loadEnvModel(scene: Scene, file: string): Promise<EnvModel> {
-  const container: AssetContainer = await LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${file}`), scene, GLB).then(freeIfSceneGone(scene));
+  // (Waiting behind the characters' files: one whose turn comes after the scene went loads nothing and never settles.)
+  const container: AssetContainer = await otherLoad(scene, () => (scene.isDisposed ? new Promise<AssetContainer>(() => {}) : LoadAssetContainerAsync(versioned(`${import.meta.env.BASE_URL}${file}`), scene, GLB)), 0).then(freeIfSceneGone(scene));
   const byLevel = new Map<number, { distance: number; crossed: boolean; parts: EnvPart[] }>();
   for (const m of container.meshes) {
     if (!(m instanceof Mesh) || !m.getTotalVertices()) continue;

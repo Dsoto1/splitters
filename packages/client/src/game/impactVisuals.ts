@@ -628,6 +628,19 @@ export class ImpactVisuals {
     });
   }
 
+  /**
+   * A lost WebGL context came back (GameView): Babylon rebuilds each buffer from the last data it was handed, and
+   * for a partial update (the level's holes: update) that is only the part updated (a buffer two holes long, which
+   * the next hole overflowed) or nothing at all. The holes' buffers are set again, whole.
+   */
+  restored(): void {
+    if (this.holes.isDisposed()) return;
+    this.holes.thinInstanceSetBuffer('matrix', this.holeMatrices, 16, false);
+    this.holes.thinInstanceSetBuffer('color', this.holeColors, 4, false);
+    this.holes.thinInstanceCount = this.holeCount;
+    this.holeDirty = null;
+  }
+
   /** Bullet holes currently in the level (for tests). */
   get holesInLevel(): number {
     return this.holeCount;
