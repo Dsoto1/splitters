@@ -18,11 +18,11 @@
     ],
     "release": {
       "mapId": "m_sil6g62hvmfh7nmx",
-      "versionId": "v_klajjc5o7rhy5m7h",
-      "revision": 67,
-      "contentHash": "sha256:b672bf9c59eb490daf80bbbc431ab6a055e02fe30d6f5382d7374a6376bf6258",
+      "versionId": "v_hyortv33lbnmf4ye",
+      "revision": 68,
+      "contentHash": "sha256:35ce2e40e33523a77b8d404a5c37e47a96b048a4b39ad7acdeb04e4e79f40451",
       "schemaVersion": 55,
-      "releasedAt": "2026-11-26T09:44:38.492Z"
+      "releasedAt": "2026-11-27T20:21:23.540Z"
     },
     "testOnly": true,
     "category": "weird"
@@ -5854,28 +5854,28 @@
     },
     {
       "id": "target_24o1vve1ao",
-      "kind": "target",
       "position": [
         8,
         0,
         0
       ],
+      "kind": "target",
       "yaw": -1.571,
       "style": "silhouette",
       "resetSeconds": 2
     },
     {
       "id": "target_vtihakx4ow",
-      "kind": "target",
       "position": [
         8,
         0,
         -4
       ],
+      "kind": "target",
       "yaw": -1.571,
       "style": "plate",
-      "resetSeconds": 2,
-      "stays": true
+      "stays": true,
+      "resetSeconds": 2
     }
   ],
   "factions": [],
@@ -7745,6 +7745,15 @@
       "piece": "setpiece.gable_annex",
       "x": -16,
       "y": -63,
+      "z": 0,
+      "rotation": 0,
+      "mirror": false
+    },
+    {
+      "id": "setpiece_yk8l4glt58",
+      "piece": "setpiece.clock_tower_forward",
+      "x": 4,
+      "y": -49,
       "z": 0,
       "rotation": 0,
       "mirror": false
