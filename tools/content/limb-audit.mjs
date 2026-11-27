@@ -10,7 +10,8 @@
 //
 // ONLY=<look ids> for some; PICTURES=1 also saves each one front and side (whole body) and front and support side
 // (upper body) as <out>/pics/<look>_{front,side,upper,support}.png; TUNE='{"elbowOut":0.1}' measures with that
-// GripTune on every look (the elbow pole's before/after); CHROMIUM=<path> uses that browser build.
+// GripTune on every look (the elbow pole's before/after); LEGS_REST=1 holds the legs at their rest rotations after
+// the clips (the clips' leg pose off: what is left is the body's own); CHROMIUM=<path> uses that browser build.
 import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { dirname, join, relative, resolve } from 'node:path';
@@ -31,6 +32,7 @@ const out = resolve(process.argv[3] ?? join(tmpdir(), 'tiletrigger-limbs'));
 if (!relative(ROOT, out).startsWith('..')) throw new Error(`the audit's output goes outside the repo, not ${out}`);
 const only = process.env.ONLY?.split(',').filter(Boolean);
 const pictures = process.env.PICTURES === '1';
+const legsRest = process.env.LEGS_REST === '1';
 const tune = process.env.TUNE ? JSON.parse(process.env.TUNE) : null;
 mkdirSync(join(out, 'pics'), { recursive: true });
 
@@ -50,6 +52,7 @@ for (const l of looks) {
   try {
     if (tune) await page.evaluate(([id, t]) => window.__grips.tune(id, { grip: t }), [l.id, tune]);
     await page.evaluate((id) => window.__grips.pose(id, 'core.rifle', 'third'), l.id);
+    if (legsRest) await page.evaluate(() => window.__grips.legsAtRest(true));
     const raw = await page.evaluate(() => window.__grips.limbs());
     const m = limbMeasures(raw);
     rows.push({ id: l.id, name: l.name, ...m, raw });
@@ -71,6 +74,6 @@ for (const l of looks) {
 await browser.close();
 writeFileSync(join(out, 'limbs.json'), JSON.stringify(rows, null, 1));
 
-if (!only && !tune) writeTable(rows);
+if (!only && !tune && !legsRest) writeTable(rows);
 else console.log(limbTable(rows));
 if (errors.length) console.error(`page errors: ${errors.join('; ')}`);

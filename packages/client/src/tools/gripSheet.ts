@@ -1,7 +1,7 @@
 import type { AbstractEngine } from '@babylonjs/core/Engines/abstractEngine';
 import { Scene } from '@babylonjs/core/scene';
 import { ArcRotateCamera } from '@babylonjs/core/Cameras/arcRotateCamera';
-import { Vector3 } from '@babylonjs/core/Maths/math.vector';
+import { Quaternion, Vector3 } from '@babylonjs/core/Maths/math.vector';
 import { Color3, Color4 } from '@babylonjs/core/Maths/math.color';
 import { HemisphericLight } from '@babylonjs/core/Lights/hemisphericLight';
 import { DirectionalLight } from '@babylonjs/core/Lights/directionalLight';
@@ -73,6 +73,9 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
   /** The third-person pose's character, gun and hold (`__grips.audit`). */
   let posed: { ch: CharacterInstance; weapon: TransformNode; hold: WeaponHold } | null = null;
   let frames = 0;
+  /** `__grips.legsAtRest(true)`: the posed character's legs held at their rest rotations (the clips' leg pose off), and those rotations. */
+  let legsAtRest = false;
+  let legRest: [TransformNode, Quaternion][] | null = null;
   /** `__grips.drive`: shots a second fired while driven (0: none), and the frame of the last one. */
   let fireRate = 0;
   let firedAt = 0;
@@ -86,6 +89,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
 
   engine.runRenderLoop(() => {
     current?.anim.update(1 / 30, { ...still, pitch: eyePitch });
+    // The limb audit's switch (`__grips.legsAtRest`): the legs put back at their rest rotations after the clips (the tool's own, not the game's).
+    if (legsAtRest && legRest) for (const [j, q] of legRest) j.rotationQuaternion?.copyFrom(q);
     creature?.anim.update(1 / 30, { ...still, pitch: eyePitch });
     for (const a of crowd) a.update(1 / 30, { ...still, pitch: eyePitch });
     if (fireRate > 0 && current && frames - firedAt >= 30 / fireRate) {
@@ -205,6 +210,7 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
       ground.setEnabled(true);
       const ch = await characters.create({ look }, 'grip_char');
       tuned(look, ch);
+      legRest = [...ch.joints].filter(([n, j]) => /^(thigh|calf|foot|ball)_/.test(n) && j.rotationQuaternion).map(([, j]) => [j, j.rotationQuaternion!.clone()]);
       const { min, max } = ch.root.getHierarchyBoundingVectors(true);
       ch.root.scaling.scaleInPlace((PLAYER.height * ch.root.scaling.y) / Math.max(0.5, max.y - min.y));
       const anim = new CharacterAnimator(scene, ch);
@@ -570,6 +576,8 @@ export async function openGripSheet(engine: AbstractEngine): Promise<void> {
     palmRule: (rule: 'joints' | 'old') => setPalmRule(rule),
     /** The posed character's limbs, joints and skin (third person; tools/content/limb-audit.mjs). */
     limbs: () => (posed ? limbSamples(posed.ch) : null),
+    /** The limb audit's before/after: hold the posed legs at their rest rotations (true) or let the clips pose them (false). */
+    legsAtRest: async (on: boolean) => ((legsAtRest = on), await settle(4)),
     /** World positions of the posed character's joints (third person), by name. */
     joints: (): Record<string, [number, number, number]> =>
       Object.fromEntries(
