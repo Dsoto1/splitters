@@ -1,6 +1,15 @@
 import { roomLightsOn, saveRoomLights } from '../game/roomLights.ts';
 import { unlistedMapNotice } from './mapNotice.ts';
 import {
+  AMMO_RULES,
+  AMMO_RULE_LABELS,
+  COMBAT_SCALES,
+  HEADSHOT_LABELS,
+  HEADSHOT_RULES,
+  combatRulesOf,
+  combatSummary,
+  scaleLabel,
+  type CombatRules,
   BREAKTHROUGH_POOL_MAX,
   breakthroughSectors,
   CHARACTER_BRANCHES,
@@ -294,7 +303,7 @@ const narrowSetup = (): boolean => typeof matchMedia === 'function' && matchMedi
 const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
 
 /** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
-const RULE_RANK: Record<string, number> = { weapons: 0, set: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
+const RULE_RANK: Record<string, number> = { weapons: 0, set: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, combat: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
 
 /** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
 function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
@@ -2164,6 +2173,21 @@ export class FrontEnd {
     const timeRowOff = forts ? 'Fort Wars ends after its last combat phase.' : coop ? 'Co-op and Zombies end through the mission.' : null;
     const noTeams = team ? null : `No teams in ${MODE_LABEL[s.mode]}.`;
     const respawnDefault = Math.round(BASE_RULES[s.mode].respawnDelayTicks / 60);
+    // Combat rules (GUNPLAY G5, shared sim/combatRules.ts): the map's own shown lit; picking it again clears the change.
+    const mapCombat = combatRulesOf({}, map);
+    const playCombat = combatRulesOf(s, map);
+    const combatSet = <K extends keyof CombatRules>(k: K, v: CombatRules[K]) => this.change((x) => (v === mapCombat[k] ? delete (x as CombatRules)[k] : ((x as CombatRules)[k] = v)));
+    const scaleChoices = COMBAT_SCALES.map((v): ChoiceOption<string> => [String(v), scaleLabel(v)]);
+    const mapSays = (what: string) => `\n\nThis map: ${what} (its maker's choice).`;
+    const combatChip = (k: keyof CombatRules) => combatSummary({ ...combatRulesOf({}), [k]: playCombat[k] } as typeof playCombat)[0] ?? 'Standard';
+    const combatRows: { id: string; label: string; tip: string; changed: boolean; value: string; control: HTMLElement; disabled?: string | null }[] = [
+      { id: 'combat', label: 'Headshots', tip: `Off: a head hit counts as the body. Normal: each weapon's own head multiple. High: double the head bonus.${mapSays(HEADSHOT_LABELS[mapCombat.headshots])}`, changed: s.headshots !== undefined, value: combatChip('headshots'), control: choice(HEADSHOT_RULES.map((v): ChoiceOption<string> => [v, HEADSHOT_LABELS[v]]), playCombat.headshots, (v) => combatSet('headshots', v as CombatRules['headshots']), 'arcade-headshots') },
+      { id: 'combat', label: 'Ammo', tip: `Unlimited: reserves never run down. Scarce: half the ammo at spawn and from pickups.${mapSays(AMMO_RULE_LABELS[mapCombat.ammo])}`, changed: s.ammo !== undefined, value: combatChip('ammo'), control: choice(AMMO_RULES.map((v): ChoiceOption<string> => [v, AMMO_RULE_LABELS[v]]), playCombat.ammo, (v) => combatSet('ammo', v as CombatRules['ammo']), 'arcade-ammo') },
+      { id: 'combat', label: 'Reloads', tip: `Off: the magazine feeds straight from the reserve, so nobody reloads.${mapSays(mapCombat.reloads ? 'on' : 'off')}`, changed: s.reloads !== undefined, value: playCombat.reloads ? 'Reloads' : 'No reloads', control: ruleSwitch('arcade-reloads', 'Reloads', playCombat.reloads, (on) => combatSet('reloads', on)) },
+      { id: 'combat', label: 'Bullets through walls', tip: `On: strong rounds pass thin cover, weakened. Off: cover stops every round (glass still breaks).${mapSays(mapCombat.wallPenetration ? 'on' : 'off')}`, changed: s.wallPenetration !== undefined, value: playCombat.wallPenetration ? 'Wallbangs' : 'No wallbangs', control: ruleSwitch('arcade-walls', 'Bullets through walls', playCombat.wallPenetration, (on) => combatSet('wallPenetration', on)) },
+      { id: 'combat', label: 'Damage', tip: `Everything players, bots and enemies deal, for every weapon alike (falls and hazards unchanged).${mapSays(scaleLabel(mapCombat.damageScale))}`, changed: s.damageScale !== undefined, value: `Damage ${scaleLabel(playCombat.damageScale)}`, control: choice(scaleChoices, String(playCombat.damageScale), (v) => combatSet('damageScale', Number(v)), 'arcade-damage') },
+      { id: 'combat', label: 'Health', tip: `Players' and bots' effective health: damage they take is divided by it.${mapSays(scaleLabel(mapCombat.healthScale))}`, changed: s.healthScale !== undefined, value: `Health ${scaleLabel(playCombat.healthScale)}`, control: choice(scaleChoices, String(playCombat.healthScale), (v) => combatSet('healthScale', Number(v)), 'arcade-health') },
+    ];
     const extras: { id: string; label: string; tip: string; changed: boolean; value: string; control: HTMLElement; disabled?: string | null }[] = [
       { id: 'ff', label: 'Friendly fire', tip: 'Team modes and co-op: whether your shots and blasts hurt teammates. A team kill earns nothing.', changed: !!s.friendlyFire, value: `Friendly fire ${s.friendlyFire === 'half' ? 'half' : 'full'}`, control: choice([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => this.change((x) => (x.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on')))), disabled: team || coop ? null : `No teammates in ${MODE_LABEL[s.mode]}.` },
       { id: 'respawn', label: 'Respawn delay', tip: `Seconds before you are back in. Rounds modes (Elimination, Bomb, Hostage) and Zombies wait for the next round or wave instead. Default here: ${respawnDefault} s.`, changed: s.respawn !== undefined, value: `Respawn ${s.respawn} s`, control: stepper({ value: s.respawn ?? respawnDefault, min: 0, max: 30, id: 'arcade-respawn', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.respawn = v === respawnDefault ? undefined : v)) }) },
@@ -2180,6 +2204,7 @@ export class FrontEnd {
       { id: 'fall', label: 'Fall damage', tip: "Drops past about 5 m hurt; about 16 m kills. Map: the map's own setting.", changed: s.fallDamage !== undefined, value: `Fall damage ${s.fallDamage ? 'on' : 'off'}`, control: choice([['map', 'Map'], ['on', 'On'], ['off', 'Off']], s.fallDamage === undefined ? 'map' : s.fallDamage ? 'on' : 'off', (v) => this.change((x) => (x.fallDamage = v === 'map' ? undefined : v === 'on'))) },
       { id: 'lethality', label: 'Lethality', tip: 'How quickly fights end, for every weapon alike. Arcade: everyone soaks about 40% more (longer fights, tracking matters). Standard: the official balance. Tactical: everyone soaks about 30% less (very lethal).', changed: !!s.lethality, value: `${s.lethality === 'arcade' ? 'Arcade' : 'Tactical'} lethality`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['tactical', 'Tactical']], s.lethality ?? 'standard', (v) => this.change((x) => (x.lethality = v === 'standard' ? undefined : (v as 'arcade' | 'tactical')))) },
       { id: 'ballistics', label: 'Ballistics', tip: "How much bullets behave like projectiles. Arcade: faster bullets that barely drop and don't pass through cover. Standard: the official default (lead and drop matter at long range). Advanced: slower bullets that drop more: lead and hold over further.", changed: !!s.ballistics, value: `${s.ballistics === 'arcade' ? 'Arcade' : 'Advanced'} ballistics`, control: choice([['arcade', 'Arcade'], ['standard', 'Standard'], ['advanced', 'Advanced']], s.ballistics ?? 'standard', (v) => this.change((x) => (x.ballistics = v === 'standard' ? undefined : (v as 'arcade' | 'advanced')))) },
+      ...combatRows,
       { id: 'emotes', label: 'Emotes & messages', tip: `Quick messages (${keyFor('quickMessage')}, then 1-9, 0, - or =; a controller's d-pad up, held; 1 "Follow me!" and 7 "Hold here!" also order your team's bots), the dance emote (${keyFor('dance')}). Pings (${keyFor('ping')}) always work.`, changed: s.emotes === false, value: 'No emotes', control: ruleSwitch('arcade-emotes', 'Emotes & messages', s.emotes !== false, (on) => this.change((x) => (x.emotes = on))) },
     ];
     const restricted = s.spears ? 'Spears only' : s.discs ? 'Discs only' : null;
@@ -2213,7 +2238,7 @@ export class FrontEnd {
     const changed = [...live(extras), ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
     const reset = el('button', { type: 'button', class: 'link rule-reset', id: 'setup-reset', textContent: 'Reset', title: 'Back to the standard rules (every variant off)' });
     reset.addEventListener('click', () => this.change((x) => {
-      for (const k of ['spears', 'discs', 'powerupsOff', 'mixPickups', 'dropWeapons', 'akimbo', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'themedNames', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+      for (const k of ['spears', 'discs', 'powerupsOff', 'mixPickups', 'dropWeapons', 'akimbo', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'themedNames', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn', 'headshots', 'ammo', 'reloads', 'wallPenetration', 'damageScale', 'healthScale'] as const) delete x[k];
     }));
     const count = (xs: typeof extras) => {
       const n = live(xs).length;
