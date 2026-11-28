@@ -12,7 +12,7 @@ Models (name as on the download, download file date):
 
 - "Elder T-pose" (2025-11-14)  -> character meshy_elder (look Elder Tomo) until 2026-11-25, when the owner's "elder tomo rigged" replaced its model (no longer shipped)
 - "T Pose Alien" (2026-07-21)  -> character meshy_alien (look The Visitor)
-- "T Pose Pilot" (2026-05-10)  -> character meshy_pilot (look Flt. Lt. Ember)
+- "T Pose Pilot" (2026-05-10)  -> character meshy_pilot (look Flt. Lt. Ember) until 2026-11-28, when the owner's own model replaced it (no longer shipped)
 - "T Pose Titan" (2026-05-03)  -> character meshy_titan (look Big Bogdan)
 
 The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landmarks found on the mesh; the post URL is each model's community page):
@@ -29,7 +29,7 @@ The owner's batch of 2026-10-29 (unrigged textured GLBs, rigged here from landma
 - "Untitled (bald man in leathers)" (downloaded 2026-10-29, https://www.meshy.ai/posts/019fa69e-98f2-75bd-b347-6c3a53ce9c1f)  -> character meshy_hector (look Hector)
 - "Female lancer" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f8f3c-f027-741d-b676-c700d0d3be15)  -> character meshy_lancer (look Lancer Mei)
 - "Iron Shadow Warrior" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9b1c-6097-7fac-86de-5a6141690531)  -> character meshy_ninja (look Shade)
-- "Low Poly T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9d4e-cd8d-787b-8fc1-ec0c33402aa8)  -> character meshy_ricochet (look Ricochet)
+- "Low Poly T Pose" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f9d4e-cd8d-787b-8fc1-ec0c33402aa8)  -> character meshy_ricochet (look Ricochet) until 2026-11-28, when the owner's own model replaced it (no longer shipped)
 - "White Rusty Mech" (downloaded 2026-10-29, https://www.meshy.ai/posts/019f3ef0-e612-7dfa-97cf-358fe2f357ab)  -> character meshy_rustmech (look Ivory Rustwalker)
 - "T Pose Shiba Inu" (downloaded 2026-10-29, https://www.meshy.ai/posts/019e3fb2-711c-7039-8570-1d59dba28a76)  -> character meshy_shiba (look Shiba) until 2026-11-22, when the owner's "shiba inu 15k" replaced its model (no longer shipped)
 - "T Pose Automaton" (downloaded 2026-10-29, https://www.meshy.ai/posts/TPose-Automaton-019fbb32-61f6-75c6-897c-e36f20750c47)  -> character meshy_t350 (look T-350) until 2026-11-26, when the owner's "Skinny T1000 Base" replaced its model (no longer shipped)
@@ -75,7 +75,7 @@ Drive), rebuilt on the game's rig by tools/content/prepare-meshy-characters.mjs
 (their own clips are not used):
 
 - "Emerald Robot" (downloaded 2026-11-02)  -> character meshy_emeraldrobot (look Emerald Robot)
-- "space marine uniform" (downloaded 2026-11-02)  -> character meshy_spacemarine (look Space Marine)
+- "space marine uniform" (downloaded 2026-11-02)  -> character meshy_spacemarine (look Space Marine) until 2026-11-28, when the owner's own model replaced it (no longer shipped)
 - "Spiked Skeleton Biker" (downloaded 2026-11-02)  -> character meshy_skeletonbiker (look Spiked Skeleton Biker)
 
 Drive intake of 2026-11-05: models rigged and animated on Meshy ("All Animations"
@@ -93,7 +93,7 @@ from the owner for every one (HANDOFF.md, "Drive intake of 2026-11-05"):
 - "A fit ancient Chinese male soldier from" (downloaded 2026-11-05)  -> character meshy_imperialguard (look Imperial Guard)
 - "Goblin Warlord villain" (downloaded 2026-11-05)  -> character meshy_goblinwarlord (look Goblin Warlord)
 - "T Pose on Green Screen" (downloaded 2026-11-05)  -> character meshy_bill (look Bill)
-- "Iron Warden" (downloaded 2026-11-05)  -> character meshy_knight (look Iron Knight), its new model (intake step 2b; the model it replaced is no longer shipped)
+- "Iron Warden" (downloaded 2026-11-05)  -> character meshy_knight (look Iron Knight), its new model (intake step 2b; the model it replaced is no longer shipped) until 2026-11-28, when the owner's own model replaced it (no longer shipped)
 - "Gnoll warrior" (downloaded 2026-11-05)  -> character meshy_hyena (look Hyena Warrior), its new model (intake step 2b; the model it replaced is no longer shipped)
 - "Uniformed Worker in a T Pose" (downloaded 2026-11-05)  -> character meshy_zhao (look Customs Agent Zhao), its new model (intake step 2b; the model it replaced is no longer shipped)
 - "Tattered Circus Nightmare" (downloaded 2026-11-05)  -> character meshy_giggles (look Giggles), its new model (intake step 2b; the model it replaced is no longer shipped)

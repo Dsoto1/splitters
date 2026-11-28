@@ -10,13 +10,13 @@
   "nameTheme": "townsfolk",
   "bio": "Hitched a ride into the war zone by mistake. Stayed because the pay beats his last job.",
   "body": "male",
-  "notes": "Rourke comes back (removed 2026-11-25, its id played Cutter McCrae): the owner's own new model, the old id, name and roster place (order 65). Drive intake of 2026-11-26 (\"bum rourke rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "notes": "New model 2026-11-28 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Rourke Hobo Commando 15K\", as Meshy names the download; Drive 1yjQOp5-ZdswJfeauMcC4f7CGPo2CmsIU; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy, owned) no longer ships.",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
-    "date": "2026-11-26",
+    "date": "2026-11-28",
     "url": null,
-    "file": "^Meshy_AI_bum_rourke_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+    "file": "^Meshy_AI_Rourke_Hobo_Commando_15K_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
     "metallic": 0.1,

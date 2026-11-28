@@ -10,23 +10,21 @@
   "nameTheme": "townsfolk",
   "bio": "On the case since breakfast. The moustache does most of the detecting.",
   "body": "male",
-  "notes": "Drive intake of 2026-11-11 (\"inspector gadget version of a Mexican\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Experimental until the owner has looked at it in game (new characters start there, like maps). Name and bio are ours (the owner, 2026-11-11: \"his own character, just based on some idea\": named for himself, no reference to the cartoon the download's title mentions). Licence: Meshy Community, CC0 per the owner (2026-11-11: \"new character models to my drive from the meshy community (CC0 license)\").",
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Meshy Merged Animations\", as Meshy names the download; Drive 1yWb-2MjuOgFmCi6q_ZOCRgB1hMQYY06B, uploaded 2026-11-27, saved here as Meshy_AI_Meshy_Merged_Animations_<Drive id>.glb since all eleven share one name; matched to this character from a contact sheet beside its old model; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships.",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner)",
-    "community": {
-      "model": "inspector gadget version of a Mexican"
-    },
-    "date": "2026-11-11",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-27",
     "url": null,
-    "file": "^Meshy_AI_inspector_gadget_version_of_a_Mexican_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_Meshy_Merged_Animations_1yWb-2MjuOgFmCi6q_ZOCRgB1hMQYY06B\\.glb$"
   },
   "finish": {
     "metallic": 0.1,
     "roughness": 0.6
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,

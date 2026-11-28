@@ -10,7 +10,9 @@
   "nameTheme": "robot",
   "bio": "A robot raised by humans, with the dress sense to prove it.",
   "body": "male",
-  "notes": "New model 2026-11-26 (owner: Botboy's replacement, \"not really giant\": a normal robot's size; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"Robot in T Pose\") no longer ships. Drive intake of 2026-11-26 (\"Astro Giant Boy Robot Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "locomotion": "hover",
+  "hover": 0.3,
+  "notes": "New model 2026-11-26 (owner: Botboy's replacement, \"not really giant\": a normal robot's size; id, name and place kept). Its model until 2026-11-26 (a Meshy Community CC0 model \"Robot in T Pose\") no longer ships. Drive intake of 2026-11-26 (\"Astro Giant Boy Robot Rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the uploads are the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22). Owner, 2026-11-27 (character round (d)): he hovers too, like Vanguard and Mujina (`locomotion: hover`, 0.3 m up; the model not rebuilt).",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",

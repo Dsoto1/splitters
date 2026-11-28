@@ -223,16 +223,17 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   ['core.basaltguardian', 'core.abyssalhunter', 'core.celestialknight', 'core.magmajuggernaut', 'core.mystic', 'core.frostvalkyrie', 'core.sunpriest'],
   // Owner, 2026-11-27: the Historical row, periods side by side, oldest first (one list: the whole row in this order).
   [
-    'core.gladiatrix', // Rome's arena: Valeria Sandstorm
+    'core.gladiatrix', 'core.gladiator', // Rome's arena: Valeria Sandstorm, Decimus Stonejaw (owner, 2026-11-28)
     'core.vikingf', 'core.vikingm', // vikings: Astrid Stormbrand, Ulf Ravenshield
     'core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.paladin', 'core.galloway', 'core.brannock', 'core.ts2wizard', // medieval and the Crusades (Sir Galloway and Ser Brannock are MapMaker's only)
     'core.imperialguard', 'core.mei', // the Asian dynasties
     'core.aztecjaguar', 'core.eagleclan', // Mesoamerica: Balam Nightclaw, Talon Skycrest
     'core.piratecaptain', 'core.firstmate', 'core.femalepirate', // the age of sail (owner, 2026-11-28): Cap'n Ezra Blackwake, Mr. Gideon Tarr, Scarlet Brinewell
     // The famous real people by their real names (owner, 2026-11-28), together and by period: Julius Caesar and Genghis
-    // Khan with them (owner, 2026-11-28). Real people still to come go in here by birth (Tesla after Lincoln, Churchill
-    // and Patton after Roosevelt). Shaka stays with Southern Africa (owner, 2026-11-26: "Shaka stays with his period").
-    'core.caesar', 'core.khan', 'core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein',
+    // Khan with them (owner, 2026-11-28). Real people still to come go in here by birth; Tesla after Lincoln, Churchill
+    // and Patton after Roosevelt (character round (d), 2026-11-28). Shaka stays with Southern Africa (owner, 2026-11-26:
+    // "Shaka stays with his period").
+    'core.caesar', 'core.khan', 'core.washington', 'core.franklin', 'core.abe', 'core.tesla', 'core.roosevelt', 'core.churchill', 'core.patton', 'core.einstein',
     'core.shaka', 'core.zuluwarrior', 'core.kato', // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
     'core.dustycolt', 'core.outlawranger', 'core.snakeshaman', 'core.thornweaver', // the Wild West and the plains
   ],
@@ -241,6 +242,7 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   ['core.vietnamsoldier', 'core.vcscout'], // Vietnam
   ['core.usgrunt', 'core.repguard'], // Desert Storm: Pvt. Hank Dowling, Sgt. Samir Haddad
   ['core.toysoldier', 'core.greenarmy'], // toy soldiers
+  ['core.rollerbot', 'core.baseballbot'], // the Baseball Robot (rolls) and Slugger Boltsworth (the biped one, 2026-11-27)
 ];
 
 function withNeighbours<T extends { id?: string }>(sorted: T[]): T[] {

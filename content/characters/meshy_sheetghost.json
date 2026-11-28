@@ -1,0 +1,41 @@
+{
+  "id": "meshy_sheetghost",
+  "kind": "character",
+  "use": "player",
+  "order": 302,
+  "name": "Wisp Linenwick",
+  "look": "core.sheetghost",
+  "group": "horror",
+  "blood": "spirit",
+  "nameTheme": "spooky",
+  "bio": "Just a sheet with two eyeholes. Nobody who laughed has come back to explain.",
+  "body": "male",
+  "locomotion": "hover",
+  "hover": 0.3,
+  "notes": "New 2026-11-28 (owner's character round (d): the Gliding Sheet Ghost; Horrors & Creatures). Drive intake (\"TS2 Gliding Sheet Ghost 3D\", image-to-3d texture remesh, as Meshy names the download; Drive 12mKy6k-VWqm8XTc-HSWlqHh_GqG82Iyg). Unrigged: Meshy could not rig it (owner: \"he is tposed half up, we can just try to apply him to meshy rigs that vanguard uses\"), so it is rigged here onto the rig every Meshy character rides (the skeleton Vanguard's Mixamo joints map onto), fitted to its T-posed upper half by landmarks; the sheet below the waist rides the hips (`fixes.cloth`) and the legs ride the pelvis as a hovering body's do. It hovers like Vanguard and Mujina (`locomotion: hover`). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_TS2_Gliding_Sheet_Ghost_3D_\\d+_image-to-3d-texture_remesh_tri\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.0,
+    "roughness": 0.8
+  },
+  "fixes": {
+    "triangles": 10000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "cloth": true
+  },
+  "landmarks": {
+    "spine": [[0, 0.49, 0], [0, 0.56, 0], [0, 0.64, 0], [0, 0.72, 0], [0, 0.82, 0], [0, 0.88, 0], [0, 1, 0]],
+    "L": [[0.03, 0.8, 0], [0.12, 0.775, 0], [0.27, 0.752, 0], [0.415, 0.738, 0.005], [0.525, 0.735, 0.005], [0.06, 0.46, 0], [0.06, 0.26, 0], [0.06, 0.07, 0], [0.06, 0.02, 0.06], [0.06, 0.015, 0.12]],
+    "R": [[-0.03, 0.8, 0], [-0.12, 0.775, 0], [-0.27, 0.752, 0], [-0.415, 0.738, 0.005], [-0.525, 0.735, 0.005], [-0.06, 0.46, 0], [-0.06, 0.26, 0], [-0.06, 0.07, 0], [-0.06, 0.02, 0.06], [-0.06, 0.015, 0.12]]
+  }
+}

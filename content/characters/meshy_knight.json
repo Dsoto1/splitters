@@ -12,27 +12,24 @@
   "body": "male",
   "size": "large",
   "source": {
-    "license": "CC0",
-    "author": "Meshy Community (CC0 per the owner; author pending from the owner)",
-    "community": {
-      "model": "Iron Warden"
-    },
-    "date": "2026-11-05",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-27",
     "url": null,
-    "file": "^Meshy_AI_Iron_Warden_\\d+_animated_mixamo_All_animation\\.glb$"
+    "file": "^Meshy_AI_Meshy_Merged_Animations_1u3Vsb-lGE4-2RrWPIw361epdh17CojPP\\.glb$"
   },
   "finish": {
     "metallic": 0.35,
     "roughness": 0.45
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true,
-    "hands": { "curl": 1 }
+    "feet": true
   },
-  "notes": "Its model replaced 2026-11-05 (intake step 2b, the owner's mapping) by \"Iron Warden\" (Meshy rig, Mixamo skeleton; its clips not used); it was built from the owner's own model. Licence: Meshy Community, CC0 per the owner; author and post URL pending from the owner."
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Meshy Merged Animations\", as Meshy names the download; Drive 1u3Vsb-lGE4-2RrWPIw361epdh17CojPP, uploaded 2026-11-27, saved here as Meshy_AI_Meshy_Merged_Animations_<Drive id>.glb since all eleven share one name; matched to this character from a contact sheet beside its old model; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships."
 }

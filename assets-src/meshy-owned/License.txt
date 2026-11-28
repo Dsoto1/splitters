@@ -233,3 +233,28 @@ Provenance: Meshy, owned.
   - "crt robot remeshed" (2026-11-01)  -> character meshy_crtrobot (look CRT Robot)
   - "rigged cheetah sloth" (2026-11-01)  -> character meshy_seetah (look Seetah J. Chloth)
   - "Monumento del Estadista en T Pose" (2026-11-14)  -> character meshy_bronzer (look Bronzer)
+- The owner's character round (d), uploaded 2026-11-26 to 2026-11-28 (pack meshy-owned; the owner, 2026-11-27: all
+  made by the owner in Meshy). Built by tools/content/prepare-meshy-characters.mjs. The models the replacements
+  replaced no longer ship.
+
+  - "Meshy Merged Animations" (2026-11-27, Drive 1DD3rUCuM32BYVJRzpgk2WjupW5mFJFp7)  -> character meshy_mechanic (look The Mechanic), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1DI-mq0cYGwCkEFlDv9HBHHTeJO5FU0rs)  -> character meshy_pharaoh (look Pharaoh Mummy Warrior), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1K1bahVE0oQgvwgcYpsTZ__uB_i72_MDC)  -> character meshy_resolvesoldier (look Kenji), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1Mnirz5-gAoCfiF1YGdegjtuxPfmfBFYQ)  -> character meshy_stealthop (look Stealth Operative), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1Nt_448qp1xV9bDmt39I7MS73v3RD-9Kv)  -> character meshy_mummybot (look Mummy Bot), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1PoyiB3eCSJ2aymjpYbTwluOwOhHUdn7_)  -> character meshy_oldtimer (look Old Timer), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1VoiKQgeOiAkk0lKz9UCtz8SiWtXcmxZ2)  -> character meshy_pilot (look Flt. Lt. Ember), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1qEXqlZWeLm3uYdjeOg5zvbw3VXQiXO4D)  -> character meshy_azuresentinel (look Azure Sentinel), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1qxEnlWpyAyv1mGKVpAQyWE4aPp6IRSoR)  -> character meshy_hazmat (look Hazmat Joe), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1u3Vsb-lGE4-2RrWPIw361epdh17CojPP)  -> character meshy_knight (look Iron Knight), its new model
+  - "Meshy Merged Animations" (2026-11-27, Drive 1yWb-2MjuOgFmCi6q_ZOCRgB1hMQYY06B)  -> character meshy_inspector (look Inspector Bigotes), its new model
+  - "Ricochet Pearlescent 15k" (2026-11-27)  -> character meshy_ricochet (look Ricochet), its new model
+  - "Alien Space Marine 15k" (2026-11-27)  -> character meshy_spacemarine (look Space Marine), its new model
+  - "Rourke Hobo Commando 15K" (2026-11-28)  -> character meshy_rourke (look Rourke), its new model
+  - "robotic baseball player 10k" (2026-11-27)  -> character meshy_baseballbot (look Slugger Boltsworth)
+  - "cardinal maestro 15k" (2026-11-27)  -> character meshy_cardinal (look Maestro Redcrest)
+  - "rigged male gladiator" (2026-11-26)  -> character meshy_gladiator (look Decimus Stonejaw)
+  - "TeslaRigged" (2026-11-26)  -> character meshy_tesla (look Nikola Tesla)
+  - "ChurchillRigged" (2026-11-26)  -> character meshy_churchill (look Winston Churchill)
+  - "GeneralPattonRigged" (2026-11-26)  -> character meshy_patton (look George S. Patton)
+  - "TS2 Gliding Sheet Ghost 3D" (2026-11-26, unrigged; rigged here)  -> character meshy_sheetghost (look Wisp Linenwick)

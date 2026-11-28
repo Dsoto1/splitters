@@ -1,0 +1,34 @@
+{
+  "id": "meshy_gladiator",
+  "kind": "character",
+  "use": "player",
+  "order": 298,
+  "name": "Decimus Stonejaw",
+  "look": "core.gladiator",
+  "group": "historical",
+  "blood": "red",
+  "nameTheme": "knight",
+  "bio": "Fought lions for a living. You are a step down, and he is too polite to say so.",
+  "body": "male",
+  "notes": "New 2026-11-28 (owner, 2026-11-28: the male gladiator, missed by the 11-26 round, beside the gladiators: Rome's arena in Historical with Valeria Sandstorm). Drive intake (\"rigged male gladiator\", as Meshy names the download; Drive 1NAhPomFcHHA6znJwUvhkLbVwuqgY2k7L, uploaded 2026-11-26; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours, made up like his peers' (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: \"all made by the owner in Meshy\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-26",
+    "url": null,
+    "file": "^Meshy_AI_rigged_male_gladiator_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

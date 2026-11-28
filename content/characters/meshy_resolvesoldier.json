@@ -11,174 +11,25 @@
   "nameTheme": "soldier",
   "bio": "Fresh out of basic with hair no regulation can tame. Swears this is his serious face.",
   "body": "male",
-  "notes": "A Meshy community model, CC0 per the owner (from the owner's Drive folder, 2026-11-01, second batch; the community model's name as the download names it): a textured GLB standing with its arms down (not a T-pose), not rigged (no skin), so it is rigged here from landmarks: found on the mesh (landmarks.mjs), the arms then set by hand down the middle of each hanging arm (the found elbows sat on the torso's edge, and the flank under each arm went with it). A young soldier with spiky black hair in khaki fatigues, a plate carrier and knee pads. `armCloth`: the vest's side under each arm went with the arm (a dark flap hanging off the support arm in the hold); it now follows the body.",
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Meshy Merged Animations\", as Meshy names the download; Drive 1K1bahVE0oQgvwgcYpsTZ__uB_i72_MDC, uploaded 2026-11-27, saved here as Meshy_AI_Meshy_Merged_Animations_<Drive id>.glb since all eleven share one name; matched to this character from a contact sheet beside its old model; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships.",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Soldier's Resolve"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-27",
     "url": null,
-    "file": "^Meshy_AI_Soldier_s_Resolve_\\d+_texture\\.glb$"
+    "file": "^Meshy_AI_Meshy_Merged_Animations_1K1bahVE0oQgvwgcYpsTZ__uB_i72_MDC\\.glb$"
   },
   "finish": {
     "metallic": 0,
     "roughness": 0.8
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
     "surface": "rebake",
-    "feet": true,
-    "armCloth": true,
-    "hands": {
-      "scale": 0.85
-    },
-    "grip": {
-      "rollL": -0.3
-    }
-  },
-  "landmarks": {
-    "spine": [
-      [
-        -0.004,
-        0.466,
-        0.005
-      ],
-      [
-        -0.004,
-        0.541,
-        0.002
-      ],
-      [
-        -0.004,
-        0.62,
-        0.008
-      ],
-      [
-        -0.004,
-        0.705,
-        -0.013
-      ],
-      [
-        -0.004,
-        0.863,
-        -0.005
-      ],
-      [
-        -0.004,
-        0.903,
-        -0.012
-      ],
-      [
-        -0.004,
-        1,
-        -0.008
-      ]
-    ],
-    "L": [
-      [
-        0.036,
-        0.818,
-        -0.03
-      ],
-      [
-        0.13,
-        0.792,
-        -0.035
-      ],
-      [
-        0.17,
-        0.645,
-        -0.04
-      ],
-      [
-        0.182,
-        0.553,
-        -0.074
-      ],
-      [
-        0.174,
-        0.459,
-        -0.05
-      ],
-      [
-        0.068,
-        0.436,
-        0.005
-      ],
-      [
-        0.095,
-        0.249,
-        -0.032
-      ],
-      [
-        0.121,
-        0.065,
-        -0.056
-      ],
-      [
-        0.139,
-        0.02,
-        0.009
-      ],
-      [
-        0.139,
-        0.015,
-        0.047
-      ]
-    ],
-    "R": [
-      [
-        -0.036,
-        0.818,
-        -0.03
-      ],
-      [
-        -0.13,
-        0.792,
-        -0.035
-      ],
-      [
-        -0.17,
-        0.645,
-        -0.04
-      ],
-      [
-        -0.195,
-        0.554,
-        0.005
-      ],
-      [
-        -0.182,
-        0.459,
-        -0.03
-      ],
-      [
-        -0.07,
-        0.436,
-        0.005
-      ],
-      [
-        -0.109,
-        0.249,
-        0.013
-      ],
-      [
-        -0.145,
-        0.065,
-        -0.002
-      ],
-      [
-        -0.153,
-        0.02,
-        0.073
-      ],
-      [
-        -0.153,
-        0.015,
-        0.117
-      ]
-    ]
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }
