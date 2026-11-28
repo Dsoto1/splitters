@@ -16,7 +16,8 @@ const FITTED = ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.
 // Hand corrections (content/sight-fit.json): the obsidian pump's leaning front post, the Glock's nubs on its slide rail (2026-11-28).
 // The heavy rocket launcher's AT4-style line beside its tube (2026-11-28, batch 4).
 // The ricochet launcher's flip-up aperture (batch 4).
-const CORRECTED: string[] = ['core.auto_shotgun', 'core.disc_launcher', 'core.pistol', 'core.rockets'];
+// The goo gun's nubs, level over its stock (batch 4).
+const CORRECTED: string[] = ['core.auto_shotgun', 'core.disc_launcher', 'core.goo_gun', 'core.pistol', 'core.rockets'];
 /**
  * The hand-held guns that aim without a fit, by name: their models have no usable sights (content/sight-fit.json
  * `excluded`, each with its reason), so they keep the placement every gun had before.

@@ -29,7 +29,7 @@ export const SIGHT_FITS: Readonly<Record<string, SightFit>> = {
   'core.flintlock_pistol': { eye: [-0.00893, 0.03904, -0.48], rear: [-0.00882, 0.04039, -0.0804], front: [-0.00872, 0.04156, 0.266], kind: 'bead' },
   'core.freeze_ray': { eye: [-0.00015, 0.08965, -0.42], rear: [-0.00015, 0.08772, -0.1108], front: [-0.00015, 0.08625, 0.126], kind: 'post' },
   'core.gilded_pistol': { eye: [0.00028, 0.05193, -0.42], rear: [0.00003, 0.0517, -0.0628], front: [-0.00007, 0.05161, 0.0788], kind: 'notch' },
-  'core.goo_gun': { eye: [-0.01855, 0.06865, -0.625], rear: [-0.01855, 0.08901, -0.155], front: [-0.01855, 0.11174, 0.3698], kind: 'bead' },
+  'core.goo_gun': { eye: [0, 0.126, -0.625], rear: [0, 0.126, -0.165], front: [0, 0.126, 0.195], kind: 'post', corrected: true },
   'core.hand_cannon': { eye: [-0.00002, 0.06907, -0.42], rear: [-0.00002, 0.06714, -0.113], front: [-0.00002, 0.06564, 0.1266], kind: 'post' },
   'core.laser_blaster': { eye: [-0.00011, 0.08887, -0.42], rear: [-0.00011, 0.09232, -0.1006], front: [-0.00011, 0.09451, 0.1014], kind: 'bead' },
   'core.launcher': { eye: [0.00003, 0.10546, -0.625], rear: [0.00003, 0.11571, -0.095], front: [0.00003, 0.12507, 0.389], kind: 'post' },
