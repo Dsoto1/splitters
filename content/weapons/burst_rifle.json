@@ -21,12 +21,12 @@
   "ammo": "rifle",
   "recoil": { "bloom": 0.006, "maxBloom": 0.03, "recover": 0.002 },
   "view": {
-    "model": "guns/m4a1.glb",
-    "held": { "medium": "guns/m4a1.medium.glb", "high": "guns/m4a1.high.glb" },
+    "model": "guns/desert_storm_rifle.glb",
+    "held": { "medium": "guns/desert_storm_rifle.medium.glb", "high": "guns/desert_storm_rifle.high.glb" },
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#ffd36b",
-    "hold": { "style": "long", "grip": [0, -0.04, -0.195], "support": [0, 0.045, 0.11], "shoulder": [0, 0.02, -0.425] },
-    "muzzleAt": [0, 0.065, 0.43],
+    "hold": { "style": "long", "grip": [0, -0.035, -0.172], "support": [0, 0.055, 0.13], "shoulder": [0, 0.03, -0.425] },
+    "muzzleAt": [0, 0.1, 0.43],
     "fallback": "weapons/burst_rifle.glb",
     "sound": "fire.rifle"
   },
@@ -34,6 +34,6 @@
     "range": "Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 160 m. Standard ballistics: by impact speed, the same distances.",
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",
-    "model": "The 3DModelsCC0 M4A1 (CC0; content/guns.json), replacing the Meshy community Neon Flux (still built): a realistic rifle for the Military set. The kit burst rifle is the fallback."
+    "model": "The owner's own Desert Storm Assault Rifle (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 M4A1. The kit burst rifle is the fallback."
   }
 }

@@ -1,6 +1,9 @@
 {
   "$comment": "Sight fit (tools/content/sight-fit.mjs; docs/GUNPLAY_SPEC.md §15, \"Sights that line up\"). The tool measures each gun's sights from its model; this file holds only what a person decided after looking at the sight sheet (?mode=sights). `corrections`: a weapon whose automatic fit is wrong: `rear` and/or `front` (model space as `view.muzzleAt`: +Z the barrel, +Y up, metres), optional `kind`, and the `reason`. `excluded`: a weapon that aims with the placement it had before (the top of the gun under the eye) because its model has no usable sights, with the reason. Mounted guns, melee weapons and tools, scopes (`view.zoomFov`) and guns with an optic (`view.optic`) need no entry. Run `node tools/content/sight-fit.mjs` after a change.",
-  "corrections": {},
+  "corrections": {
+    "core.auto_shotgun": { "front": [0, 0.108, 0.455], "reason": "the obsidian pump's front post leans back: the tool read its foot at the muzzle, and the line from the eye ran into the post's top (look at the sight sheet)" },
+    "core.pistol": { "rear": [0, 0.0621, -0.086], "front": [0, 0.0621, 0.088], "reason": "the Glock's two sight nubs stand at the ends of its slide-top rail: the tool read the front one's hood low, inside the slide; the line rests on both nubs' tops" }
+  },
   "excluded": {
     "core.arc_caster": "no iron sights: its own scope tube stands on its top: aims through the tube, its window in content/optics.json",
     "core.arena_disc": "no sights on the model: a flat-topped disc launcher",
@@ -12,17 +15,16 @@
     "core.flak": "no sights on the model: a flat-topped kit gun",
     "core.flamethrower": "no sights on the model: its top line starts on the stock",
     "core.flare_gun": "the model is drawn broken open, its barrel tipped up: no line along it",
-    "core.gilded_pistol": "a flintlock: the cock stands on the centre plane over the barrel, blocking the line to the bead",
     "core.guided": "a tube launcher, steered after the shot: the RPG's leaf sights are not fitted (content/optics.json none)",
     "core.heart_taser": "its slime finds a hurt teammate by itself: aims with the top of the gun (weapons intake 11-18)",
     "core.hornet": "an organic sci-fi shell: the mandibles at the muzzle block a line along the top (weapons intake 11-18)",
     "core.laser_rifle": "no sights on the model: a flat-topped kit gun",
     "core.launcher": "a tube launcher: no rear sight, its top line starts on the stock",
-    "core.lmg": "a rotary gun held at the hip: its top is a housing and a crank, not a sight line",
+    "core.lmg": "a rotary gun held at the hip: the nubs on its top rail stand well above the barrels, not a sight line for them",
     "core.oil_slicker": "no sights on the model: its top line starts on the stock",
     "core.plasma": "no iron sights: the model carries an open sight box on a riser, which holds its holographic mark (content/optics.json)",
     "core.rockets": "a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)",
-    "core.sawed_off": "no sights on the model: the hammers stand over a rib with no bead",
+    "core.sawed_off": "no rear sight on the model: a bare top rail with a bead at its front end, carrying the red dot",
     "core.singularity": "no sights on the model: a flat top rail with flush nubs, carrying a red dot or holographic sight",
     "core.swarm": "no sights on the model: a flat-topped kit launcher",
     "core.twin_rifle": "its own red dot is the only sight, with no posts: aims through it, its window in content/optics.json"
