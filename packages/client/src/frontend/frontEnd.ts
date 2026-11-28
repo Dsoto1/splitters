@@ -479,9 +479,10 @@ let controlsMod: typeof import('./controlsPage.ts') | null = null;
 const warmControls = () => import('./controlsPage.ts').then((m) => (controlsMod = m));
 function controlsList(): HTMLElement {
   if (controlsMod) return controlsMod.controlsPage();
+  // (Filled in place, shown or not: Options builds every tab's rows at once and shows one.)
   const slot = document.createElement('div');
-  slot.className = 'binds';
-  void warmControls().then((m) => slot.isConnected && slot.replaceWith(m.controlsPage()), () => undefined);
+  slot.style.display = 'contents';
+  void warmControls().then((m) => slot.replaceChildren(m.controlsPage()), () => undefined);
   return slot;
 }
 
