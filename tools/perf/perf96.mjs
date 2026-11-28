@@ -743,13 +743,15 @@ for (const spec of specs) {
             for (let round = 0; round < 10; round++) {
               await sleep(1200);
               await cdp.send('Profiler.start');
-              const r = await page.evaluate(() => {
+              const r = await page.evaluate((full) => {
                 const v = window.__cs.view;
                 const ray = v.scene.activeCamera.getForwardRay(6);
                 const at = ray.origin.add(ray.direction.scale(6));
                 const p = { x: at.x, y: at.y, z: at.z };
                 const spin = () => { const t0 = performance.now(); let x = 0; for (let i = 0; i < 300000; i++) x += Math.sqrt(i); window.__x = x; return +(performance.now() - t0).toFixed(1); };
                 const out = [];
+                // From round 5: the one-shot effects at their cap first (a big fight), so these blasts take the fallback.
+                if (full) for (let i = 0; i < 20; i++) v.explosion({ x: p.x + 30, y: p.y, z: p.z + 30 }, 4);
                 window.__glt = {};
                 for (let i = 0; i < 3; i++) {
                   const c0 = spin();
@@ -764,7 +766,7 @@ for (const spec of specs) {
                 }
                 const gl = Object.entries(window.__glt).filter(([, e]) => e[1] > 0.3).sort((a, b) => b[1][1] - a[1][1]).slice(0, 8).map(([k, e]) => `${k}:${e[0]}x/${e[1].toFixed(1)}ms/max${e[2].toFixed(1)}`);
                 return { out, gl };
-              });
+              }, round >= 5);
               const prof = (await cdp.send('Profiler.stop')).profile;
               const slow = r.out.some((o) => o.ms > 10);
               let top = '';
