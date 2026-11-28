@@ -122,8 +122,15 @@ door wall widened to 3 m. It is set on (0, -9) first.
 - **Checks:** validate-map 0 issues; nav-audit 0 traps, 46 islands; on the map as played bots path from the court to
   both landings, the back hall, the bathroom hall and Welles's hall at 4 and 8 m, the skyway to the back hall, to
   Welles and to the stair bay, the perch, and through the passage below.
-- **Not built: the 7c double door.** It needs a kit change of its own: a Stairwell with its upper flight open
-  underneath (drafted: `core.stairwell_open_under`, the upper flight's top five steps on a floor 2.75 m up) and a
-  Stair End Bay (3 floors) First-floor door choice "Double door" (the door wall widened to 3 m, z 4.55 to 7.55), and
-  a left-hand open Slim Oak Door for the second leaf (the door generator hangs leaves on the +x jamb only, and a
-  turned leaf would stand outside the bay's footprint). Left for its own step.
+- **The 7c double door, built (2026-11-28, `wip/stjohns-7c`).** The tile `core.stairwell_open_under` (Stairwell
+  (open under), Vertical): the Stairwell with its upper flight's top five steps on a floor of their own 2.75 m up, the
+  three low steps solid. The Stair End Bay (3 floors)'s First-floor door choice **Double door**: that stairwell in place
+  of the plain one, the door in the outer wall 3 m wide (bay z 4.55 to 7.55, 2.6 m high), two new kit doors standing
+  open into the bay, **Slim Oak Door (open, double, right leaf / left leaf)** (`kit.door.oak_slim_open_pair`,
+  `kit.door.oak_slim_open_pair_left`), meeting with no post between them. The door generator's settings are generic:
+  `hinge` (`right`, as before; `left`: the door mirrored, its collision too) and `pair` (no post on the latch side). Walks: `packages/shared/test/stairDoubleDoor.test.ts` (bots both ways under each leaf, a
+  straight path through, the stair from the skyway up and down; a body through under each leaf both ways; the
+  doorway clear and 2.6 m high; nothing west of the wall). Placed through MapMaker
+  (`steps-7c-door.json`: the bay `setpiece_a3c0dpzi2u`, First-floor door Double door); coverage map: the tile at
+  (19, -5). validate-map 0 issues; nav-audit 0 traps, 46 islands; on the map bots path straight through under both
+  leaves both ways (about 5 m for 5 m), the back hall to the top floor and the lobby to the back hall.
