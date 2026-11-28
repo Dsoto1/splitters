@@ -59,7 +59,7 @@ function humans(rules = RULES) {
 }
 
 // (2026-11-26: Lancer Mei, Barnaby Bruin, Imperial Guard and Zombie Soldier A got new models; six untouched ones instead.)
-const CAST = ['core.dale', 'core.basile', 'core.oldtimer', 'core.greyfang', 'core.hazmat', 'core.butcher'];
+const CAST = ['core.dale', 'core.basile', 'core.pruitt', 'core.greyfang', 'core.dapper', 'core.butcher'];
 
 describe('Fort Wars', () => {
   it('is offered on any map with flag bases for both teams', () => {
@@ -251,6 +251,8 @@ describe('Fort Wars', () => {
     // pass, 1 ends 7.9 m and 2 13.4 m short. Seed 3.
     // The cast is pinned (2026-11-24: retiring looks changed the dealt cast, and with it the bots' build and fight), so
     // a roster change no longer moves this test: six standard-size kept characters (seeds 1, 2 and 4 pass, 3 ends 7.2 m short). Seed 1.
+    // Old Timer and Hazmat Joe got new models (2026-11-28: new hit shapes; seed 1 then ended 6.9 m short): Sgt. Mackie and
+    // The Dapper in their places. Seed 1.
     const match = new Match(meadow(), rules, 1);
     for (let i = 0; i < 6; i++) match.addBot(`bot${i}`, CORE_BOT_PROFILES[i % CORE_BOT_PROFILES.length]!, BOT_DIFFICULTIES.normal, undefined, { look: CAST[i]! });
     const forts = fortsOf(match);
