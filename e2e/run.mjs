@@ -9619,6 +9619,18 @@ async function weaponsetsFlow(browser) {
   await openWeapons(page);
   const offered = await setupState(page);
   check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
+  // Combat rules (GUNPLAY G5): their fold loads its rows with their own chunk; Sandgate keeps the standard.
+  await page.evaluate(() => {
+    const d = document.getElementById('setup-combat');
+    if (d && !d.open) d.querySelector('summary').click();
+  });
+  await page.waitForSelector('#arcade-ammo', { state: 'visible', timeout: T(10000) }).catch(() => {});
+  const combatRows = await page.evaluate(() => ({ rows: ['headshots', 'ammo', 'reloads', 'walls', 'damage', 'health'].filter((k) => document.getElementById(`arcade-${k}`)).length, ammo: document.querySelector('#arcade-ammo .on')?.dataset.value, damage: document.querySelector('#arcade-damage .on')?.dataset.value, reloads: document.getElementById('arcade-reloads')?.checked }));
+  check(combatRows.rows === 6 && combatRows.ammo === 'normal' && combatRows.damage === '1' && combatRows.reloads === true, `Match setup → Rules → Combat rules shows its six rows at the map's own (standard) (${JSON.stringify(combatRows)})`);
+  if (shots) {
+    await page.evaluate(() => document.getElementById('setup-combat')?.scrollIntoView({ block: 'center' }));
+    await page.screenshot({ path: `${shots}/combat-rules-setup.png` });
+  }
   // The sets' weapon lists, from the content the game builds them from (a set that gains a weapon needs no edit here).
   const setWeapons = (id) => JSON.parse(readFileSync(fileURLToPath(new URL('../content/weapon-sets.json', import.meta.url)), 'utf8')).sets.find((s) => s.id === id).weapons;
   const MILITARY = setWeapons('military');

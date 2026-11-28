@@ -2,7 +2,8 @@ import type { MapDocument, SpawnEntity } from '../map/schema.ts';
 import { BROWSER_MAX_PLAYERS, MAX_PLAYER_SLOTS, TICK_RATE } from './constants.ts';
 import { ZOMBIES_MAX_PLAYERS } from './zombies.ts';
 import { MAX_TEAMS, mapTeams } from './npc.ts';
-import { cleanCombatRules, type CombatRules } from './combatRules.ts';
+import { COMBAT_RULE_KEYS } from './combatKeys.ts';
+import type { CombatRules } from './combatRules.ts';
 import { BREAKTHROUGH_POOL, BREAKTHROUGH_POOL_MAX, BREAKTHROUGH_SECTOR_SECONDS, DEFAULT_RULES, GAME_MODES, MODE_LABELS, SCORE_LIMIT_MAX, isGameMode, isTeamMode, isTwoTeamMode, mapCanRun, type GameMode, type MatchRules } from './rules.ts';
 import { IMPROMPTU_MIN_PLAYERS, SPAWN_SHARE } from './spawns.ts';
 import { botSetInUse, validateBotSet, type BotSet } from './botSet.ts';
@@ -882,7 +883,7 @@ export function rulesFromSetup(setup: MatchSetup, map: MapDocument, cap = BROWSE
   if (s.lethality) rules.lethality = s.lethality;
   if (s.ballistics) rules.ballistics = s.ballistics;
   // Combat rules (GUNPLAY G5): the host's changes; what is left unset plays the map's own (Match: combatRulesOf).
-  Object.assign(rules, cleanCombatRules(s));
+  for (const k of COMBAT_RULE_KEYS) if (s[k] !== undefined) (rules as CombatRules)[k] = s[k] as never;
   if (s.respawn !== undefined) rules.respawnDelayTicks = Math.round(Math.max(0, Math.min(30, s.respawn)) * TICK_RATE);
   if (s.leaders && isTeamMode(s.mode)) rules.leaders = s.leaders === 'vip' ? 'vip' : true;
   if (s.fireteams && fireteamMode(s.mode)) rules.fireteams = fireteamSize(s.squadSize);

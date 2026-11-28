@@ -2,9 +2,6 @@ import { roomLightsOn, saveRoomLights } from '../game/roomLights.ts';
 import { unlistedMapNotice } from './mapNotice.ts';
 import {
   COMBAT_RULE_KEYS,
-  STANDARD_COMBAT,
-  combatRulesOf,
-  combatSummary,
   type CombatRules,
   BREAKTHROUGH_POOL_MAX,
   breakthroughSectors,
@@ -2169,10 +2166,10 @@ export class FrontEnd {
     const timeRowOff = forts ? 'Fort Wars ends after its last combat phase.' : coop ? 'Co-op and Zombies end through the mission.' : null;
     const noTeams = team ? null : `No teams in ${MODE_LABEL[s.mode]}.`;
     const respawnDefault = Math.round(BASE_RULES[s.mode].respawnDelayTicks / 60);
-    // Combat rules (GUNPLAY G5): their rows load with their own chunk (frontend/combatRows.ts) into their fold; the
-    // host's changes show among the chips (combatSummary of what the host set).
-    const playCombat = combatRulesOf(s, map);
-    const combatChanged = COMBAT_RULE_KEYS.filter((k) => s[k] !== undefined).map((k) => ({ id: 'combat', value: combatSummary({ ...STANDARD_COMBAT, [k]: playCombat[k] })[0] ?? `Standard ${k}` }));
+    // Combat rules (GUNPLAY G5): their rows load with their own chunk (frontend/combatRows.ts) into their fold, out of the
+    // menu's first download; the host's changes count as one chip here.
+    const combatSet = COMBAT_RULE_KEYS.filter((k) => s[k] !== undefined).length;
+    const combatChanged = combatSet ? [{ id: 'combat', value: `Combat rules (${combatSet})` }] : [];
     const combatBox = el('div', { id: 'setup-combat-rows' });
     void import('./combatRows.ts').then((m) => combatBox.replaceChildren(...m.combatRows(s, map, (k, v) => this.change((x) => (v === undefined ? delete (x as CombatRules)[k] : ((x as CombatRules)[k] = v as never))))));
     const extras: { id: string; label: string; tip: string; changed: boolean; value: string; control: HTMLElement; disabled?: string | null }[] = [
@@ -2245,7 +2242,7 @@ export class FrontEnd {
       ...(changed.length ? [el('div', { class: 'rule-chips', id: 'setup-rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })), reset)] : []),
       ...(modeRows.length ? [fold('setup-mode', `${MODE_LABEL[s.mode]} settings`, 'mode settings', ...modeRows)] : []),
       fold('setup-rules', 'Rules', count(extras), ...rulesRows),
-      fold('setup-combat', 'Combat rules', combatChanged.length ? `${combatChanged.length} changed` : 'map', combatBox),
+      fold('setup-combat', 'Combat rules', combatSet ? `${combatSet} changed` : 'map', combatBox),
       fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)),
     ];
 

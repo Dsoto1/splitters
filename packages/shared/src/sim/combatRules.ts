@@ -36,7 +36,9 @@ export interface CombatRules {
   healthScale?: number;
 }
 
-export const COMBAT_RULE_KEYS = ['headshots', 'ammo', 'reloads', 'wallPenetration', 'damageScale', 'healthScale'] as const satisfies readonly (keyof CombatRules)[];
+/** The knobs' keys (in combatKeys.ts: the menu's first download needs only these, docs/LOADING.md). */
+export { COMBAT_RULE_KEYS } from './combatKeys.ts';
+import { COMBAT_RULE_KEYS } from './combatKeys.ts';
 
 /** The rules a match plays, everything filled in. */
 export interface CombatPlay {
