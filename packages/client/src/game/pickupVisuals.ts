@@ -25,6 +25,8 @@ const HEALTH_MODEL = 'guns/medkit.glb';
 const HEALTH_LARGE_MODEL = 'pickups/health_large.glb';
 /** The rifle rounds pickup's model: an ammo box (Meshy community, content/guns.json), built to its size (0.5 m long). */
 const AMMO_RIFLE_MODEL = 'pickups/ammo_rifle.glb';
+/** The general Ammo Box's model: the owner's ammo cache (Meshy, owned, content/guns.json), built to its size (0.5 m long). */
+const AMMO_BOX_MODEL = 'pickups/ammo_cache.glb';
 
 /**
  * Guns waiting on the map are drawn this much bigger than in the hand, so they read at a distance (owner, 2026-11-14;
@@ -118,7 +120,7 @@ function mat(scene: Scene, hex: string, glow = 0): StandardMaterial {
  * The look of a pickup, shared by the game and MapMaker so what creators
  * place is exactly what players see: models on a glowing ring for weapons
  * and health (the medkit, and the medical bag for large health), the ammo box
- * model for rifle rounds, and simple in-house shapes for armor, other ammo and
+ * models for rifle rounds and the general Ammo Box, and simple in-house shapes for armor, other ammo and
  * powerups.
  * The returned root is centred on the item; place it PICKUP_HOVER above the floor.
  * `lying`: a weapon dropped by the fallen, on its side on a small ring (place it DROP_LIE_HEIGHT above the ground).
@@ -177,9 +179,9 @@ export function createPickupVisual(scene: Scene, models: ModelLibrary, itemId: s
   } else if (fx.kind === 'armor') {
     const s = fx.amount >= 50 ? 1.25 : 1;
     part(CreateCylinder(`${name}_ar`, { diameter: 0.6 * s, height: 0.12, tessellation: 6 }, scene), mat(scene, '#3c8dff', 0.35)).rotation.x = Math.PI / 2;
-  } else if (fx.kind === 'ammo' && fx.ammo === 'rifle') {
-    // Rifle rounds: the ammo box model (the striped box in code when it can't load).
-    void copy(AMMO_RIFLE_MODEL, 'ammo').then(
+  } else if (fx.kind === 'ammo' && (fx.ammo === 'rifle' || !fx.ammo)) {
+    // Rifle rounds and the general Ammo Box: their models (the striped box in code when one can't load).
+    void copy(fx.ammo ? AMMO_RIFLE_MODEL : AMMO_BOX_MODEL, 'ammo').then(
       (model) => {
         if (root.isDisposed()) return model.dispose();
         model.parent = root;

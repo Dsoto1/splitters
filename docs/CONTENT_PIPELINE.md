@@ -101,6 +101,7 @@ folder can sit directly in it or one level down), and run:
 | The amphibious landing craft of 2026-11-06 (Meshy community, CC0 per owner; the textured GLB `Meshy_AI_Amphibious_Landing_Cr_1106110500_texture.glb` in a folder `intake-2026-11-06`) | `ONLY=lcvp_beached node tools/content/prepare-props.mjs --downloads <dir>` (then `build-palette-atlas.mjs`) | `props/lcvp_beached.glb` (pack `meshy-community-drive-1106`, hero tier: 16k triangles, a 4k one from 40 m, a baked normal map, 1.0 MB; collides as voxels), the Landing Craft (Beached): static dressing and cover, in the Beached Landing Craft set piece |
 | Styloo Guns Asset Pack (`Styloo Guns Asset Pack GLTF FBX V1.1`), CC0 Guns & Explosives Pack (the rar's `Guns&Explosives` folder; unpack it with `unar`: three of its files don't unpack, none used) | `node tools/content/prepare-guns.mjs --downloads <dir>` | `public/models/guns`, `content/guns.lock.json` (see `content/guns.json`) |
 | The weapons and grenades of 2026-11-06 (Meshy Community CC0: the 11 `Meshy_AI_<name>_1106…_texture.glb` in a folder `intake-2026-11-06c`) and the Guns & Explosives pack's guns and grenades, side by side in one downloads dir | `ONLY=guns/<out>.glb,… node tools/content/prepare-guns.mjs --downloads <dir>` (a `held` gun writes three files: everyone's, `.medium.glb` and `.high.glb`) | pack `meshy-community-drive-1106c` and `3dmodelscc0-guns-explosives` entries in `content/guns.json`; ARSENAL.md, "Weapons intake of 2026-11-06" |
+| The owner's own weapons of 2026-11-27 (Meshy, owned; the textured GLBs `Meshy_AI_<name>_3d_20261127_image-to-3d-texture.glb` from the owner's Drive weapons folder, each in its own folder one level down; over 10 MB, so through the Drive file's direct download link; docs/WEAPONS_INTAKE_1127.md) | `ONLY=guns/<out>.glb,… node tools/content/prepare-guns.mjs --downloads <dir>` (the grapple gun's two poses together: `ONLY=guns/grapple.glb,guns/grapple_fired.glb`) | pack `meshy-owned-drive-1127` in `content/guns.json`; ARSENAL.md, "Weapon replacements of 2026-11-27" |
 | The weapons of 2026-11-18 (Meshy Community CC0, owner 2026-11-18: the textured GLBs `Meshy_AI_<name>_1118…_texture.glb` and `Meshy_AI_Neon_Pulse_Rifle_1117160052_texture.glb` from the owner's Drive folder `weapons and stuff`; files over 10 MB come through the Drive file's direct download link, not the Drive connector) in one downloads dir | `ONLY=guns/<out>.glb,… node tools/content/prepare-guns.mjs --downloads <dir>` | pack `meshy-community-drive-1118` in `content/guns.json`; ARSENAL.md, "Weapons intake of 2026-11-18" |
 
 Locomotion clips (walk, run, sprint) come from Library 1: the Standard edition
@@ -182,6 +183,11 @@ back); `noseDown` levels a model posed tilted (the pack's sniper); `height` scal
 the same rays: `rebake`'s `also`) instead of a matte finish; `held` writes the weapon's copy for everyone plus Medium
 and High copies for your own hands (colour 1024/2048, normal 512/1024, metal/roughness 256/512; budget tier `held`).
 The pack's models are joined into one mesh and given their `lod`. ARSENAL.md, "Texture tiers", has the numbers.
+`flat: "#rrggbb"` builds a model's untextured, tintable copy (one plain colour, the baked normal map kept: the pickups'
+plain twins); `frameOf: <out>` with `align: { scale, shift }` builds a second pose of a model in the first one's exact
+frame (Meshy scales each download to its own bounds: the grapple gun without its claw is moved by `align`, in the
+download's units, onto the gun with it, so the two swap in place); a `held` entry with `glow` gives each tier its own
+emissive map.
 
 **Budget tiers.** `budgets` in `content/props.json` (shared by every prop pack) and `content/guns.json` are
 the default caps (props 6,000 triangles / 400 KB; guns 8,000 / 512 KB);

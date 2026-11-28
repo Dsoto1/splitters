@@ -16,7 +16,7 @@ const CARRIES: Record<OpticKindId, string[]> = {
   // The Woodland SMG down its own iron sights (owner, 2026-11-27: a red dot stood on its rear sight, "two sights stacked").
   irons: ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
   // The weapons intake's guns (owner, 2026-11-22, "2a"): in their models' own sights.
-  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.twin_rifle'],
+  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'],
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
   scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman', 'core.nova6'],
   sniper: ['core.railgun', 'core.sniper'],
@@ -47,6 +47,7 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.machine_pistol': ['irons', 'reddot'],
   'core.laser_blaster': ['irons', 'reddot'],
   'core.bubble_blaster': ['reddot', 'holo'],
+  'core.singularity': ['reddot', 'holo'],
   'core.flak': ['holo', 'reddot'],
   'core.disc_launcher': ['holo', 'reddot'],
   'core.arena_disc': ['holo', 'reddot'],
@@ -57,7 +58,7 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.blaster_x42': ['reddot', 'holo'],
 };
 /** The hand-held guns that keep the aim they had (no sights, no optic), each with its reason in content/optics.json `none`. */
-const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.singularity', 'core.swarm'];
+const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.swarm'];
 /**
  * Every weapon's aimed magnification over the hip view. A zoom is a feel and balance number: the optics pass changed
  * none of them (the sights' 0.72 of the hip field of view is 1.52x), and a change here is the owner's to approve.

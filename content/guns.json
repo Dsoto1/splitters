@@ -11,6 +11,16 @@
       "meshy": true,
       "glb": true
     },
+    "meshy-owned-drive-1127": {
+      "title": "Tile Trigger originals (made with Meshy): the owner's weapon models of 2026-11-27 (textured GLB downloads from the owner's Drive weapons folder)",
+      "creator": "Meshy, owned (made by the owner on their Meshy subscription; owner, 2026-11-27)",
+      "url": "https://www.meshy.ai",
+      "license": "Owned",
+      "licenseFile": "assets-src/meshy-owned/License.txt",
+      "retrieved": "2026-11-27",
+      "meshy": true,
+      "glb": true
+    },
     "meshy-owned-drive-1118": {
       "title": "Tile Trigger originals (made with Meshy): the Futuristic Baseball Bat (textured GLB download from the owner's Drive, 2026-11-18)",
       "creator": "Meshy, owned (made by the owner on their Meshy subscription; owner, 2026-11-18)",
@@ -338,32 +348,6 @@
       "textureSize": 1024
     },
     {
-      "out": "guns/plasma_blaster.glb",
-      "pack": "meshy-community-weapons",
-      "glb": "Meshy_AI_Plasma_Blaster_1102011031_texture.glb",
-      "label": "Plasma Blaster (Meshy community model, downloaded 2026-11-02): the Singularity Cannon",
-      "forward": "-x",
-      "length": 0.66,
-      "triangles": 14000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024,
-      "glow": {
-        "color": "#b07aff",
-        "warm": [
-          130,
-          60,
-          35
-        ],
-        "strength": 1
-      }
-    },
-    {
       "out": "guns/freeze_gun.glb",
       "pack": "meshy-community-arsenal",
       "glb": "Meshy_AI_Freeze_Gun_1029214340_texture.glb",
@@ -508,16 +492,18 @@
     },
     {
       "out": "guns/medkit.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_Medkit_1029193624_texture.glb",
-      "label": "Medkit (Meshy Community download, 2026-10-29), red recoloured green",
-      "url": "https://www.meshy.ai/3d-models/Medkit-019bce42-7689-7057-b9bc-5b320b629cd5",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_tactical_combat_medkit_3d_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Combat Medkit (the owner's own Meshy model, owner's Drive, 2026-11-27): the Medkit, the Medi-Beam and the small health pickup, its red crosses recoloured green",
       "tint": { "color": "#2f9a46", "warm": [110, 60, 60] },
       "forward": "-z",
-      "length": 0.16,
-      "triangles": 4500,
-      "maxError": 0.05,
-      "surface": "rebake"
+      "length": 0.17,
+      "triangles": 6000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "textureSize": 1024,
+      "budget": "hero"
     },
     {
       "out": "pickups/health_large.glb",
@@ -1698,6 +1684,160 @@
         0.2,
         12
       ]
+    },
+    {
+      "out": "guns/singularity_cannon.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_singularity_cannon_3d_20261127_image-to-3d-texture.glb",
+      "label": "Singularity Cannon (the owner's own Meshy model, owner's Drive, 2026-11-27): the Singularity Cannon",
+      "forward": "-x",
+      "length": 0.85,
+      "triangles": 14000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 60000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#b07aff",
+        "strength": 1
+      }
+    },
+    {
+      "out": "guns/rpg7.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_classic_rpg_modular_3d_20261127_image-to-3d-texture.glb",
+      "label": "Modular Classic RPG (the owner's own Meshy model, owner's Drive, 2026-11-27): Blast Rockets and the Guided Rocket",
+      "forward": "+x",
+      "length": 0.95,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "pickups/medkit_plain.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_tactical_combat_medkit_3d_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Combat Medkit, untextured (the owner's own Meshy model and its untextured copy, owner's Drive, 2026-11-27): one plain colour for the game to tint",
+      "flat": "#e6e6e6",
+      "forward": "-z",
+      "length": 0.17,
+      "triangles": 6000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "normalSize": 256
+    },
+    {
+      "out": "pickups/ammo_cache.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_weapons_ammo_cache_3d_20261127_image-to-3d-texture.glb",
+      "label": "Weapons Ammo Cache (the owner's own Meshy model, owner's Drive, 2026-11-27): the Ammo Box pickup, its stencilled lettering painted out",
+      "paintOut": [
+        {
+          "light": 120,
+          "chroma": 30
+        }
+      ],
+      "forward": "+x",
+      "length": 0.5,
+      "triangles": 5000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "normalSize": 256
+    },
+    {
+      "out": "pickups/ammo_cache_plain.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_weapons_ammo_cache_3d_20261127_image-to-3d-texture.glb",
+      "label": "Weapons Ammo Cache, untextured (the owner's own Meshy model and its untextured copy, owner's Drive, 2026-11-27): one plain colour for the game to tint",
+      "flat": "#e6e6e6",
+      "forward": "+x",
+      "length": 0.5,
+      "triangles": 5000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "normalSize": 256
+    },
+    {
+      "out": "guns/grapple.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Steampunk_Claw_Grapple_Gun_Loaded_3D_20261127_image-to-3d-texture.glb",
+      "label": "Steampunk Claw Grapple Gun, Loaded (the owner's own Meshy model, owner's Drive, 2026-11-27): the Grapple Hook with its claw in",
+      "forward": "-x",
+      "length": 0.62,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 30000,
+      "heldMaxError": 0.005,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/grapple_fired.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Steampunk_Claw_Grapple_Gun_Unloaded_3D_20261127_image-to-3d-texture.glb",
+      "label": "Steampunk Claw Grapple Gun, Unloaded (the owner's own Meshy model, owner's Drive, 2026-11-27): the Grapple Hook once its claw is fired, in the loaded gun's frame",
+      "frameOf": "guns/grapple.glb",
+      "align": {
+        "scale": 0.875,
+        "shift": [
+          0.116,
+          -0.012,
+          0
+        ]
+      },
+      "forward": "-x",
+      "length": 0.62,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 30000,
+      "heldMaxError": 0.005,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/grapple_hook.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Deployed_Grapple_Hook_Long_Cable_3D_20261127_image-to-3d-texture.glb",
+      "label": "Deployed Grapple Hook, Long Cable (the owner's own Meshy model, owner's Drive, 2026-11-27): the Grapple Hook's fired claw, drawn where it bites",
+      "forward": "+z",
+      "length": 0.62,
+      "triangles": 4000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true
     }
   ]
 }

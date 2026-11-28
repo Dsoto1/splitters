@@ -322,6 +322,13 @@ export interface WeaponPresentation {
    */
   held?: { medium: string; high: string };
   /**
+   * The model your own gun turns into once fired, until it is ready again (the grapple gun without its claw, built in
+   * the loaded model's frame: tools/content/prepare-guns.mjs `frameOf`), with its own sharper copies (`held`).
+   */
+  spent?: { model: string; held?: { medium: string; high: string } };
+  /** A grapple's claw, drawn where it bites, its tip (+z) on the point and its cable trailing back along the rope. */
+  hookModel?: string;
+  /**
    * A real optic in the model's scope tube (client game/opticView.ts): aiming down the sights brings the eyepiece to
    * the eye and the view through it is magnified. Not a `zoomFov` scope: the sim treats it as iron sights (hip fire
    * keeps its accuracy), the client draws the optic, with the scope's sway and breath.

@@ -2846,7 +2846,9 @@ export class GameSession {
               // It stays on the muzzle while the hook pulls you in.
               const slot = ev.s;
               const muzzleNow = () => (mine ? (this.view.localMuzzle() ?? this.view.muzzleOf(slot)) : this.view.muzzleOf(slot));
-              if (t) this.view.addRope(muzzleNow, { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450);
+              if (t) this.view.addRope(muzzleNow, { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450, def.view.hookModel);
+              // Your gun shows its claw gone until it can fire again (view.spent).
+              if (mine && def.view.spent) this.view.spendViewmodel(def, (def.fireIntervalTicks / 60) * 1000);
               continue;
             }
             const flying = new Set(ev.fl ?? []);

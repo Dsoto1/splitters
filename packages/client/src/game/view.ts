@@ -2115,6 +2115,7 @@ export class GameView {
       this.viewmodelPaths.set(def.id, def.view.model);
       node.setEnabled(false);
       if (load === this.viewLoad) show(v);
+      void this.spentFor(def, node);
       // Medium and High: the sharper copy of the same model for your own hands, swapped in once it has loaded.
       const held = heldModel(def, this.atmosphere.quality);
       if (held) this.sharpenViewmodel(def, v, held);
@@ -2123,6 +2124,73 @@ export class GameView {
 
   /** Which copy of each kept first-person gun is drawn (tests): the model path. */
   readonly viewmodelPaths = new Map<string, string>();
+
+  /**
+   * Your own gun's fired look (view.spent: the grapple gun without its claw) for `ms`, then back to its loaded one.
+   * The spent model is built in the loaded one's frame, so it hangs under the kept viewmodel as it is: the hands,
+   * muzzle and bob carry over. Made once per kept copy (a sharper copy swapped in takes it along when disposed).
+   */
+  spendViewmodel(def: WeaponDefinition, ms: number): void {
+    const v = this.viewmodels.get(def.id);
+    const made = v && this.spentFor(def, v.node);
+    if (!v || !made) return;
+    const host = v.node;
+    const shown = (fired: boolean, model: TransformNode) => {
+      if (host.isDisposed() || model.isDisposed()) return;
+      for (const m of host.getChildMeshes()) if (!m.isDescendantOf(model)) m.isVisible = !fired;
+      model.setEnabled(fired);
+      if (fired) this.spentShown = def.id;
+    };
+    const until = performance.now() + ms;
+    this.spentUntil.set(host, until);
+    void made.then(
+      (model) => {
+        shown(true, model);
+        setTimeout(() => {
+          if (this.spentUntil.get(host) === until) shown(false, model);
+        }, Math.max(0, until - performance.now()));
+      },
+      () => undefined,
+    );
+  }
+
+  /**
+   * The spent model hung, hidden, under a kept viewmodel `host` (made when the gun is drawn, so the first shot swaps
+   * at once), and the claw it fires loaded too. Null for a gun without `view.spent`.
+   */
+  private spentFor(def: WeaponDefinition, host: TransformNode): Promise<TransformNode> | null {
+    const spent = def.view.spent;
+    if (!spent) return null;
+    let made = this.spentViews.get(host);
+    if (made) return made;
+    if (def.view.hookModel) void this.models.load(def.view.hookModel).catch(() => undefined);
+    const quality = this.atmosphere.quality;
+    const path = (quality !== 'low' && spent.held?.[quality]) || spent.model;
+    made = this.models.instantiate(path, `view_${def.id}_spent`).then((node) => {
+      if (host.isDisposed()) {
+        node.dispose();
+        throw new Error(`${def.id}: its viewmodel went before the spent model came in`);
+      }
+      node.parent = host;
+      for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
+      node.setEnabled(false);
+      return node;
+    });
+    made.catch(() => undefined);
+    this.spentViews.set(host, made);
+    host.onDisposeObservable.addOnce(() => {
+      this.spentViews.delete(host);
+      this.spentUntil.delete(host);
+    });
+    return made;
+  }
+
+  /** The last gun whose spent model was shown (tests). */
+  spentShown: string | null = null;
+
+  /** The spent model under each kept viewmodel (spendViewmodel), and until when it shows. */
+  private readonly spentViews = new Map<TransformNode, Promise<TransformNode>>();
+  private readonly spentUntil = new Map<TransformNode, number>();
 
   /**
    * Guns no longer carried (dropped, or the match changed hands) leave the kept first-person guns, and a sharper held
@@ -2256,6 +2324,7 @@ export class GameView {
         takeOverViewmodel(old, node);
         v.node = node;
         this.viewmodelPaths.set(def.id, path);
+        void this.spentFor(def, node);
         if (this.viewmodel === old) {
           this.viewmodel = node;
           // Its optic's parts are the new copy's: found again with the aim's placement.
@@ -5236,7 +5305,7 @@ export class GameView {
    * A grapple's rope from a gun's muzzle to the hook, kept on the muzzle as it moves (you're pulled in along it).
    * `from` gives the muzzle each frame (null while no gun is drawn: then `fallback`, where the shot left).
    */
-  addRope(from: () => Vec3 | null, fallback: Vec3, to: Vec3, color: string, width: number, ttlMs: number): void {
+  addRope(from: () => Vec3 | null, fallback: Vec3, to: Vec3, color: string, width: number, ttlMs: number, hook?: string): void {
     const mesh = CreateCylinder('rope', { diameter: width, height: 1, tessellation: 6 }, this.scene);
     const mat = new StandardMaterial('ropeMat', this.scene);
     mat.emissiveColor = Color3.FromHexString(color);
@@ -5259,6 +5328,20 @@ export class GameView {
     const muzzle = from();
     place();
     this.lastRope = { from: { ...last }, muzzle: !!muzzle };
+    // The claw (view.hookModel) where it bites: its tip (+z, 0.3 m ahead of its middle) a little into the surface, its
+    // cable trailing back along the rope; gone with the rope.
+    if (hook) {
+      const dir = b.subtract(new Vector3(last.x, last.y, last.z)).normalize();
+      void this.models.instantiate(hook, 'grapple_hook').then(
+        (node) => {
+          if (mesh.isDisposed()) return node.dispose();
+          node.position.copyFrom(b.subtract(dir.scale(0.27)));
+          node.rotationQuaternion = Quaternion.FromLookDirectionLH(dir, Math.abs(dir.y) > 0.98 ? Vector3.Forward() : Vector3.Up());
+          mesh.onDisposeObservable.addOnce(() => node.dispose());
+        },
+        () => undefined,
+      );
+    }
     // On the muzzle as drawn this frame (followMuzzles).
     const follow = () => (mesh.isDisposed() ? this.onMuzzle.delete(follow) : place());
     this.onMuzzle.add(follow);

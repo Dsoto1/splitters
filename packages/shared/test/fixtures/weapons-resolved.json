@@ -3221,11 +3221,21 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "weapons/rockets.glb",
+     "model": "guns/rpg7.glb",
+     "held": {
+      "medium": "guns/rpg7.medium.glb",
+      "high": "guns/rpg7.high.glb"
+     },
+     "fallback": "weapons/rockets.glb",
+     "muzzleAt": [
+      0,
+      0.04,
+      0.47
+     ],
      "viewOffset": [
       0.24,
-      -0.26,
-      0.5
+      -0.305,
+      0.415
      ],
      "tracer": "#ff4a3a",
      "sound": "fire.plasma",
@@ -3233,18 +3243,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.1,
-       0
+       -0.055,
+       0.085
       ],
       "support": [
        0,
-       -0.101,
-       0.24
+       -0.005,
+       0.2
       ],
       "shoulder": [
        0,
-       0.034,
-       -0.48
+       0.04,
+       -0.3
       ]
      }
     }
@@ -3317,36 +3327,40 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "guns/plasma_blaster.glb",
+     "model": "guns/singularity_cannon.glb",
+     "held": {
+      "medium": "guns/singularity_cannon.medium.glb",
+      "high": "guns/singularity_cannon.high.glb"
+     },
      "viewOffset": [
       0.27,
-      -0.31,
-      0.57
+      -0.34,
+      0.64
      ],
      "tracer": "#b07aff",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.13,
-       -0.17
+       -0.1,
+       -0.24
       ],
       "support": [
        0,
-       -0.076,
-       0.17
+       -0.085,
+       0.14
       ],
       "shoulder": [
        0,
-       0,
-       -0.33
+       0.04,
+       -0.43
       ]
      },
      "fallback": "weapons/singularity.glb",
      "muzzleAt": [
       0,
-      0.042,
-      0.33
+      0.045,
+      0.425
      ],
      "sound": "fire.vortex"
     }
@@ -4207,27 +4221,49 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "weapons/flare_gun.glb",
+     "model": "guns/grapple.glb",
+     "held": {
+      "medium": "guns/grapple.medium.glb",
+      "high": "guns/grapple.high.glb"
+     },
+     "spent": {
+      "model": "guns/grapple_fired.glb",
+      "held": {
+       "medium": "guns/grapple_fired.medium.glb",
+       "high": "guns/grapple_fired.high.glb"
+      }
+     },
+     "hookModel": "guns/grapple_hook.glb",
+     "fallback": "weapons/flare_gun.glb",
      "viewOffset": [
       0.2,
-      -0.18,
-      0.42
+      -0.2,
+      0.46
      ],
      "tracer": "#d8d2c0",
      "hold": {
-      "style": "pistol",
+      "style": "long",
       "grip": [
        0,
-       -0.043,
-       -0.068
+       -0.04,
+       -0.17
       ],
       "support": [
-       -0.02,
-       -0.053,
-       -0.058
+       0,
+       0,
+       0.12
       ],
-      "rake": 34
+      "shoulder": [
+       0,
+       0.01,
+       -0.31
+      ]
      },
+     "muzzleAt": [
+      0,
+      0.045,
+      0.25
+     ],
      "sound": "fire.disc.c"
     }
    },
@@ -4540,11 +4576,21 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "weapons/rockets.glb",
+     "model": "guns/rpg7.glb",
+     "held": {
+      "medium": "guns/rpg7.medium.glb",
+      "high": "guns/rpg7.high.glb"
+     },
+     "fallback": "weapons/rockets.glb",
+     "muzzleAt": [
+      0,
+      0.04,
+      0.47
+     ],
      "viewOffset": [
       0.24,
-      -0.26,
-      0.5
+      -0.305,
+      0.415
      ],
      "tracer": "#ffb347",
      "sound": "fire.swarm.d",
@@ -4552,18 +4598,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.1,
-       0
+       -0.055,
+       0.085
       ],
       "support": [
        0,
-       -0.101,
-       0.24
+       -0.005,
+       0.2
       ],
       "shoulder": [
        0,
-       0.034,
-       -0.48
+       0.04,
+       -0.3
       ]
      }
     }

@@ -16,10 +16,18 @@
   "botDesirability": 0,
   "botRange": [0, 0],
   "view": {
-    "model": "weapons/flare_gun.glb",
-    "viewOffset": [0.2, -0.18, 0.42],
+    "model": "guns/grapple.glb",
+    "held": { "medium": "guns/grapple.medium.glb", "high": "guns/grapple.high.glb" },
+    "spent": { "model": "guns/grapple_fired.glb", "held": { "medium": "guns/grapple_fired.medium.glb", "high": "guns/grapple_fired.high.glb" } },
+    "hookModel": "guns/grapple_hook.glb",
+    "fallback": "weapons/flare_gun.glb",
+    "viewOffset": [0.2, -0.2, 0.46],
     "tracer": "#d8d2c0",
-    "hold": { "style": "pistol", "grip": [0, -0.043, -0.068], "support": [-0.02, -0.053, -0.058], "rake": 34 },
+    "hold": { "style": "long", "grip": [0, -0.04, -0.17], "support": [0, 0.0, 0.12], "shoulder": [0, 0.01, -0.31] },
+    "muzzleAt": [0, 0.045, 0.25],
     "sound": "fire.disc.c"
+  },
+  "notes": {
+    "model": "The owner's own Steampunk Claw Grapple Gun (Meshy, owned, 2026-11-27; content/guns.json): loaded with its claw in, the unloaded one (`spent`) from a shot until it is ready again, and the claw itself (`hookModel`) drawn where it bites. The flare gun it replaced is the fallback."
   }
 }

@@ -15082,6 +15082,9 @@ async function gripsInPlay(browser) {
   await page.waitForFunction(() => window.__cs.view.lastRope, null, { timeout: T(5000) }).catch(() => {});
   const rope = await page.evaluate(() => window.__cs.view.lastRope);
   check(!!rope?.muzzle, `the grapple's rope starts at the launcher's muzzle (${JSON.stringify(rope)})`);
+  // Fired, your grapple gun shows its claw gone (view.spent) until it can fire again.
+  const spent = await page.waitForFunction(() => window.__cs.view.spentShown === 'core.grapple', null, { timeout: T(5000) }).then(() => true, () => false);
+  check(spent, `the fired grapple gun shows its claw gone (${await page.evaluate(() => window.__cs.view.spentShown)})`);
   await freshChecked(page, 'in play, your own hands and the bots');
   check(errors.length === 0, `no page errors in play (${errors.join('; ')})`);
   await page.context().close();
