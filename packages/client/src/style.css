@@ -2167,6 +2167,8 @@ html.tc-left #touch-ui .tc-pad { left: auto; right: calc(18px + env(safe-area-in
 #touch-ui .tc-chat { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: 52px; height: 44px; border-radius: 8px; font-size: 12px; }
 #touch-ui .tc-chat[hidden] { display: none; }
 #touch-ui .tc-pause { left: calc(8px + env(safe-area-inset-left)); top: 8px; width: 44px; height: 44px; border-radius: 8px; font-size: 15px; }
+/* A range's Guns button, beside the pause button: its weapon picker (game/rangePicker.ts). */
+#touch-ui .tc-guns { left: calc(60px + env(safe-area-inset-left)); top: 8px; width: auto; min-width: 44px; height: 44px; padding: 0 10px; border-radius: 8px; font-size: 13px; }
 /* Held upright: ask for landscape (the controls are laid out for it). */
 #touch-rotate { display: none; }
 @media (orientation: portrait) {

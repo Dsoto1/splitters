@@ -671,10 +671,19 @@ export class FrontEnd {
     this.scene.setLook(this.look);
   }
 
+  /** The weapon the Armory opens on next (back from a range: the one you held last there); taken by the page. */
+  armoryShow: string | null = null;
+
   /** Back from Test my loadout: the Armory, Test my loadout focused (Enter or controller A goes again). */
   openLoadout(): void {
     if (this.screen !== 'armory') this.go('armory');
     this.body.querySelector<HTMLButtonElement>('#armory-test-loadout')?.focus({ preventScroll: true });
+  }
+
+  private takeArmoryShow(): string | undefined {
+    const id = this.armoryShow ?? undefined;
+    this.armoryShow = null;
+    return id;
   }
 
   private go(screen: ScreenId): void {
@@ -1037,7 +1046,7 @@ export class FrontEnd {
         const test = el('button', { type: 'button', id: 'armory-test-loadout', title: 'Your class and optics on the Training Range: no score, no clock, every gun on the racks; Esc twice (controller B) comes back here', textContent: 'Test my loadout' });
         test.addEventListener('click', () => (this.armory?.leave(), this.hooks.playRange()));
         const page = el('div', { class: 'screen characters armory' }, this.head('Weapon <em>Armory</em>', test));
-        void import('./armory.ts').then((m) => page.isConnected && (this.armory = m.mountArmory(page, { scene: this.scene, audio: this.audio, play: (w) => this.hooks.playPractice(w) })));
+        void import('./armory.ts').then((m) => page.isConnected && (this.armory = m.mountArmory(page, { scene: this.scene, audio: this.audio, play: (w) => this.hooks.playPractice(w), show: this.takeArmoryShow() })));
         return page;
       }
     }

@@ -30,9 +30,10 @@
  * kept for the still casters (shadowBounds.ts); `fxlight`, the effects' sun and sky colours set on their materials only
  * when they change (godotVfx.ts update); fewer prop draws, docs/PERF_PROPS_2026-11-23.md, adds `propatlas`, a prop's materials of one atlas kind drawn as one material shared by its pack (content/models.ts, tools/content/prop-atlas.mjs), and `propmerge`, still props merged into one mesh per material and square (game/propBatches.ts, game/propMerge.ts).
  * MapMaker at rest, docs/PERF_EDITOR_IDLE_2026-11-24.md, adds `editoridle`: MapMaker drawn every frame with what is in view worked out every frame, instead of only when something changes, a few frames a second at rest with the active meshes frozen (editor/renderGate.ts).
+ * The ranges alone (main.ts playRange, docs/PERF_96.md "The lean range") add `rangelean`: the Practice range and Test my loadout played as any match (a navmesh built, the bot tick, the countdown, every gun and effect warmed before the start).
  * Players never set it; everything is on by default.
  */
-export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight' | 'propatlas' | 'propmerge' | 'editoridle';
+export type PerfSwitch = 'shadowcache' | 'levelmerge' | 'meshsel' | 'animlod2' | 'propbatch' | 'fogprepass' | 'animlod4' | 'animlinger' | 'indoorshadow' | 'bodyspread' | 'glcache' | 'breakbatch' | 'navhandoff' | 'startslices' | 'navcache' | 'padnav' | 'navstop' | 'editlight' | 'bodyclones' | 'proxydata' | 'bodypoints' | 'animcrowd' | 'leveldata' | 'netgarbage' | 'aurashare' | 'smallcasters' | 'bodypool' | 'pickupbatch' | 'glowinplace' | 'reconcileframe' | 'snapbin' | 'gripfit' | 'doorinst' | 'lightready' | 'casterlist' | 'casterbounds' | 'fxlight' | 'propatlas' | 'propmerge' | 'editoridle' | 'rangelean';
 
 let off: Set<string> | null = null;
 

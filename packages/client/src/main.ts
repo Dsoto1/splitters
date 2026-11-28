@@ -13,6 +13,7 @@ import { CHECKPOINT_MAX_AGE_SECONDS, HANDOFF_FOLLOW_SECONDS, HANDOFF_JOIN_SECOND
 import { AudioSystem } from './audio/audio.ts';
 import type { MusicPlayer, MusicScene } from './audio/music.ts';
 import { createEngine, type RendererKind } from './engine.ts';
+import { perfOn } from './game/perfSwitches.ts';
 import { currentFrameCap, loadRenderScale, renderRatio } from './game/graphicsSettings.ts';
 import type { EditorApp, TestRequest } from './editor/editorApp.ts';
 import { FramePacer } from './game/framePacer.ts';
@@ -605,14 +606,23 @@ class App {
     const map = await loadBuiltInMap(id).catch(() => null);
     if (!map) return void this.showMenu(`${name} didn't load`);
     const rules: MatchRules = { ...rulesForMode(map, 'core.deathmatch'), timeLimitSeconds: 0, scoreLimit: 0, ...(myFavClass() ? { classes: true } : {}) };
-    const back = (reason?: string) => void this.showMenu(reason ?? '').then(() => (practice ? undefined : this.front!.openLoadout()));
+    // From the Armory (Test my loadout, or Try it in the range with `hand`): back to the Armory, on the weapon you held last.
+    const armory = !practice || !!hand;
+    let held: string | null = null;
+    const back = (reason?: string) => {
+      if (armory && held) this.front!.armoryShow = held;
+      void this.showMenu(reason ?? '').then(() => (practice ? undefined : this.front!.openLoadout()));
+    };
     this.showMatchLoading(map, 'core.deathmatch');
     void this.withMatch((m) =>
-      this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, ...(hand ? { hand } : {}), ...(TEST ? { test: TEST } : {}) }), {
-        exitLabel: practice ? 'Leave the range' : 'Back to the Armory',
+      // (Alone and offline: a lean match, `?perfoff=rangelean` as any match: docs/PERF_96.md, "The lean range".)
+      this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, range: true, ...(perfOn('rangelean') ? { lean: true } : {}), ...(hand ? { hand } : {}), ...(TEST ? { test: TEST } : {}) }), {
+        exitLabel: armory ? 'Back to the Armory' : 'Leave the range',
         exitOnF5: false,
         range: true,
-        ...(practice ? { rangeBack: 'Menu' } : {}),
+        ...(armory ? {} : { rangeBack: 'Menu' }),
+        rangeHeld: (id) => (held = id),
+        ...(hand ? { rangeHand: hand } : {}),
         onExit: (reason) => back(reason),
       }),
     );
@@ -1008,7 +1018,7 @@ class App {
     reconnectBanner(null);
   }
 
-  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; tutorial?: boolean; range?: boolean; joinCode?: string; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
+  private startSession(m: MatchCode, transport: Transport, o: { exitLabel: string; exitOnF5: boolean; hostable?: boolean; chain?: boolean; hosting?: Travel['hosting']; autoHost?: boolean; greeting?: string; rotation?: SessionOptions['rotation']; tutorial?: boolean; range?: boolean; rangeBack?: string; rangeHeld?: (weapon: string | null) => void; rangeHand?: string; joinCode?: string; onExit: (reason?: string, travel?: Travel, how?: 'lost' | 'rejected', end?: SessionEnd) => void; onReady?: () => void }): GameSession {
     // A match has its own loading screen (players, map and weapons).
     finishBoot();
     $('menu').hidden = true;
@@ -1040,7 +1050,7 @@ class App {
         return e ? (e.metadata.thumbnail ?? shippedPicture(e.metadata.id)) : null;
       },
       ...(o.tutorial ? { tutorial: true } : {}),
-      ...(o.range ? { range: true } : {}),
+      ...(o.range ? { range: true, ...(o.rangeBack ? { rangeBack: o.rangeBack } : {}), ...(o.rangeHeld ? { rangeHeld: o.rangeHeld } : {}), ...(o.rangeHand ? { rangeHand: o.rangeHand } : {}) } : {}),
       // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial (Test my loadout
       // only reads your favourite class: nothing it plays is recorded).
       ...(o.exitOnF5 || o.tutorial

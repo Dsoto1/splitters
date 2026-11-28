@@ -809,8 +809,22 @@ export class Match {
   readonly physics: PhysicsWorld;
   /** Bots' shared, briefly cached sight lines between actors (see SightCache). */
   readonly sight: SightCache;
-  /** Rebuilt mid-match only by Fort Wars (when the forts are done). */
-  nav: NavWorld;
+  /**
+   * The navmesh (bots' routes, the play area's stranded patches, spawn rings). Rebuilt mid-match only by Fort Wars
+   * (when the forts are done). A lean match (MatchOptions `lean`: a solo test on a range) builds it only when
+   * something first asks for it: a bot added, a player returned to the play area.
+   */
+  get nav(): NavWorld {
+    return (this.navNow ??= this.makeNav());
+  }
+  set nav(n: NavWorld) {
+    this.navNow = n;
+  }
+  private navNow: NavWorld | null = null;
+  /** Whether the navmesh has been made (a lean match may not have one yet). */
+  get navMade(): boolean {
+    return this.navNow !== null;
+  }
   readonly slots: (Combatant | null)[] = new Array(MAX_PLAYER_SLOTS).fill(null);
   /** The map's spawn points, then any made up for this match (see ensureSpawnCapacity). */
   readonly spawnPoints: SpawnSpot[];
@@ -937,6 +951,18 @@ export class Match {
   /** Classes (rules.classes): loadouts, abilities and class bots; null without classes. */
   readonly classes: ClassPlay | null;
 
+  /** A solo test on a range (MatchOptions `lean`). */
+  readonly lean: boolean;
+  /** A lean match's navmesh, made when first asked for (the process's navCache, else built), its flags set. */
+  private makeNav(): NavWorld {
+    const nav = loadMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, this.opts.nav).nav;
+    this.markNav(nav);
+    return nav;
+  }
+  private markNav(nav: NavWorld): void {
+    nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
+    nav.markLifts(liftLinks(this.map));
+  }
   /** The navmesh came from `opts.nav` (built ahead) or the process's navCache, not built at load. */
   readonly navReused: boolean;
   /** The navmesh built at load, as data (a browser host keeps it in its storage: client game/navCache.ts); null when reused. Set it to null once kept. */
@@ -961,7 +987,19 @@ export class Match {
      * host's storage): taken instead of building one when it was built from the same (sim/mapNav.ts navInputKey;
      * `navReused`), as the process's navCache is.
      */
-    private readonly opts: { startGate?: boolean; nav?: PrebuiltNav | null; drive?: 'classic' | 'rigid' | 'own'; /** Dual wielding on or off for this match whatever rules.ts akimboReady says (the client's `?akimbo=1`). */ akimbo?: boolean } = {},
+    private readonly opts: {
+      startGate?: boolean;
+      nav?: PrebuiltNav | null;
+      drive?: 'classic' | 'rigid' | 'own';
+      /** Dual wielding on or off for this match whatever rules.ts akimboReady says (the client's `?akimbo=1`). */ akimbo?: boolean;
+      /**
+       * A solo test on a range (the Armory's Practice range and Test my loadout: main.ts playRange; owner, 2026-11-28:
+       * "not running code that is unnecessary"): no navmesh until something asks for one (no bots: nothing does), no
+       * bot thinking with no bots, no countdown once loaded, the play area by its bounds only. Everything a shot does is
+       * as in any match.
+       */
+      lean?: boolean;
+    } = {},
   ) {
     this.pairs = opts.akimbo ?? akimboReady();
     this.geometry = buildMapGeometry(map);
@@ -972,10 +1010,16 @@ export class Match {
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map), this.envShapes);
     this.sight = new SightCache(this.physics);
     // Bots plan around breakable props too (they are scenario colliders, not static geometry).
-    const nav = loadMapNav(map, this.geometry, this.physics, this.envShapes, this.phys, opts.nav);
-    this.nav = nav.nav;
-    this.navReused = nav.reused;
-    this.navBuilt = nav.built;
+    this.lean = !!opts.lean;
+    if (this.lean) {
+      this.navReused = false;
+      this.navBuilt = null;
+    } else {
+      const nav = loadMapNav(map, this.geometry, this.physics, this.envShapes, this.phys, opts.nav);
+      this.navNow = nav.nav;
+      this.navReused = nav.reused;
+      this.navBuilt = nav.built;
+    }
     this.rng = createRng(seed);
     this.spawnPoints = map.entities
       .filter((e) => e.kind === 'spawn')
@@ -1087,9 +1131,8 @@ export class Match {
       emit: (ev) => this.pendingEvents.push(ev),
     });
     // Doors and walls that block paths, and lift rides, as navmesh flags: a bot's route can keep out of the ones shut
-    // to it, and off a lift it's tired of waiting for.
-    this.nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
-    this.nav.markLifts(liftLinks(map));
+    // to it, and off a lift it's tired of waiting for (a lean match's when it makes its navmesh: makeNav).
+    if (this.navNow) this.markNav(this.navNow);
     this.encounters = new Encounters(map, {
       get tick() {
         return match.tick;
@@ -1309,11 +1352,10 @@ export class Match {
     }
     const area = xs.length ? (Math.max(...xs) - Math.min(...xs)) * (Math.max(...zs) - Math.min(...zs)) : 0;
     if (area > NAV_REBUILD_MAX_AREA) return false;
-    const old = this.nav;
+    const old = this.navNow;
     this.nav = buildMapNav(this.map, this.geometry, this.physics, this.envShapes, this.phys, extra, false);
-    old.destroy();
-    this.nav.markOpenings([...this.scenario.openings(), ...this.scenario.surfaces()], this.scenario.openings().length);
-    this.nav.markLifts(liftLinks(this.map));
+    old?.destroy();
+    this.markNav(this.nav);
     this.nav.places();
     this.sight.clear();
     // (The trips' corridors again, on the new navmesh, the next time they are asked for.)
@@ -2292,7 +2334,11 @@ export class Match {
       // Everyone who must have loaded first: the people playing and the spectators (a match only spectators
       // watch, bots against bots, starts as soon as they have loaded); nobody there yet: the wait runs out.
       const people = [...this.combatants().filter((c) => c.kind === 'human').map((c) => c.slot), ...this.spectators.keys()];
-      if (this.phase === 'waiting' && ((people.length > 0 && people.every((slot) => this.readySlots.has(slot))) || this.tick >= this.phaseEndTick)) this.startCountdown();
+      if (this.phase === 'waiting' && ((people.length > 0 && people.every((slot) => this.readySlots.has(slot))) || this.tick >= this.phaseEndTick)) {
+        // A lean match (a solo range) plays as soon as you have loaded: nobody to count down with.
+        if (this.lean) this.beginPlay();
+        else this.startCountdown();
+      }
       else if (this.phase === 'countdown' && this.tick >= this.phaseEndTick) this.beginPlay();
     } else {
       const prof = simProfile.on;
@@ -2302,7 +2348,8 @@ export class Match {
         simProfile.add(key, now - t);
         t = now;
       };
-      this.runBots();
+      // (A lean match with nobody for a brain to play skips the bots' tick: its navmesh bookkeeping included.)
+      if (!this.lean || this.npcs.size || this.combatants().some((c) => c.kind === 'bot')) this.runBots();
       if (prof) lap('bots');
       // Movers first, so everyone moves against (and rides) this tick's platforms.
       this.scenario.moveMovers();
@@ -7509,14 +7556,28 @@ export class Match {
     c.throwable = kit.throwable ? { ...kit.throwable } : null;
   }
 
-  /** The Armory's Try it in the range: `id` in hand now (when alive) and at every spawn after; an unknown weapon is ignored. */
-  holdOnSpawn(c: Combatant, id: string): void {
+  /**
+   * The Armory's Try it in the range: `id` in hand now (when alive) and at every spawn after; an unknown weapon is
+   * ignored. `swap` (the range's weapon picker: client game/rangePicker.ts): the weapon the last pick put in hand goes,
+   * so trying gun after gun doesn't fill your slots with every one of them.
+   */
+  holdOnSpawn(c: Combatant, id: string, swap = false): void {
+    let def: WeaponDefinition;
     try {
-      getWeapon(id);
+      def = getWeapon(id);
     } catch {
       return;
     }
+    const was = c.hand;
     c.hand = id;
+    if (swap && was && was !== id) {
+      try {
+        const old = weaponCode(getWeapon(was));
+        if (old !== weaponCode(def)) c.weapons.delete(old);
+      } catch {
+        // (A weapon gone from the tables since: nothing to take away.)
+      }
+    }
     if (c.alive) this.give(c, id);
   }
 
@@ -8193,6 +8254,8 @@ export class Match {
    */
   inPlay(p: Vec3): boolean {
     if (!this.insideBounds(p)) return false;
+    // (A lean match, a solo range: its bounds are the play area; no navmesh made for its patches.)
+    if (this.lean && !this.navNow) return true;
     if (!this.nav.stranded(p)) return true;
     const goal = (this.homeGoal ??= this.nav.mainPlaces()[0] ?? null);
     if (!goal) return true;
@@ -8434,7 +8497,7 @@ export class Match {
   }
 
   destroy(): void {
-    this.nav.destroy();
+    this.navNow?.destroy();
     this.physics.free();
   }
 }

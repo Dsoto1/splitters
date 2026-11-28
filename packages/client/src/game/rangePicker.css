@@ -1,0 +1,40 @@
+/* The ranges' weapon picker (game/rangePicker.ts): the class screen's panel, over the view. No flashes, no blinking. */
+#range-picker { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); z-index: 30; display: grid; grid-template-rows: auto auto 1fr auto auto; gap: 8px; width: min(980px, calc(100vw - 32px)); height: min(640px, calc(100vh - 32px)); padding: 12px 14px; box-sizing: border-box; background: rgba(12, 16, 26, 0.94); border-top: 3px solid var(--cyan, #00d1ff); font: 500 14px var(--font-display); color: var(--text); pointer-events: auto; }
+#range-picker[hidden] { display: none; }
+#range-picker .rp-head { display: flex; align-items: center; gap: 8px; min-width: 0; }
+#range-picker .rp-head > b { letter-spacing: 0.08em; text-transform: uppercase; margin-right: 4px; }
+#range-picker .rp-search { flex: 1; min-width: 80px; max-width: 280px; margin-left: auto; padding: 6px 8px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; color: inherit; font: inherit; }
+#range-picker button { font: inherit; color: inherit; cursor: pointer; }
+#range-picker .rp-step, #range-picker .rp-close { display: inline-flex; align-items: center; gap: 4px; min-height: 34px; padding: 4px 10px; background: rgba(255, 255, 255, 0.07); border: 1px solid rgba(255, 255, 255, 0.18); border-radius: 6px; }
+#range-picker .rp-close { min-width: 40px; justify-content: center; }
+#range-picker .rp-chips { display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none; }
+#range-picker .rp-chip { flex: none; padding: 4px 10px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.14); border-radius: 14px; font-size: 13px; }
+#range-picker .rp-grid { overflow-y: auto; min-height: 0; overscroll-behavior: contain; }
+#range-picker .rp-sec h4 { margin: 8px 0 6px; font-size: 12px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted, #9aa7bd); }
+#range-picker .rp-tiles { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
+#range-picker .rp-tile { display: grid; grid-template-rows: 40px auto auto; justify-items: center; gap: 2px; padding: 6px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.12); border-radius: 6px; text-align: center; }
+#range-picker .rp-tile:hover, #range-picker .rp-tile:focus-visible, #range-picker .rp-tile:focus { border-color: var(--cyan, #00d1ff); outline: none; background: rgba(0, 209, 255, 0.1); }
+#range-picker .rp-tile.on { border-color: var(--warning, #ffc94d); box-shadow: inset 0 0 0 1px var(--warning, #ffc94d); }
+#range-picker .rp-icon { max-width: 100%; max-height: 40px; object-fit: contain; }
+#range-picker .rp-name { font-weight: 700; font-size: 13px; line-height: 1.15; }
+#range-picker .rp-tile small { font-size: 11px; color: var(--muted, #9aa7bd); }
+#range-picker .rp-detail { display: grid; grid-template-columns: minmax(140px, 220px) 1fr; column-gap: 14px; align-items: center; min-height: 54px; border-top: 1px solid rgba(255, 255, 255, 0.1); padding-top: 8px; }
+#range-picker .rp-detail h3 { margin: 0; font-size: 16px; }
+#range-picker .rp-detail p { grid-column: 1; margin: 2px 0 0; font-size: 12px; color: var(--muted, #9aa7bd); }
+#range-picker .rp-stats { grid-column: 2; grid-row: 1 / span 2; display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 2px 12px; font-size: 12px; }
+#range-picker .rp-stat { display: grid; grid-template-columns: 70px 1fr 54px; align-items: center; gap: 6px; }
+#range-picker .rp-stat b { text-align: right; font-weight: 600; }
+#range-picker .rp-bar { height: 6px; background: rgba(255, 255, 255, 0.1); border-radius: 3px; overflow: hidden; }
+#range-picker .rp-bar i { display: block; height: 100%; background: var(--cyan, #00d1ff); }
+#range-picker .rp-foot { color: var(--muted, #9aa7bd); font-size: 12px; }
+/* A phone (touch, or a short screen): fills the screen, smaller tiles, no keyboard line. */
+@media (max-height: 520px), (pointer: coarse) {
+  #range-picker { width: calc(100vw - 16px - env(safe-area-inset-left) - env(safe-area-inset-right)); height: calc(100vh - 16px); padding: 8px 10px; gap: 6px; }
+  #range-picker .rp-tiles { grid-template-columns: repeat(auto-fill, minmax(118px, 1fr)); }
+  #range-picker .rp-tile { grid-template-rows: 30px auto auto; padding: 4px; }
+  #range-picker .rp-icon { max-height: 30px; }
+  #range-picker .rp-detail { min-height: 0; grid-template-columns: minmax(110px, 180px) 1fr; }
+  #range-picker .rp-detail p, #range-picker .rp-foot { display: none; }
+  #range-picker .rp-stats { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); font-size: 11px; }
+  #range-picker .rp-step kbd { display: none; }
+}

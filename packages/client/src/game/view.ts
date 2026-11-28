@@ -574,6 +574,10 @@ export class GameView {
   environment: EnvironmentVisuals | null = null;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
+  /** The weapon in your hands as drawn (its ID), or null. */
+  get heldWeapon(): string | null {
+    return this.viewWeapon ?? null;
+  }
   /** Your own character's arms in first person, gripping the viewmodel. */
   private fpArms?: { look: string; anim: CharacterAnimator | null; root: TransformNode };
   /**
@@ -979,6 +983,33 @@ export class GameView {
     });
   }
 
+  /** Guns warmed out of sight in play (a lean range's racks): as held in the world and as yours, a few frames, then freed. */
+  private async prewarmGuns(guns: readonly string[]): Promise<number> {
+    const stage = new TransformNode('prewarm_later', this.scene);
+    stage.position.set(0, -10000, 0);
+    const copies = await Promise.all(
+      guns.flatMap((path, i) => [
+        ...[true, false].map((instanced, k) => (instanced ? this.models.instantiateWhole(path, `prewarm_later_${i}_${k}`) : this.models.instantiate(path, `prewarm_later_${i}_${k}`)).then((n) => ((n.parent = stage), n), () => undefined)),
+        this.models.instantiate(path, `prewarm_later_${i}_view`).then(
+          (n) => {
+            n.parent = this.viewRoot;
+            n.position.set(0, -10000, 0);
+            for (const m of n.getChildMeshes()) m.renderingGroupId = 1;
+            return n;
+          },
+          () => undefined,
+        ),
+      ]),
+    );
+    if (this.scene.isDisposed) return 0;
+    for (const c of copies) for (const m of c?.getChildMeshes() ?? []) m.alwaysSelectAsActiveMesh = true;
+    await this.afterFrames(3, 2000);
+    if (!this.scene.isDisposed) await Promise.race([this.scene.whenReadyAsync(), new Promise((r) => setTimeout(r, 8000))]);
+    for (const c of copies) c?.dispose();
+    stage.dispose();
+    return this.scene.isDisposed ? 0 : this.shaderCount();
+  }
+
   /**
    * The loading gate's shader warm-up (session.prepareMatch waits for it): a character of each look in the
    * match is built out of sight, every effect the map can play plays once out of sight, and the scene waits
@@ -986,8 +1017,10 @@ export class GameView {
    * constructor) keeps those programs when the samples go, so the first sight of a model or an effect mid-match
    * doesn't stall on a shader build. Resolves with how many shader programs were built by then.
    */
-  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false, filesIn: () => void = () => {}): Promise<number> {
+  async prewarm(specs: readonly AvatarSpec[], guns: readonly string[] = [], veiled: () => boolean = () => false, filesIn: () => void = () => {}, o: { gunsOnly?: boolean } = {}): Promise<number> {
     const t0 = performance.now();
+    // (`gunsOnly`: more guns after the start, out of sight: a lean range's racks, session.prepareMatch.)
+    if (o.gunsOnly) return this.prewarmGuns(guns);
     // The merged level first (its textures load in a moment; its shader is then built with everyone else's).
     if (this.levelMerge) await Promise.race([this.levelMerge, new Promise((r) => setTimeout(r, 15000))]);
     // And the prop batches: their models in, their meshes made (the next frame), so their shaders are built below.

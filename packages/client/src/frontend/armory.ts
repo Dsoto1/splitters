@@ -31,6 +31,8 @@ export interface ArmoryHost {
   audio: AudioSystem;
   /** The Practice range with this weapon in hand (main.ts playRange). */
   play(weapon: string): void;
+  /** Open on this weapon (back from a range: the one held last there), when the Armory lists it. */
+  show?: string;
 }
 
 export interface ArmoryPage {
@@ -88,6 +90,7 @@ export function mountArmory(root: HTMLElement, host: ArmoryHost): ArmoryPage {
   const procedural = new ModelLibrary(scene);
   const sections = armorySections();
   const all = sections.flatMap((s) => s.weapons);
+  if (host.show && all.some((d) => d.id === host.show)) shown = host.show;
   if (!all.some((d) => d.id === shown)) shown = all[0]!.id;
   const favs = new Set(loadArmoryFavs());
   let section: string | null = null;

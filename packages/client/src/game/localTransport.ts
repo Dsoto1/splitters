@@ -524,6 +524,11 @@ export class LocalTransport implements Transport {
     this.toHost({ k: 'vote', i });
   }
 
+  /** The range's weapon picker: hold this weapon now and from each spawn (ranges only: MatchHost.hand). */
+  sendHand(id: string): void {
+    this.toHost({ k: 'hand', id });
+  }
+
   sendOptics(op: Record<string, string>): void {
     this.toHost({ k: 'optics', op });
   }

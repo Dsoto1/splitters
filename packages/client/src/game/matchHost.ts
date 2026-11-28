@@ -88,6 +88,10 @@ export interface LocalMatchOptions {
   optics?: Record<string, string>;
   /** The Armory's Try it in the range: this browser's player holds this weapon from each spawn (Match holdOnSpawn). */
   hand?: string;
+  /** A range (main.ts playRange: the Practice range and Test my loadout): its weapon picker may hand this browser's player any weapon (`hand` messages: game/rangePicker.ts). */
+  range?: boolean;
+  /** A solo test (a range alone, offline): a lean match (Match `lean`: no navmesh unless asked for, no bot tick, no countdown). `?perfoff=rangelean` plays it as any match. */
+  lean?: boolean;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
   /**
@@ -289,7 +293,8 @@ export class MatchHost {
     // check handed one over; the match takes either only if it was built from the same (Match `nav`).
     let nav = this.opts.nav ?? null;
     let from = nav ? "the navigation check's navmesh" : '';
-    const store = perfOn('navcache') ? await openNavStore(mod.navBuildId()).catch(() => null) : null;
+    // (A lean range makes no navmesh: nothing to look up or keep.)
+    const store = perfOn('navcache') && !this.opts.lean ? await openNavStore(mod.navBuildId()).catch(() => null) : null;
     if (this.stopped) return;
     if (!nav && store) {
       const key = mod.mapNavKey(this.map, rules);
@@ -300,9 +305,9 @@ export class MatchHost {
         from = 'the navmesh kept from an earlier match';
       }
     }
-    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav, ...(this.opts.drive ? { drive: this.opts.drive } : {}), ...(this.opts.akimbo ? { akimbo: true } : {}) });
+    const match = new Match(this.map, rules, test ? test.seed : Math.floor(Math.random() * 1e6), { startGate: true, nav, ...(this.opts.lean ? { lean: true } : {}), ...(this.opts.drive ? { drive: this.opts.drive } : {}), ...(this.opts.akimbo ? { akimbo: true } : {}) });
     this.loadMs = Math.round(performance.now() - t0);
-    console.info(`match made in ${this.loadMs} ms (${match.navReused ? from || 'the navmesh kept in this thread' : 'navmesh built'})`);
+    console.info(`match made in ${this.loadMs} ms (${match.lean ? 'lean range: no navmesh' : match.navReused ? from || 'the navmesh kept in this thread' : 'navmesh built'})`);
     // (The navmesh's data is the match's now: not kept a second time.)
     this.opts.nav = null;
     // A navmesh built here is kept for the next match of this map, after the welcome (writing it is no part of the start).
@@ -1067,6 +1072,12 @@ export class MatchHost {
     return fn(this.match, this.me!, arg, this.mod!);
   }
 
+  /** The range's weapon picker (game/rangePicker.ts): this browser's player holds `id` now and from each spawn, in place of the last one picked. Ranges only. */
+  hand(id: string): void {
+    if (!this.opts.range || !this.me || !this.match) return;
+    this.match.holdOnSpawn(this.me, id, true);
+  }
+
   /** Test hook: hand the local player a weapon, full. */
   give(id: string): void {
     const me = this.me;
@@ -1164,6 +1175,8 @@ export type ToSimHost =
   | { k: 'listing'; listing: HostListing | null }
   | { k: 'eval'; req: number; src: string; arg?: unknown }
   | { k: 'give'; id: string }
+  /** The range's weapon picker: this browser's player holds this weapon (MatchHost.hand; ranges only). */
+  | { k: 'hand'; id: string }
   /** The bot debug view on or off (`?botdebug=1`). */
   | { k: 'botdebug'; on: boolean }
   | { k: 'stop' }
@@ -1280,6 +1293,8 @@ export function dispatchToHost(host: MatchHost, m: Exclude<ToSimHost, { k: 'star
       return host.setListing(m.listing);
     case 'give':
       return host.give(m.id);
+    case 'hand':
+      return host.hand(m.id);
     case 'botdebug':
       return host.setBotDebug(m.on);
     case 'eval':

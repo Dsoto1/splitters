@@ -210,6 +210,10 @@ export class InputState {
   private fireLatch = false;
   /** Phones and tablets (touchControls.ts): play is on without pointer lock, and the on-screen controls feed this class. */
   touchEngaged = false;
+  /** An overlay that takes the keys and the mouse (the ranges' weapon picker): out of play while it's up. */
+  blocked = false;
+  /** On a range: the controller's View button opens the weapon picker (onAction 'rangePicker') instead of holding up the scoreboard. */
+  rangePicker = false;
   /** Called when touch play starts or stops (the session shows or hides the pause menu). */
   onEngage?: () => void;
   private readonly touchMove = { x: 0, y: 0 };
@@ -650,7 +654,7 @@ export class InputState {
 
   /** In play: the mouse is captured, or (phones and tablets) touch play is on. */
   get locked(): boolean {
-    return document.pointerLockElement === this.canvas || this.touchEngaged;
+    return !this.blocked && (document.pointerLockElement === this.canvas || this.touchEngaged);
   }
 
   get zooming(): boolean {
@@ -776,7 +780,8 @@ export class InputState {
     p.fire = !!down[PAD.rt];
     p.zoom = !!down[PAD.lt];
     // View / Back shows the scoreboard while held; Menu opens the pause menu (the page lets the mouse go).
-    p.back = !!down[PAD.back];
+    p.back = !this.rangePicker && !!down[PAD.back];
+    if (this.rangePicker && pressed(PAD.back)) this.onAction.get('rangePicker')?.();
     if (pressed(PAD.start)) document.exitPointerLock?.();
     if (pressed(PAD.lt) && !this.spectating) this.aimLatch.press();
     p.jump = !!down[PAD.a];

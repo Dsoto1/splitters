@@ -191,6 +191,7 @@ import { ROOM_LIGHTS_EVENT, roomLightsOn, saveRoomLights } from './roomLights.ts
 import { BULLET_SPEED } from './impactVisuals.ts';
 import { bindFullscreenButton, browserTookEscape, isFullscreen, pageHoldsEscape, releasePointer, requestMouse, toggleFullscreen } from '../fullscreen.ts';
 import { testMode } from '../testMode.ts';
+import { onPadPress } from '../inputMode.ts';
 import type { RendererKind } from '../engine.ts';
 import { Hud } from './hud.ts';
 import { DamageNumbers, SprayReadout, autoReloadOn } from './combatReadouts.ts';
@@ -378,6 +379,10 @@ export interface SessionOptions {
   range?: boolean;
   /** The pause menu's Back label on a range (absent: Loadout; the Practice range from Quick Play: Menu). */
   rangeBack?: string;
+  /** A range from the Armory's Try it: the weapon in your hands from the start. */
+  rangeHand?: string;
+  /** A range, as it ends: the weapon in your hands then (the Armory opens on it). */
+  rangeHeld?: (weapon: string | null) => void;
   /**
    * Your career (careerStats.ts, docs/PLAYER_PROFILES_PLAN.md): each match you play to the end is summed into it, and
    * your profile card shows under the scoreboard. main.ts leaves it out for MapMaker TEST and the tutorial.
@@ -1057,6 +1062,7 @@ export class GameSession {
       requestMouse(opts.canvas);
     };
     this.takeMouse = lock;
+    if (opts.range && opts.transport instanceof LocalTransport) this.wireRangePicker(opts.transport, lock, signal);
     opts.canvas.addEventListener('click', lock, { signal });
     $('resume').addEventListener('click', lock, { signal });
     $('exitmatch').addEventListener('click', () => this.confirmLeave(), { signal });
@@ -1359,6 +1365,13 @@ export class GameSession {
             return;
           }
         }
+        // The ranges' weapon picker, up: it takes the keys, and Esc closes it (back to play, not to the menu).
+        if (this.picker?.isOpen && $('pause').hidden) {
+          if (e.code === 'Escape' && !e.repeat) this.picker.close(false);
+          else if (this.picker.key(e)) e.preventDefault();
+          if (e.code === 'Escape' || e.target !== this.picker.root.querySelector('input')) e.stopImmediatePropagation();
+          return;
+        }
         const paused = !$('pause').hidden;
         if (paused && e.code !== 'Escape' && this.pauseMenu.key(e)) {
           e.preventDefault();
@@ -1514,6 +1527,103 @@ export class GameSession {
     this.input.pitch += best.dp * pull;
   }
 
+  /** The ranges' weapon picker (rangePicker.ts, its own chunk: loaded with the first opening), and the last pick and when. */
+  private picker: import('./rangePicker.ts').RangePicker | null = null;
+  private pickerLoading = false;
+  private lastPick: { id: string; at: number } | null = null;
+
+  /**
+   * A range's weapon picker (owner, 2026-11-28): P, the controller's View or the phone's Guns button opens it (the
+   * mouse goes, the game holds still under it); [ and ] put the previous or next weapon in your hands without it. A
+   * pick goes to the host (LocalTransport.sendHand: Match holdOnSpawn), so the map never reloads and it stays for
+   * the next life.
+   */
+  private wireRangePicker(transport: LocalTransport, lock: () => void, signal: AbortSignal): void {
+    const held = () => (this.lastPick && performance.now() - this.lastPick.at < 1500 ? this.lastPick.id : this.view.heldWeapon);
+    const pick = (id: string) => {
+      this.lastPick = { id, at: performance.now() };
+      transport.sendHand(id);
+    };
+    const load = async (): Promise<import('./rangePicker.ts').RangePicker | null> => {
+      if (this.picker || this.pickerLoading) return this.picker;
+      this.pickerLoading = true;
+      try {
+        const { RangePicker } = await import('./rangePicker.ts');
+        if (this.closed) return null;
+        this.picker = new RangePicker($('hud'), {
+          held,
+          pick,
+          closed: (picked) => {
+            this.input.blocked = false;
+            unpad?.();
+            unpad = null;
+            // A pick (a click, a tap, Enter, A: a real gesture) takes the mouse back; after Esc the browser won't give
+            // it yet, so "Click to fight" waits for a click (not the pause menu).
+            if (picked || this.touch) lock();
+            if (!this.input.locked) this.engaged = false;
+            this.updatePause();
+          },
+        });
+      } finally {
+        this.pickerLoading = false;
+      }
+      return this.picker;
+    };
+    let unpad: (() => void) | null = null;
+    const open = async () => {
+      if (this.closed || !this.local || !$('pause').hidden) return;
+      const p = await load();
+      if (!p || p.isOpen) return;
+      this.input.blocked = true;
+      if (document.pointerLockElement) document.exitPointerLock();
+      p.open();
+      unpad = onPadPress((b) => void (this.picker?.isOpen && this.picker.pad(b)));
+      this.updatePause();
+    };
+    this.input.rangePicker = true;
+    this.input.onAction.set('rangePicker', () => void open());
+    window.addEventListener(
+      'keydown',
+      (e) => {
+        if (e.repeat || this.picker?.isOpen || !this.input.locked || this.input.typing) return;
+        if (e.code === 'KeyP') {
+          e.preventDefault();
+          void open();
+        } else if (e.code === 'BracketLeft' || e.code === 'BracketRight') {
+          e.preventDefault();
+          const dir = e.code === 'BracketRight' ? 1 : -1;
+          void import('./rangePicker.ts').then((m) => {
+            const id = m.stepWeapon(held(), dir);
+            pick(id);
+            this.hud.pickup(getWeapon(id).displayName);
+          });
+        }
+      },
+      { signal },
+    );
+    // A phone: a Guns button beside the pause button.
+    if (this.touch) {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'tc-btn tc-guns';
+      b.id = 'tc-guns';
+      b.textContent = 'Guns';
+      b.setAttribute('aria-label', 'Weapons: pick one to hold');
+      b.addEventListener(
+        'pointerdown',
+        (e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          void open();
+        },
+        { signal },
+      );
+      this.touch.el.append(b);
+    }
+    // Browser tests: open it without a key.
+    if (testMode()) (window as unknown as { __rangePicker: () => Promise<void> }).__rangePicker = open;
+  }
+
   private updatePause(): void {
     const was = $('pause').hidden;
     // In play once (the mouse taken, or touch play on): from then on, losing the mouse is a pause.
@@ -1523,8 +1633,8 @@ export class GameSession {
     // Not over the loading screen or the countdown (a click takes the mouse), and not before the player has been in
     // play at all (owner, 2026-11-19: after the countdown, straight to the fight): a calm "Click to fight" line instead
     // (fightHint), until a click, a key or a controller's button takes the mouse; Esc still brings the menu.
-    $('pause').hidden = this.input.locked || !this.local || this.closed || ((this.loadingUp || this.phase === 'countdown' || !this.engaged) && !this.pauseAsked) || vote;
-    this.showFightHint(!this.input.locked && !!this.local && !this.closed && !this.engaged && !this.pauseAsked && !this.loadingUp && !vote);
+    $('pause').hidden = this.input.locked || !this.local || this.closed || ((this.loadingUp || this.phase === 'countdown' || !this.engaged) && !this.pauseAsked) || vote || !!this.picker?.isOpen;
+    this.showFightHint(!this.input.locked && !!this.local && !this.closed && !this.engaged && !this.pauseAsked && !this.loadingUp && !vote && !this.picker?.isOpen);
     if (was && !$('pause').hidden) {
       this.drawPause(true);
       ($('resume') as HTMLButtonElement).focus({ preventScroll: true });
@@ -2409,6 +2519,9 @@ export class GameSession {
     this.orderWheel.dispose();
     this.chatWheel.dispose();
     this.chatBox.dispose();
+    this.opts.rangeHeld?.(this.view.heldWeapon);
+    this.picker?.dispose();
+    this.picker = null;
     this.touch?.dispose();
     this.mapPicker?.remove();
     document.getElementById('online-confirm')?.remove();
@@ -3325,7 +3438,20 @@ export class GameSession {
     const looks = [...new Set([...this.looks.values(), ...this.rlUpcoming, ...(zombies ? ZOMBIE_LOOKS : [])])].map((look) => ({ look }));
     // (The gate waits for it 8 s at most: a slow machine finishes it in the background, out of sight.)
     // Every gun the match can put in a hand (starting weapons, pickups and what they may roll), as held and as yours.
-    const guns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
+    const allGuns = [...models].filter((m) => WEAPONS_BY_SLOT.some((w) => w.view.model === m) || thrown.has(m));
+    // A lean range (alone: the Practice range, Test my loadout; docs/PERF_96.md "The lean range"): the start waits only
+    // for the guns you hold at once (your spawn guns, the Armory's pick, your class's, the grenades); the racks' other
+    // guns warm out of sight once you're in, one by one, so the first one you take builds nothing either.
+    const lean = !!this.opts.range && perfOn('rangelean');
+    const firstGuns = new Set<string>([...spawnGuns, ...(this.opts.rangeHand ? [this.opts.rangeHand] : []), ...(rules.classes ? (CLASS_DEFS[this.opts.career?.favClass() as keyof typeof CLASS_DEFS]?.weapons ?? []) : [])].flatMap((id) => {
+      try {
+        return [getWeapon(id).view.model];
+      } catch {
+        return [];
+      }
+    }));
+    const guns = lean ? allGuns.filter((m) => firstGuns.has(m) || thrown.has(m)) : allGuns;
+    const later = lean ? allGuns.filter((m) => !guns.includes(m)) : [];
     let started = false;
     // The gate waits for the warm-up's files (a first visit downloads every look in the match and every gun: the
     // overall cap below still holds), then gives its shader builds 8 s: a slow GPU finishes those out of sight after
@@ -3334,6 +3460,10 @@ export class GameSession {
     let filesIn: () => void = () => {};
     const loaded = new Promise<void>((r) => (filesIn = r));
     const warm = this.view.prewarm(looks, guns, () => !started && !this.closed, () => filesIn());
+    if (later.length)
+      void warm.then(async () => {
+        for (let i = 0; i < later.length && !this.closed; i += 4) await this.view.prewarm([], later.slice(i, i + 4), () => false, undefined, { gunsOnly: true });
+      });
     jobs.push(Promise.race([warm, Promise.race([loaded, new Promise((r) => setTimeout(r, 20000))]).then(() => new Promise((r) => setTimeout(r, 8000)))]));
     let done = 0;
     const total = jobs.length + 2;
