@@ -3489,7 +3489,8 @@ export class GameSession {
     if (this.closed) return;
     // Loaded. A board that has only just appeared stays a moment, so it can be read, before the countdown (not in
     // MapMaker's Test or a browser test: nothing to wait for there).
-    if (!this.opts.exitOnF5 && !testMode()) {
+    // (Nor on a lean range: a board of one, nothing to read.)
+    if (!this.opts.exitOnF5 && !testMode() && !(this.opts.range && perfOn('rangelean'))) {
       this.stageLoading(rules);
       const hold = this.stagedAt + LOADING_BOARD_HOLD_MS - performance.now();
       if (hold > 0) await new Promise((r) => setTimeout(r, hold));
