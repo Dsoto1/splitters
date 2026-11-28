@@ -8,10 +8,10 @@
   "group": "space",
   "blood": "blue",
   "nameTheme": "soldier",
-  "bio": "Short, green and fully kitted out. Passed every fitness test by standing on a crate.",
+  "bio": "Short, tusked and fully kitted out. Passed every fitness test by standing on a crate.",
   "body": "male",
   "size": "small",
-  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Alien Space Marine 15k\", as Meshy names the download; Drive 1Y_H86Teh3ZQ0GLthBf5AXyQpWIyA7L5_; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships.",
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Alien Space Marine 15k\", as Meshy names the download; Drive 1Y_H86Teh3ZQ0GLthBf5AXyQpWIyA7L5_; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships. Bio's \"green\" became \"tusked\" for the new model (a bulldog-faced alien in a purple coat). Its broad build kept the support hand from reaching across to a pistol (9.8 cm off): `holdPistol out -0.1`, as Gorilla G's.",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
@@ -30,6 +30,9 @@
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true
+    "feet": true,
+    "holdPistol": {
+      "out": -0.1
+    }
   }
 }
