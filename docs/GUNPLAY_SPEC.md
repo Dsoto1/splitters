@@ -895,7 +895,7 @@ are as they were. At the hip nothing changes.
   Eight of them carry an optic since step 2 (below); the rest keep that placement.
 - **Beside the tube** (the Rocket Launcher, weapon replacements batch 4, owner 2026-11-28 "recs yes"): the heavy
   Anti-Armor launcher is aimed as a real AT4 is, from a sight line beside its tube: a hand correction in
-  content/sight-fit.json puts the line 10.5 cm left of the bore at the height of the tube's upper half, parallel to it,
+  content/sight-fit.json puts the line 16 cm left of the bore, level with the tube's top and parallel to it,
   so `sightPlacement` brings the eye there and the tube, with its wide rear flare, sits low on the right of the aimed
   view instead of filling its middle (over the tube the flare 0.2 m ahead of the eye covered the centre). No optic: the
   HUD's dot as before. The Oil Slicker, Flamethrower and Goo Gun's new models (batch 4) are fitted on their flip-ups and

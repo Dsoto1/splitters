@@ -25,7 +25,12 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "weapons/knife.glb",
+     "model": "guns/combat_knife.glb",
+     "fallback": "weapons/knife.glb",
+     "held": {
+      "medium": "guns/combat_knife.medium.glb",
+      "high": "guns/combat_knife.high.glb"
+     },
      "viewOffset": [
       0.2,
       -0.2,
@@ -37,7 +42,7 @@
       "grip": [
        0,
        0,
-       -0.1
+       -0.08
       ]
      }
     }
@@ -897,7 +902,11 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "guns/rocket_launcher.glb",
+     "model": "guns/heavy_rocket_launcher.glb",
+     "held": {
+      "medium": "guns/heavy_rocket_launcher.medium.glb",
+      "high": "guns/heavy_rocket_launcher.high.glb"
+     },
      "fallback": "weapons/rockets.glb",
      "viewOffset": [
       0.24,
@@ -909,20 +918,25 @@
       "style": "long",
       "grip": [
        0,
-       -0.09,
-       -0.115
+       -0.05,
+       -0.045
       ],
       "support": [
        0,
-       -0.09,
-       0.095
+       -0.06,
+       0.11
       ],
       "shoulder": [
        0,
-       -0.03,
-       -0.25
+       0,
+       -0.22
       ]
      },
+     "muzzleAt": [
+      0,
+      0.06,
+      0.55
+     ],
      "sound": "fire.launcher.c"
     }
    },
@@ -2543,7 +2557,17 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "weapons/disc_launcher.glb",
+     "model": "guns/ricochet_launcher.glb",
+     "fallback": "weapons/disc_launcher.glb",
+     "muzzleAt": [
+      0,
+      0.06,
+      0.425
+     ],
+     "held": {
+      "medium": "guns/ricochet_launcher.medium.glb",
+      "high": "guns/ricochet_launcher.high.glb"
+     },
      "viewOffset": [
       0.21,
       -0.21,
@@ -2554,18 +2578,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.06,
-       -0.06
+       -0.05,
+       -0.16
       ],
       "support": [
        0,
-       -0.022,
-       0.142
+       -0.05,
+       0.2
       ],
       "shoulder": [
        0,
-       -0.076,
-       -0.43
+       0.02,
+       -0.41
       ]
      },
      "sound": "fire.disc"
@@ -2641,7 +2665,17 @@
     "raiseTicks": 20,
     "botDesirability": 0.5,
     "view": {
-     "model": "weapons/bubble_blaster.glb",
+     "model": "guns/bubble_blaster_pink.glb",
+     "fallback": "weapons/bubble_blaster.glb",
+     "muzzleAt": [
+      0,
+      0.05,
+      0.4
+     ],
+     "held": {
+      "medium": "guns/bubble_blaster_pink.medium.glb",
+      "high": "guns/bubble_blaster_pink.high.glb"
+     },
      "viewOffset": [
       0.21,
       -0.21,
@@ -2652,18 +2686,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.036,
-       -0.163
+       -0.04,
+       -0.05
       ],
       "support": [
        0,
-       -0.006,
-       0.129
+       0.03,
+       0.2
       ],
       "shoulder": [
        0,
-       0.043,
-       -0.29
+       0.03,
+       -0.38
       ]
      },
      "sound": "fire.bubble"
@@ -2737,24 +2771,38 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "guns/glue_gun.glb",
-     "viewOffset": [
-      0.2,
-      -0.18,
+     "model": "guns/biohazard_goo_gun.glb",
+     "muzzleAt": [
+      0,
+      0.04,
       0.42
+     ],
+     "held": {
+      "medium": "guns/biohazard_goo_gun.medium.glb",
+      "high": "guns/biohazard_goo_gun.high.glb"
+     },
+     "viewOffset": [
+      0.21,
+      -0.21,
+      0.52
      ],
      "tracer": "#ff6ad0",
      "hold": {
-      "style": "pistol",
+      "style": "long",
       "grip": [
        0,
-       -0.05,
-       -0.11
+       -0.04,
+       -0.15
       ],
       "support": [
+       0,
        -0.02,
-       -0.06,
-       -0.1
+       0.12
+      ],
+      "shoulder": [
+       0,
+       0.04,
+       -0.42
       ]
      },
      "fallback": "weapons/goo_gun.glb",
@@ -2851,7 +2899,17 @@
     "fireIntervalTicks": 10,
     "range": 120,
     "view": {
-     "model": "weapons/oil_slicker.glb",
+     "model": "guns/cryo_slick_sprayer.glb",
+     "fallback": "weapons/oil_slicker.glb",
+     "muzzleAt": [
+      0,
+      0.075,
+      0.425
+     ],
+     "held": {
+      "medium": "guns/cryo_slick_sprayer.medium.glb",
+      "high": "guns/cryo_slick_sprayer.high.glb"
+     },
      "viewOffset": [
       0.2,
       -0.2,
@@ -2862,18 +2920,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.07,
-       0
+       -0.045,
+       -0.135
       ],
       "support": [
        0,
-       -0.037,
-       0.192
+       -0.03,
+       0.16
       ],
       "shoulder": [
        0,
-       0.014,
-       -0.38
+       0.03,
+       -0.4
       ]
      },
      "sound": "fire.pulse.c"
@@ -3590,7 +3648,17 @@
     "pellets": 1,
     "range": 120,
     "view": {
-     "model": "weapons/flamethrower.glb",
+     "model": "guns/heavy_flamethrower.glb",
+     "fallback": "weapons/flamethrower.glb",
+     "muzzleAt": [
+      0,
+      0.055,
+      0.475
+     ],
+     "held": {
+      "medium": "guns/heavy_flamethrower.medium.glb",
+      "high": "guns/heavy_flamethrower.high.glb"
+     },
      "viewOffset": [
       0.21,
       -0.21,
@@ -3601,18 +3669,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.084,
-       -0.027
+       -0.045,
+       -0.21
       ],
       "support": [
        0,
-       -0.054,
-       0.328
+       -0.02,
+       0.2
       ],
       "shoulder": [
        0,
-       0.069,
-       -0.455
+       0.04,
+       -0.45
       ]
      },
      "sound": "fire.flame.c"
@@ -3696,7 +3764,16 @@
     "raiseTicks": 20,
     "botDesirability": 0.5,
     "view": {
-     "model": "guns/freeze_gun.glb",
+     "model": "guns/viking_freeze_ray.glb",
+     "muzzleAt": [
+      0,
+      0.05,
+      0.18
+     ],
+     "held": {
+      "medium": "guns/viking_freeze_ray.medium.glb",
+      "high": "guns/viking_freeze_ray.high.glb"
+     },
      "viewOffset": [
       0.2,
       -0.18,
@@ -3707,15 +3784,15 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.02,
-       -0.153
+       -0.025,
+       -0.135
       ],
       "support": [
        -0.02,
-       -0.03,
-       -0.143
+       -0.035,
+       -0.125
       ],
-      "rake": 20
+      "rake": 22
      },
      "fallback": "weapons/freeze_ray.glb",
      "sound": "fire.freeze.b",
@@ -4396,7 +4473,11 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "guns/spear.glb",
+     "model": "guns/obsidian_spear.glb",
+     "held": {
+      "medium": "guns/obsidian_spear.medium.glb",
+      "high": "guns/obsidian_spear.high.glb"
+     },
      "fallback": "procedural/spear",
      "viewOffset": [
       0.28,
@@ -4543,11 +4624,21 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "weapons/disc_launcher.glb",
+     "model": "guns/disc_crossbow.glb",
+     "fallback": "weapons/disc_launcher.glb",
+     "muzzleAt": [
+      0,
+      0.075,
+      0.45
+     ],
+     "held": {
+      "medium": "guns/disc_crossbow.medium.glb",
+      "high": "guns/disc_crossbow.high.glb"
+     },
      "viewOffset": [
-      0.21,
-      -0.21,
-      0.52
+      0.23,
+      -0.25,
+      0.64
      ],
      "tracer": "#7ad6ff",
      "sound": "fire.disc.b",
@@ -4555,18 +4646,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.06,
-       -0.06
+       -0.04,
+       -0.37
       ],
       "support": [
        0,
-       -0.022,
-       0.142
+       0.02,
+       0.15
       ],
       "shoulder": [
        0,
-       -0.076,
-       -0.43
+       0.07,
+       -0.45
       ]
      },
      "reloadSound": "reload.scifi"
@@ -4960,7 +5051,11 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "guns/battle_axe.glb",
+     "model": "guns/viking_battleaxe.glb",
+     "held": {
+      "medium": "guns/viking_battleaxe.medium.glb",
+      "high": "guns/viking_battleaxe.high.glb"
+     },
      "fallback": "weapons/knife.glb",
      "viewOffset": [
       0.24,
@@ -4973,15 +5068,15 @@
       "style": "melee",
       "grip": [
        0,
-       0,
-       -0.3
+       0.08,
+       -0.28
       ]
      },
      "reloadSound": "reload.end.b",
      "muzzleAt": [
       0,
-      0.062,
-      0.4
+      0.09,
+      0.39
      ],
      "altShot": {
       "sound": "fire.shotgun.b",
@@ -7622,7 +7717,7 @@
      "bounce": 0.45
     },
     "view": {
-     "model": "guns/globe_grenade.glb",
+     "model": "guns/mk2_frag.glb",
      "fallback": "guns/frag.glb",
      "looks": {
       "military": "guns/frag_m67.glb"
@@ -8000,7 +8095,7 @@
      }
     },
     "view": {
-     "model": "guns/smoke_m18.glb",
+     "model": "guns/an_m8_smoke.glb",
      "looks": {
       "scifi": "guns/smoke_scifi.glb"
      }

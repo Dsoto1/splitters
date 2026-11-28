@@ -40,7 +40,7 @@ export const SIGHT_FITS: Readonly<Record<string, SightFit>> = {
   'core.pulse_pistol': { eye: [-0.0005, 0.08183, -0.42], rear: [-0.0005, 0.07203, -0.0292], front: [-0.0005, 0.06969, 0.0644], kind: 'post' },
   'core.revolver': { eye: [-0.00004, 0.07159, -0.42], rear: [-0.00004, 0.07364, -0.0708], front: [-0.00004, 0.07499, 0.1588], kind: 'post' },
   'core.rifle': { eye: [-0.00976, 0.14044, -0.64], rear: [-0.00998, 0.12872, 0.0784], front: [-0.01008, 0.1235, 0.398], kind: 'notch' },
-  'core.rockets': { eye: [-0.105, 0.085, -0.75], rear: [-0.105, 0.085, -0.14], front: [-0.105, 0.085, 0.3], kind: 'post', corrected: true },
+  'core.rockets': { eye: [-0.16, 0.1, -0.75], rear: [-0.16, 0.1, -0.14], front: [-0.16, 0.1, 0.3], kind: 'post', corrected: true },
   'core.runebreaker': { eye: [-0.01138, 0.15197, -0.7], rear: [-0.01138, 0.15075, 0.0288], front: [-0.01138, 0.15001, 0.468], kind: 'post' },
   'core.shotgun': { eye: [0.00278, 0.10544, -0.7], rear: [0.00259, 0.09819, -0.1412], front: [0.00239, 0.09039, 0.4608], kind: 'notch' },
   'core.smg': { eye: [-0.00026, 0.10684, -0.5], rear: [-0.00013, 0.10298, -0.153], front: [-0.00003, 0.09984, 0.1294], kind: 'notch' },

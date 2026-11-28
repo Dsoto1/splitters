@@ -32,14 +32,14 @@
     "fallback": "weapons/disc_launcher.glb",
     "muzzleAt": [0, 0.075, 0.45],
     "held": { "medium": "guns/disc_crossbow.medium.glb", "high": "guns/disc_crossbow.high.glb" },
-    "viewOffset": [0.21, -0.21, 0.52],
+    "viewOffset": [0.23, -0.25, 0.64],
     "tracer": "#7ad6ff",
     "sound": "fire.disc.b",
     "hold": { "style": "long", "grip": [0, -0.04, -0.37], "support": [0, 0.02, 0.15], "shoulder": [0, 0.07, -0.45] },
     "reloadSound": "reload.scifi"
   },
   "notes": {
-    "model": "The owner's Horizontal Disc Crossbow (Meshy, owned; content/guns.json, 2026-11-28): 0.9 m, its bow 0.87 m across, held copies a 50,000-triangle cut, its cyan lines lit (glow). The kit disc launcher is the fallback.",
+    "model": "The owner's Horizontal Disc Crossbow (Meshy, owned; content/guns.json, 2026-11-28): 0.9 m, its bow 0.87 m across (drawn further out and lower so it covers under 11 % of the screen), held copies a 50,000-triangle cut, its cyan lines lit (glow). The kit disc launcher is the fallback.",
     "design": "A variant of an existing weapon for Disc Arena and Classes. The arena disc: a Disc Launcher that shoves instead of hurting, three discs you pick up again."
   }
 }

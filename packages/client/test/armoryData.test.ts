@@ -49,7 +49,9 @@ describe('armory data', () => {
 
   it('shows the held (sharpest) copy where a gun has one', () => {
     expect(armoryModel(getWeapon('core.smg'))).toBe(getWeapon('core.smg').view.held!.high);
-    expect(armoryModel(getWeapon('core.knife'))).toBe(getWeapon('core.knife').view.model);
+    // (The Knife has held copies too since weapon replacements batch 4: the Builder has none.)
+    expect(armoryModel(getWeapon('core.knife'))).toBe(getWeapon('core.knife').view.held!.high);
+    expect(armoryModel(getWeapon('core.builder'))).toBe(getWeapon('core.builder').view.model);
   });
 
   it('keeps favourites in storage', () => {

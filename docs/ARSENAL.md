@@ -243,7 +243,7 @@ replaced are no longer built (the kit models stay the fallbacks).
 | 40mm Grenade Round | the Grenade Launcher's (and the underbarrel's) round in flight, pointing along its flight now (it tumbled) | 2k, 0.11 m | — |
 | Micro Swarm Rocket | the Swarm Launcher's rockets in flight (the coded exhaust kept) | 2k, 0.32 m | — |
 | RPG-7 PG-7V Rocket | every `rocket` round in flight (Rocket Launcher, Blast Rockets, Guided Rocket, the mounted launcher, the Tank's shell; the coded flame kept) | 2.5k, 0.7 m | — |
-| Heavy Anti-Armor Rocket Launcher | Rocket Launcher (back from batch 3) | 12k / 50k, 1.1 m | aimed as an AT4 is, from a sight line beside the tube (content/sight-fit.json: 10.5 cm left of the bore, parallel to it), so its wide rear flare sits low on the right, out of the middle of the view |
+| Heavy Anti-Armor Rocket Launcher | Rocket Launcher (back from batch 3) | 12k / 50k, 1.1 m | aimed as an AT4 is, from a sight line beside the tube (content/sight-fit.json: 16 cm left of the bore, level with the tube's top, parallel to it), so its wide rear flare sits low on the right, out of the middle of the view |
 
 **Plain scopes** (owner, 2026-11-28: the Brass Sentinel "protrudes out too far"; scopes "more universal", not
 steampunk): the Lever-Action and Crossbow carry the owner's plain Scope (`rifle_scope`) at 0.7, low on their rails, the
