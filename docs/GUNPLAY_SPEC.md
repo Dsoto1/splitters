@@ -893,6 +893,13 @@ are as they were. At the hip nothing changes.
   Grenade Launcher until its revolving launcher of 2026-11-28, fitted on its flip-ups), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (a
   holographic sight on its rail since 2026-11-28), the Flare Gun (fitted on its notch and post since its new model, 2026-11-28) and the Spear (the Gilded Pistol until its Gold PPK of 2026-11-28, fitted on its irons; the Swarm Launcher since its new model, fitted on its nubs).
   Eight of them carry an optic since step 2 (below); the rest keep that placement.
+- **Beside the tube** (the Rocket Launcher, weapon replacements batch 4, owner 2026-11-28 "recs yes"): the heavy
+  Anti-Armor launcher is aimed as a real AT4 is, from a sight line beside its tube: a hand correction in
+  content/sight-fit.json puts the line 10.5 cm left of the bore at the height of the tube's upper half, parallel to it,
+  so `sightPlacement` brings the eye there and the tube, with its wide rear flare, sits low on the right of the aimed
+  view instead of filling its middle (over the tube the flare 0.2 m ahead of the eye covered the centre). No optic: the
+  HUD's dot as before. The Oil Slicker, Flamethrower and Goo Gun's new models (batch 4) are fitted on their flip-ups and
+  the Disc Launcher's on its flip-up aperture (corrected by hand: the line through the ring's open middle).
   Scopes (`view.zoomFov`: Marksman Rifle, Precision Rifle, Railgun, Lever-Action, Crossbow) hide the gun behind the scope overlay, the Battle
   Rifle brings its optic's eyepiece to the eye (`view.optic`: since 2026-11-28 the eyepiece of the scope model on its rail), and melee weapons, tools and mounted guns do not aim.
 - **The audit** is the sight sheet, `?mode=sights` (client `tools/sightSheet.ts`): each weapon from the eye as the game
@@ -932,13 +939,13 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 |---|---|---|---|
 | Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Woodland SMG (since 2026-11-27), Gilded Pistol (its Gold PPK, since 2026-11-28) | 1.52× |
 | Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off, Singularity Cannon (its new model's top rail, since 2026-11-27), Burst Rifle (its new model's flat top, since 2026-11-28: its low flip-up sights put the eye at the stock's butt) | 1.52× |
-| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (on its new model's rail since 2026-11-28; was in its old model's sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
+| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Arena Disc (Disc Launcher until batch 4: its new model aims down its own flip-up aperture), Plasma Rifle (on its new model's rail since 2026-11-28; was in its old model's sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
 | 2-3× optic (`scope`) | a chevron with holdover ticks | Nova 6 (its model's own scope) | as before |
 | Sniper scope (`sniper`) | a fine crosshair with holdover marks | none since 2026-11-28 (kept for a gun with a scope of its own) | |
 | Rifle scope (`rifle_scope`, the owner's Scope model on the rail) | a chevron with holdover ticks | Battle Rifle (3.5×, looked through: its eyepiece), Marksman Rifle (2.19×, the scope overlay), Lever-Action (2.59×) and Crossbow (2.19×), both the scope overlay, the scope low on their rails (since 2026-11-28, owner: the Brass Sentinel stood out too far; scopes plain) | as before |
 | Long-range scope (`long_scope`, the same Scope model) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
 | Brass Sentinel scope (`sentinel`, the owner's Brass Sentinel Scope model) | a chevron with holdover ticks | none since 2026-11-28 (its tall mount stood out too far; kept for a later choice) | |
-| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Flare Gun, Spear (the Grenade Launcher, Swarm Launcher and Flare Gun down their new models' own sights since 2026-11-28, the dot kept) | 1.52× |
+| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Flare Gun, Spear (the Grenade Launcher, Swarm Launcher and Flare Gun down their new models' own sights since 2026-11-28, the Oil Slicker and Flamethrower since batch 4, the Rocket Launcher from a line beside its tube, the dot kept) | 1.52× |
 
 - **A scope of our own** (`scopeModel` on a `model` or `overlay` kind; weapon replacements batch 3, 2026-11-28): the
   scoped guns whose new models have no scope (the Battle Rifle's SCAR, the Marksman's DMR, the Sniper Rifle's Steyr, the

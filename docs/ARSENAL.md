@@ -218,6 +218,41 @@ The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section
 - **Lever action: not made.** The Frontier Rifle is a scoped modern rifle, not a lever gun, and no lever-action model
   is in the repo or the Drive.
 
+## Weapon replacements of 2026-11-28 (batch 4, the last)
+
+The intake's last "Replace" rows (docs/WEAPONS_INTAKE_1127.md), the owner's own Meshy models (Meshy, owned), built by
+`tools/content/prepare-guns.mjs` in pack `meshy-owned-drive-1127` as batches 1-3 were. Every weapon keeps its rules,
+numbers, sounds and sets; its model, held copies, hold and muzzle changed. Lit and liquid parts glow (`glow`: a steady
+emissive map of the parts in the glow's hue; nothing flickers, so Reduce flashing has nothing to calm). The models they
+replaced are no longer built (the kit models stay the fallbacks).
+
+| Download | Now the model of | Build (everyone / held) | Sight |
+|---|---|---|---|
+| Cryo-Gel Slick Sprayer | Oil Slicker | 12k / 50k, 0.85 m, its cyan gel lines lit | its flip-ups, fitted (no optic) |
+| Monofilament Ricochet Launcher | Disc Launcher | 12k / 50k, 0.85 m | its tall flip-up aperture and front post, fitted by hand (a holo or red dot on its rail stood behind one or the other: irons only now) |
+| Horizontal Disc Crossbow | Arena Disc | 12k / 50k, 0.9 m (its bow 0.87 m across), its cyan lines lit | a holographic sight on its rail as before, a red dot offered |
+| Pink Bubble Blaster | Bubble Blaster | 12k / 50k, 0.8 m, its bubble globe (and pink panels) gently lit | a red dot on its rail as before, a holo offered |
+| Tactical Biohazard Goo Gun | Goo Gun | 12k / 50k, 0.85 m, its goo tank lit; a long gun now (the Mystical Glue Gun was a pistol) | its flip-ups, fitted |
+| Tactical Heavy Flamethrower | Flamethrower | 12k / 50k, 0.95 m, its fuel tank gently lit | its flip-ups, fitted (no optic) |
+| Viking Freeze Ray Pistol | Freeze Ray | 10k / 40k, 0.36 m, grip raked 22°, its ice crystals lit | its nubs, fitted |
+| Tactical Combat Knife | Knife | 6k / 24k, 0.3 m; an untextured copy `guns/combat_knife_plain.glb` (`flat`) for tinted colour variants, not drawn yet | — |
+| Viking Battleaxe | Battle Axe | 10k / 40k, 0.8 m, its blade below the haft (the edge leads the cut); its alt shot's flash from the head | — |
+| Mesoamerican Obsidian Spear | Spear, held and thrown | 12k / 40k, 2 m, gripped at z -0.35 as before | — |
+| MK2 Fragmentation Grenade | the Frag Grenade (the Military set keeps its M67) | 3k, 0.11 m tall | — |
+| AN-M8 HC Smoke Grenade | the Smoke Grenade (the Sci-fi set keeps its own) | 3k, 0.15 m tall | — |
+| 40mm Grenade Round | the Grenade Launcher's (and the underbarrel's) round in flight, pointing along its flight now (it tumbled) | 2k, 0.11 m | — |
+| Micro Swarm Rocket | the Swarm Launcher's rockets in flight (the coded exhaust kept) | 2k, 0.32 m | — |
+| RPG-7 PG-7V Rocket | every `rocket` round in flight (Rocket Launcher, Blast Rockets, Guided Rocket, the mounted launcher, the Tank's shell; the coded flame kept) | 2.5k, 0.7 m | — |
+| Heavy Anti-Armor Rocket Launcher | Rocket Launcher (back from batch 3) | 12k / 50k, 1.1 m | aimed as an AT4 is, from a sight line beside the tube (content/sight-fit.json: 10.5 cm left of the bore, parallel to it), so its wide rear flare sits low on the right, out of the middle of the view |
+
+**Plain scopes** (owner, 2026-11-28: the Brass Sentinel "protrudes out too far"; scopes "more universal", not
+steampunk): the Lever-Action and Crossbow carry the owner's plain Scope (`rifle_scope`) at 0.7, low on their rails, the
+zoom unchanged; the Brass Sentinel kind stays built but no gun carries it (its own tall mount can't sit low).
+
+**Pictures** (lane B's scratchpad `weapons4/`): the raw downloads (`raw/`), gridded side and top views (`grid/`),
+before/after inspect views, first person hip and aimed (melee: swing frames), third person (`before/`, `after/`), the
+after side views on one sheet (`sheet.png`), grip sheets (`grips-before/`, `grips-after/`) and the scopes (`scopes/`).
+
 ## Weapon replacements of 2026-11-28 (batch 3)
 
 Ten more of the owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows) and two of
@@ -245,7 +280,7 @@ and muzzle changed. The models they replaced are no longer built (the kit models
 gun that carries it gives a hand-set `mount` (`at` on its rail, `scale`), and the scope is drawn there for everyone, your
 own copy from its sharper model. A different scope is a different kind: a gun swaps by its `default` and `allowed`.
 
-**Not done in this batch:** rockets (the Heavy Anti-Armor Rocket Launcher was built and dropped: its wide rear flare sits 0.2 m ahead of the eye when aimed, as every gun's rear end does, and filled the middle of the aimed view; an owner question), oil_slicker, disc_launcher, arena_disc, bubble_blaster, goo_gun, flamethrower, freeze_ray,
+**Not done in this batch:** rockets (the Heavy Anti-Armor Rocket Launcher was built and dropped: its wide rear flare sits 0.2 m ahead of the eye when aimed, as every gun's rear end does, and filled the middle of the aimed view; taken in batch 4, aimed from beside the tube), oil_slicker, disc_launcher, arena_disc, bubble_blaster, goo_gun, flamethrower, freeze_ray,
 knife, battle_axe, spear, the frag and smoke grenades and the projectile models (40mm, micro rocket, RPG round): left for a
 later batch (HANDOFF).
 
