@@ -298,25 +298,34 @@ async function setupWhere(page, id) {
 
 /**
  * Leave MapMaker's Test with Esc, as a player does: while the Test loads or counts down Esc goes back to MapMaker; once
- * in play it opens the pause menu, and F5 goes back from there. What the Esc did is read after the page has handled
- * it, never guessed from a clock: a busy page (software rendering, a Test still building) can take seconds to get to
- * the key, and an F5 sent "because MapMaker isn't back yet" then lands in MapMaker, which already came back, and
- * starts a new Test (the editor flow's flake, docs/FLAKES.md "Root-caused").
+ * in play it opens the pause menu, and F5 goes back from there. Whether MapMaker is back is read once the page has
+ * handled the Esc, never guessed from a clock: a busy page (software rendering, a Test still building) can take
+ * seconds to get to the key, and an F5 sent "because MapMaker isn't back yet" then lands in MapMaker, which came back
+ * meanwhile, and starts a new Test (the editor flow's flake, docs/FLAKES.md "Root-caused"). Leaving is synchronous
+ * (GameSession.exit shows MapMaker), so MapMaker still hidden once the Esc is handled means the Test is still on and
+ * F5 is its to take, whether or not the pause menu has opened yet (a released pointer lock opens it a moment later).
  */
 async function escapeTest(page) {
   await page.evaluate(() => {
     window.__escHandled = false;
     // Added after the match's own Esc listener (window, capture): it runs once the match has acted on the key.
-    window.addEventListener('keydown', (e) => e.code === 'Escape' && (window.__escHandled = true), { capture: true, once: true });
+    const seen = (e) => {
+      if (e.code !== 'Escape') return;
+      window.__escHandled = true;
+      window.removeEventListener('keydown', seen, true);
+    };
+    window.addEventListener('keydown', seen, true);
   });
   await page.keyboard.press('Escape');
-  const after = await page
-    .waitForFunction(() => window.__escHandled && (!document.getElementById('editor').hidden ? 'editor' : !document.getElementById('pause').hidden ? 'pause' : null), null, { timeout: T(30000) })
-    .then((h) => h.jsonValue());
-  if (after === 'pause') await page.keyboard.press('F5');
+  await page.waitForFunction(() => window.__escHandled, null, { timeout: T(30000) });
+  const back = await page.evaluate(() => !document.getElementById('editor').hidden);
+  if (!back) await page.keyboard.press('F5');
   // Leaving TEST rebuilds the editor view; allow for slow software rendering on a busy machine.
-  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) });
-  return after;
+  await page.waitForFunction(() => !document.getElementById('editor').hidden, null, { timeout: T(15000) }).catch(async (e) => {
+    const state = await page.evaluate(() => ({ editor: !document.getElementById('editor').hidden, pause: !document.getElementById('pause').hidden, ended: !!window.__cs?.ended, phase: window.__cs?.phase?.() })).catch(() => null);
+    throw new Error(`MapMaker not back after Esc${back ? '' : ' and F5'} (${JSON.stringify(state)}): ${e.message}`);
+  });
+  return back ? 'esc' : 'f5';
 }
 
 async function editorFlow(browser) {
