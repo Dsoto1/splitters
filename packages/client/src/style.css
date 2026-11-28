@@ -888,11 +888,16 @@ html.touch .stepper button, html.touch .team-editor.compact .team-card .stepper 
    and loadout on the right; one column, in the same order, where there's no room. */
 .prof-col { display: contents; }
 .prof-col + .prof-col > .prof-sec:first-child { border-top: 1px solid var(--line); }
+/* One column: the optics read as the end of the Favourite loadout (they come right after it), as before. */
+.prof-optics-sec { order: 1; border-top: 0 !important; padding-top: 0; }
+.prof-optics-sec .prof-optics-box { margin-top: 0; }
+.prof-foot { order: 2; }
 @media (min-width: 1000px) and (min-height: 560px) {
   .profile-panel { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1fr); align-items: start; width: min(1040px, 62vw); }
   .prof-col { display: flex; flex-direction: column; min-width: 0; }
   .prof-col + .prof-col { border-left: 1px solid var(--line); }
   .prof-col + .prof-col > .prof-sec:first-child { border-top: 0; }
+  .prof-optics-sec { order: 0; border-top: 1px solid var(--line) !important; padding-top: 16px; }
   .prof-foot { grid-column: 1 / -1; }
 }
 .prof-kicker { margin: 0; font: 700 11px var(--font-display); letter-spacing: 0.16em; text-transform: uppercase; color: var(--muted); }
