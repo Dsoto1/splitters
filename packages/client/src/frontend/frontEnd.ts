@@ -135,7 +135,6 @@ import { setMyOptic } from '../opticPrefs.ts';
 import { weaponName } from '../game/profileCard.ts';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { isMenuKey, keyFor, keysFor } from '../game/keyBindings.ts';
-import { controlsPage } from './controlsPage.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/steerMode.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
@@ -472,6 +471,20 @@ function storage(key: string, value?: string): string | null {
   }
 }
 
+/**
+ * Options → Controls' key list (controlsPage.ts) is its own chunk, out of the menu's first JS: fetched shortly after
+ * the menu opens (warmControls), so it's there by the time anyone opens Controls; until then a placeholder stands in.
+ */
+let controlsMod: typeof import('./controlsPage.ts') | null = null;
+const warmControls = () => import('./controlsPage.ts').then((m) => (controlsMod = m));
+function controlsList(): HTMLElement {
+  if (controlsMod) return controlsMod.controlsPage();
+  const slot = document.createElement('div');
+  slot.className = 'binds';
+  void warmControls().then((m) => slot.isConnected && slot.replaceWith(m.controlsPage()), () => undefined);
+  return slot;
+}
+
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { class?: string } = {}, ...children: (Node | string)[]): HTMLElementTagNameMap[K] => {
   const e = document.createElement(tag);
   const { class: cls, ...rest } = props;
@@ -617,6 +630,7 @@ export class FrontEnd {
     });
     // Render every character's portrait in the background while the menu is up, so Character Select opens ready.
     setTimeout(() => void this.warmPortraits(), 1500);
+    setTimeout(() => void warmControls().catch(() => undefined), 500);
   }
 
   /** Every built-in look with a portrait (tools/content/capture-portraits.mjs renders these for the site). */
@@ -3981,7 +3995,7 @@ export class FrontEnd {
             ]
           : []),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
-        controlsPage(),
+        controlsList(),
         el('h3', { class: 'opt-sub', textContent: 'Controller' }),
         controller,
       ]],
