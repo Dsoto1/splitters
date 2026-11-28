@@ -10,13 +10,13 @@
   "nameTheme": "soldier",
   "bio": "Rated for every spill on the map. Mostly the ones he causes.",
   "body": "male",
-  "notes": "New model 2026-11-26 (owner's 11-26 batch: replaced in place, id, name and place kept). Hazmat Joe's model until 2026-11-26 (a Meshy Community CC0 model \"Hazmat T Pose\") no longer ships (retired characters are removed, owner 2026-11-26). Drive intake of 2026-11-26 (\"hazmat joe rigged\", as Meshy names the download; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-26: the batch is the owner's own Meshy creations, \"Meshy, owned\"; standing rule since 2026-11-22).",
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Meshy Merged Animations\", as Meshy names the download; Drive 1qxEnlWpyAyv1mGKVpAQyWE4aPp6IRSoR, uploaded 2026-11-27, saved here as Meshy_AI_Meshy_Merged_Animations_<Drive id>.glb since all eleven share one name; matched to this character from a contact sheet beside its old model; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy, owned) no longer ships.",
   "source": {
     "license": "owned",
     "author": "The owner (Meshy, owner's account)",
-    "date": "2026-11-26",
+    "date": "2026-11-27",
     "url": null,
-    "file": "^Meshy_AI_hazmat_joe_rigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+    "file": "^Meshy_AI_Meshy_Merged_Animations_1qxEnlWpyAyv1mGKVpAQyWE4aPp6IRSoR\\.glb$"
   },
   "finish": {
     "metallic": 0.1,

@@ -11,59 +11,25 @@
   "nameTheme": "soldier",
   "bio": "Ejected over the arena on a test flight and decided to stay. Still logs every kill as a sortie.",
   "body": "male",
-  "notes": "Modelled in a T-pose: arms level, so the arm joints sit on one line read off the slab profile of each arm. The suit's blue sleeve patch (a red swoosh on a blue field) goes to the suit's orange (`scrubBlue`). Re-uploaded by the owner as an unrigged textured GLB (2026-11-01, same model) and rebuilt from it with the T-pose landmarks below, the head and hands keeping their share of the cut.",
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Meshy Merged Animations\", as Meshy names the download; Drive 1VoiKQgeOiAkk0lKz9UCtz8SiWtXcmxZ2, uploaded 2026-11-27, saved here as Meshy_AI_Meshy_Merged_Animations_<Drive id>.glb since all eleven share one name; matched to this character from a contact sheet beside its old model; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships.",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-05-10",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-27",
     "url": null,
-    "community": {
-      "model": "T Pose Pilot"
-    },
-    "file": "^Meshy_AI_T_Pose_Pilot_\\d+_texture\\.(glb|fbx)$"
+    "file": "^Meshy_AI_Meshy_Merged_Animations_1VoiKQgeOiAkk0lKz9UCtz8SiWtXcmxZ2\\.glb$"
   },
   "finish": {
     "metallic": 0.05,
     "roughness": 0.65
   },
   "fixes": {
-    "triangles": 11000,
-    "feet": true,
-    "scrubBlue": "#a8582a"
-  },
-  "landmarks": {
-    "spine": [
-      [0, 0.5, -0.005],
-      [0, 0.57, 0],
-      [0, 0.64, 0],
-      [0, 0.72, -0.005],
-      [0, 0.83, -0.01],
-      [0, 0.87, 0],
-      [0, 1, 0]
-    ],
-    "L": [
-      [0.035, 0.79, -0.01],
-      [0.11, 0.78, -0.02],
-      [0.25, 0.76, -0.02],
-      [0.385, 0.753, -0.013],
-      [0.475, 0.748, -0.012],
-      [0.07, 0.48, 0],
-      [0.075, 0.28, -0.01],
-      [0.088, 0.07, -0.03],
-      [0.095, 0.02, 0.05],
-      [0.095, 0.015, 0.095]
-    ],
-    "R": [
-      [-0.035, 0.79, -0.01],
-      [-0.11, 0.78, -0.02],
-      [-0.25, 0.76, -0.02],
-      [-0.385, 0.753, -0.013],
-      [-0.475, 0.748, -0.012],
-      [-0.07, 0.48, 0],
-      [-0.075, 0.28, -0.01],
-      [-0.088, 0.07, -0.03],
-      [-0.095, 0.02, 0.05],
-      [-0.095, 0.015, 0.095]
-    ]
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
   }
 }

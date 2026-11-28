@@ -211,7 +211,7 @@ out: a soft glow, no flash. The flicker check's `rankup` moment records it.
 **Order in a section.** By name, unless a manifest sets `sortAs` (the name it is listed as): the owner swapped Spud
 Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 
-The sections as Character Select lists them (2026-11-28, the pirates in Historical and the real people by their real names; variant looks sit under their base, MapMaker-only looks are not on Character Select):
+The sections as Character Select lists them (2026-11-28, the pirates in Historical and the real people by their real names; character round (d)'s new characters; variant looks sit under their base, MapMaker-only looks are not on Character Select):
 
 | Section (`id`) | Who, in order |
 |---|---|
@@ -220,12 +220,12 @@ The sections as Character Select lists them (2026-11-28, the pirates in Historic
 | Outer Space (`space`) | Blix Orrin, Dusty Orebeck, Iron Knight, Ricochet, Ryker Voss, Space Marine, Spacewalker, Starfarer, The Veiled Vanguard, The Visitor, Zorp Gleebix |
 | Chrono Crew (`chrono`) | Clio Everwhen, Sarge Tobias Crane, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell, Vesper Quill, Wren Halloway |
 | Legends (`legends`) | Tetl Stonewarden, Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine, Sigrun Frostmane, Aurelio Dawnmantle |
-| Historical (`historical`) | Valeria Sandstorm, Astrid Stormbrand, Ulf Ravenshield, Ser Godric Vale, Ser Aldous Lionmane, Emir Tariq Falconsword, Kaiser Ironhelm, Ser Aurelian Dawnshield, Sir Galloway (MapMaker only), Ser Brannock (MapMaker only), Astor Moonvale, Imperial Guard, Lancer Mei, Balam Nightclaw, Talon Skycrest, Cap'n Ezra Blackwake, Mr. Gideon Tarr, Scarlet Brinewell, Julius Caesar, Genghis Khan, George Washington, Benjamin Franklin, Abraham Lincoln, Theodore Roosevelt, Albert Einstein, Shaka Mpande, Themba Ironspear, Kato Emberline, Dusty Ranger, Cutter McCrae, Silas Coilwhisper, Thornweaver |
-| Animalia (`animals`) | Pip Quickfoot, Rocket Nutley, Rowdy Gnashwell, Rufus Boomtown, Ollie Hootman, Barnaby Burrows, Rascal McGraw, Newt Calloway, Ace Featherstone, Axel Gainz, Barnaby Bruin, Boglurker, Boogie Tuskworth, Buster Haymaker, Chad Croakley, Chompers McFinn, Coach Hank Shelton, Corvin Blackquill, Croakley, Cyber Lion, Det. Drake Montego, Deuce Droopwell, DJ Volta Coilwave, Dr. Hugo Hue, Duke Dashwood, El Zarpazo, Ellis Velvetrope, Fenn Dustwhirl, Fishy Fred, Gorilla G, Greyfang, Kesi Tallgrass, King Waddleston, Master Bodhi, Maximus Cluckworth, Napsworth, Octo Buddy, Ottis Crema, Pink Mantis, Puddles Backspin, Rio Neonwing, Rollo Splitworth, Ryo Snapclaw, Seetah J. Chloth, Shiba, Sterling Purrcival, Tag Malone, Ziggy Bananas |
+| Historical (`historical`) | Valeria Sandstorm, Decimus Stonejaw, Astrid Stormbrand, Ulf Ravenshield, Ser Godric Vale, Ser Aldous Lionmane, Emir Tariq Falconsword, Kaiser Ironhelm, Ser Aurelian Dawnshield, Sir Galloway (MapMaker only), Ser Brannock (MapMaker only), Astor Moonvale, Imperial Guard, Lancer Mei, Balam Nightclaw, Talon Skycrest, Cap'n Ezra Blackwake, Mr. Gideon Tarr, Scarlet Brinewell, Julius Caesar, Genghis Khan, George Washington, Benjamin Franklin, Abraham Lincoln, Nikola Tesla, Theodore Roosevelt, Winston Churchill, George S. Patton, Albert Einstein, Shaka Mpande, Themba Ironspear, Kato Emberline, Dusty Ranger, Cutter McCrae, Silas Coilwhisper, Thornweaver |
+| Animalia (`animals`) | Pip Quickfoot, Rocket Nutley, Rowdy Gnashwell, Rufus Boomtown, Ollie Hootman, Barnaby Burrows, Rascal McGraw, Newt Calloway, Ace Featherstone, Axel Gainz, Barnaby Bruin, Boglurker, Boogie Tuskworth, Buster Haymaker, Chad Croakley, Chompers McFinn, Coach Hank Shelton, Corvin Blackquill, Croakley, Cyber Lion, Det. Drake Montego, Deuce Droopwell, DJ Volta Coilwave, Dr. Hugo Hue, Duke Dashwood, El Zarpazo, Ellis Velvetrope, Fenn Dustwhirl, Fishy Fred, Gorilla G, Greyfang, Kesi Tallgrass, King Waddleston, Maestro Redcrest, Master Bodhi, Maximus Cluckworth, Napsworth, Octo Buddy, Ottis Crema, Pink Mantis, Puddles Backspin, Rio Neonwing, Rollo Splitworth, Ryo Snapclaw, Seetah J. Chloth, Shiba, Sterling Purrcival, Tag Malone, Ziggy Bananas |
 | Toys (`toys`) | Bricksby, Clangers, Cpl. Tinwhistle, Pvt. Pete Plastic, Jolly Springjack, Teddy, Tik Winderly |
 | Holiday (`holiday`) | Chilly Flakesworth, Gobbles Plymouth, Hazel Hexley, Hopsworth Eggleton, Jingle Tinsel, Kris Kringleton, Punkin, Uncle Spangle |
-| Machines (`machines`) | Baseball Robot, Botboy, CRT Robot, Emerald Robot, Field Medic Automaton, Fuse Hollister, Inspector Bigotes, Mummy Bot, T-TreeFitty |
-| Horrors & Creatures (`horror`) | Anoobys, Pharaoh Mummy Warrior, Nebka the Unwrapped, Count Bonesworth, Dez Kickley, Dog Tag Doyle, Fearsome Undead (MapMaker only), Freaky Frida, Goblina, Gorgle, Grimspire, Groaner (MapMaker only), Mujina, Shambler (MapMaker only), The Pale Stranger |
+| Machines (`machines`) | Baseball Robot, Slugger Boltsworth, Botboy, CRT Robot, Emerald Robot, Field Medic Automaton, Fuse Hollister, Inspector Bigotes, Mummy Bot, T-TreeFitty |
+| Horrors & Creatures (`horror`) | Anoobys, Pharaoh Mummy Warrior, Nebka the Unwrapped, Count Bonesworth, Dez Kickley, Dog Tag Doyle, Fearsome Undead (MapMaker only), Freaky Frida, Goblina, Gorgle, Grimspire, Groaner (MapMaker only), Mujina, Shambler (MapMaker only), The Pale Stranger, Wisp Linenwick |
 
 Where a group comes from: a part-built preset has `group` on its entry in
 `CORE_LOOKS`; a whole-body character has `group` in its manifest (below,
@@ -1899,3 +1899,56 @@ Washington, Benjamin Franklin, Abraham Lincoln, Theodore Roosevelt, Albert Einst
 Roosevelt). Shaka stays with Southern Africa (owner, 2026-11-26). The row: Rome's arena, the vikings, medieval and the
 Crusades, the Asian dynasties, Mesoamerica, the pirates, the famous real people, Southern Africa, the Wild West and the
 plains.
+
+### Character round (d): new models, three real people, a sheet ghost (owner, 2026-11-27/28)
+
+All made by the owner in Meshy (Meshy, owned; `assets-src/meshy-owned/License.txt`), built from the Drive downloads one
+at a time (2048 KTX2, 12k triangles, rebaked), grips fitted, portraits captured.
+
+**New models on the old ids** (id, name, row and stats kept; the models before them no longer ship). Eleven came as
+`Meshy_AI_Meshy_Merged_Animations.glb`, one name for all; each was matched from a contact sheet beside the character's old
+portrait and saved as `Meshy_AI_Meshy_Merged_Animations_<Drive id>.glb` (its manifest's `source.file`):
+
+| Character (look) | Drive id | What it is now |
+|---|---|---|
+| Hazmat Joe (`core.hazmat`) | 1qxEnlWpyAyv1mGKVpAQyWE4aPp6IRSoR | yellow hazmat suit and gas mask |
+| Inspector Bigotes (`core.inspector`) | 1yWb-2MjuOgFmCi6q_ZOCRgB1hMQYY06B | the robot mariachi: charro suit, sombrero, moustache |
+| Iron Knight (`core.knight`) | 1u3Vsb-lGE4-2RrWPIw361epdh17CojPP | dark iron plate armour |
+| Old Timer (`core.oldtimer`) | 1PoyiB3eCSJ2aymjpYbTwluOwOhHUdn7_ | white-haired old man in a worn suit |
+| Pharaoh Mummy Warrior (`core.pharaoh`) | 1DI-mq0cYGwCkEFlDv9HBHHTeJO5FU0rs | gold nemes, skull face with gold eyes |
+| The Mechanic (`core.mechanic`) | 1DD3rUCuM32BYVJRzpgk2WjupW5mFJFp7 | blue overalls, red cap, tool belt |
+| Azure Sentinel (`core.azuresentinel`) | 1qEXqlZWeLm3uYdjeOg5zvbw3VXQiXO4D | blue camouflage armour and a gas mask (the old model's recolour dropped) |
+| Flt. Lt. Ember (`core.ember`) | 1VoiKQgeOiAkk0lKz9UCtz8SiWtXcmxZ2 | olive flight suit and helmet |
+| Kenji (`core.resolvesoldier`) | 1K1bahVE0oQgvwgcYpsTZ__uB_i72_MDC | spiky-haired soldier in tactical gear |
+| Mummy Bot (`core.mummybot`) | 1Nt_448qp1xV9bDmt39I7MS73v3RD-9Kv | wrapped robot, metal limbs and cyan eyes under the bandages |
+| Stealth Operative (`core.stealthop`) | 1Mnirz5-gAoCfiF1YGdegjtuxPfmfBFYQ | black stealth suit, long ponytail |
+
+And Ricochet (`core.ricochet`: "Ricochet Pearlescent 15k"), Space Marine (`core.spacemarine`: "Alien Space Marine 15k",
+small as before) and Rourke (`core.rourke`: "Rourke Hobo Commando 15K"). Patches and Genghis Khan keep theirs (owner).
+The old models' hand-set fixes (hand scales, holds, grips, the Azure Sentinel's recolour, landmarks) went with them; the
+grip fit replaced them.
+
+**New characters:**
+
+| Character (look) | Row | Roulette signature | From |
+|---|---|---|---|
+| Slugger Boltsworth (`core.baseballbot`) | Machines, beside the rolling Baseball Robot (`CHARACTER_NEIGHBOURS`) | Baseball Bat | "robotic baseball player 10k", a biped |
+| Maestro Redcrest (`core.cardinal`) | Animalia, where the roster's other dressed-up birds are (Corvin Blackquill, Ace Featherstone) | Burst Rifle | "cardinal maestro 15k" |
+| Decimus Stonejaw (`core.gladiator`) | Historical, Rome's arena after Valeria Sandstorm | Spear | "rigged male gladiator" |
+| Nikola Tesla (`core.tesla`) | Historical, after Abraham Lincoln | Arc Caster | "TeslaRigged" |
+| Winston Churchill (`core.churchill`) | Historical, after Theodore Roosevelt | SMG | "ChurchillRigged" |
+| George S. Patton (`core.patton`) | Historical, after Winston Churchill | Revolver | "GeneralPattonRigged" |
+| Wisp Linenwick (`core.sheetghost`) | Horrors & Creatures; hovers | Freeze Ray | "TS2 Gliding Sheet Ghost 3D" (unrigged) |
+
+The famous real people in the row: Julius Caesar, Genghis Khan, George Washington, Benjamin Franklin, Abraham Lincoln,
+Nikola Tesla, Theodore Roosevelt, Winston Churchill, George S. Patton, Albert Einstein. Bot names and rank titles come
+from each one's row as for everyone (Historical's, Machines', Animalia's, Horrors').
+
+**The sheet ghost.** Meshy could not rig the download, which stands with its arms out level (a T-pose from the waist
+up) over a sheet that hides any legs. It is rigged here (the in-house path, "Rigging an unrigged download") onto the same
+rig every Meshy character rides, the skeleton Vanguard's Mixamo joints are mapped onto, with hand-set `landmarks` fitted
+to the T-posed arms (shoulders at 0.775 of its height, hands out to 0.525 either side) and its spine; the sheet below
+the waist rides the hips (`fixes.cloth`) and, as a hovering body (`locomotion: hover`, 0.3 m), everything the legs
+would hold rides the pelvis. Rebaked at 10k triangles (the download's own count).
+
+**Botboy hovers** (`locomotion: hover`, 0.3 m) like The Veiled Vanguard and Mujina; his model was not rebuilt.

@@ -183,12 +183,12 @@ describe("Character Select's groups", () => {
       expect(sec.looks.slice(at, at + list.length).map((l) => l.id)).toEqual([...list]);
     }
     const historical = sections.find((s) => s.id === 'historical')!.looks.map((l) => l.id);
-    const famous = ['core.caesar', 'core.khan', 'core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'];
+    const famous = ['core.caesar', 'core.khan', 'core.washington', 'core.franklin', 'core.abe', 'core.tesla', 'core.roosevelt', 'core.churchill', 'core.patton', 'core.einstein'];
     expect(historical.slice(historical.indexOf(famous[0]!), historical.indexOf(famous[0]!) + famous.length)).toEqual(famous);
     // The age of sail: the pirates together after Mesoamerica, right before the famous real people (owner, 2026-11-28).
     expect(historical.slice(historical.indexOf('core.eagleclan') + 1, historical.indexOf('core.caesar'))).toEqual(['core.piratecaptain', 'core.firstmate', 'core.femalepirate']);
     // The famous real people by their real names, Julius Caesar and Genghis Khan with them (owner, 2026-11-28).
-    expect(famous.map((id) => getLook(id).name)).toEqual(['Julius Caesar', 'Genghis Khan', 'George Washington', 'Benjamin Franklin', 'Abraham Lincoln', 'Theodore Roosevelt', 'Albert Einstein']);
+    expect(famous.map((id) => getLook(id).name)).toEqual(['Julius Caesar', 'Genghis Khan', 'George Washington', 'Benjamin Franklin', 'Abraham Lincoln', 'Nikola Tesla', 'Theodore Roosevelt', 'Winston Churchill', 'George S. Patton', 'Albert Einstein']);
     expect(getLook('core.shaka').name).toBe('Shaka Mpande');
     // Rome first, the Wild West last; every Historical character in the row's own list (none left to sort by name).
     expect(historical[0]).toBe('core.gladiatrix');

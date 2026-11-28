@@ -16,20 +16,19 @@ describe('character manifests', () => {
   it('turn into what the prepare tool builds', () => {
     // A model from the owner's Drive is Meshy Community CC0 unless the owner says they made it (2026-11-06): the Alien
     // Biker was recorded as owned until the owner said it was community too (the same day). Only a model the owner made,
-    // or one we generate through the Meshy API, is owned. (The Goblin, this test's first example, was removed 2026-11-25,
-    // and the Pirate got the owner's rigged model 2026-11-26: Flt. Lt. Ember, another textured FBX rigged here from its
-    // landmarks, stands in.)
-    const pirate = buildSpec(list.find((m) => m.id === 'meshy_pilot'));
-    expect(pirate.pack).toBe('meshy-community-characters');
-    expect(pirate.community).toEqual({ model: 'T Pose Pilot', date: '2026-05-10' });
-    // (The Alien Biker was removed 2026-11-26; Patches, still a community model, stands in.)
+    // or one we generate through the Meshy API, is owned. (The Alien Biker was removed 2026-11-26; Patches, still a
+    // community model, stands in.)
     const biker = list.find((m) => m.id === 'meshy_hoboclown');
     expect(buildSpec(biker).pack).toBe('meshy-community-characters');
     expect(buildSpec(biker).community).toEqual({ model: biker.source.community.model, date: biker.source.date });
     expect(buildSpec({ ...biker, source: { license: 'owned', author: 'the owner', date: '2026-11-01', url: null, file: biker.source.file } }).pack).toBe('meshy-owned');
-    expect(pirate.file.test('Meshy_AI_T_Pose_Pilot_0510_texture.fbx')).toBe(true);
-    expect(pirate.joints.LeftHandTip).toEqual([0.475, 0.748, -0.012]);
-    expect(pirate.joints.head_end).toEqual([0, 1, 0]);
+    // An unrigged download rigged here from its landmarks: the sheet ghost (2026-11-28; the Goblin, the Pirate and
+    // Flt. Lt. Ember were this example before their own models replaced them).
+    const ghost = buildSpec(list.find((m) => m.id === 'meshy_sheetghost'));
+    expect(ghost.pack).toBe('meshy-owned');
+    expect(ghost.file.test('Meshy_AI_TS2_Gliding_Sheet_Ghost_3D_20261126_image-to-3d-texture_remesh_tri.glb')).toBe(true);
+    expect(ghost.joints.LeftHandTip).toEqual([0.525, 0.735, 0.005]);
+    expect(ghost.joints.head_end).toEqual([0, 1, 0]);
     // A Meshy rigging task the owner ran (fetch-meshy.mjs downloads by it).
     const brannock = buildSpec(list.find((m) => m.id === 'meshy_brannock'));
     expect(brannock.meshy.rig).toBe('01a18a02-443b-7442-ad18-a291c82dc28c');
@@ -37,11 +36,13 @@ describe('character manifests', () => {
     const fredNow = buildSpec(list.find((m) => m.id === 'meshy_fishyfred'));
     expect(fredNow.pack).toBe('meshy-owned');
     expect(fredNow.file.test('Meshy_AI_bass_diver_3d_20261125_animated_mixamo_All_animation.glb')).toBe(true);
-    // The Iron Knight's model since 2026-11-05: a community download (no task IDs), its triangle budget its own.
+    // The Iron Knight's model since 2026-11-28: one of the owner's eleven "Merged Animations" downloads (no task IDs),
+    // saved under its Drive id since they share one name; its triangle budget its own.
     const knight = buildSpec(list.find((m) => m.id === 'meshy_knight'));
     expect(knight.meshy).toBeUndefined();
-    expect(knight.pack).toBe('meshy-community-characters');
-    expect(knight.triangles).toBe(11000);
+    expect(knight.pack).toBe('meshy-owned');
+    expect(knight.file.test('Meshy_AI_Meshy_Merged_Animations_1u3Vsb-lGE4-2RrWPIw361epdh17CojPP.glb')).toBe(true);
+    expect(knight.triangles).toBe(12000);
     expect(armsOf({ id: 'meshy_x', firstPerson: { arms: 'own' } })).toBe('meshy_x_fparms');
     // Everyone else wears the universal arms (grips auto-fit, owner 2026-11-18), tinted from the model.
     expect(armsOf({ id: 'meshy_x', body: 'male' })).toBe('ranger_arms_m');
@@ -52,10 +53,12 @@ describe('character manifests', () => {
   });
 
   it('catch mistakes with a message saying what is wrong', () => {
-    const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_pilot.json'), 'utf8'));
-    expect(manifestProblems(good, 'meshy_pilot.json')).toEqual([]);
+    const good = JSON.parse(readFileSync(join(MANIFEST_DIR, 'meshy_sheetghost.json'), 'utf8'));
+    // Kept in its own texture layout here (the ghost ships rebaked), so the colour-map boxes below apply.
+    delete good.fixes.surface;
+    expect(manifestProblems(good, 'meshy_sheetghost.json')).toEqual([]);
     const bad = { ...good, body: 'robot', source: { ...good.source, license: 'CC-BY' }, fixes: { ...good.fixes, wings: true, hands: { curl: 9 } }, landmarks: { ...good.landmarks, L: good.landmarks.L.slice(1) } };
-    const p = manifestProblems(bad, 'meshy_pilot.json');
+    const p = manifestProblems(bad, 'meshy_sheetghost.json');
     expect(p.join('\n')).toMatch(/body: male or female/);
     expect(p.join('\n')).toMatch(/source.license/);
     expect(p.join('\n')).toMatch(/fixes.wings: unknown/);
@@ -63,54 +66,54 @@ describe('character manifests', () => {
     expect(p.join('\n')).toMatch(/landmarks.L: 10 points/);
     expect(manifestProblems(good, 'meshy_dog.json').join('\n')).toMatch(/does not match the file name/);
     // A player look says what it is (Character Select's group); an NPC-only body needn't.
-    expect(manifestProblems({ ...good, group: undefined }, 'meshy_pilot.json').join('\n')).toMatch(/group: what the character is/);
-    expect(manifestProblems({ ...good, group: 'pets' }, 'meshy_pilot.json').join('\n')).toMatch(/group: what the character is/);
-    expect(manifestProblems({ ...good, group: undefined, use: 'npc' }, 'meshy_pilot.json')).toEqual([]);
+    expect(manifestProblems({ ...good, group: undefined }, 'meshy_sheetghost.json').join('\n')).toMatch(/group: what the character is/);
+    expect(manifestProblems({ ...good, group: 'pets' }, 'meshy_sheetghost.json').join('\n')).toMatch(/group: what the character is/);
+    expect(manifestProblems({ ...good, group: undefined, use: 'npc' }, 'meshy_sheetghost.json')).toEqual([]);
     // The far copy's share (main's character-lod.mjs).
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 0.45 } }, 'meshy_pilot.json')).toEqual([]);
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 1 } }, 'meshy_pilot.json').join('\n')).toMatch(/fixes.lod: 0.15–0.6/);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 0.45 } }, 'meshy_sheetghost.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, lod: 1 } }, 'meshy_sheetghost.json').join('\n')).toMatch(/fixes.lod: 0.15–0.6/);
     // A look's own pistol hold (2026-11-26): forward / down / out, each within 0.3 m.
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { out: -0.1 } } }, 'meshy_pilot.json')).toEqual([]);
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { out: -0.4 } } }, 'meshy_pilot.json').join('\n')).toMatch(/fixes.holdPistol.out/);
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { in: 0.1 } } }, 'meshy_pilot.json').join('\n')).toMatch(/fixes.holdPistol: \{ forward, down, out \}/);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { out: -0.1 } } }, 'meshy_sheetghost.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { out: -0.4 } } }, 'meshy_sheetghost.json').join('\n')).toMatch(/fixes.holdPistol.out/);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, holdPistol: { in: 0.1 } } }, 'meshy_sheetghost.json').join('\n')).toMatch(/fixes.holdPistol: \{ forward, down, out \}/);
     expect(buildSpec({ ...good, fixes: { ...good.fixes, lod: 0.45 } }).lod).toBe(0.45);
     // A hand bent as one, whatever gaps are found.
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { r: { mitten: true, curl: 1.2 } } } }, 'meshy_pilot.json')).toEqual([]);
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { mitten: 'yes' } } }, 'meshy_pilot.json').join('\n')).toMatch(/fixes.hands.mitten/);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { r: { mitten: true, curl: 1.2 } } } }, 'meshy_sheetghost.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { mitten: 'yes' } } }, 'meshy_sheetghost.json').join('\n')).toMatch(/fixes.hands.mitten/);
     // A fanned hand's fingers brought together as it closes (a share, 0-1).
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { scale: 0.8, together: 1, r: { curl: 0.6 } } } }, 'meshy_pilot.json')).toEqual([]);
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { together: 2 } } }, 'meshy_pilot.json').join('\n')).toMatch(/fixes.hands.together/);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { scale: 0.8, together: 1, r: { curl: 0.6 } } } }, 'meshy_sheetghost.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, hands: { together: 2 } } }, 'meshy_sheetghost.json').join('\n')).toMatch(/fixes.hands.together/);
     // Blue badges painted out: every one, or only inside boxes of the download's colour map (a flag beside the badge
     // stays); boxes are the download's layout, so not with a rebake.
-    const scrubbed = (scrubBlue, surface) => manifestProblems({ ...good, fixes: { ...good.fixes, scrubBlue, ...(surface ? { surface } : {}) } }, 'meshy_pilot.json');
+    const scrubbed = (scrubBlue, surface) => manifestProblems({ ...good, fixes: { ...good.fixes, scrubBlue, ...(surface ? { surface } : {}) } }, 'meshy_sheetghost.json');
     expect(scrubbed('#a8582a')).toEqual([]);
     expect(scrubbed({ color: '#e6e6e6', within: [[0.635, 0.512, 0.678, 0.559]] })).toEqual([]);
     for (const bad of ['blue', { color: '#e6e6e6' }, { color: '#e6e6e6', within: [[0.7, 0.5, 0.6, 0.6]] }, { color: '#e6e6e6', within: [[0, 0, 1.2, 1]] }, { color: '#e6e6e6', within: [[0, 0, 1, 1]], edge: 2 }]) expect(scrubbed(bad).join('\n'), JSON.stringify(bad)).toMatch(/fixes.scrubBlue/);
     expect(scrubbed({ color: '#e6e6e6', within: [[0, 0, 1, 1]] }, 'rebake').join('\n')).toMatch(/fixes.scrubBlue/);
     expect(buildSpec({ ...good, fixes: { ...good.fixes, scrubBlue: { color: '#e6e6e6', within: [[0, 0, 0.5, 0.5]] } } }).scrubBlue).toEqual({ color: '#e6e6e6', within: [[0, 0, 0.5, 0.5]] });
     // Colours shifted by rule (Azure Sentinel's teal lenses to amber): hue in degrees, saturation and lightness 0-1.
-    const recolored = (recolor) => manifestProblems({ ...good, fixes: { ...good.fixes, recolor } }, 'meshy_pilot.json');
+    const recolored = (recolor) => manifestProblems({ ...good, fixes: { ...good.fixes, recolor } }, 'meshy_sheetghost.json');
     const lenses = [{ hue: [160, 200], sat: [0.3, 1], toHue: 36, satScale: 1.1 }, { light: [0.05, 0.42], toSat: 0.28, amount: 0.75 }];
     expect(recolored(lenses)).toEqual([]);
     for (const bad of [[], {}, [{ hue: [0, 400] }], [{ sat: [0.8, 0.2] }], [{ toHue: 360 }], [{ amount: 2 }], [{ lightScale: 0 }], [{ shade: 1 }]]) expect(recolored(bad).join('\n'), JSON.stringify(bad)).toMatch(/fixes.recolor/);
     expect(buildSpec({ ...good, fixes: { ...good.fixes, recolor: lenses } }).recolor).toEqual(lenses);
     // This look's own hands and arms on a gun (GripTune), written into its generated look.
     const grip = { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4 };
-    expect(manifestProblems({ ...good, fixes: { ...good.fixes, grip } }, 'meshy_pilot.json')).toEqual([]);
+    expect(manifestProblems({ ...good, fixes: { ...good.fixes, grip } }, 'meshy_sheetghost.json')).toEqual([]);
     expect(looksSource([{ ...good, fixes: { ...good.fixes, grip } }])).toContain('grip: { elbowDown: 0.3, supportPistol: [0, 0.04, -0.08], curlL: 1.4, rollR: 0.4');
     // The grip fit's offsets (content/grip-fit.json) go in their own table, without the ones the manifest sets itself.
-    const fitted = gripFitOf('meshy_pilot')?.grip ?? {};
+    const fitted = gripFitOf('meshy_sheetghost')?.grip ?? {};
     const table = gripFitSource([{ ...good, fixes: { ...good.fixes, grip } }]);
     for (const [k, v] of Object.entries(fitted)) expect(table.includes(`${k}: [${v.join(', ')}]`)).toBe(!(k in grip));
     expect(table).toMatch(/arms: \{ skin: '#[0-9a-f]{6}'/);
-    const gp = (g) => manifestProblems({ ...good, fixes: { ...good.fixes, grip: g } }, 'meshy_pilot.json').join('\n');
+    const gp = (g) => manifestProblems({ ...good, fixes: { ...good.fixes, grip: g } }, 'meshy_sheetghost.json').join('\n');
     expect(gp({ wrist: 1 })).toMatch(/fixes.grip: \{/);
     expect(gp({ curlR: 2 })).toMatch(/fixes.grip.curlR/);
     expect(gp({ supportLong: [0, 0.3, 0] })).toMatch(/fixes.grip.supportLong/);
     expect(gp({ rollL: 'a' })).toMatch(/fixes.grip.rollL/);
     // Hard parts bound whole to one joint in the download's own pose (fixes.skin.rigid: Starfarer's back pack).
     const pack = { joint: 'spine_03', box: [[-0.1, 0.6, -0.15, 0.1, 0.8, -0.04]], blend: 0.025, except: '^Head$' };
-    const rigid = (r) => manifestProblems({ ...good, fixes: { ...good.fixes, skin: { rigid: r } } }, 'meshy_pilot.json').join('\n');
+    const rigid = (r) => manifestProblems({ ...good, fixes: { ...good.fixes, skin: { rigid: r } } }, 'meshy_sheetghost.json').join('\n');
     expect(rigid([pack])).toBe('');
     expect(rigid([{ joint: 'spine_03', box: [-0.1, 0.6, -0.15, 0.1, 0.8, -0.04] }])).toBe('');
     for (const bad of [[], [{ ...pack, joint: 'spine_09' }], [{ ...pack, box: [0.1, 0.6, -0.15, -0.1, 0.8, -0.04] }], [{ ...pack, box: [[0, 0, 0]] }], [{ ...pack, blend: 0.5 }], [{ ...pack, except: '(' }], [{ ...pack, wings: true }], pack]) expect(rigid(bad), JSON.stringify(bad)).toMatch(/fixes.skin.rigid/);

@@ -10,31 +10,25 @@
   "nameTheme": "undead",
   "bio": "Wrapped for eternity, rebooted for Tuesday. Bandages are load-bearing.",
   "body": "male",
-  "notes": "Drive batch of 2026-11-01 evening, second drop (\"Mummy Bot\", rigged). A rigged Meshy download (\"All Animations\": Mixamo joint names, read as Meshy's; its finger joints and two clips are not used: the hands are fitted by hands.mjs). Its extra head joints (wrappings) ride the head. Name a placeholder from the Roster Board. Moved to machines (2026-11-26, owner).",
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Meshy Merged Animations\", as Meshy names the download; Drive 1Nt_448qp1xV9bDmt39I7MS73v3RD-9Kv, uploaded 2026-11-27, saved here as Meshy_AI_Meshy_Merged_Animations_<Drive id>.glb since all eleven share one name; matched to this character from a contact sheet beside its old model; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships.",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "community": {
-      "model": "Mummy Bot"
-    },
-    "date": "2026-11-01",
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-27",
     "url": null,
-    "file": "^Meshy_AI_Mummy_Bot_All_Animations\\.glb$"
+    "file": "^Meshy_AI_Meshy_Merged_Animations_1Nt_448qp1xV9bDmt39I7MS73v3RD-9Kv\\.glb$"
   },
   "finish": {
     "metallic": 0.2,
     "roughness": 0.7
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
     "headShare": 0.16,
     "handsShare": 0.1,
     "normalSize": 1024,
     "lod": 0.25,
-    "feet": true,
-    "hands": {
-      "scale": 0.65,
-      "curl": 1
-    }
+    "feet": true
   }
 }

@@ -1,0 +1,34 @@
+{
+  "id": "meshy_churchill",
+  "kind": "character",
+  "use": "player",
+  "order": 300,
+  "name": "Winston Churchill",
+  "look": "core.churchill",
+  "group": "historical",
+  "blood": "red",
+  "nameTheme": "townsfolk",
+  "bio": "Will fight on the beaches, in the fields and in the streets. Will not put out the cigar.",
+  "body": "male",
+  "notes": "New 2026-11-28 (owner, 2026-11-28: a real person in Historical's famous-people block, by his real name; after Theodore Roosevelt). Drive intake (\"ChurchillRigged\", as Meshy names the download; Drive 1NbDf3LRuxwYR1NkstnXI7_InVekWvBTO; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Bio is ours. Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-28",
+    "url": null,
+    "file": "^Meshy_AI_ChurchillRigged_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.1,
+    "roughness": 0.6
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

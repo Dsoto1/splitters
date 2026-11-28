@@ -10,24 +10,25 @@
   "nameTheme": "alien",
   "bio": "Bounces off walls, ceilings and, given half a chance, you.",
   "body": "male",
-  "notes": "Downloaded by hand (owner, 2026-10-29) as an unrigged textured GLB; rigged here from landmarks found on the mesh. Queue note: for Ricochet.",
+  "notes": "New model 2026-11-27 (owner's character round (d), 2026-11-27/28: replaced in place, id, name, row and stats kept). Drive intake (\"Ricochet Pearlescent 15k\", as Meshy names the download; Drive 1gwOIuz3jlMavgyTY6bNbGp2rumXvRFhT; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"). The model before it (Meshy Community CC0) no longer ships.",
   "source": {
-    "license": "CC0",
-    "author": "Meshy community (author not recorded; CC0 per the owner)",
-    "date": "2026-10-29",
-    "url": "https://www.meshy.ai/posts/019f9d4e-cd8d-787b-8fc1-ec0c33402aa8",
-    "community": {
-      "model": "Low Poly T Pose"
-    },
-    "modelUrl": "https://drive.usercontent.google.com/download?id=14CymicXaZD7gfPJzIAdWRRyQH_h4Ia6i&export=download&confirm=t",
-    "file": "^Meshy_AI_Low_Poly_T_Pose_\\d+_(image-to-3d-)?texture\\.glb$"
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-27",
+    "url": null,
+    "file": "^Meshy_AI_Ricochet_Pearlescent_15k_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
   },
   "finish": {
     "metallic": 0.05,
     "roughness": 0.5
   },
   "fixes": {
-    "triangles": 11000,
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
     "feet": true
   }
 }

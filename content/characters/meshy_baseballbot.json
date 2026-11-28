@@ -1,0 +1,34 @@
+{
+  "id": "meshy_baseballbot",
+  "kind": "character",
+  "use": "player",
+  "order": 296,
+  "name": "Slugger Boltsworth",
+  "look": "core.baseballbot",
+  "group": "machines",
+  "blood": "oil",
+  "nameTheme": "robot",
+  "bio": "Swings for the fences, then for you. His batting average is mostly headshots.",
+  "body": "male",
+  "notes": "New 2026-11-27 (owner's character round (d): \"a biped Baseball Robot (new; the rolling one stays)\"; beside the rolling Baseball Robot in Machines). Drive intake (\"robotic baseball player 10k\", as Meshy names the download; Drive 1v4Dhj7G20f7GBSTmVveecg_PM3Y-0eaR; rigged and animated on Meshy: Mixamo joint names read as Meshy's; its clips are not used, the hands are fitted by hands.mjs). Name and bio are ours (the owner can rename it). Licence: Meshy, owned: the owner's own Meshy model (owner, 2026-11-27: \"all made by the owner in Meshy\"; standing rule since 2026-11-22).",
+  "source": {
+    "license": "owned",
+    "author": "The owner (Meshy, owner's account)",
+    "date": "2026-11-27",
+    "url": null,
+    "file": "^Meshy_AI_robotic_baseball_player_10k_\\d+_animated_mixamo_All_animation( \\(1\\))?\\.glb$"
+  },
+  "finish": {
+    "metallic": 0.35,
+    "roughness": 0.45
+  },
+  "fixes": {
+    "triangles": 12000,
+    "surface": "rebake",
+    "headShare": 0.16,
+    "handsShare": 0.1,
+    "normalSize": 1024,
+    "lod": 0.25,
+    "feet": true
+  }
+}

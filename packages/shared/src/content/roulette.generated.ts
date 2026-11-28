@@ -69,6 +69,13 @@ export const ROULETTE_DATA = {
     'core.darkastronaut': 'core.plasma',
     'core.trex': 'core.smg',
     'core.fishyfred': 'core.bubble_blaster',
+    'core.baseballbot': 'core.baseball_bat',
+    'core.cardinal': 'core.burst_rifle',
+    'core.gladiator': 'core.spear',
+    'core.tesla': 'core.arc_caster',
+    'core.churchill': 'core.smg',
+    'core.patton': 'core.revolver',
+    'core.sheetghost': 'core.freeze_ray',
   },
   groups: {
     soldiers: 'core.rifle',
