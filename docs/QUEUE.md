@@ -57,7 +57,7 @@ Everything else keeps its place below these.
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- (none; train check/train-20261127-220103 landed b26d5ec 2026-11-27: mapmaker-small-1127 (Match Setup by sector, breakable-wall mark, Layout chips) + fixes-20261127c (explosion see-through, gun drops to the ground, speeder exit behind, water in play on Norman Shores))
+- `wip/weapons-replace-1` · da0f6394 · run 46086838600 (Singularity Cannon, RPG for Blast Rockets/Guided, Grapple claw, medkit, ammo cache)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
