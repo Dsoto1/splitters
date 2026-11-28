@@ -1,7 +1,7 @@
 // The Stair End Bay (3 floors)'s First-floor door: Double door (St. John's step 7c; owner, 2026-11-21: "the under
 // stair could be removed to make room for a larger double door"): the second stair stands as the Stairwell (open
 // under), its upper flight's top five steps 2.75 m over the first floor, and the door in the bay's outer wall is 3 m
-// wide, two Slim Oak Doors standing open, the second a left-hand one. Bots and players go through it both ways, under
+// wide, two Slim Oak Doors standing open (a double door's pair: the left one mirrored, no post between them). Bots and players go through it both ways, under
 // either leaf; the stair still climbs; nothing of it stands outside the bay.
 import { beforeAll, describe, expect, it } from 'vitest';
 import {
@@ -52,12 +52,12 @@ function miss(nav: NavWorld, a: Vec3, b: Vec3): number {
 const v = (x: number, y: number, z: number): Vec3 => ({ x, y, z });
 
 describe("the Stair End Bay (3 floors)'s Double door (St. John's skyway, step 7c)", () => {
-  it('the left-hand Slim Oak Door is the right-hand one mirrored: the same size, a passage, its leaf on the other jamb', () => {
-    const right = getKitFamily('kit.door.oak_slim_open')!;
-    const left = getKitFamily('kit.door.oak_slim_open_left')!;
-    expect(left.passage).toEqual(right.passage);
-    expect(getProp('kit.door.oak_slim_open_left')?.size).toEqual(getProp('kit.door.oak_slim_open')?.size);
-    expect(left.surface).toBe(right.surface);
+  it("the double door's leaves are the Slim Oak Door (open), the left one mirrored: the same size, passages, surface", () => {
+    for (const id of ['kit.door.oak_slim_open_pair', 'kit.door.oak_slim_open_pair_left']) {
+      expect(getKitFamily(id)?.passage, id).toEqual(getKitFamily('kit.door.oak_slim_open')!.passage);
+      expect(getKitFamily(id)?.surface, id).toBe(getKitFamily('kit.door.oak_slim_open')!.surface);
+      expect(getProp(id)?.size, id).toEqual(getProp('kit.door.oak_slim_open')?.size);
+    }
   });
 
   it('the door is 3 m wide in the outer wall with standing room under the stair beside it; the stair keeps its steps', () => {

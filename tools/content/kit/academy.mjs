@@ -57,7 +57,8 @@ const LEAF_T = 0.07;
 /**
  * An oak door in its frame. Settings `g`: `swing` (degrees the leaf stands open, toward +z), `leaf` ('plank',
  * 'glazed', 'panel', 'framed' or 'shop'), `handle` ('ring', 'knob' or 'pull'), `back` (how far the frame stands behind the prop's centre, m: 0 in the wall's plane), `hinge` ('right', the +x
- * jamb, as first built; 'left', the −x jamb: the same door mirrored, for a double door's second leaf). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
+ * jamb, as first built; 'left', the −x jamb: the same door mirrored, for a double door's second leaf), `pair` (true: no post on the latch side, the head running to
+ * the edge: a leaf of a double door, its partner's leaf meeting it). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
  * glazed leaf's pane), `jitter`, `grime`.
  */
 export function doorMesh(seed, size, g, look, level) {
@@ -98,9 +99,10 @@ function rightHandDoorMesh(seed, size, g, look, level) {
   if (level === 0 && (g.swing ?? 0) < 60) m.boxes = [[-X, 0, -FRAME_Z, X, h, FRAME_Z]];
   // The frame: two posts and a head, the full depth.
   const fc = tone(frameC, 1);
-  box(m, [-X, 0, -FRAME_Z - back], [-X + FRAME, h, FRAME_Z - back], fc, ['ny']);
+  // (`pair`: one leaf of a double door, no post on its latch side: the two leaves meet with nothing between them.)
+  if (!g.pair) box(m, [-X, 0, -FRAME_Z - back], [-X + FRAME, h, FRAME_Z - back], fc, ['ny']);
   box(m, [X - FRAME, 0, -FRAME_Z - back], [X, h, FRAME_Z - back], fc, ['ny']);
-  box(m, [-X + FRAME, h - FRAME, -FRAME_Z - back], [X - FRAME, h, FRAME_Z - back], fc, ['nx', 'px']);
+  box(m, [g.pair ? -X : -X + FRAME, h - FRAME, -FRAME_Z - back], [X - FRAME, h, FRAME_Z - back], fc, g.pair ? ['px'] : ['nx', 'px']);
   // The leaf, built shut (x from the latch edge to the hinge edge, z about the wall's middle) and turned on its
   // hinges: the pin is at the hinge edge on the room (+z) face.
   const hx = X - FRAME - 0.006;
