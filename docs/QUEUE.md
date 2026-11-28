@@ -60,7 +60,6 @@ Everything else keeps its place below these.
 - `wip/armory-2` · 4a0499f7 · run 46104515126 (Test my loadout in the Armory, Profile's Weapons button, two-column Profile, 59 weapon descriptions)
 
 (train check/train-20261128-044628 landed a190007 2026-11-28: historical-names + weapons-replace-2; its editor e2e flow failed once and passed on the re-run: being root-caused on wip/editor-flow-1128.)
-- `wip/combat-rules-1128` · 5cbab975 · run 46106841843 (combat rules for map makers, GUNPLAY G5; map format v56; attempt 2 after the arsenal flake)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
@@ -251,6 +250,7 @@ Everything else keeps its place below these.
 - ? · B · Packed inputs to cut upload bandwidth.
 
 ## Done (last week)
+- **2026-11-28** train check/train-20261128-055944 (61d2b51, run 46114561644), landed by the splitters lead: combat rules for map makers (`wip/combat-rules-1128`, map format v56): headshots, ammo, reloads, bullets through walls, damage and health scale, set in MapMaker and overridable in Match Setup. Left: the dedicated server's rules list (`serverRules.ts`) has no rows for them yet; the menu's first JS is at its 800 kB gzip budget (no headroom).
 - **2026-11-28** `wip/stjohns-7c` (green 880f238f, run 46092755070), landed alone by the splitters lead: St. John's 7c: a double door under the stair at the skyway's west end (a Stairwell open under its upper flight, a Double door choice on the Stair End Bay, a left-hand open Slim Oak Door; the door generator's hinge side is a generic option).
 - **2026-11-27** `wip/stjohns-14` (green deb0d367, run 46066243281), landed alone by the splitters lead: St. John's step 14: the new Clock Tower, forward set piece (tower half a cell out, a back hall at 4 and 8 m), the Carriageway's East side Open on the first floor, so the skyway runs through to the bathroom hall and Welles; the swinging door under the skyway removed. The 7c double door is not built yet: its kit draft is `docs/map-briefs/st_johns/7c-double-door-draft.patch` (a Stairwell open under, a Double door choice, a left-hand open Slim Oak Door).
 - **2026-11-27** `wip/fixes-20261126b` (green 1c4a6183, run 45914831668), landed alone by the splitters lead: the hostcontrols Bots-window flake fixed in the flow (a late mouse lock made two Esc presses land inside the game's 250 ms guard); St. Jasper's classrooms: the door-side desk row is a row of three with its hall-end desk left out and moved 0.18 m toward the windows, so players and bots pass the open leaf (new kit families and set-piece `mirrorModel`).
