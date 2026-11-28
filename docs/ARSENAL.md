@@ -236,7 +236,7 @@ and muzzle changed. The models they replaced are no longer built (the kit models
 | Orange Automatic Plasma Rifle | Plasma Rifle | 12k / 50k, 0.85 m, its orange panels lit (`glow`) | a holographic sight on its top rail (the tool's mount), a red dot offered; was the old model's own sight box |
 | Tactical Flare Gun | Flare Gun, and the Airstrike Flare in your hands | 9k / 40k, 0.30 m, grip raked 24° | its notch and post, fitted (no optic: the HUD's dot kept) |
 | 40mm Revolving Cylinder Grenade Launcher | Grenade Launcher | 12k / 50k, 0.85 m | its flip-ups, fitted (no optic) |
-| Micro-Missile Swarm Launcher | Swarm Launcher | 14k / 60k, 0.95 m, its cyan lights lit (`glow`) | its nubs, fitted (no optic) |
+| Micro-Missile Swarm Launcher | Swarm Launcher | 14k / 60k, 0.95 m, its cyan lights lit (`glow`); taller than the kit launcher: drawn further out and lower (11 % of the screen at most) | its nubs, fitted (no optic) |
 | Scope | the rifle scope and long-range scope | 5k / 24k, 0.32 m | — |
 | Brass Sentinel Scope | the Brass Sentinel scope | 6k / 30k, 0.30 m | — |
 

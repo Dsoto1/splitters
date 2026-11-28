@@ -34,7 +34,7 @@
     "model": "guns/swarm_launcher.glb",
     "held": { "medium": "guns/swarm_launcher.medium.glb", "high": "guns/swarm_launcher.high.glb" },
     "fallback": "weapons/swarm.glb",
-    "viewOffset": [0.21, -0.23, 0.52],
+    "viewOffset": [0.22, -0.26, 0.62],
     "tracer": "#ffb347",
     "hold": { "style": "long", "grip": [0, -0.07, -0.165], "support": [0, -0.09, 0.29], "shoulder": [0, 0.11, -0.45] },
     "muzzleAt": [0, 0.08, 0.47],

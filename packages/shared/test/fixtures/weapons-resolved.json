@@ -3183,9 +3183,9 @@
      },
      "fallback": "weapons/swarm.glb",
      "viewOffset": [
-      0.21,
-      -0.23,
-      0.52
+      0.22,
+      -0.26,
+      0.62
      ],
      "tracer": "#ffb347",
      "hold": {
