@@ -22,3 +22,17 @@ describe('range picker', () => {
     expect(stepWeapon('core.not_listed', -1)).toBe(all[all.length - 1]);
   });
 });
+
+describe('lean range effects (fxMap.ts rangeEffects)', () => {
+  it('keeps every weapon and impact effect, leaves a match moment out unless the map has it', async () => {
+    const { mappedEffects, rangeEffects } = await import('../src/game/fxMap.ts');
+    const all = mappedEffects();
+    const lean = rangeEffects({ entities: [] });
+    expect(lean.length).toBeLessThan(all.length);
+    const key = (r: { pack: string; effect: string }) => `${r.pack}/${r.effect}`;
+    const kept = new Set(lean.map(key));
+    for (const r of mappedEffects((p) => !/^(impacts|weaponImpacts|explosions\.(grenade|rocket|plasma|flare|orb|disc)|lasting\.(fire\.(zone|flare)|smoke\.flare|cloud|status))/.test(p))) expect(kept.has(key(r))).toBe(true);
+    expect(rangeEffects({ entities: [{ kind: 'portal' }] }).length).toBeGreaterThanOrEqual(lean.length);
+    console.info(`range effects ${lean.length} of ${all.length}`);
+  });
+});

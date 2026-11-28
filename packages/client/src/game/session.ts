@@ -260,7 +260,7 @@ import { SessionAudio } from './sessionAudio.ts';
 import { topScorer } from '../audio/announcer.ts';
 import { LowHealthWarning } from './lowHealth.ts';
 import { WeatherAudio } from './weatherAudio.ts';
-import { footstepSoundId, impactSoundId, impactStyle } from './fxMap.ts';
+import { footstepSoundId, impactSoundId, impactStyle, rangeEffects } from './fxMap.ts';
 import { ScenarioState } from './scenarioState.ts';
 import { VISUAL_EVENTS } from './snapshotMerge.ts';
 import type { Transport } from './transport.ts';
@@ -2682,6 +2682,8 @@ export class GameSession {
           }
           for (const id of ids) void this.view.models.load(getWeapon(id).view.model, true).catch(() => undefined);
         }
+        // A lean range warms the effects a weapon, an impact or a pickup plays, not a match's moments (fxMap.ts rangeEffects).
+        if (this.opts.range && perfOn('rangelean')) this.view.effectsWanted = rangeEffects(loaded.map);
         this.view.buildMap(loaded.map, geometry);
         if (teams && (msg.rules.mode === 'core.ctf' || msg.rules.mode === 'core.forts' || msg.rules.mode === 'core.koth' || msg.rules.mode === 'core.elim' || msg.rules.mode === 'core.bomb' || msg.rules.mode === 'core.hostage' || msg.rules.mode === 'core.breakthrough')) this.modeHud = new ModeHud(this.hud, this.view, loaded.map, teams, msg.rules.mode, () => this.slot);
         // The end-of-match awards and the revenge and nemesis callouts (every mode: awardsHud.ts).

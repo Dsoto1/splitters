@@ -574,6 +574,8 @@ export class GameView {
   environment: EnvironmentVisuals | null = null;
   private viewmodel?: TransformNode;
   private viewWeapon?: string;
+  /** The effects warmed before the start (a lean range's: fxMap.ts rangeEffects); null: every one the map can play. */
+  effectsWanted: ReturnType<typeof mappedEffects> | null = null;
   /** The weapon in your hands as drawn (its ID), or null. */
   get heldWeapon(): string | null {
     return this.viewWeapon ?? null;
@@ -978,8 +980,9 @@ export class GameView {
       // Every effect content/vfx.json's map can play (impacts, explosions, moments of play, lightning, lasting ones),
       // a few a frame (`?perfoff=startslices`: all at once): in one go they were 350 ms of the welcome's task, MapMaker's
       // Test start's longest freeze (docs/PERF_MAPMAKER_TRACE_2026-11-15.md fix 5).
-      if (!perfOn('startslices')) for (const r of mappedEffects()) this.vfx.warm(r.pack, r.effect);
-      else void sliced(mappedEffects(), (r) => this.vfx.warm(r.pack, r.effect), START_SLICE_MS, () => this.scene.isDisposed);
+      const fx = this.effectsWanted ?? mappedEffects();
+      if (!perfOn('startslices')) for (const r of fx) this.vfx.warm(r.pack, r.effect);
+      else void sliced(fx, (r) => this.vfx.warm(r.pack, r.effect), START_SLICE_MS, () => this.scene.isDisposed);
     });
   }
 
@@ -1117,8 +1120,9 @@ export class GameView {
         const end = this.vfx.warm(r.pack, r.effect, true);
         if (end) ends.push(end);
       };
-      if (perfOn('startslices')) await sliced(mappedEffects(), start, START_SLICE_MS, () => this.scene.isDisposed);
-      else for (const r of mappedEffects()) start(r);
+      const fx = this.effectsWanted ?? mappedEffects();
+      if (perfOn('startslices')) await sliced(fx, start, START_SLICE_MS, () => this.scene.isDisposed);
+      else for (const r of fx) start(r);
       effects = ends.length;
       await this.afterFrames(4, 2500);
       await ready();

@@ -245,17 +245,39 @@ export function lastingKeys(): string[] {
   return Object.keys(lasting);
 }
 
-/** Every pack effect the map can play, for warming up a match's effects before the first fight. */
-export function mappedEffects(): FxRef[] {
+/**
+ * Every pack effect the map can play, for warming up a match's effects before the first fight. `skip`: entries (by
+ * their path in the map, `gameplay.streak`) left out; an effect any other entry plays stays.
+ */
+export function mappedEffects(skip?: (path: string) => boolean): FxRef[] {
   const seen = new Map<string, FxRef>();
-  const visit = (r: unknown) => {
+  const visit = (r: unknown, path: string) => {
     if (!r || typeof r !== 'object') return;
-    if ('pack' in r && 'effect' in r) seen.set(`${(r as FxRef).pack}/${(r as FxRef).effect}`, r as FxRef);
-    else for (const x of Object.values(r)) visit(x);
+    if ('pack' in r && 'effect' in r) {
+      if (!skip?.(path)) seen.set(`${(r as FxRef).pack}/${(r as FxRef).effect}`, r as FxRef);
+    } else for (const [k, x] of Object.entries(r)) visit(x, path ? `${path}.${k}` : k);
   };
   const { muzzle: _m, ...rest } = FX_MAP as Record<string, unknown>;
-  visit(rest);
+  visit(rest, '');
   return [...seen.values()];
+}
+
+/**
+ * A lean range's effects (alone on the Practice range or Test my loadout: docs/PERF_96.md, "The lean range"): every
+ * effect a weapon, an impact or a pickup plays, without the moments of a match (a streak, a spawn shield, the team
+ * auras), vehicles and wrecks, traps, and portals and pads unless the map has them.
+ * One left out that does play builds its shaders then (a moment's hitch), as before the warm-up existed.
+ */
+export function rangeEffects(map: { entities: readonly { kind: string; model?: string }[] }): FxRef[] {
+  const kinds = new Set(map.entities.map((e) => e.kind));
+  const skip = (p: string): boolean => {
+    if (/^gameplay\.(streak|portal|pad|trap|zipline)/.test(p)) return !kinds.has(p.split('.')[1]!);
+    if (/^lasting\.(portal|pad)$/.test(p)) return !kinds.has(p.split('.')[1]!);
+    if (/^lasting\.(charge|shield|aura|fire\.(vehicle|wreck|trap)|smoke\.wreck)/.test(p)) return true;
+    if (/^explosions\.(core\.tank_cannon|vehicle|bomb|trap|barrel|core\.ammo_box)$/.test(p)) return true;
+    return false;
+  };
+  return mappedEffects(skip);
 }
 
 /** The effect packs (public/vfx/<pack>.json) the map plays from, for loading with the match. */
