@@ -28,16 +28,18 @@
     "status": { "kind": "slow", "seconds": 2.5 }
   },
   "view": {
-    "model": "guns/glue_gun.glb",
-    "viewOffset": [0.2, -0.18, 0.42],
+    "model": "guns/biohazard_goo_gun.glb",
+    "muzzleAt": [0, 0.04, 0.42],
+    "held": { "medium": "guns/biohazard_goo_gun.medium.glb", "high": "guns/biohazard_goo_gun.high.glb" },
+    "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#ff6ad0",
-    "hold": { "style": "pistol", "grip": [0, -0.05, -0.11], "support": [-0.02, -0.06, -0.1] },
+    "hold": { "style": "long", "grip": [0, -0.04, -0.15], "support": [0, -0.02, 0.12], "shoulder": [0, 0.04, -0.42] },
     "fallback": "weapons/goo_gun.glb",
     "sound": "fire.goo.b"
   },
   "notes": {
     "description": "Sticky goo that glues people in place. Cover a doorway and watch them wade.",
     "group": "The extended arsenal: every one fires differently. 6: lobbers.",
-    "model": "The owner's Mystical Glue Gun (Meshy, owned), the sci-fi kit gun as the fallback."
+    "model": "The owner's Tactical Biohazard Goo Gun (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, a long gun now (held at the shoulder; the Mystical Glue Gun was a pistol), held copies a 50,000-triangle cut, its goo tank lit (glow). The kit goo gun is the fallback."
   }
 }

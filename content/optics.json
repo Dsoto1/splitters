@@ -80,7 +80,7 @@
     "core.laser_blaster": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot"] },
     "core.runebreaker": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.laser_rifle": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo", "x2"] },
-    "core.bubble_blaster": { "hasSight": false, "default": "reddot", "allowed": ["reddot", "holo"] },
+    "core.bubble_blaster": { "hasSight": "irons", "default": "reddot", "allowed": ["reddot", "holo"] },
     "core.singularity": {
       "hasSight": false,
       "default": "reddot",
@@ -95,8 +95,8 @@
       "window": { "at": [0, 0.189, -0.118], "half": [0.024, 0.024], "round": true, "lens": [-0.117, 0.175], "reason": "the model's own scope tube on its top (owner, 2026-11-27: a holographic box was built on top of it): its eyepiece measured across the barrel (x -0.03 to 0.026, y 0.163 to 0.215 at z -0.11), looked through at 1x with a holographic mark; the tube and its lenses (z -0.117 to 0.175) are the lens, hidden by the window's clip while aimed" }
     },
     "core.flak": { "hasSight": false, "default": "holo", "allowed": ["holo", "reddot"] },
-    "core.disc_launcher": { "hasSight": false, "default": "holo", "allowed": ["holo", "reddot"] },
-    "core.arena_disc": { "hasSight": false, "default": "holo", "allowed": ["holo", "reddot"] },
+    "core.disc_launcher": { "hasSight": "irons", "default": "irons", "allowed": ["irons"] },
+    "core.arena_disc": { "hasSight": "irons", "default": "holo", "allowed": ["holo", "reddot"] },
     "core.plasma": { "hasSight": "irons", "default": "holo", "allowed": ["holo", "reddot"] },
     "core.battle_rifle": {
       "hasSight": "irons",
@@ -126,15 +126,15 @@
     "core.nova6": { "hasSight": "optic", "default": "scope", "allowed": ["scope"] },
     "core.lever_action": {
       "hasSight": "irons",
-      "default": "sentinel",
-      "allowed": ["sentinel"],
-      "mount": { "at": [0, 0.098, 0.02], "scale": 0.7, "reason": "the repeater's top rail (y 0.098 from z -0.13 to 0.45, its sights at the ends): the scope's base on it just ahead of the receiver" }
+      "default": "rifle_scope",
+      "allowed": ["rifle_scope"],
+      "mount": { "at": [0, 0.098, 0.04], "scale": 0.7, "reason": "the repeater's top rail (y 0.098 from z -0.13 to 0.45, its sights at the ends): the plain rifle scope's low rings on it just ahead of the receiver, the tube 2.7 cm over the rail (owner, 2026-11-28: the Brass Sentinel stood out too far on its tall mount; scopes plain, not steampunk)" }
     },
     "core.crossbow": {
       "hasSight": "irons",
-      "default": "sentinel",
-      "allowed": ["sentinel"],
-      "mount": { "at": [0, 0.09, -0.01], "scale": 0.7, "reason": "the arbalest's top rail (y 0.090 from z -0.10 to 0.38): the scope's base on it behind where the string rests drawn" }
+      "default": "rifle_scope",
+      "allowed": ["rifle_scope"],
+      "mount": { "at": [0, 0.09, 0.0], "scale": 0.7, "reason": "the arbalest's top rail (y 0.090 from z -0.10 to 0.38): the plain rifle scope's low rings on it behind where the string rests drawn, the tube 2.7 cm over the rail (owner, 2026-11-28: the Brass Sentinel stood out too far on its tall mount; scopes plain, not steampunk)" }
     },
     "core.woodland_smg": { "hasSight": "irons", "default": "irons", "allowed": ["irons"] },
     "core.desert_carbine": {

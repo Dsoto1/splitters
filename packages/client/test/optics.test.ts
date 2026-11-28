@@ -14,18 +14,19 @@ import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
  */
 const CARRIES: Record<OpticKindId, string[]> = {
   // The Woodland SMG down its own iron sights (owner, 2026-11-27: a red dot stood on its rear sight, "two sights stacked").
-  irons: ['core.amarillo', 'core.auto_shotgun', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.gilded_pistol', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
+  irons: ['core.amarillo', 'core.auto_shotgun', 'core.compact_carbine', 'core.disc_launcher', 'core.flintlock_pistol', 'core.freeze_ray', 'core.gilded_pistol', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
   // The weapons intake's guns (owner, 2026-11-22, "2a"): in their models' own sights.
   reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.burst_rifle', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'],
-  holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
+  holo: ['core.arc_caster', 'core.arena_disc', 'core.flak', 'core.plasma'],
   scope: ['core.nova6'],
   sniper: [],
   // Built for the loadout's choice (step 4): no gun carries it by default.
   x2: [],
   // The owner's scope models on the rails of the scoped guns whose new models have none (weapon replacements batch 3).
-  rifle_scope: ['core.battle_rifle', 'core.marksman'],
+  // The plain scope on the lever-action and crossbow too (owner, 2026-11-28: the Brass Sentinel stood out too far).
+  rifle_scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman'],
   long_scope: ['core.railgun', 'core.sniper'],
-  sentinel: ['core.crossbow', 'core.lever_action'],
+  sentinel: [],
 };
 /**
  * The choice each gun offers in the loadout (docs/GUNPLAY_SPEC.md §15, "Optic choice"), its default first. Guns not named
@@ -55,7 +56,6 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.singularity': ['reddot', 'holo'],
   'core.flak': ['holo', 'reddot'],
   'core.plasma': ['holo', 'reddot'],
-  'core.disc_launcher': ['holo', 'reddot'],
   'core.arena_disc': ['holo', 'reddot'],
   // In the model's own sight (its window): the mark changes, nothing is built.
   'core.arc_caster': ['holo', 'reddot'],

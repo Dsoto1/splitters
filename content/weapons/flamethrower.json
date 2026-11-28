@@ -31,16 +31,14 @@
     "ignites": true
   },
   "view": {
-    "model": "weapons/flamethrower.glb",
+    "model": "guns/heavy_flamethrower.glb",
+    "fallback": "weapons/flamethrower.glb",
+    "muzzleAt": [0, 0.055, 0.475],
+    "held": { "medium": "guns/heavy_flamethrower.medium.glb", "high": "guns/heavy_flamethrower.high.glb" },
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#ff8a2a",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.084, -0.027],
-      "support": [0, -0.054, 0.328],
-      "shoulder": [0, 0.069, -0.455]
-    },
+    "hold": { "style": "long", "grip": [0, -0.045, -0.21], "support": [0, -0.02, 0.2], "shoulder": [0, 0.04, -0.45] },
     "sound": "fire.flame.c"
   },
-  "notes": { "description": "A stream of fire that sets everyone in front of you burning. Short range, big panic.", "group": "The extended arsenal: every one fires differently. 9: energy and chemical." }
+  "notes": { "model": "The owner's Tactical Heavy Flamethrower (Meshy, owned; content/guns.json, 2026-11-28): 0.95 m, held copies a 50,000-triangle cut, its fuel tank lit (glow, gently). The kit flamethrower is the fallback.", "description": "A stream of fire that sets everyone in front of you burning. Short range, big panic.", "group": "The extended arsenal: every one fires differently. 9: energy and chemical." }
 }

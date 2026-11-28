@@ -194,13 +194,6 @@
       "length": 0.85
     },
     {
-      "out": "guns/rocket_launcher.glb",
-      "pack": "styloo-guns",
-      "file": "rocketlaucher.glb",
-      "forward": "+x",
-      "length": 1.1
-    },
-    {
       "out": "guns/frag.glb",
       "pack": "styloo-guns",
       "file": "nade_low.glb",
@@ -263,74 +256,6 @@
       "forward": "-x",
       "length": 0.86,
       "triangles": 14000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024
-    },
-    {
-      "out": "guns/battle_axe.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_Steampunk_Battle_Axe__1029233254_texture.glb",
-      "label": "Steampunk Battle Axe (Meshy Community download, 2026-10-29)",
-      "forward": "-x",
-      "length": 0.8,
-      "triangles": 12000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024
-    },
-    {
-      "out": "guns/spear.glb",
-      "pack": "meshy-community-weapons",
-      "glb": "Meshy_AI_T_Pose_Figure_1101003228_texture.glb",
-      "label": "Carved Spear (Meshy community model, downloaded as \"T Pose Figure\", 2026-11-01)",
-      "forward": "+y",
-      "length": 2.0,
-      "triangles": 14000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024
-    },
-    {
-      "out": "guns/freeze_gun.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_Freeze_Gun_1029214340_texture.glb",
-      "label": "Freeze Gun (Meshy Community download, 2026-10-29)",
-      "forward": "-x",
-      "length": 0.38,
-      "triangles": 12000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024
-    },
-    {
-      "out": "guns/glue_gun.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_Mystical_Glue_Gun_1029225709_texture.glb",
-      "label": "Mystical Glue Gun (Meshy Community download, 2026-10-29)",
-      "forward": "-z",
-      "length": 0.34,
-      "triangles": 10000,
       "maxError": 0.03,
       "surface": "rebake",
       "budget": "hero",
@@ -564,22 +489,6 @@
       "normalSize": 256
     },
     {
-      "out": "guns/smoke_m18.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "Smoke_Grenade/Smoke_Grenade.fbx",
-      "label": "Smoke Grenade (3DModelsCC0 Guns & Explosives): the Smoke Grenade",
-      "maps": {
-        "base": "Smoke_Grenade_Base_Color.png",
-        "normal": "Smoke_Grenade_Normal_DirectX.png",
-        "metallic": "Smoke_Grenade_Metallic.png",
-        "roughness": "Smoke_Grenade_Roughness.png"
-      },
-      "pbr": true,
-      "forward": "+z",
-      "height": 0.15,
-      "normalSize": 256
-    },
-    {
       "out": "guns/molotov.glb",
       "pack": "3dmodelscc0-guns-explosives",
       "file": "Molotv_Cocktail/Molotov_Cocktail.fbx",
@@ -641,19 +550,6 @@
         0.2,
         12
       ]
-    },
-    {
-      "out": "guns/globe_grenade.glb",
-      "pack": "meshy-community-drive-1106c",
-      "glb": "Meshy_AI_Globe_Grenade_1106214152_texture.glb",
-      "label": "Globe Grenade (Meshy Community download, 2026-11-06): the Frag Grenade",
-      "forward": "+z",
-      "height": 0.11,
-      "triangles": 3000,
-      "maxError": 0.03,
-      "normalSize": 256,
-      "surface": "rebake",
-      "pbr": true
     },
     {
       "out": "guns/countdown_sphere.glb",
@@ -2015,6 +1911,339 @@
         "color": "#36d8ff",
         "strength": 1
       }
+    },
+    {
+      "out": "guns/cryo_slick_sprayer.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_cryo_gel_slick_sprayer_3d_20261122_image-to-3d-texture.glb",
+      "label": "Cryo-Gel Slick Sprayer: the Oil Slicker (the owner's own Meshy model, owner's Drive, 2026-11-22), its cyan gel lines lit",
+      "forward": "-x",
+      "length": 0.85,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#36d8ff",
+        "strength": 0.7
+      }
+    },
+    {
+      "out": "guns/ricochet_launcher.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_monofilament_ricochet_launcher_3d_20261122_image-to-3d-texture.glb",
+      "label": "Monofilament Ricochet Launcher: the Disc Launcher (the owner's own Meshy model, owner's Drive, 2026-11-22)",
+      "forward": "-x",
+      "length": 0.85,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/disc_crossbow.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_horizontal_disc_crossbow_3d_20261127_image-to-3d-texture.glb",
+      "label": "Horizontal Disc Crossbow: the Arena Disc (the owner's own Meshy model, owner's Drive, 2026-11-27), its cyan lines lit",
+      "forward": "-x",
+      "length": 0.9,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#36d8ff",
+        "strength": 0.8
+      }
+    },
+    {
+      "out": "guns/bubble_blaster_pink.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_pink_bubble_blaster_3d_20261127_image-to-3d-texture.glb",
+      "label": "Pink Bubble Blaster: the Bubble Blaster (the owner's own Meshy model, owner's Drive, 2026-11-27), its bubble globe lit",
+      "forward": "-x",
+      "length": 0.8,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#ff3fae",
+        "strength": 0.45
+      }
+    },
+    {
+      "out": "guns/biohazard_goo_gun.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_tactical_biohazard_goo_gun_3d_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Biohazard Goo Gun: the Goo Gun (the owner's own Meshy model, owner's Drive, 2026-11-27), its goo tank lit",
+      "forward": "-x",
+      "length": 0.85,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#b8ff2a",
+        "strength": 0.7
+      }
+    },
+    {
+      "out": "guns/heavy_flamethrower.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_tactical_heavy_flamethrower_3d_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Heavy Flamethrower: the Flamethrower (the owner's own Meshy model, owner's Drive, 2026-11-27), its fuel tank lit",
+      "forward": "-x",
+      "length": 0.95,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#ffcc2a",
+        "strength": 0.4
+      }
+    },
+    {
+      "out": "guns/viking_freeze_ray.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_viking_freeze_ray_pistol_3d_20261127_image-to-3d-texture.glb",
+      "label": "Viking Freeze Ray Pistol: the Freeze Ray (the owner's own Meshy model, owner's Drive, 2026-11-27), its ice crystals lit",
+      "forward": "-x",
+      "length": 0.36,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#4cc8ff",
+        "strength": 0.8
+      }
+    },
+    {
+      "out": "guns/combat_knife.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Tactical_Combat_Knife_3D_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Combat Knife: the Knife (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.3,
+      "triangles": 6000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 24000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/combat_knife_plain.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Tactical_Combat_Knife_3D_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Combat Knife, untextured (the owner's own Meshy model and its untextured copy, owner's Drive, 2026-11-27): one plain colour for the game to tint (colour variants)",
+      "flat": "#e6e6e6",
+      "forward": "-x",
+      "length": 0.3,
+      "triangles": 6000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "normalSize": 256
+    },
+    {
+      "out": "guns/viking_battleaxe.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Viking_Battleaxe_3D_20261127_image-to-3d-texture.glb",
+      "label": "Viking Battleaxe: the Battle Axe (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.8,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/obsidian_spear.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Mesoamerican_Obsidian_Spear_3D_20261127_image-to-3d-texture.glb",
+      "label": "Mesoamerican Obsidian Spear: the Spear, held and thrown (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "+x",
+      "length": 2.0,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/mk2_frag.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_mk2_fragmentation_grenade_3d_20261127_image-to-3d-texture.glb",
+      "label": "MK2 Fragmentation Grenade: the Frag Grenade (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "+z",
+      "height": 0.11,
+      "triangles": 3000,
+      "maxError": 0.02,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/an_m8_smoke.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_an_m8_smoke_grenade_3d_20261127_image-to-3d-texture.glb",
+      "label": "AN-M8 HC Smoke Grenade: the Smoke Grenade (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "+z",
+      "height": 0.15,
+      "triangles": 3000,
+      "maxError": 0.02,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/round_40mm.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_grenade_round_40mm_3d_20261127_image-to-3d-texture.glb",
+      "label": "40mm Grenade Round: the Grenade Launcher's round in flight (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "+y",
+      "length": 0.11,
+      "triangles": 1500,
+      "maxError": 0.02,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/micro_rocket.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_micro_swarm_rocket_3d_20261127_image-to-3d-texture.glb",
+      "label": "Micro Swarm Rocket: the Swarm Launcher's rockets in flight (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.32,
+      "triangles": 2000,
+      "maxError": 0.02,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/pg7_rocket.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_rpg7_rocket_projectile_3d_20261127_image-to-3d-texture.glb",
+      "label": "RPG-7 PG-7V Rocket: the rocket launchers' round in flight (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.7,
+      "triangles": 2500,
+      "maxError": 0.02,
+      "normalSize": 256,
+      "surface": "rebake",
+      "pbr": true
+    },
+    {
+      "out": "guns/heavy_rocket_launcher.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_heavy_rocket_launcher_3d_20261127_image-to-3d-texture.glb",
+      "label": "Heavy Anti-Armor Rocket Launcher: the Rocket Launcher (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 1.1,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
     }
   ]
 }

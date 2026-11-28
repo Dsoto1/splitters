@@ -45,13 +45,17 @@
     }
   },
   "view": {
-    "model": "weapons/oil_slicker.glb",
+    "model": "guns/cryo_slick_sprayer.glb",
+    "fallback": "weapons/oil_slicker.glb",
+    "muzzleAt": [0, 0.075, 0.425],
+    "held": { "medium": "guns/cryo_slick_sprayer.medium.glb", "high": "guns/cryo_slick_sprayer.high.glb" },
     "viewOffset": [0.2, -0.2, 0.42],
     "tracer": "#8a7a5a",
-    "hold": { "style": "long", "grip": [0, -0.07, 0], "support": [0, -0.037, 0.192], "shoulder": [0, 0.014, -0.38] },
+    "hold": { "style": "long", "grip": [0, -0.045, -0.135], "support": [0, -0.03, 0.16], "shoulder": [0, 0.03, -0.4] },
     "sound": "fire.pulse.c"
   },
   "notes": {
+    "model": "The owner's Cryo-Gel Slick Sprayer (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut, its cyan gel lines lit (glow). The kit oil slicker is the fallback.",
     "description": "Spills oil that sends anyone crossing it sliding. Set it alight for a nasty surprise.",
     "group": "The extended arsenal: every one fires differently. 6: lobbers.",
     "bots": "Bots lay puddles round their target and light them with the igniter about every three seconds (BotBrain.act), so it is worth as much to them as the flare gun or the goo gun (0.45; it was 0.3 while they never lit it)."

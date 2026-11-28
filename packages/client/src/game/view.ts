@@ -222,6 +222,10 @@ const OWN_FLASH_AHEAD = 0.05;
  * incendiary, vortex, cluster and smoke grenades), by look: the throwable whose model it is (its model as the match's
  * weapon set shows it: throwableModel). The mine keeps its own drawing (it blinks once armed).
  */
+/** The owner's projectile models (weapon replacements batch 4; content/guns.json): the 40 mm round, the swarm's micro rocket, the PG-7V. */
+const ROUND_40MM_MODEL = 'guns/round_40mm.glb';
+const MICRO_ROCKET_MODEL = 'guns/micro_rocket.glb';
+const PG7_ROCKET_MODEL = 'guns/pg7_rocket.glb';
 const THROWN_KINDS: ReadonlyMap<string, ThrowableKind> = new Map(Object.values(THROWABLE_DEFS).flatMap((t) => (t.view && !t.view.handOnly && t.kind !== 'mine' ? [[t.projectile.visual, t.kind]] : [])));
 /** How a throwable lies in your hands while you line up a throw: held like a pistol's grip, the support hand round it. */
 const THROW_HOLD: WeaponHold = { style: 'pistol', grip: [0, -0.012, -0.012], support: [-0.03, -0.022, 0], rake: 0 };
@@ -960,7 +964,7 @@ export class GameView {
     this.entrances = doc.entities.filter((e): e is Extract<MapEntity, { kind: 'encounter' }> => e.kind === 'encounter' && (e.entrance ?? 'none') !== 'none');
     // Warm the model cache so first switches and pickups don't hitch.
     for (const w of WEAPONS_BY_SLOT) void this.models.load(w.view.model);
-    void this.models.load('projectiles/grenade.glb');
+    for (const m of [ROUND_40MM_MODEL, MICRO_ROCKET_MODEL, PG7_ROCKET_MODEL]) void this.models.load(m);
     // And the effects: each one's meshes and shaders were made by its first shot or blast in a fight (a stall each).
     void loadMuzzleFlashes().then(() => {
       if (this.scene.isDisposed) return;
@@ -4211,11 +4215,11 @@ export class GameView {
       else if (look === 'flareShot') this.flareShotFx(id, p, pos, now);
       if (look && ARSENAL_LOOKS.has(look)) animateArsenalProjectile(p.node, look, now, p.node.position.subtract(prev), p.born);
       // Grenades tumble while they fly and lie still where they stop.
-      else if (look === 'grenade' || look === 'frag' || look === 'vortexNade' || look === 'smoke') {
+      else if (look === 'frag' || look === 'vortexNade' || look === 'smoke') {
         if (p.node.position.subtract(prev).lengthSquared() > 1e-6) p.node.rotation.x += 0.3;
       }
-      else if (look === 'rocket') {
-        // Point the rocket along its flight.
+      else if (look === 'rocket' || look === 'grenade') {
+        // Point the rocket, and the launcher's 40 mm round, along its flight.
         // (Hidden until it has a heading: its first sample has none.)
         const md = (p.node.metadata ??= {}) as { aimed?: boolean };
         if (pointAlong(p.node, p.node.position.subtract(prev))) {
@@ -4259,12 +4263,13 @@ export class GameView {
   private createProjectile(id: number, look: (typeof PROJECTILE_VISUALS)[number]): TransformNode {
     if (look === 'spear') return this.spearProjectile(id);
     if (look === 'slime') return this.slimeProjectile(id);
+    if (look === 'swarm') return this.swarmProjectile(id);
     const kind = THROWN_KINDS.get(look);
     const thrown = kind ? throwableModel(kind, this.setLook) : null;
     if (thrown) return this.thrownProjectile(id, look, thrown);
     if (ARSENAL_LOOKS.has(look)) return createArsenalProjectile(this.scene, id, look);
     const node = new TransformNode(`proj_${id}`, this.scene);
-    const model = look === 'grenade' ? 'projectiles/grenade.glb' : null;
+    const model = look === 'grenade' ? ROUND_40MM_MODEL : null;
     if (model) {
       void this.models.instantiate(model, `${look}_${id}`).then((m) => {
         if (node.isDisposed()) return m.dispose();
@@ -4284,6 +4289,15 @@ export class GameView {
       flame.scaling.z = 2;
       flame.material = glow(this.scene, 'rocketFlameMat', '#ffb347', 1);
       flame.parent = node;
+      // The owner's PG-7V round (0.7 m, centred, its nose along +z) replaces the coded body once it loads; the flame
+      // moves back behind its fins.
+      void this.models.instantiate(PG7_ROCKET_MODEL, `rocketModel_${id}`, true).then((m) => {
+        if (node.isDisposed()) return m.dispose();
+        m.parent = node;
+        body.setEnabled(false);
+        tip.setEnabled(false);
+        flame.position.z = -0.5;
+      }, () => undefined);
     } else if (look === 'mine') {
       const disc = CreateCylinder(`mine_${id}`, { diameter: 0.34, height: 0.09, tessellation: 16 }, this.scene);
       disc.material = solid(this.scene, 'mineMat', '#3c4038');
@@ -4401,6 +4415,21 @@ export class GameView {
       if (node.isDisposed()) return model.dispose();
       model.parent = node;
       for (const m of shapes) m.setEnabled(false);
+    }, () => undefined);
+    return node;
+  }
+
+  /**
+   * A Swarm Launcher rocket in flight: the owner's Micro Swarm Rocket model (instanced: a volley is several), its
+   * exhaust kept from the shapes drawn in code (steady, no flicker), the coded body until it loads.
+   */
+  private swarmProjectile(id: number): TransformNode {
+    const node = createArsenalProjectile(this.scene, id, 'swarm');
+    const body = node.getChildMeshes().filter((m) => !m.name.startsWith('swarmFlame_'));
+    void this.models.instantiate(MICRO_ROCKET_MODEL, `swarmModel_${id}`, true).then((model) => {
+      if (node.isDisposed()) return model.dispose();
+      model.parent = node;
+      for (const m of body) m.setEnabled(false);
     }, () => undefined);
     return node;
   }

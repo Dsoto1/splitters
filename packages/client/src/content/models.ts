@@ -517,7 +517,7 @@ function proceduralModel(scene: Scene, path: string): AssetContainer {
   };
   if (path === 'procedural/spear') {
     // A wooden shaft with a bound grip and an iron head, pointing along +z: the Spear's fallback, laid out like its
-    // model (guns/spear.glb: 2 m, centred, the grip at z -0.35).
+    // model (guns/obsidian_spear.glb: 2 m, centred, the grip at z -0.35).
     const wood = material('wood', '#8a6238');
     const iron = material('iron', '#a7adb4', 0.1);
     const wrap = material('wrap', '#4a3624');

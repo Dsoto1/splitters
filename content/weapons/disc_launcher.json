@@ -27,16 +27,14 @@
     "knockback": 10
   },
   "view": {
-    "model": "weapons/disc_launcher.glb",
+    "model": "guns/ricochet_launcher.glb",
+    "fallback": "weapons/disc_launcher.glb",
+    "muzzleAt": [0, 0.06, 0.425],
+    "held": { "medium": "guns/ricochet_launcher.medium.glb", "high": "guns/ricochet_launcher.high.glb" },
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#7ad6ff",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.06, -0.06],
-      "support": [0, -0.022, 0.142],
-      "shoulder": [0, -0.076, -0.43]
-    },
+    "hold": { "style": "long", "grip": [0, -0.05, -0.16], "support": [0, -0.05, 0.2], "shoulder": [0, 0.02, -0.41] },
     "sound": "fire.disc"
   },
-  "notes": { "description": "Heavy discs that knock people off their feet, and off ledges.", "group": "The extended arsenal: every one fires differently. 6: lobbers." }
+  "notes": { "model": "The owner's Monofilament Ricochet Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut. The kit disc launcher is the fallback.", "description": "Heavy discs that knock people off their feet, and off ledges.", "group": "The extended arsenal: every one fires differently. 6: lobbers." }
 }

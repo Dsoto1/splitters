@@ -36,6 +36,6 @@
   "notes": {
     "description": "Two rounds to a body, one to the head, a lever pull between shots. Old, steady, deadly.",
     "design": "The Lever Action of the spec (§13): 60 a round, two to a body and one to the head, rechambered by the lever between shots (0.57 s); seven rounds loaded one at a time, so a reload can be cut short to fire. Sits between the Marksman Rifle (faster, weaker) and the Sniper Rifle (one body shot, slow).",
-    "model": "The owner's Civil War Lever Repeater (Meshy, owned; content/guns.json, 2026-11-28): 1.0 m, held copies a 50,000-triangle cut, the owner's Brass Sentinel Scope on its top rail (content/optics.json sentinel; aimed through the full-screen scope as before). The kit marksman rifle is the fallback."
+    "model": "The owner's Civil War Lever Repeater (Meshy, owned; content/guns.json, 2026-11-28): 1.0 m, held copies a 50,000-triangle cut, the owner's plain Scope low on its top rail (content/optics.json rifle_scope since 2026-11-28: the Brass Sentinel stood out too far on its tall mount; aimed through the full-screen scope as before). The kit marksman rifle is the fallback."
   }
 }

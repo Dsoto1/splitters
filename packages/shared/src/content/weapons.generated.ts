@@ -8,6 +8,7 @@ export const WEAPON_FAMILIES = ['pistol', 'revolver', 'machine_pistol', 'smg', '
 
 /** Every weapon, in network-code order (content/weapons/<name>.json over families.json `defaults`). */
 export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
+  // model: The owner's Tactical Combat Knife (Meshy, owned; content/guns.json, 2026-11-28): 0.3 m, held copies a 24,000-triangle cut, held by its handle (its edge down, as the swing cuts); an untextured copy (guns/combat_knife_plain.glb) is built for tinted colour variants, not drawn yet. The kit knife is the fallback.
   // description: Always with you, never runs dry: quick stabs for when it gets personal.
   'core.knife': {
     id: 'core.knife',
@@ -28,10 +29,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'weapons/knife.glb',
+      model: 'guns/combat_knife.glb',
+      fallback: 'weapons/knife.glb',
+      held: { medium: 'guns/combat_knife.medium.glb', high: 'guns/combat_knife.high.glb' },
       viewOffset: [0.2, -0.2, 0.42],
       tracer: '#ffffff',
-      hold: { style: 'melee', grip: [0, 0, -0.1] },
+      hold: { style: 'melee', grip: [0, 0, -0.08] },
     },
   },
   // description: Your reliable sidearm: quick to draw, steady, a fast reload. Always worth having.
@@ -291,6 +294,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.065, 0.185],
     },
   },
+  // model: The owner's Heavy Anti-Armor Rocket Launcher (Meshy, owned; content/guns.json, 2026-11-28): 1.1 m, held copies a 50,000-triangle cut; the tube rests on the shoulder behind its pistol grip, aimed from a sight line beside the tube as on a real AT4 (content/sight-fit.json), so its wide rear flare stays out of the middle of the view. The kit rocket launcher is the fallback.
   // description: A slow rocket with a big blast. Aim where they will be, not where they are.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: Benchmark rocket: rewards predicting where they will be. A slow 30 m/s rocket (a runner moves 4 m while it crosses 25 m), a 5 m blast and a direct hit that kills outright; your own blast hurts you three quarters as much. Quick to bring back: a rocket every 1.5 s, fire again as soon as it is loaded.
@@ -327,11 +331,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'guns/rocket_launcher.glb',
+      model: 'guns/heavy_rocket_launcher.glb',
+      held: { medium: 'guns/heavy_rocket_launcher.medium.glb', high: 'guns/heavy_rocket_launcher.high.glb' },
       fallback: 'weapons/rockets.glb',
       viewOffset: [0.24, -0.24, 0.5],
       tracer: '#ffb347',
-      hold: { style: 'long', grip: [0, -0.09, -0.115], support: [0, -0.09, 0.095], shoulder: [0, -0.03, -0.25] },
+      hold: { style: 'long', grip: [0, -0.05, -0.045], support: [0, -0.06, 0.11], shoulder: [0, 0, -0.22] },
+      muzzleAt: [0, 0.06, 0.55],
       sound: 'fire.launcher.c',
     },
   },
@@ -896,6 +902,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // model: The owner's Monofilament Ricochet Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut. The kit disc launcher is the fallback.
   // description: Heavy discs that knock people off their feet, and off ledges.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
   'core.disc_launcher': {
@@ -930,13 +937,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     spread: 0,
     range: 120,
     view: {
-      model: 'weapons/disc_launcher.glb',
+      model: 'guns/ricochet_launcher.glb',
+      fallback: 'weapons/disc_launcher.glb',
+      muzzleAt: [0, 0.06, 0.425],
+      held: { medium: 'guns/ricochet_launcher.medium.glb', high: 'guns/ricochet_launcher.high.glb' },
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#7ad6ff',
-      hold: { style: 'long', grip: [0, -0.06, -0.06], support: [0, -0.022, 0.142], shoulder: [0, -0.076, -0.43] },
+      hold: { style: 'long', grip: [0, -0.05, -0.16], support: [0, -0.05, 0.2], shoulder: [0, 0.02, -0.41] },
       sound: 'fire.disc',
     },
   },
+  // model: The owner's Pink Bubble Blaster (Meshy, owned; content/guns.json, 2026-11-28): 0.8 m, held copies a 50,000-triangle cut, its bubble globe lit (glow, gently). The kit bubble blaster is the fallback.
   // description: Traps people in bubbles that float them away. Silly, until it wins you the point.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
   'core.bubble_blaster': {
@@ -974,16 +985,19 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 20,
     botDesirability: 0.5,
     view: {
-      model: 'weapons/bubble_blaster.glb',
+      model: 'guns/bubble_blaster_pink.glb',
+      fallback: 'weapons/bubble_blaster.glb',
+      muzzleAt: [0, 0.05, 0.4],
+      held: { medium: 'guns/bubble_blaster_pink.medium.glb', high: 'guns/bubble_blaster_pink.high.glb' },
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#7dff6a',
-      hold: { style: 'long', grip: [0, -0.036, -0.163], support: [0, -0.006, 0.129], shoulder: [0, 0.043, -0.29] },
+      hold: { style: 'long', grip: [0, -0.04, -0.05], support: [0, 0.03, 0.2], shoulder: [0, 0.03, -0.38] },
       sound: 'fire.bubble',
     },
   },
   // description: Sticky goo that glues people in place. Cover a doorway and watch them wade.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
-  // model: The owner's Mystical Glue Gun (Meshy, owned), the sci-fi kit gun as the fallback.
+  // model: The owner's Tactical Biohazard Goo Gun (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, a long gun now (held at the shoulder; the Mystical Glue Gun was a pistol), held copies a 50,000-triangle cut, its goo tank lit (glow). The kit goo gun is the fallback.
   'core.goo_gun': {
     id: 'core.goo_gun',
     displayName: 'Goo Gun',
@@ -1017,14 +1031,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     spread: 0,
     range: 120,
     view: {
-      model: 'guns/glue_gun.glb',
-      viewOffset: [0.2, -0.18, 0.42],
+      model: 'guns/biohazard_goo_gun.glb',
+      muzzleAt: [0, 0.04, 0.42],
+      held: { medium: 'guns/biohazard_goo_gun.medium.glb', high: 'guns/biohazard_goo_gun.high.glb' },
+      viewOffset: [0.21, -0.21, 0.52],
       tracer: '#ff6ad0',
-      hold: { style: 'pistol', grip: [0, -0.05, -0.11], support: [-0.02, -0.06, -0.1] },
+      hold: { style: 'long', grip: [0, -0.04, -0.15], support: [0, -0.02, 0.12], shoulder: [0, 0.04, -0.42] },
       fallback: 'weapons/goo_gun.glb',
       sound: 'fire.goo.b',
     },
   },
+  // model: The owner's Cryo-Gel Slick Sprayer (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut, its cyan gel lines lit (glow). The kit oil slicker is the fallback.
   // description: Spills oil that sends anyone crossing it sliding. Set it alight for a nasty surprise.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
   // bots: Bots lay puddles round their target and light them with the igniter about every three seconds (BotBrain.act), so it is worth as much to them as the flare gun or the goo gun (0.45; it was 0.3 while they never lit it).
@@ -1079,10 +1096,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     fireIntervalTicks: 10,
     range: 120,
     view: {
-      model: 'weapons/oil_slicker.glb',
+      model: 'guns/cryo_slick_sprayer.glb',
+      fallback: 'weapons/oil_slicker.glb',
+      muzzleAt: [0, 0.075, 0.425],
+      held: { medium: 'guns/cryo_slick_sprayer.medium.glb', high: 'guns/cryo_slick_sprayer.high.glb' },
       viewOffset: [0.2, -0.2, 0.42],
       tracer: '#8a7a5a',
-      hold: { style: 'long', grip: [0, -0.07, 0], support: [0, -0.037, 0.192], shoulder: [0, 0.014, -0.38] },
+      hold: { style: 'long', grip: [0, -0.045, -0.135], support: [0, -0.03, 0.16], shoulder: [0, 0.03, -0.4] },
       sound: 'fire.pulse.c',
     },
   },
@@ -1353,6 +1373,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // model: The owner's Tactical Heavy Flamethrower (Meshy, owned; content/guns.json, 2026-11-28): 0.95 m, held copies a 50,000-triangle cut, its fuel tank lit (glow, gently). The kit flamethrower is the fallback.
   // description: A stream of fire that sets everyone in front of you burning. Short range, big panic.
   // group: The extended arsenal: every one fires differently. 9: energy and chemical.
   'core.flamethrower': {
@@ -1390,16 +1411,19 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     range: 120,
     view: {
-      model: 'weapons/flamethrower.glb',
+      model: 'guns/heavy_flamethrower.glb',
+      fallback: 'weapons/flamethrower.glb',
+      muzzleAt: [0, 0.055, 0.475],
+      held: { medium: 'guns/heavy_flamethrower.medium.glb', high: 'guns/heavy_flamethrower.high.glb' },
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#ff8a2a',
-      hold: { style: 'long', grip: [0, -0.084, -0.027], support: [0, -0.054, 0.328], shoulder: [0, 0.069, -0.455] },
+      hold: { style: 'long', grip: [0, -0.045, -0.21], support: [0, -0.02, 0.2], shoulder: [0, 0.04, -0.45] },
       sound: 'fire.flame.c',
     },
   },
   // description: A cold beam that slows, then freezes. Pair it with a friend who can finish the job.
   // group: The extended arsenal: every one fires differently. 9: energy and chemical.
-  // model: The owner's Freeze Gun (Meshy, owned), the sci-fi kit gun as the fallback.
+  // model: The owner's Viking Freeze Ray Pistol (Meshy, owned; content/guns.json, 2026-11-28): 0.36 m, held copies a 40,000-triangle cut, its ice crystals lit (glow). The kit freeze ray is the fallback.
   // alt: Freeze blast (owner, 2026-11-24): a slow cold ball (14 m/s, 35 m); whoever it hits is held in a block of ice where they stand for 3 s (can't move or act, 5 HP/s, full damage from anything else; the block solid to others). 60 % of the heat bar and its own 6 s cooldown; the beam fires on meanwhile.
   'core.freeze_ray': {
     id: 'core.freeze_ray',
@@ -1441,10 +1465,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     raiseTicks: 20,
     botDesirability: 0.5,
     view: {
-      model: 'guns/freeze_gun.glb',
+      model: 'guns/viking_freeze_ray.glb',
+      muzzleAt: [0, 0.05, 0.18],
+      held: { medium: 'guns/viking_freeze_ray.medium.glb', high: 'guns/viking_freeze_ray.high.glb' },
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#bff0ff',
-      hold: { style: 'pistol', grip: [0, -0.02, -0.153], support: [-0.02, -0.03, -0.143], rake: 20 },
+      hold: { style: 'pistol', grip: [0, -0.025, -0.135], support: [-0.02, -0.035, -0.125], rake: 22 },
       fallback: 'weapons/freeze_ray.glb',
       sound: 'fire.freeze.b',
       beam: true,
@@ -1721,7 +1747,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // description: Poke with it at long reach, or throw it for a one-hit kill and go pick it up.
   // design: Two ways to use it (owner, 2026-11-18): fire pokes (60, a long 2.9 m reach, two to a body) and you keep the spear; right mouse throws it, one hit kills, and it sticks where it lands until someone picks it up, back into their hands ready to poke or throw. With no spear in hand there is nothing to poke with.
-  // model: The owner's carved spear (Meshy community, CC0; content/guns.json), 2 m long and centred, held a third of the way back on the plain shaft; the boxes-in-code spear (same length and grip) as the fallback.
+  // model: The owner's Mesoamerican Obsidian Spear (Meshy, owned; content/guns.json, 2026-11-28): 2 m long and centred, held copies a 40,000-triangle cut, held a third of the way back on the plain shaft and thrown and stuck as the same model; the boxes-in-code spear (same length and grip) as the fallback.
   'core.spear': {
     id: 'core.spear',
     displayName: 'Spear',
@@ -1762,7 +1788,8 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'guns/spear.glb',
+      model: 'guns/obsidian_spear.glb',
+      held: { medium: 'guns/obsidian_spear.medium.glb', high: 'guns/obsidian_spear.high.glb' },
       fallback: 'procedural/spear',
       viewOffset: [0.28, -0.24, 0.65],
       tracer: '#c8a46a',
@@ -1798,6 +1825,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'melee', grip: [0, 0, -0.1] },
     },
   },
+  // model: The owner's Horizontal Disc Crossbow (Meshy, owned; content/guns.json, 2026-11-28): 0.9 m, its bow 0.87 m across, held copies a 50,000-triangle cut, its cyan lines lit (glow). The kit disc launcher is the fallback.
   // design: A variant of an existing weapon for Disc Arena and Classes. The arena disc: a Disc Launcher that shoves instead of hurting, three discs you pick up again.
   'core.arena_disc': {
     id: 'core.arena_disc',
@@ -1831,11 +1859,14 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'weapons/disc_launcher.glb',
+      model: 'guns/disc_crossbow.glb',
+      fallback: 'weapons/disc_launcher.glb',
+      muzzleAt: [0, 0.075, 0.45],
+      held: { medium: 'guns/disc_crossbow.medium.glb', high: 'guns/disc_crossbow.high.glb' },
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#7ad6ff',
       sound: 'fire.disc.b',
-      hold: { style: 'long', grip: [0, -0.06, -0.06], support: [0, -0.022, 0.142], shoulder: [0, -0.076, -0.43] },
+      hold: { style: 'long', grip: [0, -0.04, -0.37], support: [0, 0.02, 0.15], shoulder: [0, 0.07, -0.45] },
       reloadSound: 'reload.scifi',
     },
   },
@@ -1959,7 +1990,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   // design: Made for the Steampunk Battle Axe model (Meshy Community; content/guns.json, pack meshy-community-arsenal). The heavy melee weapon: a slow, wide swing that hits hard and shoves, and a black-powder blunderbuss for the second trigger (two loads in the barrel, reloaded one at a time from a reserve of shotgun shells).
   // ammo: Powder and shot: shotgun shells (shell boxes and the general ammo box top it up), loaded into the barrel by hand.
   // alt: The blunderbuss (docs/ARSENAL.md): a wide, short cone of nine pellets that falls off fast (it never outreaches the Shotgun), two loads, each rammed home in a slow 1.1 s, and a big kick.
-  // model: The owner's Steampunk Battle Axe (Meshy, owned): a flintlock blunderbuss with an axe blade under the muzzle, held by its stock with the blade forward. The bore's mouth is the front of the barrel, on top.
+  // model: The owner's Viking Battleaxe (Meshy, owned; content/guns.json, 2026-11-28): 0.8 m, held copies a 40,000-triangle cut, its blade hanging below the haft (the edge leads the downward cut); held by the haft, 0.08 m over the model's middle. Its alt shot's flash comes from the head's front (the steampunk axe it replaced had a barrel there). The kit knife is the fallback.
   'core.battle_axe': {
     id: 'core.battle_axe',
     displayName: 'Battle Axe',
@@ -1999,14 +2030,15 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'guns/battle_axe.glb',
+      model: 'guns/viking_battleaxe.glb',
+      held: { medium: 'guns/viking_battleaxe.medium.glb', high: 'guns/viking_battleaxe.high.glb' },
       fallback: 'weapons/knife.glb',
       viewOffset: [0.24, -0.26, 0.42],
       tracer: '#ffd9a0',
       sound: 'fire.knife',
-      hold: { style: 'melee', grip: [0, 0, -0.3] },
+      hold: { style: 'melee', grip: [0, 0.08, -0.28] },
       reloadSound: 'reload.end.b',
-      muzzleAt: [0, 0.062, 0.4],
+      muzzleAt: [0, 0.09, 0.39],
       altShot: { sound: 'fire.shotgun.b', rate: 0.78, flash: { effect: 'wide_flash_02', scale: 0.32 }, smoke: 1.2 },
     },
   },
@@ -2297,7 +2329,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // description: Two rounds to a body, one to the head, a lever pull between shots. Old, steady, deadly.
   // design: The Lever Action of the spec (§13): 60 a round, two to a body and one to the head, rechambered by the lever between shots (0.57 s); seven rounds loaded one at a time, so a reload can be cut short to fire. Sits between the Marksman Rifle (faster, weaker) and the Sniper Rifle (one body shot, slow).
-  // model: The owner's Civil War Lever Repeater (Meshy, owned; content/guns.json, 2026-11-28): 1.0 m, held copies a 50,000-triangle cut, the owner's Brass Sentinel Scope on its top rail (content/optics.json sentinel; aimed through the full-screen scope as before). The kit marksman rifle is the fallback.
+  // model: The owner's Civil War Lever Repeater (Meshy, owned; content/guns.json, 2026-11-28): 1.0 m, held copies a 50,000-triangle cut, the owner's plain Scope low on its top rail (content/optics.json rifle_scope since 2026-11-28: the Brass Sentinel stood out too far on its tall mount; aimed through the full-screen scope as before). The kit marksman rifle is the fallback.
   'core.lever_action': {
     id: 'core.lever_action',
     displayName: 'Lever-Action',
@@ -2416,7 +2448,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // description: A silent bolt that downs an unarmoured player in one hit, if you lead and lift for its flight.
   // design: A bolt you can watch fly: 100 on a hit (an unarmoured player down in one), but it flies at 75 m/s and drops, so past 20 m you lead and lift. No flash, no tracer line: the bolt itself is all anyone sees. One bolt, then a 1 s reload. The Medieval set's precision weapon.
-  // model: The owner's Medieval Repeating Arbalest (Meshy, owned; content/guns.json, 2026-11-28): 0.95 m, its bow 0.68 m across, held copies a 50,000-triangle cut, the owner's Brass Sentinel Scope on its top rail (content/optics.json sentinel; aimed through the full-screen scope as before); its bolt in flight is drawn in code (the `arrow` look). The kit marksman rifle is the fallback.
+  // model: The owner's Medieval Repeating Arbalest (Meshy, owned; content/guns.json, 2026-11-28): 0.95 m, its bow 0.68 m across, held copies a 50,000-triangle cut, the owner's plain Scope low on its top rail (content/optics.json rifle_scope since 2026-11-28: the Brass Sentinel stood out too far on its tall mount; aimed through the full-screen scope as before); its bolt in flight is drawn in code (the `arrow` look). The kit marksman rifle is the fallback.
   'core.crossbow': {
     id: 'core.crossbow',
     displayName: 'Crossbow',
@@ -2805,7 +2837,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       visual: 'frag',
       bounce: 0.45,
     },
-    view: { model: 'guns/globe_grenade.glb', fallback: 'guns/frag.glb', looks: { military: 'guns/frag_m67.glb' } },
+    view: { model: 'guns/mk2_frag.glb', fallback: 'guns/frag.glb', looks: { military: 'guns/frag_m67.glb' } },
   },
   mine: {
     kind: 'mine',
@@ -3071,7 +3103,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
       bounce: 0.35,
       zone: { kind: 'smoke', radius: 5, seconds: 18 },
     },
-    view: { model: 'guns/smoke_m18.glb', looks: { scifi: 'guns/smoke_scifi.glb' } },
+    view: { model: 'guns/an_m8_smoke.glb', looks: { scifi: 'guns/smoke_scifi.glb' } },
   },
   // group: Deployable, carried like Sandbags (owner, 2026-11-13: a map pickup, anyone may carry one).
   // design: Tossed a couple of metres ahead; where it lands it becomes an ammo box (sim/resupply.ts DEPLOYED_BOX): Use beside it resupplies, ten times, for two minutes; shot or blown up it cooks off. One each: setting down another takes the first away.

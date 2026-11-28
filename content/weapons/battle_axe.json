@@ -44,14 +44,15 @@
     }
   },
   "view": {
-    "model": "guns/battle_axe.glb",
+    "model": "guns/viking_battleaxe.glb",
+    "held": { "medium": "guns/viking_battleaxe.medium.glb", "high": "guns/viking_battleaxe.high.glb" },
     "fallback": "weapons/knife.glb",
     "viewOffset": [0.24, -0.26, 0.42],
     "tracer": "#ffd9a0",
     "sound": "fire.knife",
-    "hold": { "style": "melee", "grip": [0, 0, -0.3] },
+    "hold": { "style": "melee", "grip": [0, 0.08, -0.28] },
     "reloadSound": "reload.end.b",
-    "muzzleAt": [0, 0.062, 0.4],
+    "muzzleAt": [0, 0.09, 0.39],
     "altShot": {
       "sound": "fire.shotgun.b",
       "rate": 0.78,
@@ -64,6 +65,6 @@
     "design": "Made for the Steampunk Battle Axe model (Meshy Community; content/guns.json, pack meshy-community-arsenal). The heavy melee weapon: a slow, wide swing that hits hard and shoves, and a black-powder blunderbuss for the second trigger (two loads in the barrel, reloaded one at a time from a reserve of shotgun shells).",
     "ammo": "Powder and shot: shotgun shells (shell boxes and the general ammo box top it up), loaded into the barrel by hand.",
     "alt": "The blunderbuss (docs/ARSENAL.md): a wide, short cone of nine pellets that falls off fast (it never outreaches the Shotgun), two loads, each rammed home in a slow 1.1 s, and a big kick.",
-    "model": "The owner's Steampunk Battle Axe (Meshy, owned): a flintlock blunderbuss with an axe blade under the muzzle, held by its stock with the blade forward. The bore's mouth is the front of the barrel, on top."
+    "model": "The owner's Viking Battleaxe (Meshy, owned; content/guns.json, 2026-11-28): 0.8 m, held copies a 40,000-triangle cut, its blade hanging below the haft (the edge leads the downward cut); held by the haft, 0.08 m over the model's middle. Its alt shot's flash comes from the head's front (the steampunk axe it replaced had a barrel there). The kit knife is the fallback."
   }
 }

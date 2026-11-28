@@ -58,10 +58,11 @@ describe('weapon models', () => {
     }
     expect(missing).toEqual([]);
     // The same model in the hand, in flight and on a pickup; the weapon sets' looks where a set has one.
-    expect(throwableModel('frag')).toBe('guns/globe_grenade.glb');
+    // The owner's MK2 and AN-M8 (weapon replacements batch 4).
+    expect(throwableModel('frag')).toBe('guns/mk2_frag.glb');
     expect(throwableModel('frag', 'military')).toBe('guns/frag_m67.glb');
     expect(throwableModel('smoke', 'scifi')).toBe('guns/smoke_scifi.glb');
-    expect(throwableModel('smoke', 'medieval')).toBe('guns/smoke_m18.glb');
+    expect(throwableModel('smoke', 'medieval')).toBe('guns/an_m8_smoke.glb');
     expect(throwableModel('holy')).toBe('guns/holy_bomb.glb');
     expect(throwableModel('dynamite')).toBe('guns/dynamite.glb');
   });

@@ -27,16 +27,14 @@
     "status": { "kind": "poison", "seconds": 3 }
   },
   "view": {
-    "model": "weapons/bubble_blaster.glb",
+    "model": "guns/bubble_blaster_pink.glb",
+    "fallback": "weapons/bubble_blaster.glb",
+    "muzzleAt": [0, 0.05, 0.4],
+    "held": { "medium": "guns/bubble_blaster_pink.medium.glb", "high": "guns/bubble_blaster_pink.high.glb" },
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#7dff6a",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.036, -0.163],
-      "support": [0, -0.006, 0.129],
-      "shoulder": [0, 0.043, -0.29]
-    },
+    "hold": { "style": "long", "grip": [0, -0.04, -0.05], "support": [0, 0.03, 0.2], "shoulder": [0, 0.03, -0.38] },
     "sound": "fire.bubble"
   },
-  "notes": { "description": "Traps people in bubbles that float them away. Silly, until it wins you the point.", "group": "The extended arsenal: every one fires differently. 6: lobbers." }
+  "notes": { "model": "The owner's Pink Bubble Blaster (Meshy, owned; content/guns.json, 2026-11-28): 0.8 m, held copies a 50,000-triangle cut, its bubble globe lit (glow, gently). The kit bubble blaster is the fallback.", "description": "Traps people in bubbles that float them away. Silly, until it wins you the point.", "group": "The extended arsenal: every one fires differently. 6: lobbers." }
 }

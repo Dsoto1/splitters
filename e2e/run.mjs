@@ -10602,7 +10602,7 @@ async function arsenalFlow(browser) {
       check(took && gone, `walking onto the drop gives you the ${gun} with exactly its ammo (7 + 23), and the drop goes (taken ${took}, gone on the client ${gone})`);
     }
   }
-  // The Spear: held in first person as its model (the carved spear, guns/spear.glb; not the boxes it falls back
+  // The Spear: held in first person as its model (the owner's obsidian spear, guns/obsidian_spear.glb; not the boxes it falls back
   // to), thrown at the ground a few metres out, drawn as that model in flight and stuck where it lands.
   await sim(page, (m, me, at) => {
     me.move = { ...me.move, pos: { ...at }, velY: 0, vx: 0, vz: 0, grounded: true };

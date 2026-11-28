@@ -35,10 +35,12 @@
     }
   },
   "view": {
-    "model": "guns/freeze_gun.glb",
+    "model": "guns/viking_freeze_ray.glb",
+    "muzzleAt": [0, 0.05, 0.18],
+    "held": { "medium": "guns/viking_freeze_ray.medium.glb", "high": "guns/viking_freeze_ray.high.glb" },
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#bff0ff",
-    "hold": { "style": "pistol", "grip": [0, -0.02, -0.153], "support": [-0.02, -0.03, -0.143], "rake": 20 },
+    "hold": { "style": "pistol", "grip": [0, -0.025, -0.135], "support": [-0.02, -0.035, -0.125], "rake": 22 },
     "fallback": "weapons/freeze_ray.glb",
     "sound": "fire.freeze.b",
     "beam": true
@@ -46,7 +48,7 @@
   "notes": {
     "description": "A cold beam that slows, then freezes. Pair it with a friend who can finish the job.",
     "group": "The extended arsenal: every one fires differently. 9: energy and chemical.",
-    "model": "The owner's Freeze Gun (Meshy, owned), the sci-fi kit gun as the fallback.",
+    "model": "The owner's Viking Freeze Ray Pistol (Meshy, owned; content/guns.json, 2026-11-28): 0.36 m, held copies a 40,000-triangle cut, its ice crystals lit (glow). The kit freeze ray is the fallback.",
     "alt": "Freeze blast (owner, 2026-11-24): a slow cold ball (14 m/s, 35 m); whoever it hits is held in a block of ice where they stand for 3 s (can't move or act, 5 HP/s, full damage from anything else; the block solid to others). 60 % of the heat bar and its own 6 s cooldown; the beam fires on meanwhile."
   }
 }

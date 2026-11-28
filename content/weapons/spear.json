@@ -37,7 +37,8 @@
   "botDesirability": 0.6,
   "botRange": [0, 2.8],
   "view": {
-    "model": "guns/spear.glb",
+    "model": "guns/obsidian_spear.glb",
+    "held": { "medium": "guns/obsidian_spear.medium.glb", "high": "guns/obsidian_spear.high.glb" },
     "fallback": "procedural/spear",
     "viewOffset": [0.28, -0.24, 0.65],
     "tracer": "#c8a46a",
@@ -47,6 +48,6 @@
   "notes": {
     "description": "Poke with it at long reach, or throw it for a one-hit kill and go pick it up.",
     "design": "Two ways to use it (owner, 2026-11-18): fire pokes (60, a long 2.9 m reach, two to a body) and you keep the spear; right mouse throws it, one hit kills, and it sticks where it lands until someone picks it up, back into their hands ready to poke or throw. With no spear in hand there is nothing to poke with.",
-    "model": "The owner's carved spear (Meshy community, CC0; content/guns.json), 2 m long and centred, held a third of the way back on the plain shaft; the boxes-in-code spear (same length and grip) as the fallback."
+    "model": "The owner's Mesoamerican Obsidian Spear (Meshy, owned; content/guns.json, 2026-11-28): 2 m long and centred, held copies a 40,000-triangle cut, held a third of the way back on the plain shaft and thrown and stuck as the same model; the boxes-in-code spear (same length and grip) as the fallback."
   }
 }

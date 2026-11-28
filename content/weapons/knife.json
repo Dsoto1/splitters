@@ -16,12 +16,15 @@
   "botDesirability": 0.15,
   "botRange": [0, 2],
   "view": {
-    "model": "weapons/knife.glb",
+    "model": "guns/combat_knife.glb",
+    "fallback": "weapons/knife.glb",
+    "held": { "medium": "guns/combat_knife.medium.glb", "high": "guns/combat_knife.high.glb" },
     "viewOffset": [0.2, -0.2, 0.42],
     "tracer": "#ffffff",
-    "hold": { "style": "melee", "grip": [0, 0, -0.1] }
+    "hold": { "style": "melee", "grip": [0, 0, -0.08] }
   },
   "notes": {
+    "model": "The owner's Tactical Combat Knife (Meshy, owned; content/guns.json, 2026-11-28): 0.3 m, held copies a 24,000-triangle cut, held by its handle (its edge down, as the swing cuts); an untextured copy (guns/combat_knife_plain.glb) is built for tinted colour variants, not drawn yet. The kit knife is the fallback.",
     "description": "Always with you, never runs dry: quick stabs for when it gets personal."
   }
 }

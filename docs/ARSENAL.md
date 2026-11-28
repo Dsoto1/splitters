@@ -231,14 +231,14 @@ and muzzle changed. The models they replaced are no longer built (the kit models
 | Semi-Automatic Precision DMR | Marksman Rifle | 12k / 50k, 1.05 m | the Scope on its rail (`rifle_scope`), the full-screen scope as before (2.19x, 5.04x on the wheel) |
 | Steyr SSG 69 Bolt-Action Sniper | Sniper Rifle | 12k / 50k, 1.14 m | the Scope at 1.1 on its receiver rail (`long_scope`: the fine crosshair, glint), the full-screen scope as before |
 | Cyan Charge Plasma Sniper Rifle | Railgun | 12k / 50k, 1.05 m, its cyan cells lit (`glow`) | the Scope on its flat top (`long_scope`), the full-screen scope as before |
-| Civil War Lever Repeater | Lever-Action Rifle | 12k / 50k, 1.0 m | the owner's Brass Sentinel Scope at 0.7 on its top rail (`sentinel`), the full-screen scope as before |
-| Medieval Repeating Arbalest | Crossbow | 12k / 50k, 0.95 m (its bow 0.68 m across) | the Brass Sentinel at 0.7 on its rail (`sentinel`), the full-screen scope as before |
+| Civil War Lever Repeater | Lever-Action Rifle | 12k / 50k, 1.0 m | the owner's Scope at 0.7 low on its top rail (`rifle_scope`; the Brass Sentinel until 2026-11-28: it stood out too far), the full-screen scope as before |
+| Medieval Repeating Arbalest | Crossbow | 12k / 50k, 0.95 m (its bow 0.68 m across) | the owner's Scope at 0.7 low on its rail (`rifle_scope`; the Brass Sentinel until 2026-11-28), the full-screen scope as before |
 | Orange Automatic Plasma Rifle | Plasma Rifle | 12k / 50k, 0.85 m, its orange panels lit (`glow`) | a holographic sight on its top rail (the tool's mount), a red dot offered; was the old model's own sight box |
 | Tactical Flare Gun | Flare Gun, and the Airstrike Flare in your hands | 9k / 40k, 0.30 m, grip raked 24° | its notch and post, fitted (no optic: the HUD's dot kept) |
 | 40mm Revolving Cylinder Grenade Launcher | Grenade Launcher | 12k / 50k, 0.85 m | its flip-ups, fitted (no optic) |
 | Micro-Missile Swarm Launcher | Swarm Launcher | 14k / 60k, 0.95 m, its cyan lights lit (`glow`); taller than the kit launcher: drawn further out and lower (11 % of the screen at most) | its nubs, fitted (no optic) |
 | Scope | the rifle scope and long-range scope | 5k / 24k, 0.32 m | — |
-| Brass Sentinel Scope | the Brass Sentinel scope | 6k / 30k, 0.30 m | — |
+| Brass Sentinel Scope | the Brass Sentinel scope (no gun carries it since 2026-11-28) | 6k / 30k, 0.30 m | — |
 
 **Scopes of our own** (GUNPLAY_SPEC §15, "A scope of our own"): an optic kind in content/optics.json may carry a
 `scopeModel` (the model, its base's middle `foot` and, looked through, its eyepiece `eye` and `radius` at scale 1); each

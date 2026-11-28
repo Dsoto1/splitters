@@ -935,9 +935,9 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 | Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (on its new model's rail since 2026-11-28; was in its old model's sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
 | 2-3× optic (`scope`) | a chevron with holdover ticks | Nova 6 (its model's own scope) | as before |
 | Sniper scope (`sniper`) | a fine crosshair with holdover marks | none since 2026-11-28 (kept for a gun with a scope of its own) | |
-| Rifle scope (`rifle_scope`, the owner's Scope model on the rail) | a chevron with holdover ticks | Battle Rifle (3.5×, looked through: its eyepiece), Marksman Rifle (2.19×, the scope overlay) | as before |
+| Rifle scope (`rifle_scope`, the owner's Scope model on the rail) | a chevron with holdover ticks | Battle Rifle (3.5×, looked through: its eyepiece), Marksman Rifle (2.19×, the scope overlay), Lever-Action (2.59×) and Crossbow (2.19×), both the scope overlay, the scope low on their rails (since 2026-11-28, owner: the Brass Sentinel stood out too far; scopes plain) | as before |
 | Long-range scope (`long_scope`, the same Scope model) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
-| Brass Sentinel scope (`sentinel`, the owner's Brass Sentinel Scope model) | a chevron with holdover ticks | Lever-Action (2.59×), Crossbow (2.19×), both the scope overlay | as before |
+| Brass Sentinel scope (`sentinel`, the owner's Brass Sentinel Scope model) | a chevron with holdover ticks | none since 2026-11-28 (its tall mount stood out too far; kept for a later choice) | |
 | none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Flare Gun, Spear (the Grenade Launcher, Swarm Launcher and Flare Gun down their new models' own sights since 2026-11-28, the dot kept) | 1.52× |
 
 - **A scope of our own** (`scopeModel` on a `model` or `overlay` kind; weapon replacements batch 3, 2026-11-28): the
