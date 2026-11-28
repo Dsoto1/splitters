@@ -57,6 +57,7 @@ Everything else keeps its place below these.
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
+- `wip/chars-round-d` · a598a158 · run 46147387384 (14 replacements incl. Ricochet, Space Marine, Rourke; new: Slugger Boltsworth, Maestro Redcrest, Decimus Stonejaw, Tesla, Churchill, Patton, Wisp Linenwick the sheet ghost; Botboy hovers)
 - (none; train check/train-20261128-115202 landed 06f1b5f 2026-11-28: weapons-replace-3 + profile-optics, green on the re-run of perf budget and characters3: see Bugs.)
 
 (train check/train-20261128-044628 landed a190007 2026-11-28: historical-names + weapons-replace-2; its editor e2e flow failed once and passed on the re-run: root-caused on wip/editor-flow-1128, Ready to land above.)
