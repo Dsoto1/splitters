@@ -35,9 +35,13 @@ const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLEl
 /** The two numbers a tile shows: its damage a pull, and its fire rate (else its range). */
 function keyStats(d: WeaponDefinition): string {
   const stats = armoryStats(d);
-  const dmg = stats.find((s) => s.key === 'damage');
-  const second = stats.find((s) => s.key === 'rate') ?? stats.find((s) => s.key === 'range');
-  return [dmg ? `${dmg.text} dmg` : '', second ? (second.key === 'rate' ? `${second.text} rpm` : second.text) : ''].filter(Boolean).join(' · ');
+  // (Splash and stream weapons read 0 a pull on the tuning page's numbers: their rate and range instead.)
+  const dmg = stats.find((s) => s.key === 'damage' && s.text !== '0');
+  const rate = stats.find((s) => s.key === 'rate');
+  const range = stats.find((s) => s.key === 'range');
+  const second = dmg ? (rate ?? range) : range;
+  const first = dmg ? `${dmg.text} dmg` : rate ? `${rate.text} rpm` : '';
+  return [first, second ? (second.key === 'rate' ? `${second.text} rpm` : second.text) : ''].filter(Boolean).join(' · ');
 }
 
 /** Every weapon in the picker's order: favourites first, then the Armory's sections. */

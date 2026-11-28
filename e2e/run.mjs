@@ -15591,6 +15591,46 @@ async function practicerangeFlow(browser) {
 }
 
 /**
+ * The ranges' weapon picker (game/rangePicker.ts; owner, 2026-11-28): open it (P on a keyboard, the Guns button by
+ * touch), pick a weapon by its tile, see it in hand without the map loading again, and fire it (a round leaves the
+ * magazine). Returns what it saw. `pics`/`name`: a picture with it open.
+ */
+async function rangePick(page, id, { tap = false, snap = null } = {}) {
+  const map = await page.evaluate(() => window.__cs.map);
+  const matchBefore = await sim(page, (m) => m.seed);
+  if (tap) {
+    const at = await page.evaluate(() => {
+      const r = document.getElementById('tc-guns')?.getBoundingClientRect();
+      return r && r.width ? { x: r.x + r.width / 2, y: r.y + r.height / 2 } : null;
+    });
+    if (at) await page.touchscreen.tap(at.x, at.y);
+  } else await page.keyboard.press('KeyP');
+  const opened = await page.waitForFunction(() => !document.getElementById('range-picker')?.hidden && document.querySelectorAll('#range-picker .rp-tile').length > 50, null, { timeout: T(20000) }).then(() => true, () => false);
+  const layout = opened ? await page.evaluate(() => {
+    const r = document.getElementById('range-picker').getBoundingClientRect();
+    const tile = document.querySelector('#range-picker .rp-tile')?.getBoundingClientRect();
+    return { fits: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1, tile: !!tile && tile.width > 60, sections: document.querySelectorAll('#range-picker .rp-sec').length, stats: /dmg/.test(document.querySelector('#range-picker .rp-tile small')?.textContent ?? ''), pause: !document.getElementById('pause').hidden, scroll: document.documentElement.scrollWidth <= innerWidth };
+  }) : null;
+  if (snap) await snap();
+  const tile = page.locator(`#range-picker .rp-sec:not([data-section="favs"]) .rp-tile[data-weapon="${id}"]`);
+  await tile.scrollIntoViewIfNeeded().catch(() => {});
+  // (Forced: a CPU-drawn page's frames are too slow for Playwright's "stable" check over the live game behind it.)
+  if (tap) await tile.tap({ force: true }).catch(() => {});
+  else await tile.click({ force: true }).catch(() => {});
+  const closed = await page.waitForFunction(() => document.getElementById('range-picker')?.hidden, null, { timeout: T(20000) }).then(() => true, () => false);
+  // Back in play without the mouse (a headless page never takes it): touch play, as the flows play.
+  if (!tap) await playWithoutMouse(page);
+  const held = await page.waitForFunction((w) => window.__cs.view.heldWeapon === w, id, { timeout: T(30000) }).then(() => true, () => false);
+  const mag = () => sim(page, (m, me) => me.weapons.get(me.current)?.mag ?? 0);
+  const before = await mag();
+  await page.evaluate(() => (window.__autoInput = { buttons: 2 }));
+  const fired = await until(async () => (await mag()) < before, T(10000)).then(() => true, () => false);
+  await page.evaluate(() => (window.__autoInput = { buttons: 0 }));
+  const same = (await page.evaluate(() => window.__cs.map)) === map && (await sim(page, (m) => m.seed)) === matchBefore;
+  return { opened, layout, closed, held, fired, same };
+}
+
+/**
  * The Armory (owner, 2026-11-27; frontend/armory.ts, docs/ARSENAL.md "Armory"): the main menu's Armory opens a weapons
  * page laid out like Character Select; Q / E and a chip change the category in view, a tile shows its weapon large in
  * the menu scene (its held copy, every hero hidden), a drag turns it, and Try it in the range lands in the Practice
@@ -15654,9 +15694,24 @@ async function armoryFlow(browser) {
     if (inRange) {
       await playWithoutMouse(page);
       await snap(page, 'armory-range');
+      // The range's weapon picker: two weapons in a row, each in hand at once (no reload of the map) and fired.
+      const a = await rangePick(page, 'core.shotgun', { snap: () => snap(page, 'rangepick-desktop-open') });
+      check(a.opened && a.layout?.fits && a.layout.tile && a.layout.sections >= 8 && a.layout.stats && !a.layout.pause && a.closed && a.held && a.fired && a.same, `the range's picker (P) lists every category with key numbers, fits, a pick puts the shotgun in hand and it fires, the same match (${JSON.stringify(a)})`);
+      const b = await rangePick(page, 'core.pistol');
+      check(b.opened && b.closed && b.held && b.fired && b.same, `a second pick in a row: the pistol in hand, fired, the same match (${JSON.stringify(b)})`);
+      await snap(page, 'rangepick-desktop-held');
+      // ] : the next weapon in the Armory's order, without the picker.
+      const next = await page.evaluate(() => window.__cs.view.heldWeapon);
+      await page.keyboard.press('BracketRight');
+      const stepped = await page.waitForFunction((w) => window.__cs.view.heldWeapon && window.__cs.view.heldWeapon !== w, next, { timeout: T(20000) }).then(() => true, () => false);
+      check(stepped && (await page.evaluate(() => document.getElementById('range-picker')?.hidden)), `] puts the next weapon in hand without opening the picker (${stepped})`);
+      await page.keyboard.press('BracketLeft');
+      await page.waitForFunction(() => window.__cs.view.heldWeapon === 'core.pistol', null, { timeout: T(20000) }).catch(() => {});
+      // Back to the Armory: on the weapon held last.
+      const label = await page.textContent('#exitmatch').catch(() => '');
       await page.evaluate(() => document.getElementById('exitmatch').click());
-      const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && document.querySelector('.screen.armory')?.dataset.shown === 'core.sniper', null, { timeout: T(30000) }).then(() => true, () => false);
-      check(back, 'leaving the range comes back to the Armory, the sniper rifle shown');
+      const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && document.querySelector('.screen.armory')?.dataset.shown === 'core.pistol', null, { timeout: T(30000) }).then(() => true, () => false);
+      check(label === 'Back to the Armory' && back, `"Back to the Armory" comes back to the Armory on the weapon held last, the pistol (${label}, ${back})`);
     }
     await context.close();
   }
@@ -15736,6 +15791,14 @@ async function testrangeFlow(browser) {
     await page.evaluate(() => (window.__cs.input.classMenu = false));
     await frames(page, 10);
     if (pics) await page.screenshot({ path: `${pics}/range-${label}.png` });
+    // The weapon picker here too (Test my loadout), on a phone: a tap on Guns; it fits the screen. (The desktop's, by P,
+    // is the armory flow's.)
+    if (tap) {
+      const shot = () => (pics ? page.screenshot({ path: `${pics}/rangepick-${label}-open.png` }) : null);
+      const r = await rangePick(page, 'core.smg', { tap, snap: shot });
+      check(r.opened && r.layout?.fits && r.layout.tile && r.layout.scroll && r.closed && r.held && r.fired && r.same, `${label}: Test my loadout's weapon picker fits the screen, a pick puts the SMG in hand and it fires, the same match (${JSON.stringify(r)})`);
+      if (pics) await page.screenshot({ path: `${pics}/rangepick-${label}-held.png` });
+    }
     // Back: the pause menu, then its Back ("Armory": Esc again) or its exit button (a phone).
     const paused = await page.evaluate(() => !document.getElementById('pause').hidden);
     if (!paused && tap) {

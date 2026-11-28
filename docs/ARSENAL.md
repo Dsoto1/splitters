@@ -606,7 +606,18 @@ carries only the entry hook in `frontEnd.ts` (the screen id, the nav entry, hand
   setting as Profile → Favourite loadout → Optics). **▶ Fire sound** plays its fire sound (controller X).
 - **Try it in the range** (the button, Enter or controller A on the one shown): the Practice range alone, as Quick
   Play's link opens it, with the weapon in hand now and at every spawn (`playRange('practice_range', weapon)`, host
-  option `hand`, shared `Match.holdOnSpawn`). Leaving the range comes back to the Armory, that weapon shown.
+  option `hand`, shared `Match.holdOnSpawn`). Its pause menu's "Back to the Armory" comes back here, on the weapon you
+  held last in the range.
+- **In the range: the weapon picker** (owner, 2026-11-28: "I really dislike having to load into the level just to test
+  it"; client `game/rangePicker.ts` + `.css`, its own chunk loaded at the first opening). On the Practice range and Test my
+  loadout, **P** (controller **View**, a phone's **Guns** button beside II) opens every weapon this page lists, by the same
+  categories, your Armory favourites first, a search; each tile has the weapon's picture, name, damage a pull and fire
+  rate (else range); the one in focus shows its role and every bar. A click, tap, Enter or A puts it in your hands at once
+  (the page's `hand` message → `MatchHost.hand` → `Match.holdOnSpawn(me, id, swap)`: in hand now and each life, and the
+  last pick's weapon goes so the slots don't fill up), and the picker closes; the map never reloads. **Q / E** (LB / RB)
+  in it, and **[ / ]** in play, put the previous or next weapon in hand straight away. **Esc** (B, ✕) closes it: back to
+  "Click to fight" (the browser won't hand the mouse back on Esc), not the pause menu. Q and E stay lean in play (the
+  range's peek wall). Ranges only: the host ignores `hand` in any other match.
 - **Test my loadout** (the header, owner 2026-11-28; it was Profile → Favourite loadout → Test weapons): the Training
   Range with your favourite class's loadout and optic picks (main.ts `playRange()`); its pause menu's Back ("◀ Armory")
   and "Back to the Armory" come back here, the button focused. Profile's Favourite loadout has a **Weapons** button here.
