@@ -140,6 +140,8 @@ export interface CharacterInstance {
   /** How the body gets about (the look's `locomotion`): `roll` glides with no walk cycle; `hover` glides `hover` m up (at 1.8 m). */
   locomotion?: 'roll' | 'hover';
   hover?: number;
+  /** How a hovering body's legs hang (the look's `hoverPose`; left out, `dangle`). */
+  hoverPose?: 'dangle' | 'thrusters' | 'clips';
   /** The look's authored clip set (`clips`), loaded: each clip's natural speed, length and left-foot touchdown (gait.ts ClipLoop). */
   clipLoops?: Partial<Record<Clip, ClipLoop>>;
   dispose(): void;
@@ -317,6 +319,7 @@ export class CharacterLibrary {
     let grip: CharacterInstance['grip'];
     let locomotion: CharacterInstance['locomotion'];
     let hover: CharacterInstance['hover'];
+    let hoverPose: CharacterInstance['hoverPose'];
     let clipLoops: CharacterInstance['clipLoops'];
 
     if (spec.npc) {
@@ -379,6 +382,7 @@ export class CharacterLibrary {
         grip = fit?.grip || look.whole?.grip ? { ...fit?.grip, ...look.whole?.grip } : undefined;
         locomotion = look.locomotion;
         hover = look.locomotion === 'hover' ? look.hover : undefined;
+        hoverPose = look.hoverPose;
       }
       // The beard isn't a file: buildGear makes it on the face (gear.ts, BEARD).
       const files = spec.armsOnly ? [firstPersonArms(look)] : look.whole ? look.parts : [...look.parts, look.head, ...look.hair.filter((h) => h !== BEARD)];
@@ -503,6 +507,7 @@ export class CharacterLibrary {
       ...(grip ? { grip } : {}),
       ...(locomotion ? { locomotion } : {}),
       ...(hover ? { hover } : {}),
+      ...(hoverPose ? { hoverPose } : {}),
       ...(clipLoops ? { clipLoops } : {}),
       dispose: () => {
         for (const g of new Set(clips.values())) g.dispose();

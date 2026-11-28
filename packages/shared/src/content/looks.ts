@@ -61,6 +61,11 @@ export interface CharacterLook {
   /** With `locomotion: 'hover'`: how high the body floats (m at a 1.8 m body; its size scales it). */
   hover?: number;
   /**
+   * With `locomotion: 'hover'`: how its legs hang off the ground (owner, 2026-11-28): left out `dangle` (toes down, knees a
+   * little bent), `thrusters` (jets under the feet: legs straight and together, soles flat to the ground) or `clips`.
+   */
+  hoverPose?: 'dangle' | 'thrusters' | 'clips';
+  /**
    * The authored clip set this body moves with while it holds a gun and walks or runs upright (characters/<set>_clips.glb,
    * tools/content/clip-set.mjs: walk and run legs, the upper body walking and running while shooting, walking back
    * while shooting). Absent: DEFAULT_CLIP_SET; a set's id: that one; `false`: the rig's own gait. `clips` in its

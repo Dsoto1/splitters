@@ -1864,6 +1864,14 @@ player's as before. The Veiled Vanguard and Mujina hover at 0.3 m; the Baseball 
 others keep `roll` on the ground. A model built with `hover` has its legs riding the pelvis, as a roller's do
 (prepare-meshy-characters.mjs); neither model was rebuilt.
 
+**Their legs hang (owner, 2026-11-28: "it looks odd when she's floating and has feet as if they are planted").** Off the
+ground a hovering body's legs take its look's `hoverPose` after the clips, in as far as it is lifted (eased down with
+the lift: seated, dead or in full-body first person they stand as the clips pose them; `HOVER_POSES` in
+characterAnimator.ts): `dangle`, left out, points the toes down (0.9 rad at the ankle) with the knees a little bent
+(0.25 rad), each leg swaying 0.06 rad with the bob, half a bob apart; `thrusters`, for jets under the feet (Botboy,
+owner: "like an iron man"), holds the legs nearly straight (0.06 rad) and turned in together, the soles flat to the
+ground; `clips` keeps the clips' legs. The hit shapes are measured from the model as before.
+
 ### The pirates in Historical, the real people by their real names (owner, 2026-11-28)
 
 Owner, 2026-11-28: "pirates should be in historical. as for the real people, lets keep their real life names since they
