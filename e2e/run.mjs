@@ -583,7 +583,7 @@ async function editorFlow(browser) {
   await page.evaluate(() => document.getElementById('ed-cast-army').click());
   await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
   const cast = { types, doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]:checked')].map((b) => b.dataset.type)) };
-  check(types.length === 12 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: twelve types (Toys, Pirates and Holiday since 2026-11-26, Historical since 2026-11-27), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
+  check(types.length === 11 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: eleven types (Toys and Holiday since 2026-11-26, Historical since 2026-11-27, Pirates in it since 2026-11-28), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Map settings → Teams → Layout (owner, 2026-11-26, "4b"): only the common layouts as chips; a map saved with an odd
