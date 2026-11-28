@@ -232,7 +232,7 @@
           }
         }
       },
-      "view": { "model": "guns/flare_gun.glb", "handOnly": true },
+      "view": { "model": "guns/flare_pistol.glb", "handOnly": true },
       "notes": {
         "group": "Worms-style special.",
         "design": "A flare-gun shot that marks the spot (the flare gun in your hands, a fizzing, smoking light that lands and burns steady): two seconds later five bombs fall in a line along the way you threw it."

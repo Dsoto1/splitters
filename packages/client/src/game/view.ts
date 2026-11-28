@@ -195,7 +195,7 @@ import { WORLD_GRADE, loadFirstPersonMode, loadGraphicsQuality, loadRenderScale,
 import { takeOverViewmodel } from './viewmodelSwap.ts';
 import { MIRROR_X, PAIR_AWAY_DROP, PairFlashGate, casingSide, easeUp, pairPlace, pairReloadDip, stepPairUp } from './pairView.ts';
 import { aimPlacement, blendPlacement, sightPicture, type GunPlacement } from './sightPose.ts';
-import { CLIP_NAME, attachOptic } from './opticHousing.ts';
+import { CLIP_NAME, attachOptic, type OpticModelLoader } from './opticHousing.ts';
 import { eyepieceOf, opticFor, opticsVersion, type CarriedOptic } from './optics.ts';
 import { levelMipBias } from '../levelMerge.ts';
 import { CreatureLibrary, fitPlayerSkin, type AvatarSpec } from '../content/creatures.ts';
@@ -2144,7 +2144,7 @@ export class GameView {
       // The muzzle as drawn (muzzlePoint.ts): the weapon's `muzzleAt`, else the middle of the model's front-most geometry.
       const at = muzzlePoint(node, def.view.muzzleAt, def.view.model);
       // The optic it carries, when that is built in code (opticHousing.ts): the housing and the glass with its mark.
-      attachOptic(this.scene, node, def, true, carried);
+      attachOptic(this.scene, node, def, true, carried, this.opticModels, this.atmosphere.quality);
       const v = { node, muzzleX: at.x, muzzleZ: at.z, muzzleY: at.y, sightTop: bounds.max.y, stockZ: bounds.min.z, tipZ: bounds.max.z, rearZ: bounds.min.z, optic: carried };
       // (A gun built for an optic you have since changed is not kept: the next setViewmodel builds it again.)
       if (this.viewmodels.has(def.id)) this.dropViewmodel(def.id);
@@ -2161,6 +2161,9 @@ export class GameView {
 
   /** Which copy of each kept first-person gun is drawn (tests): the model path. */
   readonly viewmodelPaths = new Map<string, string>();
+
+  /** A scope model of our own for a gun's optic (opticHousing.ts attachOptic: a kind's `scopeModel`). */
+  private readonly opticModels: OpticModelLoader = (path) => this.models.instantiate(path, 'opticScope');
 
   /**
    * Your own gun's fired look (view.spent: the grapple gun without its claw) for `ms`, then back to its loaded one.
@@ -2355,7 +2358,7 @@ export class GameView {
       (node) => {
         if (this.viewmodels.get(def.id) !== v || this.scene.isDisposed) return node.dispose();
         for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-        attachOptic(this.scene, node, def, true, (v as { optic?: CarriedOptic | null }).optic ?? null);
+        attachOptic(this.scene, node, def, true, (v as { optic?: CarriedOptic | null }).optic ?? null, this.opticModels, this.atmosphere.quality);
         const old = v.node;
         // On or off by the old copy's own switch (not its parents': scoped or in third person the view's root is off).
         takeOverViewmodel(old, node);
@@ -2674,7 +2677,7 @@ export class GameView {
             if (this.viewmodels2.get(def.id) !== made || this.scene.isDisposed) return node.dispose();
             node.parent = root;
             for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-            attachOptic(this.scene, node, def, true, this.viewmodels.get(def.id)?.optic ?? opticFor(def));
+            attachOptic(this.scene, node, def, true, this.viewmodels.get(def.id)?.optic ?? opticFor(def), this.opticModels, this.atmosphere.quality);
             node.setEnabled(false);
             made.node = node;
           },
@@ -3624,7 +3627,7 @@ export class GameView {
         if (a.pair !== made || a.root.isDisposed() || a.anim !== anim) return node.dispose();
         castSmall(node);
         made.muzzle = { node, local: muzzlePoint(node, def.view.muzzleAt, def.view.model) };
-        if (!this.crowd) attachOptic(this.scene, node, def, false, opticFor(def, a.slot));
+        if (!this.crowd) attachOptic(this.scene, node, def, false, opticFor(def, a.slot), this.opticModels);
         anim.holdPair(node);
       });
     }
@@ -3676,7 +3679,7 @@ export class GameView {
       // The optic it carries, the one its player picked, as everyone sees it: the housing alone (crowds leave it off: a draw a gun).
       const optic = opticFor(def, a.slot);
       a.optic = optic?.id ?? null;
-      if (!this.crowd) attachOptic(this.scene, node, def, false, optic);
+      if (!this.crowd) attachOptic(this.scene, node, def, false, optic, this.opticModels);
       if (a.anim) {
         a.anim.hold(node, def.view.hold);
         return;

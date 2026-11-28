@@ -276,7 +276,7 @@ export async function openSightSheet(engine: AbstractEngine): Promise<void> {
       const bounds = { sightTop: b.max.y, stockZ: b.min.z };
       node.parent = viewRoot;
       for (const m of node.getChildMeshes()) m.renderingGroupId = 1;
-      attachOptic(scene, node, def, true, carried);
+      attachOptic(scene, node, def, true, carried, (path) => models.instantiate(path, 'sight_scope'));
       // A model optic's glass: a depth-only disc, drawn first, keeps the tube behind it out of the view (view.ts setOptic).
       let mask: Mesh | null = null;
       const eyepiece = eyepieceOf(def, carried);

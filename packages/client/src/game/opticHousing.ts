@@ -242,12 +242,47 @@ function frameParts(scene: Scene, o: CarriedOptic): Mesh[] {
   return parts;
 }
 
+/** Loads a model by its path under public/models (the caller's model library), a copy of its own. */
+export type OpticModelLoader = (path: string) => Promise<TransformNode>;
+
+/**
+ * Stand a scope of our own (its kind's `scopeModel`: guns whose models have none, content/optics.json) on `gun` at the
+ * gun's mount: its foot's middle there, scaled to the gun; from its sharper `held` model at `tier` Medium or High (your
+ * own copy, a close-up), your own drawn in the gun's rendering group. Returns its root at once (disposed with the gun; the model comes in under it), or null.
+ */
+function attachScopeModel(scene: Scene, gun: TransformNode, def: WeaponDefinition, own: boolean, optic: CarriedOptic | null, load: OpticModelLoader, tier: 'low' | 'medium' | 'high'): TransformNode | null {
+  const sm = optic?.kind.scopeModel;
+  const mount = optic?.mount;
+  if (!sm || !mount) return null;
+  const root = new TransformNode(`scope_${def.id}`, scene);
+  root.parent = gun;
+  root.position.set(mount.at[0], mount.at[1], mount.at[2]);
+  root.scaling.setAll(mount.scale);
+  const path = (tier !== 'low' && sm.held?.[tier]) || sm.model;
+  void load(path).then(
+    (node) => {
+      if (root.isDisposed()) return node.dispose();
+      node.parent = root;
+      node.position.set(-sm.foot[0], -sm.foot[1], -sm.foot[2]);
+      for (const m of node.getChildMeshes()) {
+        m.isPickable = false;
+        if (own) m.renderingGroupId = 1;
+      }
+    },
+    () => undefined,
+  );
+  return root;
+}
+
 /**
  * Build `def`'s optic on its model `gun` (a node in the model's own space), or nothing when it carries none built in
  * code (`optic`: the one it carries, by default its own; a player's pick is optics.ts opticFor). `own`: your own first-person gun, which gets the glass and its mark and is drawn in the gun's rendering
  * group; everyone else's copy is the housing alone. Returns the housing's root (disposed with the gun).
+ * A kind with a scope model of our own (`scopeModel`) stands it on the gun when `load` is given (`tier`: the graphics
+ * quality, which picks your own copy's sharper model).
  */
-export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinition, own: boolean, optic: CarriedOptic | null = opticOf(def)): TransformNode | null {
+export function attachOptic(scene: Scene, gun: TransformNode, def: WeaponDefinition, own: boolean, optic: CarriedOptic | null = opticOf(def), load?: OpticModelLoader, tier: 'low' | 'medium' | 'high' = 'low'): TransformNode | null {
+  if (optic?.kind.scopeModel) return load ? attachScopeModel(scene, gun, def, own, optic, load, tier) : null;
   if (!builtHousing(optic)) return null;
   if (!own && optic.window) return null;
   const root = new TransformNode(`optic_${def.id}`, scene);
