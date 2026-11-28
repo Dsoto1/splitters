@@ -1866,11 +1866,15 @@ others keep `roll` on the ground. A model built with `hover` has its legs riding
 
 **Their legs hang (owner, 2026-11-28: "it looks odd when she's floating and has feet as if they are planted").** Off the
 ground a hovering body's legs take its look's `hoverPose` after the clips, in as far as it is lifted (eased down with
-the lift: seated, dead or in full-body first person they stand as the clips pose them; `HOVER_POSES` in
-characterAnimator.ts): `dangle`, left out, points the toes down (0.9 rad at the ankle) with the knees a little bent
-(0.25 rad), each leg swaying 0.06 rad with the bob, half a bob apart; `thrusters`, for jets under the feet (Botboy,
-owner: "like an iron man"), holds the legs nearly straight (0.06 rad) and turned in together, the soles flat to the
-ground; `clips` keeps the clips' legs. The hit shapes are measured from the model as before.
+the lift: seated, dead or in full-body first person they stand as the clips pose them; `HOVER_DANGLE`, `HOVER_THRUST`
+in characterAnimator.ts): `dangle`, left out, bends the knees 0.25 rad and points the toes down 0.9 rad at the ankle on
+top of the clips, each leg swaying 0.06 rad with the bob, half a bob apart; `thrusters`, for jets under the feet (Botboy,
+owner: "he has propulsions under his feet … like an iron man"), sets the legs whatever the clips do: each thigh straight
+down, turned 0.05 rad in toward the other, the shin 0.06 rad back (the slightest bend), the sole flat to the ground;
+`clips` keeps the clips' legs. A build used to put a hovering body's legs on the pelvis, as a roller's (they never
+moved); now only a roller's and a `hoverPose: clips` body's are (prepare-meshy-characters.mjs), and The Veiled Vanguard
+was rebuilt from her download so her legs can hang (grips refitted, portrait captured). Mujina's model already had
+its legs. A body whose legs ride the pelvis shows no change.
 
 ### The pirates in Historical, the real people by their real names (owner, 2026-11-28)
 

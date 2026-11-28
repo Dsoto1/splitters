@@ -440,6 +440,7 @@ export function buildSpec(m) {
     file: m.source.file ? new RegExp(m.source.file) : null,
     rigJoints: m.source.joints,
     locomotion: m.locomotion,
+    hoverPose: m.hoverPose,
     clipsFrom: m.clipsFrom,
     metallic: m.finish.metallic,
     roughness: m.finish.roughness,

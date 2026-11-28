@@ -1178,8 +1178,9 @@ async function build(c, src, out, { keep = () => true, ratio = FULL_RATIO, lod =
       const w = src.weights[v * 4 + k];
       if (!w) continue;
       let joint = src.rig[src.joints[v * 4 + k]];
-      // Rolling or hovering (no walking): what the legs held rides the pelvis, whole.
-      if ((c.locomotion === 'roll' || c.locomotion === 'hover') && /^(thigh|calf|foot|ball)_/.test(joint)) joint = 'pelvis';
+      // Rolling (no legs to walk on), or hovering with the clips' legs (`hoverPose: clips`): what the legs held rides the
+      // pelvis, whole. Other hovering bodies keep their legs: off the ground they hang (CharacterAnimator's HOVER_POSES).
+      if ((c.locomotion === 'roll' || (c.locomotion === 'hover' && c.hoverPose === 'clips')) && /^(thigh|calf|foot|ball)_/.test(joint)) joint = 'pelvis';
       const u = rigIndex.get(joint);
       acc.set(u, (acc.get(u) ?? 0) + w);
     }

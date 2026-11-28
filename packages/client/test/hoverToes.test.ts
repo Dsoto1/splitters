@@ -16,7 +16,7 @@ import type { CharacterInstance, Clip } from '../src/content/characters.ts';
  * hovering they stand as the clips put them. A look's `hoverPose`: `thrusters` (jets under the feet, Botboy) holds the
  * legs straight and together with the soles flat to the ground; `clips` keeps the clips' legs.
  */
-function body(locomotion?: 'hover', hoverPose?: 'thrusters' | 'clips') {
+function body(locomotion?: 'hover', hoverPose?: 'thrusters' | 'clips', bent = 0) {
   const scene = new Scene(new NullEngine());
   const holder = new TransformNode('avatar', scene);
   const root = new TransformNode('char', scene);
@@ -60,9 +60,11 @@ function body(locomotion?: 'hover', hoverPose?: 'thrusters' | 'clips') {
     const g = new AnimationGroup(name, scene);
     for (const j of legs) {
       const a = new Animation(`${name}_${j.name}`, 'rotationQuaternion', 30, Animation.ANIMATIONTYPE_QUATERNION, Animation.ANIMATIONLOOPMODE_CYCLE);
+      // `bent`: the clips' knees bent that much (rad; the thigh forward, the shin back), as a crouched idle's.
+      const r = !bent ? Quaternion.Identity() : Quaternion.RotationAxis(Vector3.Right(), j.name.startsWith('thigh') ? -bent : j.name.startsWith('calf') ? 2 * bent : 0);
       a.setKeys([
-        { frame: 0, value: Quaternion.Identity() },
-        { frame: 30, value: Quaternion.Identity() },
+        { frame: 0, value: r },
+        { frame: 30, value: r.clone() },
       ]);
       g.addTargetedAnimation(a, j);
     }
@@ -78,10 +80,15 @@ function body(locomotion?: 'hover', hoverPose?: 'thrusters' | 'clips') {
       anim.update(1 / 60, { ...state, ...s });
       scene.animate();
     }
-    const at = (n: string) => joints.get(n)!.getAbsolutePosition().clone();
+    const at = (n: string) => {
+      const chain: TransformNode[] = [];
+      for (let j: TransformNode | null = joints.get(n)!; j; j = j.parent as TransformNode | null) chain.unshift(j);
+      for (const j of chain) j.computeWorldMatrix(true);
+      return joints.get(n)!.getAbsolutePosition().clone();
+    };
     const toe = at('ball_l').subtract(at('foot_l'));
     const shin = at('foot_l').subtract(at('calf_l'));
-    return { toes: Math.atan2(-toe.y, toe.z) - Math.atan2(0.03, 0.06), knee: Vector3.GetAngleBetweenVectors(shin, Vector3.Down(), Vector3.Right()), feet: Vector3.Distance(at('foot_l'), at('foot_r')), hips: Vector3.Distance(at('thigh_l'), at('thigh_r')) };
+    return { toes: Math.atan2(-toe.y, toe.z) - Math.atan2(0.03, 0.06), knee: Vector3.GetAngleBetweenVectors(shin, Vector3.Down(), Vector3.Right()), feet: Vector3.Distance(at('foot_l'), at('foot_r')), hips: Vector3.Distance(at('thigh_l'), at('thigh_r')), flat: toe.y / toe.length(), straight: Vector3.GetAngleBetweenVectors(at('foot_l').subtract(at('thigh_l')), Vector3.Down(), Vector3.Right()) };
   };
   return { scene, run };
 }
@@ -101,11 +108,15 @@ describe('floaters point their toes down (owner, 2026-11-28)', () => {
   });
 
   it('jets under the feet (thrusters): legs nearly straight and together, soles flat to the ground', () => {
-    const { scene, run } = body('hover', 'thrusters');
+    // Whatever the clips do with the legs (here knees bent 0.4 rad): straight down under the hips, the soles level.
+    const { scene, run } = body('hover', 'thrusters', 0.4);
     const up = run(3);
-    expect(Math.abs(up.toes)).toBeLessThan(0.03);
-    expect(Math.abs(up.knee)).toBeLessThan(0.1);
-    expect(up.feet).toBeLessThan(up.hips - 0.02);
+    expect(Math.abs(up.straight)).toBeLessThan(0.08);
+    expect(Math.abs(up.knee)).toBeLessThan(0.15);
+    expect(Math.abs(up.flat)).toBeLessThan(0.03);
+    expect(up.feet).toBeLessThan(up.hips - 0.01);
+    // Seated, the clips' bent knees again.
+    expect(Math.abs(run(3, { seated: true }).straight)).toBeGreaterThan(0.2);
     scene.dispose();
   });
 

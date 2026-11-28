@@ -180,12 +180,14 @@ const HOVER_BOB_SECONDS = 3.2;
 const HOVER_EASE = 3;
 /**
  * How a hovering body's legs hang off the ground (owner, 2026-11-28: "it looks odd when she's floating and has feet as
- * if they are planted"), the look's `hoverPose`: [knee bend, toes down at the ankle, sway with the bob, legs together]
- * (rad). `dangle` (left out): toes pointed down, knees a little bent, each foot swaying half a bob apart. `thrusters`
- * (jets under the feet, Botboy: "like an iron man"): legs nearly straight and together, soles flat to the ground. In as
- * far as the body is lifted (seated, dead or in full-body first person it is down, and so are they); `clips` keeps the clips' legs.
+ * if they are planted"), the look's `hoverPose`, in as far as the body is lifted (seated, dead or in full-body first
+ * person it is down, and so are they). `dangle` (left out): on top of the clips, the knees bent HOVER_DANGLE[0] and the
+ * toes pointed down [1] (rad), each leg swaying [2] with the bob, half a bob apart. `thrusters` (jets under the feet,
+ * Botboy: "like an iron man"): whatever the clips do, each thigh straight down turned HOVER_THRUST[0] in toward the other,
+ * the shin [1] back from straight (the slightest bend), the sole flat to the ground. `clips` keeps the clips' legs.
  */
-const HOVER_POSES = { dangle: [0.25, 0.9, 0.06, 0], thrusters: [0.06, -0.06, 0, 0.05] } as const;
+const HOVER_DANGLE = [0.25, 0.9, 0.06] as const;
+const HOVER_THRUST = [0.05, 0.06] as const;
 /** How fast the gun follows a third-person aim point's turn (MotionState.aimYaw), per second. */
 const AIM_YAW_EASE = 18;
 /** Overlays outweigh locomotion on the upper body. */
@@ -1606,25 +1608,45 @@ export class CharacterAnimator {
     this.hoverBase += ((this.ch.hover ?? 0) * up - this.hoverBase) * Math.min(1, dt * HOVER_EASE);
     this.hoverY = this.hoverBase + HOVER_BOB * up * Math.sin((this.hoverT / HOVER_BOB_SECONDS) * Math.PI * 2);
   }
-  /** A hovering body's legs hang (HOVER_POSES) as far as it is lifted. */
-  private hoverFeet(right: Vector3, forward: Vector3): void {
+  /** A hovering body's legs hang (`hoverPose`: HOVER_DANGLE, HOVER_THRUST) as far as it is lifted. */
+  private hoverFeet(right: Vector3, up: Vector3, forward: Vector3): void {
     const full = (this.ch.hover ?? 0) * this.hoverScale;
-    const pose = this.ch.hoverPose === 'clips' ? null : HOVER_POSES[this.ch.hoverPose ?? 'dangle'];
-    const lift = full > 0 && pose ? Math.min(1, this.hoverBase / full) : 0;
-    if (lift < 0.001 || !pose) return;
-    const [knee, toes, sway, together] = pose;
+    const pose = this.ch.hoverPose ?? 'dangle';
+    const lift = full > 0 && pose !== 'clips' ? Math.min(1, this.hoverBase / full) : 0;
+    if (lift < 0.001) return;
     const t = (this.hoverT / HOVER_BOB_SECONDS) * Math.PI * 2;
     const mid = this.pelvis?.getAbsolutePosition();
     for (const [side, at] of [['l', 0], ['r', Math.PI]] as const) {
-      const thigh = this.ch.joints.get(`thigh_${side}`);
-      const calf = this.ch.joints.get(`calf_${side}`);
-      // Together: each thigh turned in toward the middle, about the way the body faces.
-      if (together && thigh && mid) this.turnJoint(thigh, forward, -Math.sign(Vector3.Dot(thigh.getAbsolutePosition().subtract(mid), right)) * together * lift);
-      if (thigh) freshWorld(thigh);
-      this.turnJoint(calf, right, (knee + sway * Math.sin(t + at)) * lift);
-      if (calf) freshWorld(calf);
-      this.turnJoint(this.ch.joints.get(`foot_${side}`), right, toes * lift);
+      const [thigh, calf, foot, ball] = ['thigh', 'calf', 'foot', 'ball'].map((n) => this.ch.joints.get(`${n}_${side}`));
+      if (!thigh || !calf || !foot) continue;
+      if (pose === 'thrusters') {
+        const out = mid ? Math.sign(Vector3.Dot(thigh.getAbsolutePosition().subtract(mid), right)) : 0;
+        this.aimJoint(thigh, calf, up.scale(-1).addInPlace(right.scale(-out * HOVER_THRUST[0])), lift);
+        this.aimJoint(calf, foot, up.scale(-1).addInPlace(forward.scale(-HOVER_THRUST[1])), lift);
+        if (ball) {
+          freshWorld(foot);
+          freshWorld(ball);
+          const toe = ball.getAbsolutePosition().subtract(foot.getAbsolutePosition());
+          this.aimJoint(foot, ball, toe.subtract(up.scale(Vector3.Dot(toe, up))), lift);
+        }
+        continue;
+      }
+      this.turnJoint(calf, right, (HOVER_DANGLE[0] + HOVER_DANGLE[2] * Math.sin(t + at)) * lift);
+      freshWorld(calf);
+      this.turnJoint(foot, right, HOVER_DANGLE[1] * lift);
     }
+  }
+
+  /** Turn a joint (by `weight`) so its child lies along `want` (world) from it. */
+  private aimJoint(joint: TransformNode, child: TransformNode, want: Vector3, weight: number): void {
+    freshWorld(joint);
+    freshWorld(child);
+    const cur = child.getAbsolutePosition().subtract(joint.getAbsolutePosition()).normalize();
+    const axis = Vector3.Cross(cur, want.normalize());
+    const sin = axis.length();
+    if (sin < 1e-4) return;
+    this.turnJoint(joint, axis.scaleInPlace(1 / sin), Math.atan2(sin, Vector3.Dot(cur, want)) * weight);
+    freshWorld(joint);
   }
 
   /** The lift a hovering body is drawn at now (parent m): 0 for every other body. */
@@ -2031,7 +2053,7 @@ export class CharacterAnimator {
       q.multiplyToRef(bone.rotationQuaternion, bone.rotationQuaternion);
     }
     this.applySit(right, up);
-    this.hoverFeet(right, forward);
+    this.hoverFeet(right, up, forward);
     this.applyReactions(right, up, rootRot);
     if (this.fp) {
       // Your own body seen from its eyes: the head shrunk away, then the body (bent for the aim) moved under the
