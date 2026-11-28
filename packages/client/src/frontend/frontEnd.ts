@@ -3477,8 +3477,11 @@ export class FrontEnd {
     const weapons = el('button', { type: 'button', class: 'primary', id: 'profile-armory', title: 'Open the Armory: every weapon, its sights, and Test my loadout on the Training Range', textContent: 'Weapons' });
     weapons.addEventListener('click', () => this.go('armory'));
     const testRow = el('div', { class: 'prof-test' }, weapons, el('small', { class: 'hint', textContent: 'Every weapon in the Armory: pick sights, try one in the range, or test this loadout.' }));
-    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote, testRow, this.opticsPicker());
-    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, el('div', { class: 'prof-col' }, character, ...secs, this.emblemSection(kicker), region), el('div', { class: 'prof-col' }, this.careerSection(kicker, !!who), loadout), foot));
+    const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote, testRow);
+    // The loadout's optics, a section of their own: under the emblem on a wide screen (the two columns balance; owner,
+    // 2026-11-28), after the loadout everywhere else (style.css: `order`), as part of it.
+    const optics = el('section', { class: 'prof-sec prof-optics-sec' }, this.opticsPicker());
+    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, el('div', { class: 'prof-col' }, character, ...secs, this.emblemSection(kicker), optics, region), el('div', { class: 'prof-col' }, this.careerSection(kicker, !!who), loadout), foot));
 
     if (!who) {
       // A guest: the name you play under (set in Options), and Sign in where it's offered.
