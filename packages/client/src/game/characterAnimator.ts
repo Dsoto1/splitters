@@ -117,6 +117,17 @@ const RATIO_EPSILON = 0.004;
  * goes sideways slid the planted foot at the full ground speed.
  */
 import { HIP_TURN_MAX } from './riderPlacement.ts';
+import type { Leg } from './standLegs.ts';
+/**
+ * The standing legs and the support wrist's twist (standLegs.ts), loaded after the first animator is built rather than
+ * with the menu (the first visit's JS budget, docs/LOADING.md): until it is in, the clips' pose is drawn as it is.
+ */
+let limbPass: typeof import('./standLegs.ts') | null = null;
+let limbPassLoading: Promise<void> | null = null;
+/** The limb pass loaded (tests and tools await it; animators start it themselves). */
+export function loadLimbPass(): Promise<void> {
+  return (limbPassLoading ??= import('./standLegs.ts').then((m) => void (limbPass = m)));
+}
 /** Moving more than this share of a half turn away from facing plays the gait backwards (and stops below the second). */
 const BACK_START = 0.6;
 const BACK_STAY = 0.52;
@@ -235,7 +246,13 @@ export function longGunBlade(grip: WeaponHold): number {
  */
 const POCKET_IN = 0.04;
 const ELBOW_POLE_OUT = 0.45;
-const ELBOW_POLE_DOWN = 0.18;
+/**
+ * (0.18 until 2026-11-27: the shooting elbow held high and out, nearly level, on every body. Lowered a little, its
+ * reach out kept: the pole moved up and in tucked Grandpa Chains' elbow "way too in", owner 2026-11-27.)
+ */
+const ELBOW_POLE_DOWN = 0.3;
+/** The limb audit's before/after (`__grips.limbFix(false)`): the pole's old drop and no forearm twist share. */
+const ELBOW_POLE_DOWN_BEFORE = 0.18;
 /** Half the width of a rifle stock (m): torso skin within this of the barrel line is in its way. */
 const STOCK_RADIUS = 0.035;
 /** Short arms slide the support hand back along the handguard, but keep it this far ahead of the grip (model m). */
@@ -341,6 +358,8 @@ interface Arm {
   thumb: TransformNode;
   /** The thumb's chain, base first, to its end marker where there is one (a pistol's hold lays it along the frame). */
   thumbs: TransformNode[];
+  /** The hand joint's rest rotation (as the body was built): its twist on the forearm is measured from it (shareTwist). */
+  handRest?: Quaternion;
 }
 
 /** A character's animation gate: while `skip` is set its clips are not evaluated (see CharacterAnimator.stepAt). */
@@ -495,10 +514,18 @@ export class CharacterAnimator {
       return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, span: knuckle.position.length() * RIG_SPAN, fingers, thumbs, index, pinky, knuckle, thumb };
     };
     const [r, l] = [arm('r'), arm('l')];
+    for (const a of [r, l]) if (a?.hand.rotationQuaternion) a.handRest = a.hand.rotationQuaternion.clone();
     this.arms = r && l ? { r, l } : null;
     this.skelRoot = ch.joints.get('root');
     this.rootHome = this.skelRoot?.position.clone() ?? null;
     this.pelvis = ch.joints.get('pelvis');
+    const leg = (side: 'l' | 'r'): Leg | null => {
+      const [thigh, calf, foot, ball] = ['thigh', 'calf', 'foot', 'ball'].map((n) => ch.joints.get(`${n}_${side}`));
+      return thigh && calf && foot && ball ? { thigh, calf, foot, ball } : null;
+    };
+    const [ll, lr] = [leg('l'), leg('r')];
+    this.standing = ll && lr ? { l: ll, r: lr } : null;
+    void loadLimbPass();
     for (const c of LOOPS) this.weights.set(c, 0);
     for (const c of ['walk', 'run', 'sprint', 'jump_air'] as const) {
       const g = ch.clips.get(c);
@@ -1642,6 +1669,17 @@ export class CharacterAnimator {
   private dodgeDir = 0;
   private tumble = 0;
   private stepTip = 0;
+  /** The legs the standing pass squares (standLegs.ts), when the rig has them all. */
+  private standing: { l: Leg; r: Leg } | null = null;
+  /**
+   * How far the standing pass squares the legs (0..1): the standing loops' weight (aim_idle, idle), so it eases in as
+   * the feet plant and out as a walk, run, crouch, jump or dance takes over; none seated, rolling, dodging or lying.
+   */
+  private standWeight(): number {
+    if (!this.standing || this.rolls || this.lying || this.tumble || this.stepTip || this.prone || this.slideTip) return 0;
+    const w = (this.weights.get('aim_idle') ?? 0) + (this.weights.get('idle') ?? 0);
+    return Math.max(0, Math.min(1, w)) * (1 - this.sit);
+  }
   private appliedTumble = 0;
   private appliedStep = 0;
   private lying = false;
@@ -1796,7 +1834,7 @@ export class CharacterAnimator {
 
   /** Before the after-clip work: each in-place joint back to its clip pose if no clip wrote it since (see inPlace). */
   private fromClips(): void {
-    this.inPlace ??= [...new Set([this.pelvis, ...this.spine, ...['neck_01', 'Head', 'thigh_l', 'thigh_r', 'calf_l', 'calf_r'].map((n) => this.ch.joints.get(n))])]
+    this.inPlace ??= [...new Set([this.pelvis, ...this.spine, ...['neck_01', 'Head', 'thigh_l', 'thigh_r', 'calf_l', 'calf_r', 'foot_l', 'foot_r'].map((n) => this.ch.joints.get(n))])]
       .filter((j): j is TransformNode => !!j)
       .map((joint) => ({ joint, clip: new Quaternion(), left: new Quaternion(), kept: false }));
     for (const r of this.inPlace) {
@@ -1936,6 +1974,9 @@ export class CharacterAnimator {
     if (hips?.rotationQuaternion && hipsParent && Math.abs(hipTurn) > 1e-4) {
       worldTurn(hipsParent, up, hipTurn).multiplyToRef(hips.rotationQuaternion, hips.rotationQuaternion);
     }
+    // Standing still: the clips' bowed knees and splayed feet squared (standLegs.ts; far off, coarse detail, left be).
+    const stand = this.detail === 'coarse' || !this.skelRoot ? 0 : this.standWeight() * standShare;
+    if (stand > 0.001 && this.standing && limbPass) limbPass.standLegs(new SkeletonSpace(this.skelRoot!), this.standing, up, forward, stand);
     // An authored clip holding the upper body (a clip set's shooting walks) has its own torso turn, which isn't the aim
     // pose's: the shoulders are brought back to the aim pose's line (measured from it) by as much as the clip holds.
     const chest = this.chestFix(rootRot, hipTurn);
@@ -2233,7 +2274,7 @@ export class CharacterAnimator {
       if (grip.style === 'long') {
         const pole = pos(arms.r.upper)
           .add(outward.scale(ELBOW_POLE_OUT + (tune?.elbowOut ?? 0) * scale))
-          .add(down.scale(ELBOW_POLE_DOWN + (tune?.elbowDown ?? 0) * scale));
+          .add(down.scale((standShare > 0 ? ELBOW_POLE_DOWN : ELBOW_POLE_DOWN_BEFORE) + (tune?.elbowDown ?? 0) * scale));
         solveArm(space, arms.r, palmOnGrip(arms.r, point(gripped.pos, gripped.rot, gripAt), scale), pole, w);
       }
       this.curl(space, arms.r, w * (tune?.curlR ?? 1), () => point(gripped!.pos, gripped!.rot, gripAt));
@@ -2249,6 +2290,7 @@ export class CharacterAnimator {
             ? palmOnGrip(arms.l, point(gripped.pos, gripped.rot, support), scale, grip.style === 'long')
             : palmUnder(arms.l, point(gripped.pos, gripped.rot, [support[0], guardY + (tune?.supportLong?.[1] ?? 0), support[2]]), scale);
         solveArm(space, arms.l, supportPalm, pos(arms.l.upper).subtract(outward.scale(0.1)).add(down.scale(0.4)), w);
+        if (grip.style === 'long') shareTwist(arms.l, w);
         const at = support;
         this.curl(space, arms.l, w * supportCurl(grip) * (tune?.curlL ?? 1), () => point(gripped!.pos, gripped!.rot, at));
       }
@@ -2646,6 +2688,7 @@ export class CharacterAnimator {
     if (pistol) pointThumb(space, arms.r, gunDir(gun, PISTOL.thumbR), w);
     if (supportAt && grip.support) {
       solveArm(space, arms.l, supportAt, pos(arms.l.upper).subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), w);
+      if (grip.style === 'long') shareTwist(arms.l, w);
       // A pistol's support fingers close round the front of the shooting hand's, no further, its thumb forward along
       // the frame.
       const cupAt = pistol ? { at: off(grip.support, PISTOL.supportWrap), out: gun.right } : undefined;
@@ -3173,6 +3216,12 @@ function supportCurl(grip: WeaponHold): number {
   return grip.style === 'long' ? LONG_SUPPORT_CURL : 0.7;
 }
 
+/** The standing pass's share (1; the limb audit's before/after sets 0: `__grips.standLegs`). */
+let standShare = 1;
+export function setStandShare(share: number): void {
+  standShare = share;
+}
+
 /** How far every hand closes, as a share of its own curl (1; the grip audit's curl test sets 0 to compare). */
 let curlShare = 1;
 /** The grip audit's curl test (tools/gripSheet.ts `__grips.curl`): close every hand by this share of its curl. */
@@ -3334,6 +3383,7 @@ export function armsFrom(joints: Map<string, TransformNode>, meshes: readonly Ab
     return { upper, lower, hand, palm: knuckle.position.scale(0.6), gripOffset: GRIP_RADIUS, curl: 1, span: knuckle.position.length() * RIG_SPAN, fingers, thumbs, index, pinky, knuckle, thumb, ...(frame ? { frame } : {}) };
   };
   const [r, l] = [arm('r'), arm('l')];
+  for (const a of [r, l]) if (a?.hand.rotationQuaternion) a.handRest = a.hand.rotationQuaternion.clone();
   return r && l ? { r, l } : null;
 }
 
@@ -3368,8 +3418,23 @@ export function holdWith(space: SkeletonSpace, arms: HoldingArms, weapon: Transf
   closeHand(space, arms.r, weight * (tune?.curlR ?? 1), point(gripPoint));
   if (supportAt && supportPoint) {
     solveArm(space, arms.l, supportAt, arms.l.upper.getAbsolutePosition().subtract(outward.scale(0.1 * scale)).add(down.scale(0.4 * scale)), weight);
+    if (grip.style === 'long') shareTwist(arms.l, weight);
     closeHand(space, arms.l, weight * supportCurl(grip) * (tune?.curlL ?? 1), point(supportPoint));
   }
+}
+
+/**
+ * A support hand cupping a long gun's handguard from underneath is turned palm up, nearly a half turn about its
+ * forearm from the clips' hold: all of it at the wrist twisted the wrist's skin round like a wrung cloth and bent it
+ * back (owner, 2026-11-27, Grandpa Chains in first person: "any weapon where the left hand supports under it"). A
+ * forearm turns the hand mostly along its length (the two bones roll round each other), so the forearm takes this
+ * share of the hand's twist off its rest, turned about its own line; the hand is then set back as it was (on the gun).
+ */
+const FOREARM_TWIST_SHARE = 0.4;
+function shareTwist(arm: Arm, weight: number): void {
+  if (standShare <= 0 || !limbPass) return;
+  limbPass.shareWristTwist(arm.lower, arm.hand, arm.handRest, FOREARM_TWIST_SHARE * weight);
+  refreshArm(arm);
 }
 
 /** The rotation taking direction `from` to direction `to`. */
