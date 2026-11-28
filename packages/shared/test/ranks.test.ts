@@ -73,7 +73,9 @@ describe('ranks for everyone (Options → Ranks & badges)', () => {
     expect(rankedName('Customs Agent Zhao', 'agency', 6)).toBe('Agent Zhao');
     expect(rankedName('Uncle Moe', 'folk', 1)).toBe('Rookie Uncle Moe'); // family words are names
     expect(rankedName('Imperator Laurel', 'legends', 9)).toBe('Emperor Laurel');
-    expect(rankedName("Cap'n Ezra Blackwake", 'pirates', 1)).toBe('Deckhand Ezra Blackwake');
+    expect(rankedName("Cap'n Ezra Blackwake", 'historical', 1)).toBe('Commoner Ezra Blackwake');
+    // The pirates rank with Historical since their row went into it (owner, 2026-11-28).
+    expect(rankGroup('core.piratecaptain')).toBe('historical');
     expect(nameWithoutTitle('Sir')).toBe('Sir');
     const titled = (n: string) => NAME_TITLES.some((t) => n.startsWith(`${t} `));
     const names = new Set([...CORE_LOOKS.map((l) => l.name), ...NAME_THEMES.flatMap((t) => t.names), ...BOT_NAMES]);

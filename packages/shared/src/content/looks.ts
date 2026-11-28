@@ -160,10 +160,9 @@ export const CHARACTER_GROUPS = [
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
   // Owner, 2026-11-27: a Historical row next to Legends (the famous real people and the period characters, periods
-  // side by side oldest first: CHARACTER_NEIGHBOURS); Legends keeps its seven.
+  // side by side oldest first: CHARACTER_NEIGHBOURS); Legends keeps its seven. Owner, 2026-11-28: the pirates are in
+  // it too (their own row of 2026-11-26 retired: `pirates` reads as `historical`, CHARACTER_GROUP_ALIASES).
   { id: 'historical', label: 'Historical' },
-  // Owner, 2026-11-26 (evening): the pirates get a row of their own.
-  { id: 'pirates', label: 'Pirates' },
   { id: 'animals', label: 'Animalia' },
   // Owner, 2026-11-26: the toys get a row of their own (the Playhouse sector's local allies come from it).
   { id: 'toys', label: 'Toys' },
@@ -174,8 +173,8 @@ export const CHARACTER_GROUPS = [
 ] as const;
 export type CharacterGroup = (typeof CHARACTER_GROUPS)[number]['id'];
 export const CHARACTER_GROUP_LABELS = Object.fromEntries(CHARACTER_GROUPS.map((g) => [g.id, g.label])) as Record<CharacterGroup, string>;
-/** Retired group ids (saved settings, maps' bot casts, server rules) and the group each one went into (2026-11-17). */
-export const CHARACTER_GROUP_ALIASES: Readonly<Record<string, CharacterGroup>> = { agents: 'soldiers', creatures: 'horror' };
+/** Retired group ids (saved settings, maps' bot casts, server rules) and the group each one went into (2026-11-17; Pirates 2026-11-28). */
+export const CHARACTER_GROUP_ALIASES: Readonly<Record<string, CharacterGroup>> = { agents: 'soldiers', creatures: 'horror', pirates: 'historical' };
 /**
  * Soldiers & Spies' sub-designators (`branch` on every look in `soldiers`): Army (the uniformed soldiers) or Agency
  * (agents and spies). A map or a bot-characters setting can ask for one (a real battle's Army only). IDs never change.
@@ -224,12 +223,16 @@ export const CHARACTER_NEIGHBOURS: readonly (readonly string[])[] = [
   ['core.basaltguardian', 'core.abyssalhunter', 'core.celestialknight', 'core.magmajuggernaut', 'core.mystic', 'core.frostvalkyrie', 'core.sunpriest'],
   // Owner, 2026-11-27: the Historical row, periods side by side, oldest first (one list: the whole row in this order).
   [
-    'core.gladiatrix', 'core.caesar', // Rome's arena: Valeria Sandstorm, Imperator Laurel
+    'core.gladiatrix', // Rome's arena: Valeria Sandstorm
     'core.vikingf', 'core.vikingm', // vikings: Astrid Stormbrand, Ulf Ravenshield
     'core.templar', 'core.lionheart', 'core.emir', 'core.gothickaiser', 'core.paladin', 'core.galloway', 'core.brannock', 'core.ts2wizard', // medieval and the Crusades (Sir Galloway and Ser Brannock are MapMaker's only)
-    'core.khan', 'core.imperialguard', 'core.mei', // the Mongols and the Asian dynasties
+    'core.imperialguard', 'core.mei', // the Asian dynasties
     'core.aztecjaguar', 'core.eagleclan', // Mesoamerica: Balam Nightclaw, Talon Skycrest
-    'core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein', // famous real people, by period
+    'core.piratecaptain', 'core.firstmate', 'core.femalepirate', // the age of sail (owner, 2026-11-28): Cap'n Ezra Blackwake, Mr. Gideon Tarr, Scarlet Brinewell
+    // The famous real people by their real names (owner, 2026-11-28), together and by period: Julius Caesar and Genghis
+    // Khan with them (owner, 2026-11-28). Real people still to come go in here by birth (Tesla after Lincoln, Churchill
+    // and Patton after Roosevelt). Shaka stays with Southern Africa (owner, 2026-11-26: "Shaka stays with his period").
+    'core.caesar', 'core.khan', 'core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein',
     'core.shaka', 'core.zuluwarrior', 'core.kato', // Southern Africa: Shaka Mpande, Themba Ironspear, Kato Emberline
     'core.dustycolt', 'core.outlawranger', 'core.snakeshaman', 'core.thornweaver', // the Wild West and the plains
   ],

@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 70,
-  "name": "Honest Abe",
+  "name": "Abraham Lincoln",
   "look": "core.abe",
   "group": "historical",
   "blood": "red",
