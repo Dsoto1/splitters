@@ -4453,24 +4453,42 @@ export class GameView {
   explosion(at: Vec3, radius: number, weapon?: string): void {
     // Binbun's explosion for this blast (godotVfx.ts), sized to it; the plain fireball until its pack is in.
     if (this.blastFx(at, radius, weapon, null, 0.5)) return;
-    const ball = CreateSphere('boom', { diameter: 1, segments: 12 }, this.scene);
-    const mat = glow(this.scene, 'boomMat', '#ffb347', 1);
-    ball.material = mat;
+    // The plain fireball: also what a big fight gets once the one-shot effects are at their cap (GodotVfx.play), so it
+    // is cheap: a copy of one sphere in one shared material, faded by its own visibility. Built afresh for each blast
+    // (a sphere's vertices and a material, which marks every mesh in the scene for a check as it is set up), it took
+    // 35-60 ms a blast on CI's software page and fed a garbage collection (perf budget "starting explosion", frost_basin,
+    // runs 46102299426 and 46141903583).
+    const ball = this.plainBlast().clone('boom');
+    ball.setEnabled(true);
     ball.position.set(at.x, at.y, at.z);
-    ball.isPickable = false;
     const strength = this.blastStrength(at, radius);
     const size = this.blastSize(at, radius);
     // Reduce flashing: it fades in over the first third of its life instead of starting at full.
     const rise = strength < 1 || reduceFlashing() ? 0.3 : 0;
+    const shown = (f: number) => 0.85 * strength * (1 - f) * (rise ? Math.min(1, f / rise) : 1);
+    ball.visibility = shown(0);
     this.effects.push({
       mesh: ball,
       born: performance.now(),
       ttl: 380,
+      shared: true,
       update: (f) => {
         ball.scaling.setAll(radius * 2 * size * (0.3 + 0.7 * Math.sqrt(f)));
-        mat.alpha = 0.85 * strength * (1 - f) * (rise ? Math.min(1, f / rise) : 1);
+        ball.visibility = shown(f);
       },
     });
+  }
+
+  /** The plain fireball every fallback blast copies (out of the scene's drawing itself), made on first use. */
+  private plainBall: Mesh | null = null;
+
+  private plainBlast(): Mesh {
+    if (this.plainBall && !this.plainBall.isDisposed()) return this.plainBall;
+    const ball = CreateSphere('boomBase', { diameter: 1, segments: 12 }, this.scene);
+    ball.material = glow(this.scene, 'boomMat', '#ffb347', 1);
+    ball.isPickable = false;
+    ball.setEnabled(false);
+    return (this.plainBall = ball);
   }
 
   /**
