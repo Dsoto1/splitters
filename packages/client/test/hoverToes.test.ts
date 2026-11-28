@@ -88,23 +88,27 @@ function body(locomotion?: 'hover', hoverPose?: 'thrusters' | 'clips', bent = 0)
     };
     const toe = at('ball_l').subtract(at('foot_l'));
     const shin = at('foot_l').subtract(at('calf_l'));
-    return { toes: Math.atan2(-toe.y, toe.z) - Math.atan2(0.03, 0.06), knee: Vector3.GetAngleBetweenVectors(shin, Vector3.Down(), Vector3.Right()), feet: Vector3.Distance(at('foot_l'), at('foot_r')), hips: Vector3.Distance(at('thigh_l'), at('thigh_r')), flat: toe.y / toe.length(), straight: Vector3.GetAngleBetweenVectors(at('foot_l').subtract(at('thigh_l')), Vector3.Down(), Vector3.Right()) };
+    return { toes: Math.atan2(-toe.y, Math.hypot(toe.x, toe.z)), knee: Vector3.GetAngleBetweenVectors(shin, Vector3.Down(), Vector3.Right()), feet: Vector3.Distance(at('foot_l'), at('foot_r')), hips: Vector3.Distance(at('thigh_l'), at('thigh_r')), flat: toe.y / toe.length(), straight: Vector3.GetAngleBetweenVectors(at('foot_l').subtract(at('thigh_l')), Vector3.Down(), Vector3.Right()) };
   };
   return { scene, run };
 }
 
 describe('floaters point their toes down (owner, 2026-11-28)', () => {
-  it('off the ground the feet hang, toes down 45-75 degrees, knees a little bent', () => {
-    const { scene, run } = body('hover');
-    const up = run(3);
-    expect(up.toes).toBeGreaterThan((45 * Math.PI) / 180);
-    expect(up.toes).toBeLessThan((75 * Math.PI) / 180);
-    expect(Math.abs(up.knee)).toBeGreaterThan(0.1);
-    expect(Math.abs(up.knee)).toBeLessThan(0.45);
-    // Seated (the lift eased away), the feet are the clips' again (dead, the ragdoll takes the legs).
-    const seated = run(3, { seated: true });
-    expect(Math.abs(seated.toes)).toBeLessThan(0.05);
-    scene.dispose();
+  it('off the ground the feet hang, toes down 45-75 degrees, knees a little bent, whatever the clips do', () => {
+    for (const bent of [0, 0.4]) {
+      const { scene, run } = body('hover', undefined, bent);
+      const up = run(3);
+      expect(up.toes).toBeGreaterThan((45 * Math.PI) / 180);
+      expect(up.toes).toBeLessThan((75 * Math.PI) / 180);
+      expect(Math.abs(up.knee)).toBeGreaterThan(0.15);
+      expect(Math.abs(up.knee)).toBeLessThan(0.5);
+      expect(Math.abs(up.straight)).toBeLessThan(0.3);
+      // Seated (the lift eased away), the legs are the clips' again (dead, the ragdoll takes them).
+      const seated = run(3, { seated: true });
+      expect(Math.abs(seated.toes - Math.atan2(0.03, 0.06))).toBeLessThan(0.05 + bent);
+      if (!bent) expect(Math.abs(seated.knee)).toBeLessThan(0.02);
+      scene.dispose();
+    }
   });
 
   it('jets under the feet (thrusters): legs nearly straight and together, soles flat to the ground', () => {
@@ -114,6 +118,7 @@ describe('floaters point their toes down (owner, 2026-11-28)', () => {
     expect(Math.abs(up.straight)).toBeLessThan(0.08);
     expect(Math.abs(up.knee)).toBeLessThan(0.15);
     expect(Math.abs(up.flat)).toBeLessThan(0.03);
+    expect(Math.abs(up.toes)).toBeLessThan(0.03);
     expect(up.feet).toBeLessThan(up.hips - 0.01);
     // Seated, the clips' bent knees again.
     expect(Math.abs(run(3, { seated: true }).straight)).toBeGreaterThan(0.2);
@@ -123,7 +128,7 @@ describe('floaters point their toes down (owner, 2026-11-28)', () => {
   it("leaves a walker's legs and a look that keeps the clips' (hoverPose: clips) as the clips pose them", () => {
     for (const b of [body(), body('hover', 'clips')]) {
       const r = b.run(3);
-      expect(Math.abs(r.toes)).toBeLessThan(1e-3);
+      expect(Math.abs(r.toes - Math.atan2(0.03, 0.06))).toBeLessThan(1e-3);
       expect(Math.abs(r.knee)).toBeLessThan(1e-3);
       b.scene.dispose();
     }
