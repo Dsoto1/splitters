@@ -379,7 +379,7 @@ for (const spec of specs) {
         const before = Object.keys(this._compiledEffects ?? {}).length;
         const t0 = performance.now();
         const r = create.apply(this, a);
-        if (Object.keys(this._compiledEffects ?? {}).length > before) window.__shaderBuilds.push({ name: typeof a[0] === 'string' ? a[0] : (a[0]?.vertex ?? a[0]?.vertexElement ?? a[0]?.vertexSource ?? '?').toString().slice(0, 40), ms: +(performance.now() - t0).toFixed(1) });
+        if (Object.keys(this._compiledEffects ?? {}).length > before) window.__shaderBuilds.push({ at: Math.round(performance.now()), name: typeof a[0] === 'string' ? a[0] : (a[0]?.vertex ?? a[0]?.vertexElement ?? a[0]?.vertexSource ?? '?').toString().slice(0, 40), ms: +(performance.now() - t0).toFixed(1) });
         return r;
       };
     });
@@ -710,6 +710,79 @@ for (const spec of specs) {
           console.log(`  shaders built after the loading gate (mid-match, effect starts included): ${row.shaderBuilds.length} ${JSON.stringify(names)}`);
           const slowest = Object.entries(row.fx).sort((a, b) => b[1] - a[1])[0];
           console.log(`  effects: slowest start ${slowest ? `${slowest[0]} ${slowest[1]} ms` : '-'} (${JSON.stringify(row.fx)}; first starts ${JSON.stringify(row.fxFirst)})`);
+          // DIAGNOSTIC (check/ci-recurring-diag only): repeated explosion starts, each beside a fixed pure-JS loop (the page's
+          // own share of the CPU), the GL calls they made and, for a slow one, where its time went (a sampling profile).
+          {
+            const builds = await page.evaluate(() => ({ now: Math.round(performance.now()), prewarmed: window.__cs.view.prewarmed, last: window.__shaderBuilds.slice(-50).map((b) => `${b.at}:${b.name}:${b.ms}`) }));
+            console.log(`  DIAG now ${builds.now} prewarmed ${JSON.stringify(builds.prewarmed)} builds ${builds.last.join(' ')}`);
+            await page.evaluate(() => {
+              if (window.__glt) return;
+              const gl = window.__cs.view.scene.getEngine()._gl;
+              const proto = Object.getPrototypeOf(gl);
+              window.__glt = {};
+              window.__glOn = false;
+              for (const k of Object.getOwnPropertyNames(proto)) {
+                let d;
+                try { d = Object.getOwnPropertyDescriptor(proto, k); } catch { continue; }
+                if (!d || typeof d.value !== 'function' || k === 'constructor') continue;
+                const f = d.value;
+                gl[k] = function (...a) {
+                  if (!window.__glOn) return f.apply(this, a);
+                  const t0 = performance.now();
+                  const r = f.apply(this, a);
+                  const dt = performance.now() - t0;
+                  const e = (window.__glt[k] ??= [0, 0, 0]);
+                  e[0]++; e[1] += dt; e[2] = Math.max(e[2], dt);
+                  return r;
+                };
+              }
+            });
+            const cdp = await page.context().newCDPSession(page);
+            await cdp.send('Profiler.enable');
+            await cdp.send('Profiler.setSamplingInterval', { interval: 250 });
+            for (let round = 0; round < 10; round++) {
+              await sleep(1200);
+              await cdp.send('Profiler.start');
+              const r = await page.evaluate(() => {
+                const v = window.__cs.view;
+                const ray = v.scene.activeCamera.getForwardRay(6);
+                const at = ray.origin.add(ray.direction.scale(6));
+                const p = { x: at.x, y: at.y, z: at.z };
+                const spin = () => { const t0 = performance.now(); let x = 0; for (let i = 0; i < 300000; i++) x += Math.sqrt(i); window.__x = x; return +(performance.now() - t0).toFixed(1); };
+                const out = [];
+                window.__glt = {};
+                for (let i = 0; i < 3; i++) {
+                  const c0 = spin();
+                  window.__glOn = true;
+                  const t0 = performance.now();
+                  const playing = v.vfx.count;
+                  v.explosion(p, 4);
+                  const ms = +(performance.now() - t0).toFixed(1);
+                  window.__glOn = false;
+                  const c1 = spin();
+                  out.push({ ms, spinBefore: c0, spinAfter: c1, playing });
+                }
+                const gl = Object.entries(window.__glt).filter(([, e]) => e[1] > 0.3).sort((a, b) => b[1][1] - a[1][1]).slice(0, 8).map(([k, e]) => `${k}:${e[0]}x/${e[1].toFixed(1)}ms/max${e[2].toFixed(1)}`);
+                return { out, gl };
+              });
+              const prof = (await cdp.send('Profiler.stop')).profile;
+              const slow = r.out.some((o) => o.ms > 10);
+              let top = '';
+              if (slow) {
+                const byId = new Map(prof.nodes.map((n) => [n.id, n]));
+                const self = new Map();
+                for (let i = 0; i < prof.samples.length; i++) {
+                  const n = byId.get(prof.samples[i]);
+                  const key = `${n.callFrame.functionName || '(anon)'}@${n.callFrame.url.split('/').pop()}:${n.callFrame.lineNumber}:${n.callFrame.columnNumber}`;
+                  self.set(key, (self.get(key) ?? 0) + (prof.timeDeltas[i] ?? 0) / 1000);
+                }
+                top = [...self].sort((a, b) => b[1] - a[1]).slice(0, 14).map(([k, v]) => `${k} ${v.toFixed(1)}`).join(' | ');
+              }
+              const load = loadavg()[0].toFixed(1);
+              console.log(`  DIAG ${id} ${graphics} round ${round} load ${load}: ${JSON.stringify(r.out)} gl ${r.gl.join(' ')}${top ? ` PROFILE ${top}` : ''}`);
+            }
+            await cdp.detach().catch(() => {});
+          }
           if (errors.length) console.log(`  page errors: ${errors.slice(0, 3).join('; ')}`);
           results.push(row);
         })(),
