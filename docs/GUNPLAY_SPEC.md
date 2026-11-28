@@ -891,7 +891,7 @@ are as they were. At the hip nothing changes.
   had: the flat-topped kit guns (Arc Caster, Bubble Blaster, Flak Cannon, Laser Rifle, Oil Slicker, Flamethrower,
   Swarm Launcher, Disc Launcher, Arena Disc), the tube launchers (Rocket Launcher, Guided Rocket, Blast Rockets,
   Grenade Launcher), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (an open
-  sight box, no irons), the Flare Gun (drawn broken open), the Gilded Pistol (its cock stands in the line) and the Spear.
+  sight box, no irons), the Flare Gun (drawn broken open) and the Spear (the Gilded Pistol until its Gold PPK of 2026-11-28, fitted on its irons).
   Eight of them carry an optic since step 2 (below); the rest keep that placement.
   Scopes (`view.zoomFov`: Marksman Rifle, Precision Rifle, Railgun) hide the gun behind the scope overlay, the Battle
   Rifle brings its optic's eyepiece to the eye (`view.optic`), and melee weapons, tools and mounted guns do not aim.
@@ -930,12 +930,12 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 
 | Optic (kind) | Reticle | Guns | Zoom |
 |---|---|---|---|
-| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Burst Rifle, Woodland SMG (since 2026-11-27) | 1.52× |
+| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Burst Rifle, Woodland SMG (since 2026-11-27), Gilded Pistol (its Gold PPK, since 2026-11-28) | 1.52× |
 | Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off, Singularity Cannon (its new model's top rail, since 2026-11-27) | 1.52× |
 | Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (its model's own sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
 | 2-3× optic (`scope`) | a chevron with holdover ticks | Battle Rifle (3.5×, the model's tube), Marksman Rifle (2.19×, the scope overlay) | as before |
 | Sniper scope (`sniper`) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
-| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Flare Gun, Gilded Pistol, Spear | 1.52× |
+| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Flare Gun, Spear | 1.52× |
 
 - **A model's own sight** (`window`): the glass and its mark go in the model's opening, a clip hides what lies behind it
   while aimed; `round` for a round eyepiece (the glass and the clip a disc), `lens` for a closed sight whose own glass and
@@ -981,7 +981,7 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
   drawn larger about the view axis as it comes up (`optics.ts` `pictureScale`: its window's half-height brought to 0.13
   of the screen's, at most 2×; 0.2 and 3× until 2026-11-23, below), the frame the Battle Rifle's optic uses: only x and y scale, every depth stays, nothing
   nears the near plane. Long guns' iron sights get it gently (`ironsPicture`: the rear sight as large as at 0.36 m, at
-  most 1.6×: the Assault Rifle, SMG and shotguns 1.6×, the Burst Rifle 1.26×; handguns unchanged). Points on the axis
+  most 1.6×: the Assault Rifle, SMG and shotguns 1.6×, the Burst Rifle 1.26×; handguns unchanged; since the new models of 2026-11-28 the SMG, a stockless MP5K whose rear sight is already near the eye, is drawn plainly). Points on the axis
   stay on it, so the sights stay on the aim. The gun's bob and kick are drawn that much smaller, so they move the
   picture as far as before; the hands keep their own size.
 - **The audit**: the sight sheet shows every weapon that aims with its optic (scopes with their own view and marks) and
@@ -1105,11 +1105,11 @@ changes is what you see: the sight picture, the reticle and, with the 2x optic, 
 
 | Gun | Optics offered (its own first) |
 |---|---|
-| Assault Rifle, Submachine Gun, Compact Carbine | iron sights, red dot, holographic, 2x |
-| Burst Rifle, Amarillo | iron sights, 2x (their front sight, or the Amarillo's rear block, stands in a red dot's or a holographic sight's window) |
+| Assault Rifle, Submachine Gun, Compact Carbine, Burst Rifle (since its new model, 2026-11-28: its front sight is clear of the window) | iron sights, red dot, holographic, 2x |
+| Amarillo | iron sights, 2x (its rear block stands in a red dot's or a holographic sight's window) |
 | Laser Rifle | red dot, holographic, 2x |
 | Shotgun, Auto Shotgun, Runebreaker, Nailgun, Freeze Ray, Goo Gun | iron sights, red dot, holographic |
-| Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, Laser Blaster | iron sights, red dot |
+| Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, Laser Blaster, Gilded Pistol (since 2026-11-28) | iron sights, red dot |
 | Bubble Blaster | red dot, holographic |
 | Desert Carbine, Twin-Shot Rifle, Blaster X-42 | red dot, holographic (in the model's own sight) |
 | Arc Caster | holographic, red dot (in the model's own scope tube, since 2026-11-27) |

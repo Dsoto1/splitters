@@ -64,7 +64,7 @@ export const WEAPON_OPTICS: Readonly<Record<string, WeaponOptics>> = {
   'core.battle_rifle': { default: 'scope', allowed: ['scope'], mag: 3.5 },
   'core.blaster_x42': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [0, 0.149, -0.192], half: [0.026, 0.026], round: true } },
   'core.bubble_blaster': { default: 'reddot', allowed: ['reddot', 'holo'], mount: { at: [0, 0.10385, 0.017], scale: 0.85, eye: -0.283 } },
-  'core.burst_rifle': { default: 'irons', allowed: ['irons', 'x2'], mount: { at: [0, 0.12655, -0.052], scale: 1.15 } },
+  'core.burst_rifle': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.12655, -0.054], scale: 1.15, eye: -0.489 } },
   'core.compact_carbine': { default: 'irons', allowed: ['irons', 'reddot', 'holo', 'x2'], mount: { at: [0, 0.12626, -0.06], scale: 0.88, eye: -0.36 } },
   'core.crossbow': { default: 'scope', allowed: ['scope'], mag: 2.19 },
   'core.desert_carbine': { default: 'reddot', allowed: ['reddot', 'holo'], window: { at: [-0.003, 0.124, -0.126], half: [0.016, 0.013] } },

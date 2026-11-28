@@ -218,6 +218,39 @@ The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section
 - **Lever action: not made.** The Frontier Rifle is a scoped modern rifle, not a lever gun, and no lever-action model
   is in the repo or the Drive.
 
+## Weapon replacements of 2026-11-28 (batch 2)
+
+Twelve more of the owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows), built by
+`tools/content/prepare-guns.mjs` in the same pack as batch 1 (`meshy-owned-drive-1127`). Every weapon keeps its rules,
+numbers, sounds and sets; its model, held copies, hold and muzzle changed. Each everyone-copy has a lower level of
+detail from 12 m; your own hands get a finer cut (`heldTriangles`, `heldMaxError` 0.004) at 1024/2048 px with its own
+metal and roughness. None has glowing parts. The models they replaced are no longer built (the kit models stay the
+fallbacks).
+
+| Download | Now the model of | Build (everyone / held) | Sight |
+|---|---|---|---|
+| AK-47 Modular Assault Rifle | Assault Rifle | 12k / 50k, 0.88 m | its irons (a rear leaf and a hooded front post) on a railed cover: irons, red dot, holographic, 2x as before |
+| MP5K Style PDW | Submachine Gun | 10k / 40k, 0.37 m | flip-up nubs at the ends of its top rail: irons and the same choice; no stock, so held a little ahead of the shoulder, the left hand on its front grip; its sight picture is no longer drawn larger (the rear sight is already near the eye) |
+| Glock 19 Modular Sidearm | Pistol | 9k / 40k, 0.20 m | two nubs on a slide-top rail: irons (a hand correction: the tool read the front nub low), red dot |
+| Vietnam Tactical Breaching Shotgun | Shotgun | 12k / 50k, 1.0 m | a bead and a receiver rail: irons; its under-barrel launcher is looks only |
+| Desert Storm Assault Rifle | Burst Rifle | 12k / 50k, 0.86 m | flip-up sights on a flat top: irons; now also the red dot and holographic sight (the old model's front sight stood in their window; this one's is clear) |
+| Western Buffalo Break-Action Cannon | Sawed-Off (owner: sawed-off style) | 10k / 40k, 0.80 m | a bare top rail with a front bead: the red dot on the rail, as before |
+| Mesoamerican Obsidian Pump Shotgun | Auto Shotgun | 12k / 50k, 0.98 m | a leaning front post and a rear hump: irons (a hand correction on the front post) |
+| Western Classic 6-Shot Revolver | Heavy Revolver | 9k / 40k, 0.34 m | its notch and blade: irons; grip raked 26° (a curved grip) |
+| Desert Eagle Modular Hand Cannon | Hand Cannon | 9k / 40k, 0.27 m | irons on its slide rail |
+| Modular Machine Pistol | Machine Pistol | 10k / 40k, 0.32 m | irons; no stock, the left hand on the magazine |
+| Gold Walther PPK | Gilded Pistol | 9k / 40k, 0.18 m | now on its own irons with a red dot offered (the flintlock's cock stood in the line, so it had no sights) |
+| Tactical Rotary Minigun | Spin Gun | 14k / 60k, 1.0 m | none, as before (fired from the hip) |
+
+**Not done in this batch:** the scoped guns whose new models carry no scope (the Battle Rifle's SCAR, the Marksman's DMR, the
+Sniper's Steyr, the Lever-Action's Civil War repeater, the Crossbow's arbalest: each aims through a scope today, the
+Battle Rifle through its model's own tube) wait on the owner's call on how they aim; the launchers, the specials, melee,
+grenades and projectiles are left for a later batch (HANDOFF).
+
+**Pictures** (lane B's scratchpad `weapons2/`): the raw downloads (`raw/`), gridded side and top views of the built models
+(`grid/`), before/after inspect views and first person (`before/`, `after/`), the after side views on one sheet
+(`sheet.png`) and the grip sheets (`grips-before/`, `grips-after/`).
+
 ## Weapon replacements of 2026-11-27 (batch 1)
 
 The owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows), built by
