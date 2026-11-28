@@ -76,6 +76,7 @@ export * from './sim/pickupRoll.ts';
 export * from './sim/drops.ts';
 export * from './sim/weaponSets.ts';
 export * from './sim/rules.ts';
+export * from './sim/combatRules.ts';
 export * from './sim/playlist.ts';
 export * from './sim/rotation.ts';
 export * from './sim/mapVote.ts';

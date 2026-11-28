@@ -93,6 +93,7 @@ import {
   ZOMBIE_LOOKS,
   STREAK_REWARDS,
   matchPhysics,
+  combatRulesOf,
   matchTeams,
   type Vec3,
   type WeaponDefinition,
@@ -2624,6 +2625,7 @@ export class GameSession {
         this.local.scale = this.sizeOf(this.slot);
         this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
         this.local.rules = { ...(msg.rules.ballistics ? { ballistics: msg.rules.ballistics } : {}) };
+        this.local.combat = combatRulesOf(msg.rules, loaded.map);
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.local.gravityZones = mapGravityZones(loaded.map.entities);
         this.local.portals = mapPortals(loaded.map.entities);
@@ -3074,7 +3076,7 @@ export class GameSession {
           } else if (ev.e === 'thit') {
             // A Practice Target (map v55): it rocks on its hinge; your own hit is read out on the pickup line.
             this.view.scenario.targetHit(ev.i, ev.z);
-            if (ev.s === this.slot) this.hud.targetReadout(targetReadout(ev));
+            if (ev.s === this.slot) this.hud.targetReadout(targetReadout(ev, this.local?.combat.healthScale ?? 1));
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
             // A Practice Target knocked down: it falls on its hinge (scenario state), no debris.

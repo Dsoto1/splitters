@@ -1,4 +1,5 @@
 import { z } from 'zod';
+import { AMMO_RULES, HEADSHOT_RULES } from '../sim/combatRules.ts';
 import { BREAK_WALL_HEALTH, MAP_FORMAT, MAP_FORMAT_VERSION, MAP_MAX_ENTITIES, NPC_ROLES, SQUAD_ORDERS } from './mapKeys.ts';
 import { CEILINGS, CORNERS, EDGE_STYLES, FACADES, FLOOR_INSERTS, ROOM_LAYOUTS } from './tileOptions.ts';
 import { MAX_GROUNDS, MAX_TERRAIN_VERTS } from './terrain.ts';
@@ -1480,6 +1481,21 @@ export const MapDocument = z.object({
    * Standard and is flagged by validateMap.
    */
   weaponSet: z.string().regex(/^[a-z][a-z0-9_]{1,23}$/, 'weapon set ids look like "military"').optional(),
+  /**
+   * The map's combat rules (v56; sim/combatRules.ts, GUNPLAY G5), set in MapMaker's Map settings: headshots, ammo,
+   * reloads, bullets through walls, damage and health scales, each one a default the host may change in Match Setup.
+   * Absent (or a knob absent): the standard.
+   */
+  combatRules: z
+    .object({
+      headshots: z.enum(HEADSHOT_RULES).optional(),
+      ammo: z.enum(AMMO_RULES).optional(),
+      reloads: z.boolean().optional(),
+      wallPenetration: z.boolean().optional(),
+      damageScale: z.union([z.literal(0.5), z.literal(1), z.literal(1.5), z.literal(2)]).optional(),
+      healthScale: z.union([z.literal(0.5), z.literal(1), z.literal(1.5), z.literal(2)]).optional(),
+    })
+    .optional(),
   /** Content packs this map needs, beyond the always-present core pack. */
   dependencies: z.array(z.object({ pack: ContentId, version: z.string().max(32) })).max(MAX_MAP_DEPENDENCIES).default([]),
   /**

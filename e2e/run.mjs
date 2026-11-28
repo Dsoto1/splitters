@@ -575,7 +575,7 @@ async function editorFlow(browser) {
   // It is kept with the map (the draft store saves the whole document, as Save and Export do).
   const kept = await page.waitForFunction((p) => (localStorage.getItem('cs.editor.drafts') ?? '').includes(p.slice(0, 200)), pic ?? '-', { timeout: T(10000) }).then(() => true, () => false);
   check(kept, 'the picture is saved with the map');
-  // Map properties → Bots → Bot characters: the twelve bot types (Toys since 2026-11-26, Pirates and Holiday since that evening, Historical since 2026-11-27), all ticked; None, then Soldiers: the map keeps it (one undo step).
+  // Map properties → Bots → Bot characters: the eleven bot types (Toys since 2026-11-26, Holiday since that evening, Historical since 2026-11-27, Pirates folded into it 2026-11-28), all ticked; None, then Soldiers: the map keeps it (one undo step).
   await openMapSettings(page);
   await page.waitForSelector('#ed-cast', { state: 'attached', timeout: T(10000) });
   const types = await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`));
@@ -583,7 +583,7 @@ async function editorFlow(browser) {
   await page.evaluate(() => document.getElementById('ed-cast-army').click());
   await page.waitForFunction(() => document.getElementById('ed-cast-sum')?.textContent === 'Soldiers', null, { timeout: T(5000) }).catch(() => {});
   const cast = { types, doc: (await doc()).botCast, sum: await page.evaluate(() => document.getElementById('ed-cast-sum')?.textContent), ticked: await page.evaluate(() => [...document.querySelectorAll('#ed-cast input[data-type]:checked')].map((b) => b.dataset.type)) };
-  check(types.length === 12 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: twelve types (Toys, Pirates and Holiday since 2026-11-26, Historical since 2026-11-27), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
+  check(types.length === 11 && types.every((t) => t.endsWith(':1')) && JSON.stringify(cast.doc) === '["army"]' && cast.sum === 'Soldiers' && cast.ticked.join() === 'army', `map properties set the bot characters: eleven types (Toys and Holiday since 2026-11-26, Historical since 2026-11-27, Pirates in it since 2026-11-28), all ticked, then Soldiers only (${JSON.stringify(cast)})`);
   await page.keyboard.press('Control+KeyZ');
   check((await doc()).botCast === undefined, 'undo takes the bot characters back off');
   // Map settings → Teams → Layout (owner, 2026-11-26, "4b"): only the common layouts as chips; a map saved with an odd
@@ -6057,7 +6057,7 @@ async function offlineFlow(browser) {
     chips: [...document.querySelectorAll('.char-jump .char-chip')].map((c) => c.dataset.section),
     tabs: document.querySelectorAll('.characters .tabs .tab').length,
   }));
-  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,historical,pirates,animals,toys,holiday,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
+  check(layout.secs.join() === 'soldiers,folk,space,chrono,legends,historical,animals,toys,holiday,machines,horror' && layout.chips.join() === layout.secs.join() && layout.heads && layout.tabs === 0, `Character Select is one grid in sections with a jump strip, no tabs (${layout.secs.join(', ')}; chips ${layout.chips.join(', ')})`);
   const section = () => page.evaluate(() => ({ on: document.querySelector('.char-chip.on')?.dataset.section, top: Math.round(document.querySelector('.char-grid').scrollTop) }));
   const settled = async (want) => {
     await page.waitForFunction((w) => {
@@ -9234,9 +9234,9 @@ async function botCastFlow(browser) {
   await page.click('#nav-play');
   await setupTab(page, 'bots');
   await page.waitForSelector('#arcade-cast', { timeout: T(5000) });
-  // The twelve bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
+  // The eleven bot types as tick-boxes, all ticked (Sandgate: all), then the options as switches (owner, 2026-11-19).
   const offered = await page.evaluate(() => ({ types: [...document.querySelectorAll('#arcade-cast input[data-type]')].map((b) => `${b.dataset.type}:${b.checked ? 1 : 0}`), ranks: document.getElementById('arcade-ranks')?.checked, names: document.getElementById('arcade-names')?.checked }));
-  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,historical:1,pirates:1,animals:1,toys:1,holiday:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the twelve bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
+  check(offered.types.join() === 'army:1,agency:1,folk:1,space:1,legends:1,historical:1,animals:1,toys:1,holiday:1,machines:1,horror:1' && offered.ranks === false && offered.names === true, `the Bots & AI tab offers the eleven bot types, all ticked, and the Ranks & badges (off) and Themed names (on) switches (${JSON.stringify(offered)})`);
   // Unticking all but one keeps one (the last can't go); None, then Soldiers: Army only.
   await page.evaluate(() => document.getElementById('arcade-cast-none').click());
   await page.evaluate(() => document.getElementById('arcade-cast-army').click());
@@ -9619,6 +9619,18 @@ async function weaponsetsFlow(browser) {
   await openWeapons(page);
   const offered = await setupState(page);
   check(offered.options.join() === 'map,standard,military,scifi,medieval,chaos,mixed' && offered.first === 'Map (Military)' && offered.value === 'map' && offered.fact === 'Military weapons' && offered.saved === null, `Match setup → Weapons offers every set and the map's default, named, which the setup's facts show (${JSON.stringify(offered)})`);
+  // Combat rules (GUNPLAY G5): their fold loads its rows with their own chunk; Sandgate keeps the standard.
+  await page.evaluate(() => {
+    const d = document.getElementById('setup-combat');
+    if (d && !d.open) d.querySelector('summary').click();
+  });
+  await page.waitForSelector('#arcade-ammo', { state: 'visible', timeout: T(10000) }).catch(() => {});
+  const combatRows = await page.evaluate(() => ({ rows: ['headshots', 'ammo', 'reloads', 'walls', 'damage', 'health'].filter((k) => document.getElementById(`arcade-${k}`)).length, ammo: document.querySelector('#arcade-ammo .on')?.dataset.value, damage: document.querySelector('#arcade-damage .on')?.dataset.value, reloads: document.getElementById('arcade-reloads')?.checked }));
+  check(combatRows.rows === 6 && combatRows.ammo === 'normal' && combatRows.damage === '1' && combatRows.reloads === true, `Match setup → Rules → Combat rules shows its six rows at the map's own (standard) (${JSON.stringify(combatRows)})`);
+  if (shots) {
+    await page.evaluate(() => document.getElementById('setup-combat')?.scrollIntoView({ block: 'center' }));
+    await page.screenshot({ path: `${shots}/combat-rules-setup.png` });
+  }
   // The sets' weapon lists, from the content the game builds them from (a set that gains a weapon needs no edit here).
   const setWeapons = (id) => JSON.parse(readFileSync(fileURLToPath(new URL('../content/weapon-sets.json', import.meta.url)), 'utf8')).sets.find((s) => s.id === id).weapons;
   const MILITARY = setWeapons('military');
@@ -9725,11 +9737,23 @@ async function weaponsetsFlow(browser) {
   await ed.keyboard.press('Control+KeyY');
   const redone = await ed.evaluate(() => window.__editor.doc.weaponSet ?? null);
   check(undone === null && redone === 'scifi', `undo and redo take the set back and forth (${undone} / ${redone})`);
+  // Combat rules (GUNPLAY G5): the map's defaults in its file, played by TEST (the host's sim).
+  await ed.waitForSelector('#ed-combat-ammo', { timeout: T(10000) });
+  const combat0 = await ed.evaluate(() => ({ ammo: document.querySelector('#ed-combat-ammo .on')?.dataset.value, head: document.querySelector('#ed-combat-head .on')?.dataset.value, reloads: document.querySelector('#ed-combat-reloads')?.checked, saved: window.__editor.doc.combatRules ?? null }));
+  check(combat0.ammo === 'normal' && combat0.head === 'normal' && combat0.reloads === true && combat0.saved === null, `Map properties → Combat rules start at the standard, nothing in the file (${JSON.stringify(combat0)})`);
+  await ed.click('#ed-combat-ammo [data-value="unlimited"]');
+  await ed.waitForFunction(() => window.__editor.doc.combatRules?.ammo === 'unlimited' && document.querySelector('#ed-combat-reloads'), null, { timeout: T(15000) }).catch(() => {});
+  await ed.evaluate(() => document.querySelector('#ed-combat-reloads')?.click());
+  await ed.waitForFunction(() => window.__editor.doc.combatRules?.reloads === false, null, { timeout: T(15000) }).catch(() => {});
+  const combat1 = await ed.evaluate(() => window.__editor.doc.combatRules ?? null);
+  check(combat1?.ammo === 'unlimited' && combat1?.reloads === false && Object.keys(combat1).length === 2, `Unlimited ammo and Reloads off are saved as the map's combat rules (${JSON.stringify(combat1)})`);
   await ed.keyboard.press('F5');
   await ed.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) });
   await simWait(ed, (m, me) => me.alive, null, T(15000));
   const test = await sim(ed, (m, me) => ({ set: m.weaponSet?.id, weapons: [...me.weapons.values()].map((w) => w.def.id) }));
   check(test.set === 'scifi' && test.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma', `TEST plays the map's set (${JSON.stringify(test)})`);
+  const played = await sim(ed, (m) => m.combat);
+  check(played.ammo === 'unlimited' && played.reloads === false && played.headshots === 'normal' && played.damageScale === 1, `TEST plays the map's combat rules (${JSON.stringify(played)})`);
   check(edErrors.length === 0, `no page errors in MapMaker (${edErrors.join('; ')})`);
   await ed.context().close();
 }
