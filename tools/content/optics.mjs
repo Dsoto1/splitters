@@ -9,7 +9,10 @@
 //     stays in the weapon file, and nothing here changes it);
 //   - a `tube` or `frame` housing is built in code on the gun's top: the tool measures where from the model (the
 //     mount: the rearmost flat stretch of the top, between the hand and the middle of the gun, that the rest of the gun
-//     does not stand in front of), sizes it to the gun, and tests that the line from the eye through the glass is clear.
+//     does not stand in front of), sizes it to the gun, and tests that the line from the eye through the glass is clear;
+//   - a `model` or `overlay` kind may bring a scope of its own to stand on guns whose models have none (`scopeModel`:
+//     one of our own scope models, its foot on the gun's rail at the weapon's hand-set `mount`); looked through
+//     (`model`), the weapon's `view.optic` must be that scope's eyepiece where it stands.
 //
 //   node tools/content/optics.mjs            write packages/shared/src/content/optics.generated.ts
 //   node tools/content/optics.mjs --check    fail when it is out of date or the data is wrong
@@ -41,6 +44,18 @@ const SCALE = [0.85, 1.2];
 const FLAT = 0.006;
 /** Cell of the top profile (m). */
 const CELL = 0.002;
+/** A scope model's eyepiece (`scopeModel.eye`, scaled to its mount) and the weapon's `view.optic.eye` may differ this much (m). */
+const EYEPIECE_SLACK = 0.002;
+
+/**
+ * Where a kind's scope model (`scopeModel`: { model, foot, eye?, radius? } at scale 1, +Z forward) puts its eyepiece on a
+ * gun whose `mount` ({ at, scale }) stands its foot: model space as `view.muzzleAt`.
+ */
+export function scopeEyepiece(scope, mount) {
+  if (!scope.eye) return null;
+  return { eye: [0, 1, 2].map((i) => round(mount.at[i] + (scope.eye[i] - scope.foot[i]) * mount.scale, 1e4)), radius: round(scope.radius * mount.scale, 1e4) };
+}
+
 /** The eye's distance behind a 2x optic's eyepiece (m): the client's DEFAULT_RELIEF (game/opticView.ts). */
 const EYE_RELIEF = 0.12;
 
@@ -279,6 +294,19 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
     if (!built && (k.glass || k.mark)) problems.push(`${at}: only a housing built in code has glass and a mark`);
     if (magnified ? !stepsOk(k.steps) : k.steps !== undefined) problems.push(`${at}: ${magnified ? 'a magnified optic gives `steps`: its zoom steps as shares of the aimed field of view, the first 1, each smaller than the last, none under 0.2' : 'only a magnified optic has zoom steps'}`);
     if (power && (k.steps?.length ?? 0) > 1) problems.push(`${at}: a magnified optic built in code has one zoom: \`steps\` [1]`);
+    if (k.scopeModel !== undefined) {
+      const sm = k.scopeModel;
+      const v3 = (a) => Array.isArray(a) && a.length === 3 && a.every((v) => typeof v === 'number');
+      if (!own) problems.push(`${at}: only a scope looked through (\`model\`) or the full-screen scope (\`overlay\`) stands a scope model on the gun`);
+      if (typeof sm.model !== 'string' || !existsSync(join(MODELS, sm.model))) problems.push(`${at}: its scopeModel.model (${sm.model}) is not a built model under packages/client/public/models`);
+      else {
+        const held = { medium: sm.model.replace(/\.glb$/, '.medium.glb'), high: sm.model.replace(/\.glb$/, '.high.glb') };
+        if (existsSync(join(MODELS, held.medium)) && existsSync(join(MODELS, held.high))) sm.held = held;
+      }
+      if (!v3(sm.foot)) problems.push(`${at}: a scopeModel needs \`foot\` [x, y, z]: the middle of its base's underside at scale 1, which stands on the gun's mount`);
+      if (k.housing === 'model' && !(v3(sm.eye) && sm.radius > 0)) problems.push(`${at}: a scope model looked through needs \`eye\` [x, y, z] (its eyepiece's middle at scale 1) and \`radius\` (its clear glass)`);
+      if (k.housing === 'overlay' && (sm.eye !== undefined || sm.radius !== undefined)) problems.push(`${at}: the full-screen scope is not looked through: its scope model needs no eye or radius`);
+    }
   }
   const feel = file.feel ?? {};
   for (const [key, lo, hi] of FEEL_KEYS) if (!(feel[key] >= lo && feel[key] <= hi)) problems.push(`content/optics.json: feel.${key} must be a number from ${lo} to ${hi}`);
@@ -322,7 +350,7 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
       }
     }
     if (entry.window && has !== 'optic') problems.push(`${at}: a \`window\` is the model's own sight: mark it hasSight "optic"`);
-    if (w.view?.optic && has !== 'optic') problems.push(`${at}: it aims through its model's own tube: mark it hasSight "optic"`);
+    if (w.view?.optic && has !== 'optic' && !kinds[entry.default]?.scopeModel) problems.push(`${at}: it aims through its model's own tube: mark it hasSight "optic"`);
     if (has === false && fits[w.id]) problems.push(`${at}: it has a sight fit (content/sight-fit.json), so its model has sights: hasSight "irons" or "optic"`);
     if (allowed.some((a) => kinds[a]?.housing === 'none') && has === false) problems.push(`${at}: iron sights need sights on the model: hasSight "irons" or "optic"`);
     const row = { default: entry.default, allowed: [...allowed] };
@@ -351,6 +379,20 @@ export async function buildOptics(file = readOpticsFile(), weapons = readWeapons
           }
           if (w.view?.optic && (row.steps ?? k.steps ?? [1]).length > 1) problems.push(`${at}: the model's own tube has one zoom: give it \`steps\` [1]`);
           if (w.view?.optic && (w.view.optic.reticle ?? 'duplex') !== k.reticle) problems.push(`${at}: its weapon file's view.optic.reticle (${w.view.optic.reticle ?? 'duplex'}) is not the ${id}'s (${k.reticle})`);
+        }
+        if (k.scopeModel) {
+          // A scope of our own stands on the gun's rail: where (its foot's middle) and how large, read off the model by hand.
+          const hand = entry.mount;
+          if (has === 'optic') problems.push(`${at}: its model has a sight of its own (hasSight "optic"), so it cannot also carry the ${id}'s scope model (two sights stacked)`);
+          if (!hand || !Array.isArray(hand.at) || hand.at.length !== 3 || !(hand.scale > 0.4 && hand.scale < 2) || typeof hand.reason !== 'string' || hand.reason.length < 8) problems.push(`${at}: a ${id} stands its scope model on the gun: give it a \`mount\` ({ at: [x, y, z] on the rail, scale, reason }) read off the model`);
+          else {
+            row.mount = { at: hand.at.map((v) => round(v)), scale: hand.scale, set: true };
+            const piece = scopeEyepiece(k.scopeModel, row.mount);
+            if (k.housing === 'model' && piece && w.view?.optic) {
+              const off = Math.max(...piece.eye.map((v, i) => Math.abs(v - w.view.optic.eye[i])), Math.abs(piece.radius - w.view.optic.radius));
+              if (off > EYEPIECE_SLACK) problems.push(`${at}: its view.optic is not the ${id}'s eyepiece where its scope stands: eye ${JSON.stringify(piece.eye)}, radius ${piece.radius} (content/weapons)`);
+            }
+          }
         }
       }
       if (BUILT.includes(k.housing) && k.housing !== MAGNIFIED_BUILT && entry.window) {
@@ -437,6 +479,8 @@ export function opticsSource({ kinds, weapons, none, feel = {} }) {
     if (k.steps) parts.push(`steps: ${list(k.steps)}`);
     if (k.glass) parts.push(`glass: { rise: ${k.glass.rise}, half: ${list(k.glass.half)}, length: ${k.glass.length}${k.glass.foot ? `, foot: ${k.glass.foot}` : ''} }`);
     if (k.mark) parts.push(`mark: { dot: ${k.mark.dot}${k.mark.ring ? `, ring: ${k.mark.ring}` : ''} }`);
+    const sm = k.scopeModel;
+    if (sm) parts.push(`scopeModel: { model: ${q(sm.model)}${sm.held ? `, held: { medium: ${q(sm.held.medium)}, high: ${q(sm.held.high)} }` : ''}, foot: ${list(sm.foot)}${sm.eye ? `, eye: ${list(sm.eye)}, radius: ${sm.radius}` : ''} }`);
     return `  ${id}: { ${parts.join(', ')} },`;
   });
   const weaponLines = Object.keys(weapons)
@@ -461,7 +505,7 @@ export function opticsSource({ kinds, weapons, none, feel = {} }) {
 export type OpticKindId = ${Object.keys(kinds).map(q).join(' | ')};
 /** What an optic's aim mark is: none (iron sights), a dot or a ring and dot on its glass, a chevron or a fine crosshair with holdover marks. */
 export type OpticReticle = ${RETICLES.map(q).join(' | ')};
-/** How it is drawn: the gun's own sights, a housing built in code (a tube, a frame, a magnifying tube), the model's own scope tube, or the full-screen scope. */
+/** How it is drawn: the gun's own sights, a housing built in code (a tube, a frame, a magnifying tube), the model's own scope tube (or a scope model stood on it), or the full-screen scope. */
 export type OpticHousing = ${HOUSINGS.map(q).join(' | ')};
 
 export interface OpticKind {
@@ -480,6 +524,12 @@ export interface OpticKind {
   glass?: { rise: number; half: readonly [number, number]; length: number; foot?: number };
   /** Its mark's sizes: tangents of the angle at the eye. */
   mark?: { dot: number; ring?: number };
+  /**
+   * A scope of our own stood on the guns that carry it (their models have none), its foot on each gun's \`mount\`: the
+   * model, its sharper copies for your own hands, its base's middle underneath and, looked through, its eyepiece's
+   * middle and clear radius (metres at scale 1, +Z forward).
+   */
+  scopeModel?: { model: string; held?: { medium: string; high: string }; foot: readonly [number, number, number]; eye?: readonly [number, number, number]; radius?: number };
 }
 
 export const OPTIC_KINDS: Readonly<Record<OpticKindId, OpticKind>> = {
@@ -490,7 +540,7 @@ ${kindLines.join('\n')}
  * A weapon's optics: the one it carries by default and those a player may pick for it in their loadout (Profile →
  * Favourite loadout → Optics; docs/GUNPLAY_SPEC.md §15, "Optic choice"). \`mag\`: its own
  * magnification over the hip view (from its weapon file's \`view.zoomFov\` or \`view.optic\`). \`mount\`: where a
- * housing built in code stands (model space as \`view.muzzleAt\`: the middle of its foot on the gun's top) and its size:
+ * housing built in code, or its kind's scope model, stands (model space as \`view.muzzleAt\`: the middle of its foot on the gun's top) and its size:
  * every built housing the gun may carry stands there.
  */
 export interface WeaponOptics {

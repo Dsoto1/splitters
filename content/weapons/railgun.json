@@ -24,13 +24,13 @@
   "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
   "kick": { "pitch": [0.09], "yaw": [0.0225, -0.0225], "variance": 0.018, "delay": 4, "settle": 8, "rate": 0.1, "visual": 1.2 },
   "view": {
-    "model": "guns/coppercoil.glb",
-    "held": { "medium": "guns/coppercoil.medium.glb", "high": "guns/coppercoil.high.glb" },
+    "model": "guns/plasma_sniper_cyan.glb",
+    "held": { "medium": "guns/plasma_sniper_cyan.medium.glb", "high": "guns/plasma_sniper_cyan.high.glb" },
     "fallback": "weapons/railgun.glb",
-    "viewOffset": [0.21, -0.21, 0.52],
+    "viewOffset": [0.21, -0.21, 0.55],
     "tracer": "#5fe0ff",
-    "hold": { "style": "long", "grip": [0, -0.052, -0.122], "support": [0, -0.017, 0.26], "shoulder": [0, 0.0, -0.487] },
-    "muzzleAt": [0, 0.017, 0.5],
+    "hold": { "style": "long", "grip": [0, -0.03, -0.195], "support": [0, 0.04, 0.2], "shoulder": [0, 0.03, -0.51] },
+    "muzzleAt": [0, 0.09, 0.525],
     "zoomFov": 0.5,
     "sound": "fire.railgun",
     "beam": true
@@ -40,6 +40,6 @@
     "recoil": "`kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).",
     "group": "The extended arsenal: every one fires differently. 5: precision.",
     "design": "Charges briefly, then one body hit kills an unarmoured player.",
-    "model": "The Meshy community Coppercoil Sentinel (CC0; weapons intake of 2026-11-18), a copper-wound coil rifle with a scope and a folding foregrip; the kit railgun is the fallback."
+    "model": "The owner's Cyan Charge Plasma Sniper Rifle (Meshy, owned; content/guns.json, 2026-11-28): 1.05 m, held copies a 50,000-triangle cut, its cyan cells lit (glow). It has no scope of its own: the owner's Scope model stands on its flat top (content/optics.json long_scope; aimed through the full-screen scope as before). The kit railgun is the fallback."
   }
 }

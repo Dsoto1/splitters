@@ -517,7 +517,16 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "guns/sniper_rifle.glb",
+     "model": "guns/steyr_ssg69.glb",
+     "muzzleAt": [
+      0,
+      0.065,
+      0.565
+     ],
+     "held": {
+      "medium": "guns/steyr_ssg69.medium.glb",
+      "high": "guns/steyr_ssg69.high.glb"
+     },
      "fallback": "weapons/sniper.glb",
      "viewOffset": [
       0.2,
@@ -530,18 +539,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.05,
-       -0.27
+       -0.02,
+       -0.28
       ],
       "support": [
        0,
-       -0.02,
-       0.24
+       0.02,
+       0.12
       ],
       "shoulder": [
        0,
-       0.06,
-       -0.57
+       -0.02,
+       -0.55
       ]
      }
     }
@@ -642,7 +651,17 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "weapons/launcher.glb",
+     "model": "guns/revolving_launcher.glb",
+     "muzzleAt": [
+      0,
+      0.07,
+      0.425
+     ],
+     "held": {
+      "medium": "guns/revolving_launcher.medium.glb",
+      "high": "guns/revolving_launcher.high.glb"
+     },
+     "fallback": "weapons/launcher.glb",
      "viewOffset": [
       0.22,
       -0.23,
@@ -653,18 +672,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.1,
-       0.02
+       -0.035,
+       -0.18
       ],
       "support": [
        0,
-       0.029,
-       0.187
+       0.03,
+       0.25
       ],
       "shoulder": [
        0,
-       0.023,
-       -0.43
+       0.02,
+       -0.4
       ]
      },
      "sound": "fire.launcher.synth"
@@ -984,7 +1003,16 @@
     "pellets": 1,
     "raiseTicks": 20,
     "view": {
-     "model": "guns/futuristic_blaster.glb",
+     "model": "guns/plasma_rifle_orange.glb",
+     "muzzleAt": [
+      0,
+      0.085,
+      0.425
+     ],
+     "held": {
+      "medium": "guns/plasma_rifle_orange.medium.glb",
+      "high": "guns/plasma_rifle_orange.high.glb"
+     },
      "fallback": "weapons/plasma.glb",
      "viewOffset": [
       0.21,
@@ -996,17 +1024,17 @@
       "style": "long",
       "grip": [
        0,
-       -0.08,
-       -0.08
+       -0.035,
+       -0.18
       ],
       "support": [
        0,
-       -0.05,
-       0.28
+       0.04,
+       0.2
       ],
       "shoulder": [
        0,
-       0.02,
+       0.03,
        -0.41
       ]
      },
@@ -1460,10 +1488,10 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "guns/flare_gun.glb",
+     "model": "guns/flare_pistol.glb",
      "held": {
-      "medium": "guns/flare_gun.medium.glb",
-      "high": "guns/flare_gun.high.glb"
+      "medium": "guns/flare_pistol.medium.glb",
+      "high": "guns/flare_pistol.high.glb"
      },
      "fallback": "weapons/flare_gun.glb",
      "viewOffset": [
@@ -1477,19 +1505,19 @@
       "grip": [
        0,
        -0.03,
-       -0.075
+       -0.1
       ],
       "support": [
        -0.02,
        -0.04,
-       -0.065
+       -0.09
       ],
-      "rake": 14
+      "rake": 24
      },
      "muzzleAt": [
       0,
-      0.05,
-      0.12
+      0.055,
+      0.15
      ],
      "sound": "fire.flare"
     }
@@ -1909,10 +1937,10 @@
     "reserveMax": 40,
     "pickupAmmo": 20,
     "view": {
-     "model": "guns/scoped_rifle.glb",
+     "model": "guns/precision_dmr.glb",
      "held": {
-      "medium": "guns/scoped_rifle.medium.glb",
-      "high": "guns/scoped_rifle.high.glb"
+      "medium": "guns/precision_dmr.medium.glb",
+      "high": "guns/precision_dmr.high.glb"
      },
      "viewOffset": [
       0.21,
@@ -1924,24 +1952,24 @@
       "style": "long",
       "grip": [
        0,
-       -0.025,
-       -0.29
+       -0.03,
+       -0.235
       ],
       "support": [
        0,
-       0.005,
-       0.07
+       0.05,
+       0.17
       ],
       "shoulder": [
        0,
-       -0.03,
-       -0.585
+       0.01,
+       -0.5
       ]
      },
      "muzzleAt": [
       0,
-      0.052,
-      0.565
+      0.072,
+      0.525
      ],
      "fallback": "weapons/marksman.glb",
      "zoomFov": 0.7,
@@ -2402,40 +2430,40 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "guns/coppercoil.glb",
+     "model": "guns/plasma_sniper_cyan.glb",
      "held": {
-      "medium": "guns/coppercoil.medium.glb",
-      "high": "guns/coppercoil.high.glb"
+      "medium": "guns/plasma_sniper_cyan.medium.glb",
+      "high": "guns/plasma_sniper_cyan.high.glb"
      },
      "fallback": "weapons/railgun.glb",
      "viewOffset": [
       0.21,
       -0.21,
-      0.52
+      0.55
      ],
      "tracer": "#5fe0ff",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.052,
-       -0.122
+       -0.03,
+       -0.195
       ],
       "support": [
        0,
-       -0.017,
-       0.26
+       0.04,
+       0.2
       ],
       "shoulder": [
        0,
-       0,
-       -0.487
+       0.03,
+       -0.51
       ]
      },
      "muzzleAt": [
       0,
-      0.017,
-      0.5
+      0.09,
+      0.525
      ],
      "zoomFov": 0.5,
      "sound": "fire.railgun",
@@ -3148,11 +3176,16 @@
     "damage": 0,
     "range": 120,
     "view": {
-     "model": "weapons/swarm.glb",
+     "model": "guns/swarm_launcher.glb",
+     "held": {
+      "medium": "guns/swarm_launcher.medium.glb",
+      "high": "guns/swarm_launcher.high.glb"
+     },
+     "fallback": "weapons/swarm.glb",
      "viewOffset": [
-      0.21,
-      -0.23,
-      0.52
+      0.22,
+      -0.26,
+      0.62
      ],
      "tracer": "#ffb347",
      "hold": {
@@ -3160,19 +3193,24 @@
       "grip": [
        0,
        -0.07,
-       -0.07
+       -0.165
       ],
       "support": [
        0,
-       0.012,
-       0.247
+       -0.09,
+       0.29
       ],
       "shoulder": [
        0,
-       0.029,
-       -0.405
+       0.11,
+       -0.45
       ]
      },
+     "muzzleAt": [
+      0,
+      0.08,
+      0.47
+     ],
      "sound": "fire.swarm.d"
     }
    },
@@ -5078,49 +5116,49 @@
     ],
     "pellets": 1,
     "view": {
-     "model": "guns/frontier_rifle.glb",
+     "model": "guns/scar_modular.glb",
      "fallback": "weapons/rifle.glb",
      "held": {
-      "medium": "guns/frontier_rifle.medium.glb",
-      "high": "guns/frontier_rifle.high.glb"
+      "medium": "guns/scar_modular.medium.glb",
+      "high": "guns/scar_modular.high.glb"
      },
      "viewOffset": [
       0.21,
-      -0.215,
-      0.64
+      -0.21,
+      0.6
      ],
      "tracer": "#ffe2a0",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.075,
-       -0.225
+       -0.04,
+       -0.17
       ],
       "support": [
        0,
-       -0.07,
-       0.105
+       0.05,
+       0.16
       ],
       "shoulder": [
        0,
-       0.01,
-       -0.47
+       0.02,
+       -0.45
       ]
      },
      "muzzleAt": [
       0,
-      0.033,
-      0.48
+      0.075,
+      0.47
      ],
      "optic": {
       "mag": 3.5,
       "eye": [
        0,
-       0.133,
-       -0.262
+       0.1643,
+       -0.0618
       ],
-      "radius": 0.014,
+      "radius": 0.0263,
       "relief": 0.12,
       "reticle": "chevron"
      },
@@ -6175,10 +6213,10 @@
     ],
     "pellets": 1,
     "view": {
-     "model": "guns/lever_action.glb",
+     "model": "guns/lever_repeater.glb",
      "held": {
-      "medium": "guns/lever_action.medium.glb",
-      "high": "guns/lever_action.high.glb"
+      "medium": "guns/lever_repeater.medium.glb",
+      "high": "guns/lever_repeater.high.glb"
      },
      "fallback": "weapons/marksman.glb",
      "viewOffset": [
@@ -6191,24 +6229,24 @@
       "style": "long",
       "grip": [
        0,
-       -0.025,
-       -0.2
+       0.02,
+       -0.235
       ],
       "support": [
        0,
-       0.035,
-       0.15
+       0.04,
+       0.12
       ],
       "shoulder": [
        0,
-       -0.03,
-       -0.5
+       -0.05,
+       -0.49
       ]
      },
      "muzzleAt": [
       0,
-      0.065,
-      0.51
+      0.08,
+      0.5
      ],
      "zoomFov": 0.6,
      "sound": "fire.heavy.c"
@@ -6606,10 +6644,10 @@
     "damage": 0,
     "pellets": 1,
     "view": {
-     "model": "guns/crossbow.glb",
+     "model": "guns/repeating_arbalest.glb",
      "held": {
-      "medium": "guns/crossbow.medium.glb",
-      "high": "guns/crossbow.high.glb"
+      "medium": "guns/repeating_arbalest.medium.glb",
+      "high": "guns/repeating_arbalest.high.glb"
      },
      "fallback": "weapons/marksman.glb",
      "viewOffset": [
@@ -6622,24 +6660,24 @@
       "style": "long",
       "grip": [
        0,
-       -0.02,
-       -0.12
+       -0.01,
+       -0.185
       ],
       "support": [
        0,
-       -0.01,
+       0,
        0.2
       ],
       "shoulder": [
        0,
-       -0.02,
-       -0.42
+       -0.03,
+       -0.465
       ]
      },
      "muzzleAt": [
       0,
-      0.05,
-      0.43
+      0.06,
+      0.42
      ],
      "zoomFov": 0.7,
      "muzzle": {
@@ -7872,7 +7910,7 @@
      }
     },
     "view": {
-     "model": "guns/flare_gun.glb",
+     "model": "guns/flare_pistol.glb",
      "handOnly": true
     }
    }

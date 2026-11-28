@@ -27,13 +27,17 @@
   "botDesirability": 0.75,
   "botRange": [6, 22],
   "view": {
-    "model": "weapons/launcher.glb",
+    "model": "guns/revolving_launcher.glb",
+    "muzzleAt": [0, 0.07, 0.425],
+    "held": { "medium": "guns/revolving_launcher.medium.glb", "high": "guns/revolving_launcher.high.glb" },
+    "fallback": "weapons/launcher.glb",
     "viewOffset": [0.22, -0.23, 0.55],
     "tracer": "#c2c9a8",
-    "hold": { "style": "long", "grip": [0, -0.1, 0.02], "support": [0, 0.029, 0.187], "shoulder": [0, 0.023, -0.43] },
+    "hold": { "style": "long", "grip": [0, -0.035, -0.18], "support": [0, 0.03, 0.25], "shoulder": [0, 0.02, -0.4] },
     "sound": "fire.launcher.synth"
   },
   "notes": {
-    "description": "Lobs grenades that bounce and blow. Arc them over cover."
+    "description": "Lobs grenades that bounce and blow. Arc them over cover.",
+    "model": "The owner's 40mm Revolving Cylinder Grenade Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut. The kit launcher is the fallback."
   }
 }

@@ -32,13 +32,13 @@
   "botDesirability": 0.55,
   "botRange": [6, 45],
   "view": {
-    "model": "guns/crossbow.glb",
-    "held": { "medium": "guns/crossbow.medium.glb", "high": "guns/crossbow.high.glb" },
+    "model": "guns/repeating_arbalest.glb",
+    "held": { "medium": "guns/repeating_arbalest.medium.glb", "high": "guns/repeating_arbalest.high.glb" },
     "fallback": "weapons/marksman.glb",
     "viewOffset": [0.2, -0.2, 0.55],
     "tracer": "#e8e2d0",
-    "hold": { "style": "long", "grip": [0, -0.02, -0.12], "support": [0, -0.01, 0.2], "shoulder": [0, -0.02, -0.42] },
-    "muzzleAt": [0, 0.05, 0.43],
+    "hold": { "style": "long", "grip": [0, -0.01, -0.185], "support": [0, 0.0, 0.2], "shoulder": [0, -0.03, -0.465] },
+    "muzzleAt": [0, 0.06, 0.42],
     "zoomFov": 0.7,
     "muzzle": { "effect": "none" },
     "sound": "fire.nail"
@@ -46,6 +46,6 @@
   "notes": {
     "description": "A silent bolt that downs an unarmoured player in one hit, if you lead and lift for its flight.",
     "design": "A bolt you can watch fly: 100 on a hit (an unarmoured player down in one), but it flies at 75 m/s and drops, so past 20 m you lead and lift. No flash, no tracer line: the bolt itself is all anyone sees. One bolt, then a 1 s reload. The Medieval set's precision weapon.",
-    "model": "The Meshy community Break-Action Crossbow (CC0); its bolt in flight is drawn in code (the `arrow` look). The kit marksman rifle is the fallback."
+    "model": "The owner's Medieval Repeating Arbalest (Meshy, owned; content/guns.json, 2026-11-28): 0.95 m, its bow 0.68 m across, held copies a 50,000-triangle cut, the owner's Brass Sentinel Scope on its top rail (content/optics.json sentinel; aimed through the full-screen scope as before); its bolt in flight is drawn in code (the `arrow` look). The kit marksman rifle is the fallback."
   }
 }
