@@ -194,6 +194,13 @@
       "length": 0.85
     },
     {
+      "out": "guns/rocket_launcher.glb",
+      "pack": "styloo-guns",
+      "file": "rocketlaucher.glb",
+      "forward": "+x",
+      "length": 1.1
+    },
+    {
       "out": "guns/frag.glb",
       "pack": "styloo-guns",
       "file": "nade_low.glb",
@@ -1970,27 +1977,6 @@
       "label": "40mm Revolving Cylinder Grenade Launcher: the Grenade Launcher (the owner's own Meshy model, owner's Drive, 2026-11-27)",
       "forward": "-x",
       "length": 0.85,
-      "triangles": 12000,
-      "maxError": 0.02,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "heldTriangles": 50000,
-      "heldMaxError": 0.004,
-      "heldBudget": "heldHero",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
-    },
-    {
-      "out": "guns/heavy_rocket_launcher.glb",
-      "pack": "meshy-owned-drive-1127",
-      "glb": "Meshy_AI_heavy_rocket_launcher_3d_20261127_image-to-3d-texture.glb",
-      "label": "Heavy Anti-Armor Rocket Launcher: the Rocket Launcher (the owner's own Meshy model, owner's Drive, 2026-11-27)",
-      "forward": "-x",
-      "length": 1.1,
       "triangles": 12000,
       "maxError": 0.02,
       "surface": "rebake",

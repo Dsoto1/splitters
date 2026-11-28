@@ -220,7 +220,7 @@ The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section
 
 ## Weapon replacements of 2026-11-28 (batch 3)
 
-Eleven more of the owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows) and two of
+Ten more of the owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows) and two of
 the owner's scope models, built by `tools/content/prepare-guns.mjs` in pack `meshy-owned-drive-1127`. Every weapon keeps
 its rules, numbers, sounds and sets; its model, held copies (`heldTriangles`, `heldMaxError` 0.004, 1024/2048 px), hold
 and muzzle changed. The models they replaced are no longer built (the kit models stay the fallbacks).
@@ -236,7 +236,6 @@ and muzzle changed. The models they replaced are no longer built (the kit models
 | Orange Automatic Plasma Rifle | Plasma Rifle | 12k / 50k, 0.85 m, its orange panels lit (`glow`) | a holographic sight on its top rail (the tool's mount), a red dot offered; was the old model's own sight box |
 | Tactical Flare Gun | Flare Gun, and the Airstrike Flare in your hands | 9k / 40k, 0.30 m, grip raked 24° | its notch and post, fitted (no optic: the HUD's dot kept) |
 | 40mm Revolving Cylinder Grenade Launcher | Grenade Launcher | 12k / 50k, 0.85 m | its flip-ups, fitted (no optic) |
-| Heavy Anti-Armor Rocket Launcher | Rocket Launcher | 12k / 50k, 1.1 m | the nubs on its top rail, fitted (a hand correction: the line taken over the grip, so the eye sits ahead of the wide rear flare, which filled the aimed view over the tube) |
 | Micro-Missile Swarm Launcher | Swarm Launcher | 14k / 60k, 0.95 m, its cyan lights lit (`glow`) | its nubs, fitted (no optic) |
 | Scope | the rifle scope and long-range scope | 5k / 24k, 0.32 m | — |
 | Brass Sentinel Scope | the Brass Sentinel scope | 6k / 30k, 0.30 m | — |
@@ -246,7 +245,7 @@ and muzzle changed. The models they replaced are no longer built (the kit models
 gun that carries it gives a hand-set `mount` (`at` on its rail, `scale`), and the scope is drawn there for everyone, your
 own copy from its sharper model. A different scope is a different kind: a gun swaps by its `default` and `allowed`.
 
-**Not done in this batch:** oil_slicker, disc_launcher, arena_disc, bubble_blaster, goo_gun, flamethrower, freeze_ray,
+**Not done in this batch:** rockets (the Heavy Anti-Armor Rocket Launcher was built and dropped: its wide rear flare sits 0.2 m ahead of the eye when aimed, as every gun's rear end does, and filled the middle of the aimed view; an owner question), oil_slicker, disc_launcher, arena_disc, bubble_blaster, goo_gun, flamethrower, freeze_ray,
 knife, battle_axe, spear, the frag and smoke grenades and the projectile models (40mm, micro rocket, RPG round): left for a
 later batch (HANDOFF).
 

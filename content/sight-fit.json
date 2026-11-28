@@ -1,11 +1,11 @@
 {
   "$comment": "Sight fit (tools/content/sight-fit.mjs; docs/GUNPLAY_SPEC.md §15, \"Sights that line up\"). The tool measures each gun's sights from its model; this file holds only what a person decided after looking at the sight sheet (?mode=sights). `corrections`: a weapon whose automatic fit is wrong: `rear` and/or `front` (model space as `view.muzzleAt`: +Z the barrel, +Y up, metres), optional `kind`, and the `reason`. `excluded`: a weapon that aims with the placement it had before (the top of the gun under the eye) because its model has no usable sights, with the reason. Mounted guns, melee weapons and tools, scopes (`view.zoomFov`) and guns with an optic (`view.optic`) need no entry. Run `node tools/content/sight-fit.mjs` after a change.",
   "corrections": {
-    "core.rockets": { "rear": [0, 0.1285, -0.14], "front": [0, 0.129, 0.3], "reason": "the heavy rocket launcher's top rail between its two nubs (z -0.305 and 0.30, tops 0.128 and 0.129): the tool read its top line from the flared rear; the line over the nubs, its rear point taken over the grip, puts the eye ahead of the rear flare, which stays out of the view" },
     "core.auto_shotgun": { "front": [0, 0.108, 0.455], "reason": "the obsidian pump's front post leans back: the tool read its foot at the muzzle, and the line from the eye ran into the post's top (look at the sight sheet)" },
     "core.pistol": { "rear": [0, 0.0621, -0.086], "front": [0, 0.0621, 0.088], "reason": "the Glock's two sight nubs stand at the ends of its slide-top rail: the tool read the front one's hood low, inside the slide; the line rests on both nubs' tops" }
   },
   "excluded": {
+    "core.rockets": "a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)",
     "core.arc_caster": "no iron sights: its own scope tube stands on its top: aims through the tube, its window in content/optics.json",
     "core.arena_disc": "no sights on the model: a flat-topped disc launcher",
     "core.blast_rockets": "a tube launcher, aimed over the tube: the RPG's leaf sights are not fitted (content/optics.json none)",
