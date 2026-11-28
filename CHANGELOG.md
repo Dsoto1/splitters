@@ -7,6 +7,7 @@ and a patch bump a fix-only release. The version shows on the main menu
 made only on a commit that passed CI on a check branch.
 
 ## Unreleased
+- **Combat rules for map makers.** MapMaker's Map properties set a map's own headshots (off, normal, high), ammo (normal, unlimited, scarce), reloads, bullets through walls, and damage and health (0.5× to 2×); the host sees and can change each in Match setup → Rules, and bots and the gun report play by them. Every map keeps the standard rules unless its maker changes them.
 - **Characters stand straighter.** Standing still, every character's knees sit over its feet and its toes point nearly ahead (no more bowed legs and splayed ankles); the shooting elbow hangs a little lower; the hand under a rifle's or shotgun's handguard turns along the forearm instead of wringing the wrist (first and third person).
 - **St. Jasper's: the skyway goes through.** The clock tower stands half a tile further out into the court, and the skyway over the carriageway now runs on behind it into a back hall that meets the tower's stair and Welles's halls on both upper floors; the extra door under the skyway is gone. MapMaker has the new set piece **Clock Tower, forward** and the Carriageway's East side **Open**.
 - **MapMaker's team Layout chips: just the common ones.** 1v1, 2v2, 4v4, 8v8, 2v2v2, 3v3v3, 2v2v2v2 and 4v4v4v4; any other mix is set with the team steppers, and a map saved with one shows it as its own lit chip.

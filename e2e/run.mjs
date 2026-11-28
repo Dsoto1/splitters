@@ -9725,11 +9725,23 @@ async function weaponsetsFlow(browser) {
   await ed.keyboard.press('Control+KeyY');
   const redone = await ed.evaluate(() => window.__editor.doc.weaponSet ?? null);
   check(undone === null && redone === 'scifi', `undo and redo take the set back and forth (${undone} / ${redone})`);
+  // Combat rules (GUNPLAY G5): the map's defaults in its file, played by TEST (the host's sim).
+  await ed.waitForSelector('#ed-combat-ammo', { timeout: T(10000) });
+  const combat0 = await ed.evaluate(() => ({ ammo: document.querySelector('#ed-combat-ammo .on')?.dataset.value, head: document.querySelector('#ed-combat-head .on')?.dataset.value, reloads: document.querySelector('#ed-combat-reloads')?.checked, saved: window.__editor.doc.combatRules ?? null }));
+  check(combat0.ammo === 'normal' && combat0.head === 'normal' && combat0.reloads === true && combat0.saved === null, `Map properties → Combat rules start at the standard, nothing in the file (${JSON.stringify(combat0)})`);
+  await ed.click('#ed-combat-ammo [data-value="unlimited"]');
+  await ed.waitForFunction(() => window.__editor.doc.combatRules?.ammo === 'unlimited' && document.querySelector('#ed-combat-reloads'), null, { timeout: T(15000) }).catch(() => {});
+  await ed.evaluate(() => document.querySelector('#ed-combat-reloads')?.click());
+  await ed.waitForFunction(() => window.__editor.doc.combatRules?.reloads === false, null, { timeout: T(15000) }).catch(() => {});
+  const combat1 = await ed.evaluate(() => window.__editor.doc.combatRules ?? null);
+  check(combat1?.ammo === 'unlimited' && combat1?.reloads === false && Object.keys(combat1).length === 2, `Unlimited ammo and Reloads off are saved as the map's combat rules (${JSON.stringify(combat1)})`);
   await ed.keyboard.press('F5');
   await ed.waitForFunction(() => window.__cs?.local && window.__testStartMs, null, { timeout: T(30000) });
   await simWait(ed, (m, me) => me.alive, null, T(15000));
   const test = await sim(ed, (m, me) => ({ set: m.weaponSet?.id, weapons: [...me.weapons.values()].map((w) => w.def.id) }));
   check(test.set === 'scifi' && test.weapons.join() === 'core.knife,core.pulse_pistol,core.plasma', `TEST plays the map's set (${JSON.stringify(test)})`);
+  const played = await sim(ed, (m) => m.combat);
+  check(played.ammo === 'unlimited' && played.reloads === false && played.headshots === 'normal' && played.damageScale === 1, `TEST plays the map's combat rules (${JSON.stringify(played)})`);
   check(edErrors.length === 0, `no page errors in MapMaker (${edErrors.join('; ')})`);
   await ed.context().close();
 }
