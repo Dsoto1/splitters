@@ -15609,7 +15609,7 @@ async function rangePick(page, id, { tap = false, snap = null } = {}) {
   const layout = opened ? await page.evaluate(() => {
     const r = document.getElementById('range-picker').getBoundingClientRect();
     const tile = document.querySelector('#range-picker .rp-tile')?.getBoundingClientRect();
-    return { fits: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1, tile: !!tile && tile.width > 60, sections: document.querySelectorAll('#range-picker .rp-sec').length, stats: /dmg/.test(document.querySelector('#range-picker .rp-tile small')?.textContent ?? ''), pause: !document.getElementById('pause').hidden, scroll: document.documentElement.scrollWidth <= innerWidth };
+    return { fits: r.left >= 0 && r.top >= 0 && r.right <= innerWidth + 1 && r.bottom <= innerHeight + 1, tile: !!tile && tile.width > 60, sections: document.querySelectorAll('#range-picker .rp-sec').length, stats: [...document.querySelectorAll('#range-picker .rp-tile small')].filter((s) => /\d+ (dmg|rpm)|\d+ m/.test(s.textContent)).length >= 50, pause: !document.getElementById('pause').hidden, scroll: document.documentElement.scrollWidth <= innerWidth };
   }) : null;
   if (snap) await snap();
   const tile = page.locator(`#range-picker .rp-sec:not([data-section="favs"]) .rp-tile[data-weapon="${id}"]`);
