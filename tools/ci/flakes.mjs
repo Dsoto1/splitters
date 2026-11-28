@@ -12,9 +12,10 @@
 //   same sha  a run failed and another run for the same commit succeeded
 // For a failed job it names the e2e flows ("FLOW x FAIL") or unit tests (vitest's "FAIL file > test") in its log,
 // else the job itself. GitHub access as tools/ci/train.mjs has it (`gh api`; GH_REPO=owner/repo, else origin).
-// Tested in tools/ci/test/flakes.test.mjs.
+// The page's hand-written "## Root-caused" section (a flake's cause and fix, newest first) is kept as it is when the
+// list is written again. Tested in tools/ci/test/flakes.test.mjs.
 import { execFile, execFileSync } from 'node:child_process';
-import { writeFileSync } from 'node:fs';
+import { readFileSync, writeFileSync } from 'node:fs';
 import { fileURLToPath } from 'node:url';
 import { promisify } from 'node:util';
 import { repoSlug } from './train.mjs';
@@ -79,8 +80,14 @@ export function summarize(events) {
   return [...rows.values()].sort((a, b) => b.count - a.count || (b.last.at > a.last.at ? 1 : -1));
 }
 
-/** docs/FLAKES.md. */
-export function renderFlakes(rows, { generated, days, runs }) {
+/** The hand-written "## Root-caused" section of a FLAKES.md (to its end), kept when the list is written again; '' if none. */
+export function keptNotes(md) {
+  const at = String(md ?? '').search(/^## Root-caused$/m);
+  return at < 0 ? '' : md.slice(at).trimEnd() + '\n';
+}
+
+/** docs/FLAKES.md; `notes`: the kept "## Root-caused" section (keptNotes). */
+export function renderFlakes(rows, { generated, days, runs, notes = '' }) {
   const esc = (t) => String(t ?? '').replace(/\|/g, '\\|').replace(/\s+/g, ' ');
   const kinds = (k) => Object.entries(k).map(([n, c]) => `${n} ${c}`).join(', ');
   const head = [
@@ -91,13 +98,14 @@ export function renderFlakes(rows, { generated, days, runs }) {
     'Lane A works this list in its daily fix batch (CLAUDE.md, "Fix batches"): root-cause the top entries, and note the fix in HANDOFF. A check counts when it failed and then passed on the same code: **retry** (an e2e flow passed on its own retry in the same job), **re-run** (a job failed, and a later attempt of the run passed), **same sha** (a run failed and another run for the same commit passed).',
     '',
   ];
-  if (!rows.length) return [...head, 'Nothing flaky in this window.', ''].join('\n');
+  const tail = notes ? ['', notes.trimEnd(), ''] : [];
+  if (!rows.length) return [...head, 'Nothing flaky in this window.', ...(notes ? tail : [''])].join('\n');
   return [
     ...head,
     '| Check | Times | How | Last seen | First failed check (last time) |',
     '|---|---|---|---|---|',
     ...rows.map((r) => `| ${esc(r.name)} | ${r.count} | ${kinds(r.kinds)} | [${r.last.at.slice(0, 10)}](${r.last.url}) ${esc(r.last.branch)} | ${esc(r.why).slice(0, 200)} |`),
-    '',
+    ...(notes ? tail : ['']),
   ].join('\n');
 }
 
@@ -190,10 +198,17 @@ if (process.argv[1] && fileURLToPath(import.meta.url) === process.argv[1]) {
     console.error('flakes: no CI runs read (is `gh api` working?)');
     process.exit(1);
   }
-  const md = renderFlakes(summarize(events), { generated: new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC', days, runs });
+  const page = new URL('../../docs/FLAKES.md', import.meta.url);
+  let notes = '';
+  try {
+    notes = keptNotes(readFileSync(page, 'utf8'));
+  } catch {
+    // No page yet.
+  }
+  const md = renderFlakes(summarize(events), { generated: new Date().toISOString().slice(0, 16).replace('T', ' ') + ' UTC', days, runs, notes });
   if (argv.includes('--print')) console.log(md);
   else {
-    writeFileSync(new URL('../../docs/FLAKES.md', import.meta.url), md);
+    writeFileSync(page, md);
     console.log(`docs/FLAKES.md: ${summarize(events).length} flaky checks from ${runs} runs (${days} days).`);
   }
 }
