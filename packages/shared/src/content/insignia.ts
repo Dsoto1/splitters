@@ -18,7 +18,11 @@ import { lookBranch, lookGroup } from '../sim/npc.ts';
 export const SOLDIER_RANKS = ['Pvt.', 'Pfc.', 'Cpl.', 'Sgt.', 'SSgt.', 'Lt.', 'Capt.', 'Maj.', 'Col.'] as const;
 export type SoldierRank = (typeof SOLDIER_RANKS)[number];
 
-/** The rank groups: Soldiers & Spies split by branch, then Character Select's other groups (a design of yours: Folk). */
+/**
+ * The rank groups: Soldiers & Spies split by branch, then Character Select's other groups (a design of yours: Folk).
+ * `pirates` stays so its badge ids (`pirates1` … `pirates9`) keep their meaning and nothing is renumbered, but no one
+ * wears it since the pirates went into Historical (owner, 2026-11-28): they rank with its titles and its column.
+ */
 export const RANK_GROUPS = ['army', 'agency', 'horror', 'space', 'machines', 'legends', 'animals', 'folk', 'toys', 'pirates', 'holiday', 'historical'] as const;
 export type RankGroup = (typeof RANK_GROUPS)[number];
 /** The groups that wear their own mark with the step told by rings and bars (every one but the Army). */
@@ -52,7 +56,8 @@ export const RANK_TITLES: Readonly<Record<RankGroup, readonly string[]>> = {
   folk: ['Rookie', 'Regular', 'Local', 'Pro', 'Ace', 'Star', 'Hero', 'Superstar', 'Icon'],
   // The Toys row (owner, 2026-11-26: "do we accommodate when turning on ranks"): its own nine, the lead's.
   toys: ['Wind-Up', 'Tin Toy', 'Plaything', 'Favourite', 'Best-Seller', 'Collectible', 'Keepsake', 'Heirloom', 'Toy of the Year'],
-  // The Pirates and Holiday rows (owner, 2026-11-26 evening): their own nine each, the lead's.
+  // The Pirates and Holiday rows (owner, 2026-11-26 evening): their own nine each, the lead's (Pirates' unworn since
+  // 2026-11-28: the pirates are Historical's).
   pirates: ['Deckhand', 'Powder Monkey', 'Rigger', 'Gunner', 'Boatswain', 'Quartermaster', 'First Mate', 'Captain', 'Pirate King'],
   holiday: ['Guest', 'Reveller', 'Caroler', 'Merrymaker', 'Host', 'Toastmaster', 'Grand Marshal', 'Guest of Honour', 'Holiday Legend'],
   // The Historical row (owner, 2026-11-27): its own nine, the lead's.

@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 227,
-  "name": "General Cherrytree",
+  "name": "George Washington",
   "look": "core.washington",
   "group": "historical",
   "blood": "red",
