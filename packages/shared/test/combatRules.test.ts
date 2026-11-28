@@ -7,6 +7,8 @@ import {
   PLAYER,
   STANDARD_COMBAT,
   ammoGiven,
+  applyCommand,
+  invertCommand,
   cleanCombatRules,
   combatRulesOf,
   combatSummary,
@@ -124,6 +126,17 @@ describe('combat rules: resolving', () => {
     const old = MapDocument.parse(migrateMapDocument({ ...deck(), formatVersion: 55 }).doc);
     expect(old.combatRules).toBeUndefined();
     expect(combatRulesOf({}, old)).toEqual(STANDARD_COMBAT);
+  });
+});
+
+describe('combat rules: MapMaker command', () => {
+  it('sets, clears and undoes the map file\'s combatRules', () => {
+    const m = deck();
+    const cmd = { kind: 'setCombatRules' as const, before: null, after: { ammo: 'unlimited' as const } };
+    const set = applyCommand(m, cmd);
+    expect(set.combatRules).toEqual({ ammo: 'unlimited' });
+    expect('combatRules' in applyCommand(set, invertCommand(cmd))).toBe(false);
+    expect('combatRules' in applyCommand(set, { kind: 'setCombatRules', before: { ammo: 'unlimited' }, after: {} })).toBe(false);
   });
 });
 

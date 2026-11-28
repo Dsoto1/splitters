@@ -48,6 +48,17 @@ import {
   TERRAIN_MATERIAL_LABELS,
   validBotCast,
   weaponSetList,
+  AMMO_RULES,
+  AMMO_RULE_LABELS,
+  COMBAT_SCALES,
+  HEADSHOT_LABELS,
+  HEADSHOT_RULES,
+  STANDARD_COMBAT,
+  combatRulesOf,
+  combatSummary,
+  mapCombatRules,
+  scaleLabel,
+  type CombatRules,
   withMainMode,
   type Backdrop,
   type BackdropGround,
@@ -351,6 +362,39 @@ export class MapProperties {
     el.append(small('Hit sprays, splats and pools. Players can still switch blood off in the pause menu.'));
   }
 
+  /**
+   * Map properties: the map's combat rules (MapDocument.combatRules, v56; shared sim/combatRules.ts, GUNPLAY G5):
+   * headshots, ammo, reloads, bullets through walls, damage and health scales. Each is the map's default; hosts may
+   * change it in Match Setup. A knob at the standard leaves nothing in the file.
+   */
+  renderCombatRules(el: HTMLElement): void {
+    const head = document.createElement('h3');
+    head.textContent = 'Combat rules';
+    el.append(head);
+    const own = mapCombatRules(this.app.doc);
+    const now = combatRulesOf({}, this.app.doc);
+    const set = <K extends keyof CombatRules>(k: K, v: CombatRules[K]) => {
+      const after: CombatRules = { ...own };
+      if (v === STANDARD_COMBAT[k]) delete after[k];
+      else after[k] = v;
+      const before = this.app.doc.combatRules ? { ...own } : null;
+      this.app.run('Combat rules', { kind: 'setCombatRules', before, after: Object.keys(after).length ? after : null });
+    };
+    const scales = COMBAT_SCALES.map((v) => [String(v), scaleLabel(v)] as const);
+    el.append(
+      chips('Headshots', 'ed-combat-head', HEADSHOT_RULES.map((v) => [v, HEADSHOT_LABELS[v]] as const), now.headshots, (v) => set('headshots', v)),
+      chips('Ammo', 'ed-combat-ammo', AMMO_RULES.map((v) => [v, AMMO_RULE_LABELS[v]] as const), now.ammo, (v) => set('ammo', v)),
+      row('Reloads', ruleSwitch('ed-combat-reloads', 'Reloads', now.reloads, (on) => set('reloads', on))),
+      row('Bullets through walls', ruleSwitch('ed-combat-walls', 'Bullets through walls', now.wallPenetration, (on) => set('wallPenetration', on))),
+      chips('Damage', 'ed-combat-damage', scales, String(now.damageScale), (v) => set('damageScale', Number(v))),
+      chips('Health', 'ed-combat-health', scales, String(now.healthScale), (v) => set('healthScale', Number(v))),
+    );
+    const summary = combatSummary(now);
+    const hint = small(`${summary.length ? `${summary.join(' · ')}. ` : 'Standard rules. '}Headshots off: a head counts as the body; high: double the head bonus. Scarce: half the ammo at spawn and from pickups. Reloads off: the magazine feeds from the reserve. Health is effective health (damage taken is divided by it). Hosts can change each one in Match setup → Rules.`);
+    hint.id = 'ed-combat-hint';
+    el.append(hint);
+  }
+
   // ---------------------------------------------------------------- gravity and falls
 
   /** Map physics: gravity (moon to heavy) and fall damage; arcade and servers can override both. */
@@ -616,6 +660,7 @@ export class MapProperties {
       this.app.run('Set player count', { kind: 'setMetadata', before: { recommendedPlayers: rp }, after: { recommendedPlayers: { min: Math.max(1, Math.min(96, min)), max: Math.max(1, Math.min(96, max)) } } });
     el.append(row('Min players', numberInput(rp.min, 1, (v) => setPlayers(v, rp.max))), row('Max players', numberInput(rp.max, 1, (v) => setPlayers(rp.min, v))));
     this.renderWeaponSet(el);
+    this.renderCombatRules(el);
     this.renderMapBots(el);
     this.renderPlayerCaps(el);
     // Destructible environment (v36): every solid prop can be shot apart (natural rocks stay; a prop marked Unbreakable stays).

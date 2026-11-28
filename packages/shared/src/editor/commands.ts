@@ -3,6 +3,7 @@ import type { BloodSettings, BotHint, EditorNote, Faction, GlassSettings, MapBot
 import type { TerrainData } from '../map/terrain.ts';
 import type { Backdrop } from '../map/backdrop.ts';
 import type { MapWeather } from '../map/weather.ts';
+import type { CombatRules } from '../sim/combatRules.ts';
 
 /**
  * Editor mutations as invertible commands (v1 spec §8.9). Commands carry the
@@ -30,6 +31,8 @@ export type EditCommand =
   | { kind: 'setBotCast'; before: string[] | null; after: string[] | null }
   /** The map's default weapon set (MapDocument.weaponSet); null: Standard (the document then has no `weaponSet` key). */
   | { kind: 'setWeaponSet'; before: string | null; after: string | null }
+  /** The map's combat rules (MapDocument.combatRules, v56); null: the standard (the document then has no `combatRules` key). */
+  | { kind: 'setCombatRules'; before: CombatRules | null; after: CombatRules | null }
   | { kind: 'setBackdrop'; before: Backdrop | null; after: Backdrop | null }
   | { kind: 'setBlood'; before: BloodSettings | null; after: BloodSettings | null }
   | { kind: 'setPhysics'; before: MapPhysics | null; after: MapPhysics | null }
@@ -136,6 +139,10 @@ export function applyCommand(doc: MapDocument, cmd: EditCommand): MapDocument {
       const { weaponSet: _old, ...rest } = doc;
       return cmd.after ? { ...rest, weaponSet: cmd.after } : rest;
     }
+    case 'setCombatRules': {
+      const { combatRules: _old, ...rest } = doc;
+      return cmd.after && Object.keys(cmd.after).length ? { ...rest, combatRules: { ...cmd.after } as MapDocument['combatRules'] } : rest;
+    }
     case 'setPaths': {
       const { paths: _old, ...rest } = doc;
       return cmd.after?.length ? { ...rest, paths: cmd.after } : rest;
@@ -229,6 +236,8 @@ export function invertCommand(cmd: EditCommand): EditCommand {
       return { kind: 'setBotCast', before: cmd.after, after: cmd.before };
     case 'setWeaponSet':
       return { kind: 'setWeaponSet', before: cmd.after, after: cmd.before };
+    case 'setCombatRules':
+      return { kind: 'setCombatRules', before: cmd.after, after: cmd.before };
     case 'addSetPieces':
       return { kind: 'removeSetPieces', setPieces: cmd.setPieces };
     case 'removeSetPieces':
@@ -285,6 +294,7 @@ export function isEmptyCommand(cmd: EditCommand): boolean {
     case 'setMapBots':
     case 'setBotCast':
     case 'setWeaponSet':
+    case 'setCombatRules':
     case 'setPaths':
     case 'setSetPieceDefs':
     case 'setLookDefs':
