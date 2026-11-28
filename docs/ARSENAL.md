@@ -646,7 +646,7 @@ carries only the entry hook in `frontEnd.ts` (the screen id, the nav entry, hand
   held last in the range.
 - **In the range: the weapon picker** (owner, 2026-11-28: "I really dislike having to load into the level just to test
   it"; client `game/rangePicker.ts` + `.css`, its own chunk loaded at the first opening). On the Practice range and Test my
-  loadout, **P** (controller **View**, a phone's **Guns** button beside II) opens every weapon this page lists, by the same
+  loadout, **P** (controller **View**, a phone's **Guns** button under II) opens every weapon this page lists, by the same
   categories, your Armory favourites first, a search; each tile has the weapon's picture, name, damage a pull and fire
   rate (else range); the one in focus shows its role and every bar. A click, tap, Enter or A puts it in your hands at once
   (the page's `hand` message → `MatchHost.hand` → `Match.holdOnSpawn(me, id, swap)`: in hand now and each life, and the

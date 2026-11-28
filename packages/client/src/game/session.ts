@@ -1602,7 +1602,7 @@ export class GameSession {
       },
       { signal },
     );
-    // A phone: a Guns button beside the pause button.
+    // A phone: a Guns button under the pause button.
     if (this.touch) {
       const b = document.createElement('button');
       b.type = 'button';
