@@ -1536,6 +1536,27 @@ export class CharacterAnimator {
     d.weight = 1;
     // One frame before the end, played out: the last frame stays.
     d.start(false, 1, Math.max(d.from, d.to - 1), d.to);
+    this.deathHold = d;
+  }
+
+  /** The death clip holding its last frame (holdDeathPose) since the body went down; null while alive. */
+  private deathHold: AnimationGroup | null = null;
+
+  /**
+   * The held death pose written to its joints now, not on the scene's next animation step. A body frozen before that
+   * step (a cheap ragdoll a crowd's budget drops in the frame it started: GameView.dropTier) kept the joints as they
+   * were: a far body that died in the frame after it was built (never evaluated, so in its bind pose) lay frozen in a
+   * T for good (characters3's pose check, CI runs 46104515126 and 46141903583), and one evaluated before lay with
+   * its limbs in their last living pose.
+   */
+  private applyDeathHold(): void {
+    const d = this.deathHold;
+    if (!d?.isStarted) return;
+    for (const a of d.animatables) {
+      const target = a.target as { name?: string } | null;
+      if (d.mask && !d.mask.disabled && !d.mask.retainsTarget(target?.name ?? '')) continue;
+      a.goToFrame(d.to);
+    }
   }
 
   /** The pose is final (a frozen ragdoll, a body laid down): skip the skeleton and joint updates until thawed. */
@@ -1545,6 +1566,7 @@ export class CharacterAnimator {
     if (this.frozenPose) return;
     this.frozenPose = true;
     this.endSmoothing();
+    this.applyDeathHold();
     for (const j of this.ch.joints.values()) j.freezeWorldMatrix();
     // Every skin takes the final pose now: a skin is only updated while its mesh is drawn, so the near-detail
     // mesh of a body that died far away (its low-detail mesh drawn) kept the last pose it was drawn in, or the
@@ -1791,6 +1813,7 @@ export class CharacterAnimator {
 
   private revive(): void {
     this.dead = false;
+    this.deathHold = null;
     this.endSmoothing();
     this.thawPose();
     const d = this.ch.clips.get('death');
