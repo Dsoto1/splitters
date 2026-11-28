@@ -575,6 +575,40 @@ It answers "why pick this up?" with a two-hit kill up close that throws people
 off ledges, and a blast for the step just out of reach (blast and swing kill
 together).
 
+## Armory (2026-11-27)
+
+The main menu's **Armory** (owner, 2026-11-27: "a weapons page like Character Select") lists every weapon a player can
+hold and shows one at a time in the menu scene. Client `frontend/armory.ts` (the page), `frontend/armoryData.ts` (what
+it lists and the numbers), `frontend/armory.css`: their own chunk, loaded when the page opens. The menu's first JS
+carries only the entry hook in `frontEnd.ts` (the screen id, the nav entry, handing it keys and controller buttons) and
+`MenuScene`'s `hideHero` / `setShot('armory')`: about 0.4 kB gzipped.
+
+- **What's listed** (`inArmory`): weapons in a hand (slot > 0: no mounted guns or vehicles' guns), not hidden (the
+  Weapon Manager's hide), with a pickup category or swung (melee and tools); a mode-only weapon with neither (the arena
+  disc) is left out. Sections are the weapon wheel's eight categories (`game/wheelCategories.ts`, the same rule), each
+  by name.
+- **The layout is Character Select's** (its classes and phone layouts in style.css; armory.css only for the tiles'
+  weapon pictures, the sights and the phone sheet's order): the jump strip (a chip, or Q / E, LB / RB, scrolls to a
+  category; it lights the one in view), search, Favourites only (the star on a tile, `tiletrigger.armoryFavs` in this
+  browser; controller Y stars the one shown), the arrow keys or d-pad over the tiles, and on a phone the details sheet
+  (down: the name and Try it; up: Try it and Fire sound first, then the stats and sights).
+- **The weapon on show**: its held high copy where it has one (`view.held.high`, else the shared model, then its
+  fallbacks), framed by projection into the free space beside the panels (the turn zone) whatever the window's shape,
+  side-on with the muzzle to the right, the optic it carries built on it (`attachOptic`). Every hero is hidden meanwhile
+  (`MenuScene.hideHero`: the heroes stand under one `menuStage` node). Drag (or the turn buttons, `,` `.`) turns it; a
+  flick keeps it turning. Its file comes through Character Select's `FileFetcher`: resting on a tile fetches it (`soon`)
+  and its neighbours (`later`); a pick takes the bytes. Leaving frees it.
+- **The panel**: name, role (by family, else from its category and data: `armoryRole`), its description
+  (`notes.description`, written in the Weapon Manager; none are written yet) and range note (`notes.range`), tags, and
+  stat bars from the weapon tuning page's numbers (`tools/weaponTuningData.ts` weaponStats, on `arsenalMax`'s scale):
+  damage, fire rate, range (where its falloff ends), handling (sights up), mobility, magazine, reload; longer is better
+  on every bar. **Sights**: its own, or a choice of those content/optics.json allows, kept for your loadout (the same
+  setting as Profile → Favourite loadout → Optics). **▶ Fire sound** plays its fire sound (controller X).
+- **Try it in the range** (the button, Enter or controller A on the one shown): the Practice range alone, as Quick
+  Play's link opens it, with the weapon in hand now and at every spawn (`playRange('practice_range', weapon)`, host
+  option `hand`, shared `Match.holdOnSpawn`). Leaving the range comes back to the Armory, that weapon shown.
+- Tests: `client/test/armoryData.test.ts`, `shared/test/holdOnSpawn.test.ts`, e2e `armory`.
+
 ## Weapon categories and random pickups
 
 Every weapon a pickup can hold has a `category` (`WEAPON_CATEGORIES` in

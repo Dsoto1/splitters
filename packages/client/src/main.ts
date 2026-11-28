@@ -391,7 +391,7 @@ class App {
         joinCode: (code, name) => ((this.storyRun = null), void this.joinCode(code, name)),
         playTutorial: () => ((this.storyRun = null), void this.playTutorial()),
         playRange: () => ((this.storyRun = null), void this.playRange()),
-        playPractice: () => ((this.storyRun = null), void this.playRange('practice_range')),
+        playPractice: (weapon) => ((this.storyRun = null), void this.playRange('practice_range', weapon)),
       }, this.menuScene, this.portraits, audio, params);
       this.engine.runRenderLoop(() => this.frame());
     })();
@@ -595,9 +595,9 @@ class App {
    * range's racks, your optic picks. The pause menu's Back (Esc again, controller B) and its exit go back to the
    * loadout. Nothing is recorded in your career.
    * Quick Play → Practice range (owner, 2026-11-19: "a quiet map to try every weapon"): the same on the Practice range
-   * (`practice_range`, a training map), from and back to the menu.
+   * (`practice_range`, a training map), from and back to the menu; from the Armory (`hand`: its weapon in hand, each life), back to the Armory.
    */
-  async playRange(id: 'training_range' | 'practice_range' = 'training_range'): Promise<void> {
+  async playRange(id: 'training_range' | 'practice_range' = 'training_range', hand?: string): Promise<void> {
     void loadMatchCode().catch(() => undefined);
     await this.init();
     const practice = id === 'practice_range';
@@ -608,7 +608,7 @@ class App {
     const back = (reason?: string) => void this.showMenu(reason ?? '').then(() => (practice ? undefined : this.front!.openLoadout()));
     this.showMatchLoading(map, 'core.deathmatch');
     void this.withMatch((m) =>
-      this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, ...(TEST ? { test: TEST } : {}) }), {
+      this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, ...(hand ? { hand } : {}), ...(TEST ? { test: TEST } : {}) }), {
         exitLabel: practice ? 'Leave the range' : 'Back to loadout',
         exitOnF5: false,
         range: true,

@@ -135,7 +135,6 @@ import { setMyOptic } from '../opticPrefs.ts';
 import { weaponName } from '../game/profileCard.ts';
 import { loadMousePrefs, saveMousePrefs } from '../game/input.ts';
 import { isMenuKey, keyFor, keysFor } from '../game/keyBindings.ts';
-import { controlsPage } from './controlsPage.ts';
 import { loadRelay, saveRelay } from '../game/relay.ts';
 import { loadSteerMode, saveSteerMode, type SteerMode } from '../game/steerMode.ts';
 import { currentAccount, signIn, signInAvailable, signOut } from '../account.ts';
@@ -158,6 +157,7 @@ import type { MapMeta } from '../mapIndex.ts';
 import { GLYPHS, botTypePicker, choice, field, fitChip, fitList, fold as foldEl, glyph, inert, infoTip, limitsText, numbered, numberedRow, optionSwitch, powerupSwitches, ruleSwitch, segmented, settingRow, sizeChips, stepper, weatherSelect, teamEditor, weaponSetSelect, type ChoiceOption } from './setupControls.ts';
 import { deleteSetup, lastSetup, listSetups, saveSetupAs, setLastSetup } from './savedSetups.ts';
 import type { MenuScene } from './menuScene.ts';
+import type { ArmoryPage } from './armory.ts';
 import { weaponIcon } from './weaponIcons.ts';
 import { autoReloadOn, damageNumbersOn, saveAutoReload, saveDamageNumbers, saveSprayReadout, sprayReadoutOn } from '../game/combatReadouts.ts';
 import { ALLY_MARKER_COLOURS, CROSSHAIR_COLOURS, CROSSHAIR_STYLES, HITMARKER_STYLES, markerSetting, saveMarkers, crosshairSetting, hitmarkerSetting, saveCrosshair, saveHitmarker, type HitmarkerStyle } from '../game/crosshair.ts';
@@ -360,11 +360,11 @@ export interface FrontEndHooks {
   playTutorial(): void;
   /** Profile → Favourite loadout → Test weapons: the Training Range alone, offline, with your loadout (main.ts playRange). */
   playRange(): void;
-  /** Quick Play → Practice range: the Practice range alone, offline, no bots (main.ts playRange). */
-  playPractice(): void;
+  /** Quick Play → Practice range: the Practice range alone, offline, no bots (main.ts playRange); the Armory's Try it: with `weapon` in hand. */
+  playPractice(weapon?: string): void;
 }
 
-type ScreenId = 'home' | 'story' | 'play' | 'characters' | 'online' | 'options' | 'profile';
+type ScreenId = 'home' | 'story' | 'play' | 'characters' | 'online' | 'options' | 'profile' | 'armory';
 /** Profile's career tabs (player profiles, Phase 3). */
 type CareerTab = 'overview' | 'modes' | 'weapons' | 'history';
 
@@ -471,6 +471,21 @@ function storage(key: string, value?: string): string | null {
   }
 }
 
+/**
+ * Options → Controls' key list (controlsPage.ts) is its own chunk, out of the menu's first JS: fetched shortly after
+ * the menu opens (warmControls), so it's there by the time anyone opens Controls; until then a placeholder stands in.
+ */
+let controlsMod: typeof import('./controlsPage.ts') | null = null;
+const warmControls = () => import('./controlsPage.ts').then((m) => (controlsMod = m));
+function controlsList(): HTMLElement {
+  if (controlsMod) return controlsMod.controlsPage();
+  // (Filled in place, shown or not: Options builds every tab's rows at once and shows one.)
+  const slot = document.createElement('div');
+  slot.style.display = 'contents';
+  void warmControls().then((m) => slot.replaceChildren(m.controlsPage()), () => undefined);
+  return slot;
+}
+
 const el = <K extends keyof HTMLElementTagNameMap>(tag: K, props: Partial<HTMLElementTagNameMap[K]> & { class?: string } = {}, ...children: (Node | string)[]): HTMLElementTagNameMap[K] => {
   const e = document.createElement(tag);
   const { class: cls, ...rest } = props;
@@ -550,6 +565,8 @@ export class FrontEnd {
   private charFavsOnly = false;
   /** A phone's Character Select: the details sheet is pulled up (style.css; docs/MOBILE_AUDIT.md, proposal 4). */
   private charSheet = false;
+  /** The Armory while it's up (armory.ts, its own chunk: it takes its keys and buttons first). */
+  private armory: ArmoryPage | null = null;
   private keyHandler = (e: KeyboardEvent) => this.onKey(e);
   /** The footer's fullscreen hint label shown now, and whether the page listener for it is on. */
   private fsLabel: HTMLElement | null = null;
@@ -614,6 +631,7 @@ export class FrontEnd {
     });
     // Render every character's portrait in the background while the menu is up, so Character Select opens ready.
     setTimeout(() => void this.warmPortraits(), 1500);
+    setTimeout(() => void warmControls().catch(() => undefined), 500);
   }
 
   /** Every built-in look with a portrait (tools/content/capture-portraits.mjs renders these for the site). */
@@ -641,7 +659,7 @@ export class FrontEnd {
     this.notice = null;
     this.previewed = null;
     this.scene.setLook(this.look);
-    this.go(this.screen === 'characters' ? 'characters' : 'home');
+    this.go(this.screen === 'characters' || this.screen === 'armory' ? this.screen : 'home');
   }
 
   /** Make a look yours: kept in this browser and worn on the menu. */
@@ -661,6 +679,8 @@ export class FrontEnd {
 
   private go(screen: ScreenId): void {
     clearInterval(this.browserTimer);
+    this.armory?.leave();
+    this.armory = null;
     if (this.screen === 'characters' && screen !== 'characters') this.scene.resetSpin();
     // The character shown stays while you switch Character Select's tabs; leaving (or coming back) shows your own.
     if (this.screen !== 'characters' || screen !== 'characters') this.previewed = null;
@@ -737,6 +757,10 @@ export class FrontEnd {
           main('Choose', 'Choose the character shown (Enter, controller A)', () => this.select(this.previewed ?? this.look)),
         ];
         break;
+      case 'armory':
+        moves.push(cycle('Category'));
+        acts = [main('Try it', 'Try the weapon shown in the Practice range (Enter, controller A on the one shown)', () => this.armory?.tryIt())];
+        break;
       case 'profile':
         acts = [hintButton('hint-change', glyphs('C', 'Y', 'y'), 'Change character', 'Open Character Select (C, controller Y)', () => this.go('characters'))];
         break;
@@ -764,7 +788,7 @@ export class FrontEnd {
   /** Where Back goes from this screen (for its tooltip): the main menu, or the screen that opened Character Select. */
   private backTarget(): string {
     const to = this.screen === 'characters' ? this.charFrom : 'home';
-    const names: Record<ScreenId, string> = { home: 'the main menu', story: 'Story', profile: 'your profile', online: 'Online', options: 'Options', play: 'match setup', characters: 'the main menu' };
+    const names: Record<ScreenId, string> = { home: 'the main menu', story: 'Story', profile: 'your profile', online: 'Online', options: 'Options', play: 'match setup', characters: 'the main menu', armory: 'the main menu' };
     return names[to];
   }
 
@@ -798,7 +822,7 @@ export class FrontEnd {
       this.go('options');
     } else if (this.screen === 'characters') {
       this.stepSection(dir);
-    }
+    } else this.armory?.cycle(dir);
   }
 
   /**
@@ -948,7 +972,7 @@ export class FrontEnd {
 
   /** A controller in the menus: the d-pad moves, A presses, B goes back, LB / RB switch. */
   private onPad(button: number): void {
-    if (this.root.hidden) return;
+    if (this.root.hidden || (!document.querySelector('dialog[open]') && this.armory?.pad(button))) return;
     // A window over the menu (the Bots window): B closes what's on top, A presses, the d-pad moves inside it.
     // Match Setup has its own (padPlay): a grid and a panel moved over in two dimensions.
     if (this.screen === 'play' && !document.getElementById('bm-pick-wrap') && !document.getElementById('bot-manager') && !document.querySelector('dialog[open]') && this.padPlay(button)) return;
@@ -1008,6 +1032,11 @@ export class FrontEnd {
         return this.options();
       case 'profile':
         return this.profile();
+      case 'armory': {
+        const page = el('div', { class: 'screen characters armory' }, this.head('Weapon <em>Armory</em>'));
+        void import('./armory.ts').then((m) => page.isConnected && (this.armory = m.mountArmory(page, { scene: this.scene, audio: this.audio, play: (w) => this.hooks.playPractice(w) })));
+        return page;
+      }
     }
   }
 
@@ -1021,6 +1050,7 @@ export class FrontEnd {
     { id: 'nav-online', label: 'Online', act: () => this.go('online') },
     { id: 'nav-mapmaker', label: 'MapMaker', act: () => this.hooks.openEditor(), minor: true },
     { id: 'nav-characters', label: 'Characters', act: () => this.go('characters'), minor: true },
+    { id: 'nav-armory', label: 'Armory', act: () => this.go('armory'), minor: true },
     { id: 'nav-options', label: 'Options', act: () => this.go('options'), minor: true },
   ];
 
@@ -3966,7 +3996,7 @@ export class FrontEnd {
             ]
           : []),
         el('h3', { class: 'opt-sub', textContent: 'Keyboard and mouse' }),
-        controlsPage(),
+        controlsList(),
         el('h3', { class: 'opt-sub', textContent: 'Controller' }),
         controller,
       ]],
@@ -4035,7 +4065,7 @@ export class FrontEnd {
   private onKey(e: KeyboardEvent): void {
     if (this.root.hidden || (e.target instanceof HTMLInputElement && e.key !== 'Escape')) return;
     // A window open over the menu (Filter maps) takes the keys: Escape closes it, not the screen under it.
-    if (document.querySelector('dialog[open]')) return;
+    if (document.querySelector('dialog[open]') || (e.key !== 'Escape' && this.armory?.key(e))) return;
     if (e.key === 'Escape') {
       // One level per press, and never a press the browser used (leaving fullscreen, a held Esc repeating).
       if (browserTookEscape(e)) return;
