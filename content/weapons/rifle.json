@@ -49,6 +49,7 @@
     "muzzleAt": [0, 0.072, 0.44]
   },
   "notes": {
+    "description": "The medium-range workhorse: steady climb, real bullet travel. Learn it and it never lets you down.",
     "range": "Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 500 m. Standard ballistics: by impact speed, the same distances.",
     "model": "The owner's own AK-47 Modular Assault Rifle (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 AK-47. The kit rifle is the fallback.",
     "design": "Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse."

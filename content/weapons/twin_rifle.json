@@ -33,6 +33,7 @@
     "sound": "fire.rifle.suppressed"
   },
   "notes": {
+    "description": "Every pull is a double tap: two rounds close together. Land both.",
     "design": "Every pull is a double tap: two rounds 3 ticks apart (the second jumps up), then 15 ticks to the next pull. Two pulls and a round kill a body (0.6 s); two head hits in one pull. Rewards a steady first round and the timing of the next pull, not holding the trigger.",
     "model": "The Meshy community Scoped Tactical Rifle (CC0); its red dot is a plain sight for now (the sights pass fits it). The kit burst rifle is the fallback."
   }

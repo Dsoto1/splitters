@@ -52,6 +52,7 @@
     "sound": "fire.pulse.c"
   },
   "notes": {
+    "description": "Spills oil that sends anyone crossing it sliding. Set it alight for a nasty surprise.",
     "group": "The extended arsenal: every one fires differently. 6: lobbers.",
     "bots": "Bots lay puddles round their target and light them with the igniter about every three seconds (BotBrain.act), so it is worth as much to them as the flare gun or the goo gun (0.45; it was 0.3 while they never lit it)."
   }

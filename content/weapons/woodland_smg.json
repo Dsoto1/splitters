@@ -30,6 +30,7 @@
     "sound": "fire.heavy.b"
   },
   "notes": {
+    "description": "The heavy SMG: slower and harder-hitting, each round kicking higher. Pull it down and it wins.",
     "design": "The heavy SMG: slow (514 rpm) and hard-hitting (22 a round, five to a body, 0.47 s), each round kicking higher than the last. Pull it down and it wins close fights; spray and it climbs off the target.",
     "model": "The Meshy community Wooden SMG Design (CC0), held by its rear grip with the top of the receiver at the shoulder; the kit SMG is the fallback."
   }

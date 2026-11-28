@@ -42,5 +42,5 @@
     },
     "sound": "fire.flame.c"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 9: energy and chemical." }
+  "notes": { "description": "A stream of fire that sets everyone in front of you burning. Short range, big panic.", "group": "The extended arsenal: every one fires differently. 9: energy and chemical." }
 }

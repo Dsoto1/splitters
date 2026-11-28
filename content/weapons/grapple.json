@@ -28,6 +28,7 @@
     "sound": "fire.disc.c"
   },
   "notes": {
+    "description": "Fire its claw at a wall or a ledge and it reels you in. The quickest way up.",
     "model": "The owner's own Steampunk Claw Grapple Gun (Meshy, owned, 2026-11-27; content/guns.json): loaded with its claw in, the unloaded one (`spent`) from a shot until it is ready again, and the claw itself (`hookModel`) drawn where it bites. The flare gun it replaced is the fallback."
   }
 }

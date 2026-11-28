@@ -29,6 +29,7 @@
     "sound": "fire.sniper"
   },
   "notes": {
+    "description": "A scoped rifle for picking people off at range, quicker between shots than a sniper rifle.",
     "range": "Best within 60 m: full damage, 3 body shots. Down to 85 % (4 shots) by 150 m; reaches 220 m. Standard ballistics: by impact speed, the same distances.",
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",

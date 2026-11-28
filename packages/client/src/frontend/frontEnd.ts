@@ -360,7 +360,7 @@ export interface FrontEndHooks {
   joinCode(code: string, name: string): void;
   /** The tutorial on the Training Range (game/tutorial.ts). */
   playTutorial(): void;
-  /** Profile → Favourite loadout → Test weapons: the Training Range alone, offline, with your loadout (main.ts playRange). */
+  /** Armory → Test my loadout: the Training Range alone, offline, with your loadout (main.ts playRange). */
   playRange(): void;
   /** Quick Play → Practice range: the Practice range alone, offline, no bots (main.ts playRange); the Armory's Try it: with `weapon` in hand. */
   playPractice(weapon?: string): void;
@@ -671,12 +671,10 @@ export class FrontEnd {
     this.scene.setLook(this.look);
   }
 
-  /** Back from Test weapons: Profile, at its Favourite loadout, Test weapons focused (Enter or controller A goes again). */
+  /** Back from Test my loadout: the Armory, Test my loadout focused (Enter or controller A goes again). */
   openLoadout(): void {
-    this.go('profile');
-    const btn = this.body.querySelector<HTMLButtonElement>('#profile-test-weapons');
-    btn?.scrollIntoView({ block: 'center' });
-    btn?.focus({ preventScroll: true });
+    if (this.screen !== 'armory') this.go('armory');
+    this.body.querySelector<HTMLButtonElement>('#armory-test-loadout')?.focus({ preventScroll: true });
   }
 
   private go(screen: ScreenId): void {
@@ -1035,7 +1033,10 @@ export class FrontEnd {
       case 'profile':
         return this.profile();
       case 'armory': {
-        const page = el('div', { class: 'screen characters armory' }, this.head('Weapon <em>Armory</em>'));
+        // Test my loadout (owner, 2026-11-24; on Profile until 2026-11-28): the Training Range alone with your class and optics; Back there comes here again.
+        const test = el('button', { type: 'button', id: 'armory-test-loadout', title: 'Your class and optics on the Training Range: no score, no clock, every gun on the racks; Esc twice (controller B) comes back here', textContent: 'Test my loadout' });
+        test.addEventListener('click', () => (this.armory?.leave(), this.hooks.playRange()));
+        const page = el('div', { class: 'screen characters armory' }, this.head('Weapon <em>Armory</em>', test));
         void import('./armory.ts').then((m) => page.isConnected && (this.armory = m.mountArmory(page, { scene: this.scene, audio: this.audio, play: (w) => this.hooks.playPractice(w) })));
         return page;
       }
@@ -3472,12 +3473,12 @@ export class FrontEnd {
         (e: Error) => (favNote.textContent = `Saved in this browser; not on your account: ${e.message}`),
       );
     });
-    // Test weapons (owner, 2026-11-24): the Training Range alone with this loadout; Back there comes here again.
-    const test = el('button', { type: 'button', class: 'primary', id: 'profile-test-weapons', title: 'Try your loadout on the Training Range: no score, no clock, every gun on the racks; Esc twice (controller B) comes back here', textContent: 'Test weapons' });
-    test.addEventListener('click', () => this.hooks.playRange());
-    const testRow = el('div', { class: 'prof-test' }, test, el('small', { class: 'hint', textContent: 'Your class and optics on the Training Range. Every other gun waits on the racks.' }));
+    // Weapons (owner, 2026-11-28: Test weapons moved to the Armory as Test my loadout): every weapon, its sights, the range.
+    const weapons = el('button', { type: 'button', class: 'primary', id: 'profile-armory', title: 'Open the Armory: every weapon, its sights, and Test my loadout on the Training Range', textContent: 'Weapons' });
+    weapons.addEventListener('click', () => this.go('armory'));
+    const testRow = el('div', { class: 'prof-test' }, weapons, el('small', { class: 'hint', textContent: 'Every weapon in the Armory: pick sights, try one in the range, or test this loadout.' }));
     const loadout = el('section', { class: 'prof-sec', id: 'profile-loadout' }, kicker('Favourite loadout'), el('label', {}, 'Class', favPick), favNote, testRow, this.opticsPicker());
-    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, character, ...secs, this.emblemSection(kicker), this.careerSection(kicker, !!who), loadout, region, foot));
+    const panel = (...secs: HTMLElement[]) => el('div', { class: 'screen profile' }, head, el('div', { class: 'profile-panel panel', id: 'profile-panel' }, el('div', { class: 'prof-col' }, character, ...secs, this.emblemSection(kicker), region), el('div', { class: 'prof-col' }, this.careerSection(kicker, !!who), loadout), foot));
 
     if (!who) {
       // A guest: the name you play under (set in Options), and Sign in where it's offered.

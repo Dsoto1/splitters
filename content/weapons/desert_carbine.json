@@ -33,6 +33,7 @@
     "sound": "fire.rifle.c"
   },
   "notes": {
+    "description": "The run-and-gun rifle: moves like an SMG, fires faster than the Assault Rifle, climbs more.",
     "design": "The run-and-gun rifle: moves and comes out of a sprint like an SMG (full speed, 5 ticks), fires faster than the Assault Rifle (720 rpm) and climbs more, but loses its punch past 15 m (half by 45 m). Body kill up close 6 rounds, 0.42 s.",
     "model": "The Meshy community Desert M4 Carbine (CC0; content/guns.json, pack meshy-community-drive-1118); the kit rifle is the fallback."
   }

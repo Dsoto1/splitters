@@ -38,5 +38,5 @@
     },
     "sound": "fire.bubble"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 6: lobbers." }
+  "notes": { "description": "Traps people in bubbles that float them away. Silly, until it wins you the point.", "group": "The extended arsenal: every one fires differently. 6: lobbers." }
 }

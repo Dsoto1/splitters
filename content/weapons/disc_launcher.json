@@ -38,5 +38,5 @@
     },
     "sound": "fire.disc"
   },
-  "notes": { "group": "The extended arsenal: every one fires differently. 6: lobbers." }
+  "notes": { "description": "Heavy discs that knock people off their feet, and off ledges.", "group": "The extended arsenal: every one fires differently. 6: lobbers." }
 }

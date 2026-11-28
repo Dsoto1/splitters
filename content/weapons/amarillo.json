@@ -32,6 +32,7 @@
     "sound": "fire.rifle.m4"
   },
   "notes": {
+    "description": "A bullet hose: forty rounds gone in barely a second, with almost no climb. Get close and hold the trigger.",
     "design": "The bullet hose: 1,800 rpm with almost no climb, empties its 40 rounds in 1.3 s, reloads fast (0.9 s). Thirteen rounds to a body, 0.4 s, but the cone blooms wide and the rounds fade past 10 m: a corner and room gun.",
     "model": "The Meshy community Amarillo Carbine (CC0); the kit SMG is the fallback."
   }

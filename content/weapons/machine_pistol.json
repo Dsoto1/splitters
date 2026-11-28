@@ -30,6 +30,7 @@
     "sound": "fire.heavy.l86.fast"
   },
   "notes": {
+    "description": "A sidearm that sprays: a fast burst for when the main gun runs dry up close.",
     "range": "Best within 8 m: full damage, 15 body shots. Down to 35 % (41 shots) by 25 m; reaches 60 m. Standard ballistics: by impact speed, the same distances.",
     "model": "The owner's own Modular Machine Pistol (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 Grease Gun. No stock: held a little ahead of the shoulder, the left hand on the magazine. The flat-colour kit machine pistol is the fallback.",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",

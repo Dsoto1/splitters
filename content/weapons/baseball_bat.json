@@ -27,6 +27,7 @@
     "hold": { "style": "melee", "grip": [0, 0, -0.32] }
   },
   "notes": {
+    "description": "A slow, mighty swing that sends people flying: off ledges, into hazards, out of the fight.",
     "design": "The home run: a slow swing (0.7 s) for 45 that knocks the target flying (14 m/s along the swing, the Battle Axe's 6): off ledges, into hazards, out of the fight.",
     "model": "The owner's own Futuristic Baseball Bat (Meshy, owned; weapons intake of 2026-11-18), 0.86 m; the knife is the fallback."
   }

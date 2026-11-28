@@ -36,6 +36,7 @@
     "sound": "fire.heavy.b"
   },
   "notes": {
+    "description": "One heavy lead ball, then a long reload. Make it count: up close it's a kill.",
     "design": "One heavy lead ball, then a reload (1.6 s): a body kill inside 8 m (100), half that by 40 m, always a kill to the head, and a shove. The ball is slow (210 m/s) and drops, so past 20 m you lead and lob it. The Medieval set's sidearm; the Gilded Pistol stays the rare one-shot kill.",
     "ballistic": "A round ball: slow, falling fast, losing speed (and damage, by impact speed) quickly.",
     "model": "The Meshy community Ornate Flintlock Pistol (CC0), a long horse pistol, built 0.56 m long; the Gilded Pistol's kit model is the fallback."

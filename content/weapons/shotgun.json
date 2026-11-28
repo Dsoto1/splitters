@@ -42,6 +42,7 @@
     "muzzleAt": [0, 0.076, 0.5]
   },
   "notes": {
+    "description": "Makes you close in: one shot kills point-blank, a few pellets reach at middle range.",
     "range": "Best within 8 m: full damage, 1 body blast. Down to 25 % (4 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).",
     "model": "The owner's own Vietnam Tactical Breaching Shotgun (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 pump shotgun; its under-barrel launcher is only looks. The kit shotgun is the fallback.",
     "design": "Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).",

@@ -30,6 +30,7 @@
     "muzzleAt": [0, 0.04, 0.1]
   },
   "notes": {
+    "description": "Your reliable sidearm: quick to draw, steady, a fast reload. Always worth having.",
     "range": "Best within 18 m: full damage, 5 body shots. Down to 40 % (11 shots) by 45 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.",
     "model": "The owner's own Glock 19 Modular Sidearm (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 Makarov. The flat-colour kit pistol is the fallback.",
     "design": "Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.",

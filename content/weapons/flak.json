@@ -41,6 +41,7 @@
     "sound": "fire.flak"
   },
   "notes": {
+    "description": "Bursting shards that bounce off walls: wide, messy and hard to dodge up close.",
     "group": "The extended arsenal: every one fires differently. 4: shotguns.",
     "model": "The Meshy community Rustworn Pulse Carbine (CC0; weapons intake of 2026-11-18), a heavy scrap receiver held at the hip and shoulder; the kit flak cannon is the fallback."
   }

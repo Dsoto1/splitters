@@ -31,6 +31,7 @@
     "sound": "fire.shotgun.b"
   },
   "notes": {
+    "description": "A shotgun that keeps on firing: a little less punch per blast, a lot more blasts.",
     "model": "The owner's own Mesoamerican Obsidian Pump Shotgun (Meshy, owned, 2026-11-27; content/guns.json; owner: the Auto Shotgun's model), sharper copies in your own hands at Medium and High; it replaced Styloo's shotgun. The kit auto shotgun is the fallback.",
     "range": "Best within 8 m: full damage, 2 body blasts. Down to 25 % (7 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).",
     "group": "The extended arsenal: every one fires differently. 4: shotguns."

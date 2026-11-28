@@ -7,5 +7,5 @@ import { isTrainingMap, isUnlistedMap } from '@tiletrigger/shared';
 export function unlistedMapNotice(id: unknown, instead: string): string | null {
   if (typeof id !== 'string' || !isUnlistedMap(id)) return null;
   const name = id.split('_').map((w) => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');
-  return `${name} ${id === 'practice_range' ? 'is only on Quick Play → Practice range' : isTrainingMap(id) ? 'is only on Profile → Test weapons now' : 'is retired'}: your setup plays ${instead} instead.`;
+  return `${name} ${id === 'practice_range' ? 'is only on Quick Play → Practice range' : isTrainingMap(id) ? 'is only on Armory → Test my loadout now' : 'is retired'}: your setup plays ${instead} instead.`;
 }

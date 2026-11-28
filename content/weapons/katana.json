@@ -26,6 +26,7 @@
     "hold": { "style": "melee", "grip": [0, 0, -0.38] }
   },
   "notes": {
+    "description": "The long blade: two cuts down a body, with more reach than a knife.",
     "design": "The long blade: 70 a cut, two to a body, at a 2.6 m reach (the knife's 2.2), a cut every 0.57 s. Reach and a two-hit kill against the Scimitar's speed.",
     "model": "The Meshy community Dragon Katana 3D (CC0; weapons intake of 2026-11-18), 1 m long; the knife is the fallback."
   }

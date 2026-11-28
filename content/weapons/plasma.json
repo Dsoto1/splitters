@@ -55,6 +55,7 @@
     "sound": "fire.plasma.c"
   },
   "notes": {
+    "description": "Fires glowing plasma bolts; the second trigger charges an orb with a big splash.",
     "model": "The owner's Orange Automatic Plasma Rifle (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut, its orange panels lit (glow). A holographic sight on its top rail by default (content/optics.json), a red dot offered. The sci-fi kit rifle is the fallback."
   }
 }

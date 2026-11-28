@@ -49,6 +49,7 @@
     "impactSound": "impact.energy"
   },
   "notes": {
+    "description": "Bright orange bolts at a steady rate. Fast, but not instant: lead anyone running past.",
     "design": "The Sci-fi set's automatic: bright orange bolts at 600 rpm, 21 each (five to a body, 0.4 s), fast (110 m/s) but not instant, so a moving target past 15 m needs a little lead; no splash and no drop. The Plasma Rifle lobs slower, splashing balls; the Laser Rifle burns without ammo.",
     "model": "The Meshy community Blaster X-42 (CC0); the kit plasma rifle is the fallback."
   }

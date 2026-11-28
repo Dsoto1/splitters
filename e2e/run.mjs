@@ -15381,9 +15381,10 @@ async function padsetupFlow(browser) {
 }
 
 /**
- * Test weapons (owner, 2026-11-24): Citadel and the Training Range are on no map list; Profile → Favourite loadout →
- * Test weapons opens the range alone, offline, with your favourite class's loadout and no scorebar or clock; Esc there
- * opens the pause menu and Esc again (its Back, "Loadout") comes back to the loadout, Test weapons focused. Desktop,
+ * Test my loadout (owner, 2026-11-24; moved from Profile to the Armory 2026-11-28): Citadel and the Training Range are on
+ * no map list; Profile → Favourite loadout → Weapons opens the Armory, whose Test my loadout opens the range alone,
+ * offline, with your favourite class's loadout and no scorebar or clock; Esc there opens the pause menu and Esc again
+ * (its Back, "Armory") comes back to the Armory, Test my loadout focused. Desktop,
  * then a phone (a tap on the button, the pause menu's exit). TESTRANGE_PICS=<dir>: pictures at twice the pixels.
  */
 /**
@@ -15688,12 +15689,15 @@ async function testrangeFlow(browser) {
     }
     await page.waitForSelector('#profile-badge', { timeout: T(20000) });
     await press('#profile-badge');
-    await page.waitForSelector('#profile-test-weapons', { timeout: T(20000) });
+    await page.waitForSelector('#profile-armory', { timeout: T(20000) });
     await page.evaluate(() => document.getElementById('profile-fav-class')?.scrollIntoView({ block: 'center' }));
-    const fav = await page.evaluate(() => document.getElementById('profile-fav-class')?.value);
-    check(fav === 'runner', `${label}: Profile's Favourite loadout has the class and a Test weapons button (${fav})`);
+    const fav = await page.evaluate(() => ({ cls: document.getElementById('profile-fav-class')?.value, old: !!document.getElementById('profile-test-weapons') }));
+    check(fav.cls === 'runner' && !fav.old, `${label}: Profile's Favourite loadout has the class and a Weapons button, no Test weapons (${JSON.stringify(fav)})`);
     if (pics) await page.screenshot({ path: `${pics}/loadout-${label}.png` });
-    await press('#profile-test-weapons');
+    await page.evaluate(() => document.getElementById('profile-armory')?.scrollIntoView({ block: 'center' }));
+    await press('#profile-armory');
+    await page.waitForSelector('#armory-test-loadout', { timeout: T(30000) });
+    await press('#armory-test-loadout');
     const inRange = await page.waitForFunction(() => window.__cs?.map === 'training_range' && window.__cs.phase?.() === 'playing' && window.__cs.local?.alive && /sawed/i.test(document.getElementById('weapon-name')?.textContent ?? ''), null, { timeout: T(120000) }).then(() => true, () => false);
     if (!inRange) console.log(`NOTE ${label} range: ${await page.evaluate(() => JSON.stringify({ map: window.__cs?.map, phase: window.__cs?.phase?.(), alive: window.__cs?.local?.alive, weapon: document.getElementById('weapon-name')?.textContent })).catch((e) => e.message)}`);
     const state = inRange ? await page.evaluate(() => {
@@ -15701,7 +15705,7 @@ async function testrangeFlow(browser) {
       const r = window.__cs.rules();
       return { scorebar: !!sb && getComputedStyle(sb).display !== 'none' && sb.getBoundingClientRect().width > 0, timer: document.getElementById('timer')?.textContent ?? '', time: r.timeLimitSeconds, score: r.scoreLimit, classes: !!r.classes };
     }) : null;
-    check(inRange && !!state && !state.scorebar && !state.timer && state.time === 0 && state.score === 0 && state.classes, `${label}: Test weapons opens the Training Range with the Runner's guns, no scorebar or clock (${JSON.stringify(state)})`);
+    check(inRange && !!state && !state.scorebar && !state.timer && state.time === 0 && state.score === 0 && state.classes, `${label}: Test my loadout opens the Training Range with the Runner's guns, no scorebar or clock (${JSON.stringify(state)})`);
     // (A phone plays by touch; on a desktop the page never takes the mouse here: "Click to fight" waits, and Esc
     // there opens the pause menu as it would in play.)
     if (tap) await playWithoutMouse(page);
@@ -15709,7 +15713,7 @@ async function testrangeFlow(browser) {
     await page.evaluate(() => (window.__cs.input.classMenu = false));
     await frames(page, 10);
     if (pics) await page.screenshot({ path: `${pics}/range-${label}.png` });
-    // Back: the pause menu, then its Back ("Loadout": Esc again) or its exit button (a phone).
+    // Back: the pause menu, then its Back ("Armory": Esc again) or its exit button (a phone).
     const paused = await page.evaluate(() => !document.getElementById('pause').hidden);
     if (!paused && tap) {
       const pb = await page.evaluate(() => {
@@ -15728,8 +15732,8 @@ async function testrangeFlow(browser) {
       });
       await page.touchscreen.tap(at.x, at.y);
     } else await page.keyboard.press('Escape');
-    const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && document.activeElement?.id === 'profile-test-weapons', null, { timeout: T(20000) }).then(() => true, () => false);
-    check(exitLabel === 'Back to loadout' && back, `${label}: ${tap ? 'the pause menu\'s exit' : 'Esc twice'} comes back to the loadout, Test weapons focused (${exitLabel}, ${back})`);
+    const back = await page.waitForFunction(() => !document.getElementById('menu').hidden && document.activeElement?.id === 'armory-test-loadout', null, { timeout: T(20000) }).then(() => true, () => false);
+    check(exitLabel === 'Back to the Armory' && back, `${label}: ${tap ? 'the pause menu\'s exit' : 'Esc twice'} comes back to the Armory, Test my loadout focused (${exitLabel}, ${back})`);
     check(errors.length === 0, `${label}: no page errors (${errors.join('; ')})`);
     await context.close();
   };

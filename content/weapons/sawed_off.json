@@ -35,6 +35,7 @@
     "reloadSound": "reload.end.b"
   },
   "notes": {
+    "description": "A Western break-action cannon: both barrels at once, devastating up close, useless far away.",
     "model": "The owner's own Western Buffalo Break-Action Cannon (Meshy, owned, 2026-11-27; content/guns.json; owner: sawed-off style), sharper copies in your own hands at Medium and High; it replaced the kit sawed-off, now the fallback.",
     "range": "Best within 8 m: full damage, 1 body blast. Down to 25 % (3 blasts) by 28 m; reaches 25 m. Body shots count every pellet on the body (hitscan pellets: by distance).",
     "group": "The extended arsenal: every one fires differently. 4: shotguns."

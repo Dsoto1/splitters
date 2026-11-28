@@ -41,6 +41,7 @@
     "sound": "fire.flare"
   },
   "notes": {
+    "description": "A slow, bright flare that sets its target alight and lights up the dark.",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",
     "model": "The owner's Tactical Flare Gun (Meshy, owned; content/guns.json, 2026-11-28): 0.30 m, held copies a 40,000-triangle cut, its grip raked 24°. The kit pistol is the fallback. The Airstrike Flare is this gun's shot too (content/throwables.json): the same gun in your hands while you line it up."
   }

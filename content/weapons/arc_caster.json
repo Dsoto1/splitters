@@ -29,6 +29,7 @@
     "beam": true
   },
   "notes": {
+    "description": "Throws lightning that leaps from target to target. Runs hot, so pick your moments.",
     "group": "The extended arsenal: every one fires differently. 9: energy and chemical.",
     "model": "The Meshy community Arcstorm Carbine (CC0; weapons intake of 2026-11-18), its cable and blue cell kept; the kit arc caster is the fallback."
   }

@@ -38,6 +38,7 @@
     "sound": "fire.vortex"
   },
   "notes": {
+    "description": "A slow orb that opens a small black hole, dragging everyone nearby into it.",
     "group": "The extended arsenal: every one fires differently. 8: heavy.",
     "model": "The owner's own Singularity Cannon (Meshy, owned, 2026-11-27; content/guns.json), its purple core lit; sharper copies in your own hands at Medium and High. It replaced the Plasma Blaster (Meshy community). The Quaternius sci-fi sniper is the fallback."
   }

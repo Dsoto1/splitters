@@ -57,7 +57,7 @@ Everything else keeps its place below these.
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/armory-2` · 4a0499f7 · run 46104515126 (Test my loadout in the Armory, Profile's Weapons button, two-column Profile, 59 weapon descriptions)
+- (none; wip/armory-2 landed alone at ea80a3ee 2026-11-28, run 46126534239: Test my loadout in the Armory, Profile's Weapons button, two-column Profile, 59 weapon descriptions)
 
 (train check/train-20261128-044628 landed a190007 2026-11-28: historical-names + weapons-replace-2; its editor e2e flow failed once and passed on the re-run: being root-caused on wip/editor-flow-1128.)
 

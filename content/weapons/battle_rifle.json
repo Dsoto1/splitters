@@ -46,6 +46,7 @@
     "sound": "fire.heavy"
   },
   "notes": {
+    "description": "Hits hard and reaches far, but it bucks: tap it, don't spray it.",
     "range": "Best within 40 m: full damage, 4 body shots. Down to 75 % (6 shots) by 100 m; reaches 600 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Spec gap G2 (GUNPLAY_SPEC.md §13, \"Battle Rifle\": high damage, medium-low rate, high recoil, high accuracy, very high velocity, medium capacity). Four heavy rounds kill to 40 m and two to the head anywhere; a true 1 mrad first shot from the hip, 880 m/s and the family's 1800 energy (more through walls than the Assault Rifle's 1200). Never the quickest body kill of the rifles on paper (Single 0.6 s, Burst 0.55 s, against the Assault Rifle's 0.5 up close; the Precision Rifle owns 100 m and beyond): its case is the first shot, the head and what's behind cover.",
     "falloff": "Its own (the family's minimum 0.8 would let five rounds kill at 100 m, quicker than the Precision Rifle's two bolts): five rounds at 50 m, six past 85 m.",

@@ -36,6 +36,7 @@
     "beam": true
   },
   "notes": {
+    "description": "Charges for a moment, then one body hit drops an unarmoured player. Hold still, hold your breath.",
     "recoil": "`kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).",
     "group": "The extended arsenal: every one fires differently. 5: precision.",
     "design": "Charges briefly, then one body hit kills an unarmoured player.",

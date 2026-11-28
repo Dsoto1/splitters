@@ -38,5 +38,6 @@
     "sound": "door.open"
   },
   "notes": {
+    "description": "Fires nails in a quick stream that bounce off walls. They fly, so lead your target a little.",
     "model": "The Meshy community Scrapfire Assault Blaster (CC0 per the owner; content/guns.json): a drum-fed scrap-built gun, replacing the flat-colour kit nailgun, now the fallback.", "group": "The extended arsenal: every one fires differently. 7: automatics." }
 }

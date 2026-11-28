@@ -36,5 +36,8 @@
     "hold": { "style": "long", "grip": [0, -0.035, -0.18], "support": [0, 0.03, 0.25], "shoulder": [0, 0.02, -0.4] },
     "sound": "fire.launcher.synth"
   },
-  "notes": { "model": "The owner's 40mm Revolving Cylinder Grenade Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut. The kit launcher is the fallback." }
+  "notes": {
+    "description": "Lobs grenades that bounce and blow. Arc them over cover.",
+    "model": "The owner's 40mm Revolving Cylinder Grenade Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut. The kit launcher is the fallback."
+  }
 }

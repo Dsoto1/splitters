@@ -33,6 +33,7 @@
     "sound": "fire.revolver"
   },
   "notes": {
+    "description": "Every pull is an event: absurd damage for a handgun, six of them, then a reload.",
     "range": "Best within 25 m: full damage, 2 body shots. Down to 40 % (3 shots) by 65 m; reaches 110 m. A head shot kills to about 45 m, a body pair to about 50 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills within its range, about 45 m; a body shot takes nine tenths of a life; owner, 2026-11-16: short range like the Hand Cannon, 110 m and a 40 % floor), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).",
     "model": "The owner's own Western Classic 6-Shot Revolver (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the Meshy community Revolver Rustique. The kit revolver is the fallback."

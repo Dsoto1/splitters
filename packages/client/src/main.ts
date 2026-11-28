@@ -194,7 +194,7 @@ function arcadeMaps(): ArcadeMap[] {
     ...entry('sandgate', 'Desert town: long street, mid doors, tunnels.', ['core.tdm', 'core.deathmatch'], 9),
     // Every other map in maps/ (the homage maps and any added later) joins the list from its own metadata;
     // arena, vault, outpost and citadel are retired (RETIRED_MAPS) and stay reachable only by ?offline= for tests;
-    // the Training Range (TRAINING_MAPS) is Profile → Test weapons' (playRange) and the tutorial's, never a map to pick.
+    // the Training Range (TRAINING_MAPS) is Armory → Test my loadout's (playRange) and the tutorial's, never a map to pick.
     ...MAP_INDEX.filter((e) => !isOfflineMap(e.key) && !isUnlistedMap(e.key))
       .map((e) => builtInEntry(e.key, e, { blurb: blurbOf(e.metadata.description), modes: e.modes, bots: botsFor(e.metadata.recommendedPlayers), ...(e.metadata.tier === 'experimental' ? { group: EXPERIMENTAL_GROUP } : {}) }))
       .sort(byName),
@@ -589,7 +589,7 @@ class App {
   }
 
   /**
-   * Profile → Favourite loadout → Test weapons (owner, 2026-11-24: "its just training and testing"): the Training Range
+   * Armory → Test my loadout (owner, 2026-11-24: "its just training and testing"; on Profile until 2026-11-28): the Training Range
    * alone, offline, no mode to speak of (Deathmatch underneath, no bots, no time or score limit, no scorebar), your
    * favourite class's loadout when you have one (Classes on, so the class screen can swap it), every other gun on the
    * range's racks, your optic picks. The pause menu's Back (Esc again, controller B) and its exit go back to the
@@ -609,7 +609,7 @@ class App {
     this.showMatchLoading(map, 'core.deathmatch');
     void this.withMatch((m) =>
       this.startSession(m, new m.LocalTransport(map, { name: this.front!.displayName || 'Player', verified: this.front!.verified, look: this.front!.look, botFill: 1, difficulty: 'normal', rules, ...(hand ? { hand } : {}), ...(TEST ? { test: TEST } : {}) }), {
-        exitLabel: practice ? 'Leave the range' : 'Back to loadout',
+        exitLabel: practice ? 'Leave the range' : 'Back to the Armory',
         exitOnF5: false,
         range: true,
         ...(practice ? { rangeBack: 'Menu' } : {}),
@@ -1041,7 +1041,7 @@ class App {
       },
       ...(o.tutorial ? { tutorial: true } : {}),
       ...(o.range ? { range: true } : {}),
-      // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial (Test weapons
+      // Your career and profile card (careerStats.ts): every match but MapMaker TEST and the tutorial (Test my loadout
       // only reads your favourite class: nothing it plays is recorded).
       ...(o.exitOnF5 || o.tutorial
         ? {}
