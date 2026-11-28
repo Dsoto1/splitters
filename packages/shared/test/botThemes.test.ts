@@ -183,12 +183,12 @@ describe('bot characters: soldiers only', () => {
     const control = new HostControl(match, bots, 12);
     expect(control.state().cast).toBeNull();
     expect(control.state().mapCast).toEqual(['soldiers']);
-    // An old name set (pirate, monkey) reads as its bot type (Legends, Animalia).
+    // An old name set (pirate, monkey) reads as its bot type (Historical since 2026-11-28, Animalia).
     const r = control.apply({ c: 'bots', cast: ['pirate', 'monkey'] });
-    expect(r.notice).toMatch(/legends \+ animalia/i);
-    for (const c of botsOf(match)) expect(['legends', 'animals']).toContain(builtInLook(c.look)?.group);
+    expect(r.notice).toMatch(/historical \+ animalia/i);
+    for (const c of botsOf(match)) expect(['historical', 'animals']).toContain(builtInLook(c.look)?.group);
     expect(new Set(match.combatants().map((c) => c.name)).size).toBe(12);
-    expect(control.state().cast).toEqual(['legends', 'animals']);
+    expect(control.state().cast).toEqual(['historical', 'animals']);
     // All: nobody has to change (every look is allowed).
     const before = botsOf(match).map((c) => `${c.name}/${c.look}`);
     control.apply({ c: 'bots', cast: [] });
@@ -220,7 +220,7 @@ describe('bot characters: soldiers only', () => {
   });
 
   it('settings: validated, kept on a map change, from match setup, server rules, the wire', () => {
-    expect(validBotCast(['soldiers', 'nope', 'pirate', 'soldiers', 7])).toEqual(['soldiers', 'legends']);
+    expect(validBotCast(['soldiers', 'nope', 'pirate', 'soldiers', 7])).toEqual(['soldiers', 'historical']);
     expect(validBotCast('soldiers')).toEqual([]);
     expect(castLooks(['nope']).length).toBe(PICKABLE_LOOKS.length);
     expect(castAllows(['soldiers'], 'core.paratrooper')).toBe(true);
@@ -231,7 +231,7 @@ describe('bot characters: soldiers only', () => {
     expect(botCastLabel(['soldiers'])).toBe('Soldiers & Spies');
     expect(botCastLabel(['army'])).toBe('Soldiers');
     expect(botCastLabel(['agency', 'animals'])).toBe('Spies + Animalia');
-    expect(botCastLabel(['army', 'agency', 'folk', 'space', 'legends', 'historical', 'pirates', 'animals', 'toys', 'holiday', 'machines', 'horror'])).toBe('All characters');
+    expect(botCastLabel(['army', 'agency', 'folk', 'space', 'legends', 'historical', 'animals', 'toys', 'holiday', 'machines', 'horror'])).toBe('All characters');
     // Bot types as tick-boxes: all ticked is all, Soldiers and Spies together are Soldiers & Spies.
     expect(botTypesOf(undefined)).toHaveLength(BOT_TYPES.length);
     expect(botTypesOf(['soldiers', 'cat'])).toEqual(['army', 'agency', 'animals']);
@@ -246,7 +246,13 @@ describe('bot characters: soldiers only', () => {
     expect(castLooks(['army']).every((l) => l.branch === 'army')).toBe(true);
     // Retired ids (saved setups, maps, server rules) read as what they went into (2026-11-17): Agents & Spies is
     // Agency (the same characters), Creatures is in Horrors & Creatures.
-    expect(validBotCast(['agents', 'creatures', 'horror', 'pirate'])).toEqual(['agency', 'legends', 'horror']);
+    expect(validBotCast(['agents', 'creatures', 'horror', 'pirate'])).toEqual(['agency', 'historical', 'horror']);
+    // The Pirates row went into Historical (owner, 2026-11-28): a saved `pirates` plays the Historical row, pirates included.
+    expect(validBotCast(['pirates', 'animals'])).toEqual(['historical', 'animals']);
+    expect(botTypesOf(['pirates'])).toEqual(['historical']);
+    expect(castAllows(['pirates'], 'core.piratecaptain')).toBe(true);
+    expect(castAllows(['pirates'], 'core.caesar')).toBe(true);
+    expect(castAllows(['historical'], 'core.femalepirate')).toBe(true);
     expect(castAllows(['agents'], 'core.stealthop')).toBe(true);
     expect(castAllows(['agents'], 'core.paratrooper')).toBe(false);
     expect(castAllows(['creatures'], 'core.snikkit')).toBe(true);
@@ -257,7 +263,7 @@ describe('bot characters: soldiers only', () => {
     const base = { map: map.metadata.id, mode: 'core.deathmatch' as const, bots: 4, skill: 'normal' as const, scoreLimit: 20, minutes: 10 };
     expect(rulesFromSetup(base, map).rules.botCast).toBeUndefined();
     expect(rulesFromSetup({ ...base, botCast: [] }, map).rules.botCast).toEqual([]);
-    expect(rulesFromSetup({ ...base, botCast: ['pirate', 'bogus'] }, map).rules.botCast).toEqual(['legends']);
+    expect(rulesFromSetup({ ...base, botCast: ['pirate', 'bogus'] }, map).rules.botCast).toEqual(['historical']);
     // A saved setup or link with an old set loads as its type; Themed names off plays general names.
     expect(normalizeSetup({ ...base, botCast: ['monkey', 'army'] })?.botCast).toEqual(['army', 'animals']);
     expect(normalizeSetup({ ...base, botCast: 'pirate' })?.botCast).toBeUndefined();
@@ -276,7 +282,8 @@ describe('bot characters: soldiers only', () => {
     expect(parseRuleValue(spec, 'creatures')).toEqual({ ok: true, value: 'horror' });
     expect(parseRuleValue(spec, 'army')).toEqual({ ok: true, value: 'army' });
     // An old name set reads as its type.
-    expect(parseRuleValue(spec, 'pirate')).toEqual({ ok: true, value: 'legends' });
+    expect(parseRuleValue(spec, 'pirate')).toEqual({ ok: true, value: 'historical' });
+    expect(parseRuleValue(spec, 'pirates')).toEqual({ ok: true, value: 'historical' });
     spec.write(r, 'all');
     expect(r.botCast).toEqual([]);
     spec.write(r, 'map');

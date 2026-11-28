@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 275,
-  "name": "Khan of the Steppes",
+  "name": "Genghis Khan",
   "look": "core.khan",
   "group": "historical",
   "blood": "red",

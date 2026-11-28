@@ -21,17 +21,17 @@
   "botRange": [2, 25],
   "akimbo": true,
   "view": {
-    "model": "guns/makarov.glb",
-    "held": { "medium": "guns/makarov.medium.glb", "high": "guns/makarov.high.glb" },
+    "model": "guns/glock19.glb",
+    "held": { "medium": "guns/glock19.medium.glb", "high": "guns/glock19.high.glb" },
     "fallback": "weapons/pistol.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffe08a",
-    "hold": { "style": "pistol", "grip": [0, -0.022, -0.083], "support": [-0.02, -0.032, -0.073], "rake": 10 },
-    "muzzleAt": [0, 0.055, 0.1]
+    "hold": { "style": "pistol", "grip": [0, -0.03, -0.062], "support": [-0.02, -0.04, -0.052], "rake": 15 },
+    "muzzleAt": [0, 0.04, 0.1]
   },
   "notes": {
     "range": "Best within 18 m: full damage, 5 body shots. Down to 40 % (11 shots) by 45 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.",
-    "model": "The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.",
+    "model": "The owner's own Glock 19 Modular Sidearm (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 Makarov. The flat-colour kit pistol is the fallback.",
     "design": "Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.",
     "fireMode": "One shot per click; holding the trigger doesn't keep firing (the Machine Pistol is the automatic one)."
   }

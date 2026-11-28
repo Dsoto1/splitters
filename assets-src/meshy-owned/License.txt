@@ -178,7 +178,7 @@ Provenance: Meshy, owned.
   - "shaka mpande rigged" (2026-11-26)  -> character meshy_shaka (look Shaka Mpande; on meshy_ashwalker until the owner moved Kato there, 2026-11-26)
   - "officer mackie rigged" (2026-11-26)  -> character meshy_pruitt (look Sgt. Mackie), its new model
   - "bum rourke rigged" (2026-11-26)  -> character meshy_rourke (look Rourke)
-  - "AbeLincolnRigged" (2026-11-26)  -> character meshy_abe (look Honest Abe), its new model
+  - "AbeLincolnRigged" (2026-11-26)  -> character meshy_abe (look Abraham Lincoln), its new model
   - "orange engineer rigged" (2026-11-26)  -> character meshy_orangeengineer (look Orange Suit Engineer), its new model
   - "biker girl rigged" (2026-11-26)  -> character meshy_bikergirl (look Biker Gang Girl), its new model
   - "fish butcher rigged" (2026-11-26)  -> character meshy_butcher (look The Butcher), its new model
@@ -188,10 +188,10 @@ Provenance: Meshy, owned.
   - "Skinny T1000 Base Rigged" (2026-11-26)  -> character meshy_t350 (look T-TreeFitty), its new model
   - "Skinny T1000 Disco / Lifeguard / Tourist / Tutu / Suit Rigged" (2026-11-26)  -> characters meshy_t350_disco, meshy_t350_lifeguard, meshy_t350_tourist, meshy_t350_tutu, meshy_t350_suit (T-TreeFitty's variant looks)
   - "zulu warrior rigged" (2026-11-26)  -> character meshy_zuluwarrior (look Themba Ironspear)
-  - "FranklinRigged" (2026-11-26)  -> character meshy_franklin (look Poor Richard)
-  - "WashingtonRigged" (2026-11-26)  -> character meshy_washington (look General Cherrytree)
-  - "TeddyRooseveltRigged" (2026-11-26)  -> character meshy_roosevelt (look The Rough Rider)
-  - "AlbertEinsteinRigged" (2026-11-26)  -> character meshy_einstein (look Prof. Quanta)
+  - "FranklinRigged" (2026-11-26)  -> character meshy_franklin (look Benjamin Franklin)
+  - "WashingtonRigged" (2026-11-26)  -> character meshy_washington (look George Washington)
+  - "TeddyRooseveltRigged" (2026-11-26)  -> character meshy_roosevelt (look Theodore Roosevelt)
+  - "AlbertEinsteinRigged" (2026-11-26)  -> character meshy_einstein (look Albert Einstein)
   - "TS2 Wizard Rigged" (2026-11-26)  -> character meshy_ts2wizard (look Astor Moonvale)
   - "Ancient Ankh Mummy" (2026-11-25)  -> character meshy_ankhmummy (look Nebka the Unwrapped)
   - "rigged female pirate" (2026-11-26)  -> character meshy_femalepirate (look Scarlet Brinewell)

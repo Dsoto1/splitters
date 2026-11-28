@@ -23,13 +23,13 @@
   "knockback": 3,
   "recoil": { "bloom": 0.03, "maxBloom": 0.05, "recover": 0.0012 },
   "view": {
-    "model": "guns/bk220.glb",
-    "held": { "medium": "guns/bk220.medium.glb", "high": "guns/bk220.high.glb" },
+    "model": "guns/desert_eagle.glb",
+    "held": { "medium": "guns/desert_eagle.medium.glb", "high": "guns/desert_eagle.high.glb" },
     "fallback": "weapons/hand_cannon.glb",
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffd08a",
-    "hold": { "style": "pistol", "grip": [0, -0.03, -0.097], "support": [-0.02, -0.04, -0.087], "rake": 8 },
-    "muzzleAt": [0, 0.06, 0.125],
+    "hold": { "style": "pistol", "grip": [0, -0.027, -0.088], "support": [-0.02, -0.037, -0.078], "rake": 14 },
+    "muzzleAt": [0, 0.042, 0.135],
     "sound": "fire.pistol.c"
   },
   "notes": {

@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 228,
-  "name": "The Rough Rider",
+  "name": "Theodore Roosevelt",
   "look": "core.roosevelt",
   "group": "historical",
   "blood": "red",

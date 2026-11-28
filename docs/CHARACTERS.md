@@ -148,9 +148,9 @@ are Agency too. Shingle Point's Bot characters are Soldiers only (set in MapMake
 
 **Bot types (owner, 2026-11-19).** Match Setup's Bots & AI tab, the pause menu's Host tab and MapMaker's map
 settings pick random bots' characters with one tick-box per bot type (`BOT_TYPES`: Soldiers, Spies, Everyday Folk,
-Outer Space, Legends, Historical, Pirates, Animalia, Toys, Holiday, Machines, Horrors; every one ticked: all; All and None to start over). The old
-"Named as" sets fold into a type (`THEME_BOT_TYPES`: pirate, wizard, myth → Legends; knight, ninja, barbarian, cowboy →
-Historical (2026-11-27); the animals → Animalia; undead, spooky, goblin → Horrors; robot → Machines; alien → Outer
+Outer Space, Legends, Historical, Animalia, Toys, Holiday, Machines, Horrors; every one ticked: all; All and None to start over). The old
+"Named as" sets fold into a type (`THEME_BOT_TYPES`: wizard, myth → Legends; knight, ninja, barbarian, cowboy →
+Historical (2026-11-27), pirate → Historical (2026-11-28; the Pirates type of 2026-11-26 folded in, a saved `pirates` reads as `historical`); the animals → Animalia; undead, spooky, goblin → Horrors; robot → Machines; alien → Outer
 Space; gangster, townsfolk → Everyday Folk; soldier → Soldiers), so saved setups, links, server rules and maps that named one load
 as that type (`validBotCast`, `normalizeSetup`). Under the types, plain switches: **Ranks & badges** (the Options
 setting, `game/ranksSetting.ts`) and **Themed names** (`MatchSetup.themedNames`, `MatchRules.themedNames`; off:
@@ -174,7 +174,7 @@ enemies where enemy markers are shown; hidden as the arrow is, under smoke or a 
 | Animalia (`animals`) | paw | Pup | Cub | Scout | Tracker | Hunter | Stalker | Prowler | Alpha | Apex, and from 2026-11-25 Fenn Dustwhirl, Kiko Banyan, Deuce Droopwell, Ottis Crema, Boogie Tuskworth, Det. Drake Montego, Napsworth (Pip Quickfoot's new model too) |
 | Everyday Folk (`folk`; also a design of yours) | plain chevron | Rookie | Regular | Local | Pro | Ace | Star | Hero | Superstar | Icon |
 | Toys (`toys`, 2026-11-26) | toy brick | Wind-Up | Tin Toy | Plaything | Favourite | Best-Seller | Collectible | Keepsake | Heirloom | Toy of the Year |
-| Pirates (`pirates`, 2026-11-26) | anchor | Deckhand | Powder Monkey | Rigger | Gunner | Boatswain | Quartermaster | First Mate | Captain | Pirate King |
+| Pirates (`pirates`, 2026-11-26; worn by no one since 2026-11-28: the pirates rank as Historical) | anchor | Deckhand | Powder Monkey | Rigger | Gunner | Boatswain | Quartermaster | First Mate | Captain | Pirate King |
 | Holiday (`holiday`, 2026-11-26) | gift | Guest | Reveller | Caroler | Merrymaker | Host | Toastmaster | Grand Marshal | Guest of Honour | Holiday Legend |
 | Historical (`historical`, 2026-11-27) | column | Commoner | Militia | Shieldbearer | Veteran | Centurion | Chieftain | Warlord | Conqueror | Immortal |
 
@@ -211,7 +211,7 @@ out: a soft glow, no flash. The flicker check's `rankup` moment records it.
 **Order in a section.** By name, unless a manifest sets `sortAs` (the name it is listed as): the owner swapped Spud
 Marshal and Astronaut Explorer (2026-11-17) so the astronauts sit together.
 
-The sections as Character Select lists them (2026-11-27, after the Historical row; variant looks sit under their base, MapMaker-only looks are not on Character Select):
+The sections as Character Select lists them (2026-11-28, the pirates in Historical and the real people by their real names; variant looks sit under their base, MapMaker-only looks are not on Character Select):
 
 | Section (`id`) | Who, in order |
 |---|---|
@@ -220,8 +220,7 @@ The sections as Character Select lists them (2026-11-27, after the Historical ro
 | Outer Space (`space`) | Blix Orrin, Dusty Orebeck, Iron Knight, Ricochet, Ryker Voss, Space Marine, Spacewalker, Starfarer, The Veiled Vanguard, The Visitor, Zorp Gleebix |
 | Chrono Crew (`chrono`) | Clio Everwhen, Sarge Tobias Crane, Dex Calloway, Doc Seraphine Vale, Flicker, Gears Okafor, Juno Hartwell, Lyra Vantis, Mags Petrov, Nova Kade, Rocco Tickwell, Vesper Quill, Wren Halloway |
 | Legends (`legends`) | Tetl Stonewarden, Dredge Marrow, Ser Castor Brightmoor, Ignatius Slagg, Madame Zephyrine, Sigrun Frostmane, Aurelio Dawnmantle |
-| Historical (`historical`) | Valeria Sandstorm, Imperator Laurel, Astrid Stormbrand, Ulf Ravenshield, Ser Godric Vale, Ser Aldous Lionmane, Emir Tariq Falconsword, Kaiser Ironhelm, Ser Aurelian Dawnshield, Sir Galloway (MapMaker only), Ser Brannock (MapMaker only), Astor Moonvale, Khan of the Steppes, Imperial Guard, Lancer Mei, Balam Nightclaw, Talon Skycrest, General Cherrytree, Poor Richard, Honest Abe, The Rough Rider, Prof. Quanta, Shaka Mpande, Themba Ironspear, Kato Emberline, Dusty Ranger, Cutter McCrae, Silas Coilwhisper, Thornweaver |
-| Pirates (`pirates`) | Cap'n Ezra Blackwake, Mr. Gideon Tarr, Scarlet Brinewell |
+| Historical (`historical`) | Valeria Sandstorm, Astrid Stormbrand, Ulf Ravenshield, Ser Godric Vale, Ser Aldous Lionmane, Emir Tariq Falconsword, Kaiser Ironhelm, Ser Aurelian Dawnshield, Sir Galloway (MapMaker only), Ser Brannock (MapMaker only), Astor Moonvale, Imperial Guard, Lancer Mei, Balam Nightclaw, Talon Skycrest, Cap'n Ezra Blackwake, Mr. Gideon Tarr, Scarlet Brinewell, Julius Caesar, Genghis Khan, George Washington, Benjamin Franklin, Abraham Lincoln, Theodore Roosevelt, Albert Einstein, Shaka Mpande, Themba Ironspear, Kato Emberline, Dusty Ranger, Cutter McCrae, Silas Coilwhisper, Thornweaver |
 | Animalia (`animals`) | Pip Quickfoot, Rocket Nutley, Rowdy Gnashwell, Rufus Boomtown, Ollie Hootman, Barnaby Burrows, Rascal McGraw, Newt Calloway, Ace Featherstone, Axel Gainz, Barnaby Bruin, Boglurker, Boogie Tuskworth, Buster Haymaker, Chad Croakley, Chompers McFinn, Coach Hank Shelton, Corvin Blackquill, Croakley, Cyber Lion, Det. Drake Montego, Deuce Droopwell, DJ Volta Coilwave, Dr. Hugo Hue, Duke Dashwood, El Zarpazo, Ellis Velvetrope, Fenn Dustwhirl, Fishy Fred, Gorilla G, Greyfang, Kesi Tallgrass, King Waddleston, Master Bodhi, Maximus Cluckworth, Napsworth, Octo Buddy, Ottis Crema, Pink Mantis, Puddles Backspin, Rio Neonwing, Rollo Splitworth, Ryo Snapclaw, Seetah J. Chloth, Shiba, Sterling Purrcival, Tag Malone, Ziggy Bananas |
 | Toys (`toys`) | Bricksby, Clangers, Cpl. Tinwhistle, Pvt. Pete Plastic, Jolly Springjack, Teddy, Tik Winderly |
 | Holiday (`holiday`) | Chilly Flakesworth, Gobbles Plymouth, Hazel Hexley, Hopsworth Eggleton, Jingle Tinsel, Kris Kringleton, Punkin, Uncle Spangle |
@@ -406,7 +405,7 @@ Crash reports still accept the `designer` screen from older builds (`CRASH_SCREE
 Custom look IDs stay in the code as the client's own: an NPC skin's first-person arms are a part-built look
 (`armsLookFor`), and `encodeLook` / `decodeLook` with the part catalogue (`CHARACTER_PARTS`, `HAIR_STYLES`, `COLORWAYS`,
 `lookProblems`) draw them. Linktifa (`core.ranger`), kept drawable as the Designer's base body until then, went with it:
-`NPC_KEPT_LOOKS` is empty, a saved pick of Linktifa plays Honest Abe (`RETIRED_LOOKS`), and its measured hit shapes
+`NPC_KEPT_LOOKS` is empty, a saved pick of Linktifa plays Abraham Lincoln (`RETIRED_LOOKS`), and its measured hit shapes
 left `hitboxes.generated.ts`. Tests and tools that need a part-made body build one from `MODULAR_PARTS_MALE` (Linktifa's
 outfit parts); the grip checks that drew Linktifa draw Cal.
 
@@ -1592,7 +1591,7 @@ or a player's own design) is rendered live in the browser, as before.
 
 "Let's just retire linktifa and sprout." Both leave Character Select, random bots, Random characters, Roulette and the bot
 themes (`RETIRED_LOOKS`; files, manifests and portraits kept). A saved pick, setup or bot set that names one plays a kept
-look of the same group: Linktifa (`core.ranger`) is **Honest Abe** (`core.abe`, Legends), Sprout (`core.sprout`) is
+look of the same group: Linktifa (`core.ranger`) is **Abraham Lincoln** (`core.abe`, Legends then; named Honest Abe until 2026-11-28), Sprout (`core.sprout`) is
 **Lancer Mei** (`core.mei`, Everyday Folk). Every older retirement that led to either now leads straight to Abe or Mei
 (one step). The Character Designer keeps Linktifa's modular body as its base (`DESIGNER_BASE_LOOK`, used by "Design new"
 from a whole-body character), so custom characters keep working. `DEFAULT_LOOK` is now only the sim's fixed fallback (the
@@ -1864,3 +1863,39 @@ drawn upright crouched or prone (it hunches): shots land on what is seen. Its mo
 player's as before. The Veiled Vanguard and Mujina hover at 0.3 m; the Baseball Robot, Chilly Flakesworth and the
 others keep `roll` on the ground. A model built with `hover` has its legs riding the pelvis, as a roller's do
 (prepare-meshy-characters.mjs); neither model was rebuilt.
+
+### The pirates in Historical, the real people by their real names (owner, 2026-11-28)
+
+Owner, 2026-11-28: "pirates should be in historical. as for the real people, lets keep their real life names since they
+are famous historical figures, no need to hide them"; then "khan should be in historical row next to other real folks"
+and "move julius too".
+
+**Pirates.** Cap'n Ezra Blackwake, Mr. Gideon Tarr and Scarlet Brinewell (`core.piratecaptain`, `firstmate`,
+`femalepirate`) are in Historical, together as the age of sail after Mesoamerica. The Pirates row (`pirates`, 2026-11-26)
+is retired: no section, no bot type (11 types now), no Roulette fallback of its own (the pirates take Historical's
+crossbow unless their own signature says otherwise). A saved `pirates` (a bot-characters setting, a map's cast, a server
+rule, a group) reads as `historical` (`CAST_ID_ALIASES`, `CHARACTER_GROUP_ALIASES`), and the old `pirate` name set's
+bot type is Historical too (it was Legends). The pirates rank with Historical's titles and its column; the anchor badges
+(`pirates1` … `pirates9`) stay defined so no badge id changes, worn by no one.
+
+**Real names.** Ids, bios and rows kept; only the display names change:
+
+| Look | Was | Now |
+|---|---|---|
+| `core.caesar` | Imperator Laurel | Julius Caesar |
+| `core.khan` | Khan of the Steppes | Genghis Khan |
+| `core.washington` | General Cherrytree | George Washington |
+| `core.franklin` | Poor Richard | Benjamin Franklin |
+| `core.abe` | Honest Abe | Abraham Lincoln |
+| `core.roosevelt` | The Rough Rider | Theodore Roosevelt |
+| `core.einstein` | Prof. Quanta | Albert Einstein |
+
+Shaka Mpande already had his own name. No other character is modelled on a real person (checked by every manifest's
+name, bio and source model name); the fictional ones keep theirs.
+
+**Order.** The famous real people sit together in the Historical row, by period: Julius Caesar, Genghis Khan, George
+Washington, Benjamin Franklin, Abraham Lincoln, Theodore Roosevelt, Albert Einstein (one stretch of the row's
+`CHARACTER_NEIGHBOURS` list; real people still to come go in by birth: Tesla after Lincoln, Churchill and Patton after
+Roosevelt). Shaka stays with Southern Africa (owner, 2026-11-26). The row: Rome's arena, the vikings, medieval and the
+Crusades, the Asian dynasties, Mesoamerica, the pirates, the famous real people, Southern Africa, the Wild West and the
+plains.

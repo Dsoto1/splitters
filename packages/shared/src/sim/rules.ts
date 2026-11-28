@@ -1,6 +1,7 @@
 import type { MapDocument } from '../map/schema.ts';
 import { racePath } from '../map/racePath.ts';
 import { TICK_RATE } from './constants.ts';
+import type { CombatRules } from './combatRules.ts';
 import { mapTeams } from './npc.ts';
 
 export type GameMode = 'core.deathmatch' | 'core.coop' | 'core.tdm' | 'core.ctf' | 'core.koth' | 'core.elim' | 'core.bomb' | 'core.hostage' | 'core.breakthrough' | 'core.zombies' | 'core.forts' | 'core.discs' | 'core.roulette';
@@ -33,7 +34,8 @@ export const isTwoTeamMode = (mode: string): boolean => mode === 'core.ctf' || m
 export const isGameMode = (mode: string): mode is GameMode => (GAME_MODES as readonly string[]).includes(mode);
 
 /** Reusable, mode-agnostic match rules (v1 spec §4.3). */
-export interface MatchRules {
+/** Combat rules (sim/combatRules.ts, GUNPLAY G5): headshots, ammo, reloads, bullets through walls, damage and health scales; absent: the map's, else the standard. */
+export interface MatchRules extends CombatRules {
   mode: GameMode;
   /** Kills that win the round; 0 = no score limit (co-op ends through logic). */
   scoreLimit: number;

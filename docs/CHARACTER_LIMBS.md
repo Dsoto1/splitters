@@ -165,7 +165,7 @@ The bend is the cup's own (the hand palm up, fingers round the handguard's far s
 | 36 | Hazel Hexley (`core.witch`) | 14.1 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.7 / 0.7 | 7.5 / 12 | 13.7 / 48.9 |
 | 37 | Ulf Ravenshield (`core.vikingm`) | 14 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 5.7 / 6.4 | 10.2 / 11.9 | 16.5 / 48.4 |
 | 38 | Dusty Orebeck (`core.spaceminer`) | 14 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 16.9 / -0.3 | -2.6 / -6.6 | 15.5 / 48 |
-| 39 | Poor Richard (`core.franklin`) | 13.8 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.7 / 3 | -15.8 / -15.5 | 17.2 / 48.9 |
+| 39 | Benjamin Franklin (`core.franklin`) | 13.8 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.7 / 3 | -15.8 / -15.5 | 17.2 / 48.9 |
 | 40 | Pvt. Hank Dowling (`core.usgrunt`) | 13.8 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.1 / 1.3 | 5 / 11.7 | 16.7 / 48.1 |
 | 41 | Jingle Tinsel (`core.elf`) | 13.8 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -4.8 / 6.6 | 11.7 / 11.7 | 17.1 / 48.8 |
 | 42 | Sgt. Mickey Callahan (`core.paratrooper`) | 13.7 | footRoll L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | -10.8 / 3 | -0.8 / 2.6 | 15.3 / 45.1 |
@@ -182,7 +182,7 @@ The bend is the cup's own (the hand palm up, fingers round the handguard's far s
 | 53 | Sgt. Mackie (`core.pruitt`) | 12.2 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 15.1 / 6.3 | -10.4 / -8.8 | 16.9 / 46.1 |
 | 54 | Rocket Nutley (`core.acesquirrel`) | 12.2 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -2.9 / 4.6 | -11 / -14.3 | 16.5 / 46.8 |
 | 55 | Madame Zephyrine (`core.mystic`) | 12.1 | skinBow L | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4.4 / 4.8 | -14.1 / -11.1 | 15.6 / 48.6 |
-| 56 | Khan of the Steppes (`core.khan`) | 11.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -3 / 7 | -12 / -13.7 | 14 / 42.9 |
+| 56 | Genghis Khan (`core.khan`) | 11.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -3 / 7 | -12 / -13.7 | 14 / 42.9 |
 | 57 | Rowdy Gnashwell (`core.tasmaniandevil`) | 11.4 | skinBow R | 0 | 3.2 / 2.3 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4.8 / 4 | 6.7 / 9.3 | 21.6 / 44.1 |
 | 58 | Cool Hands Rex (`core.trex`) | 11.2 | skinBow R | 0 | 3.3 / 2.6 | 2.2 / 2.3 | 5.4 / 7 | 7 / 7 | 3.8 / 3.8 | -10.4 / -13.3 | 15.1 / 46.6 |
 | 59 | Rollo Splitworth (`core.hyena`) | 11 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.1 / 4 | -4.6 / -13.1 | 17.5 / 42.8 |
@@ -208,7 +208,7 @@ The bend is the cup's own (the hand palm up, fingers round the handguard's far s
 | 79 | Chompers McFinn (`core.wackyshark`) | 8.9 | footRoll R | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | -1.4 / -6.3 | -4.4 / -6.9 | 20.5 / 44.2 |
 | 80 | Rufus Boomtown (`core.baboon`) | 8.9 | footRoll L | 0 | 3.1 / 2.1 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 11.8 / 1.9 | 1.1 / 0.9 | 16.4 / 42.8 |
 | 81 | Shaka Mpande (`core.shaka`) | 8.9 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 1.4 / 1.1 | -2 / 6.8 | 17.6 / 44.8 |
-| 82 | Prof. Quanta (`core.einstein`) | 8.9 | skinBow L | 0 | 3.1 / 2.4 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4 / 1.5 | 6.9 / -1.8 | 16.7 / 48.6 |
+| 82 | Albert Einstein (`core.einstein`) | 8.9 | skinBow L | 0 | 3.1 / 2.4 | 2.5 / 2.5 | 5.4 / 7.1 | 7 / 7 | 4 / 1.5 | 6.9 / -1.8 | 16.7 / 48.6 |
 | 83 | Shiba (`core.shiba`) | 8.6 | skinBow R | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.1 / 2.2 | -8.3 / -10.7 | 15.3 / 47.7 |
 | 84 | Gobbles Plymouth (`core.turkeypilgrim`) | 8.6 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 2.3 / 1 | 6.6 / 2.2 | 14 / 47.1 |
 | 85 | Pharaoh Mummy Warrior (`core.pharaoh`) | 8.5 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | -0.8 / 0.7 | -10.5 / 5.9 | 11.6 / 40.7 |
@@ -266,7 +266,7 @@ The bend is the cup's own (the hand palm up, fingers round the handguard's far s
 | 137 | Spacewalker (`core.astronaut`) | 4.7 | skinBow L | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 6 / 6.9 | 2.7 / 2 | 16.7 / 46.7 |
 | 138 | Aurelio Dawnmantle (`core.sunpriest`) | 4.7 | footRoll R | 0 | 3.1 / 2.1 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.5 / -2.1 | -4.8 / -2.9 | 15.2 / 42.7 |
 | 139 | Count Bonesworth (`core.bonesworth`) | 4.6 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.7 / 7.2 | -1.4 / -1.4 | 16.3 / 49 |
-| 140 | Honest Abe (`core.abe`) | 4.5 | skinBow L | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.5 / 4.2 | 2.5 / -0.6 | 17 / 47.9 |
+| 140 | Abraham Lincoln (`core.abe`) | 4.5 | skinBow L | 0 | 3.1 / 2.3 | 2.5 / 2.6 | 5.5 / 7.1 | 7 / 7 | 3.5 / 4.2 | 2.5 / -0.6 | 17 / 47.9 |
 | 141 | Clangers (`core.cymbalmonkey`) | 4.5 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 6.2 / 4.9 | 2.5 / -1 | 15.1 / 48.2 |
 | 142 | Coach Hank Shelton (`core.coachtortoise`) | 4.4 | footRoll L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 7.3 / 2.3 | -2.3 / -4 | 17.5 / 43.8 |
 | 143 | Clio Everwhen (`core.timetraveler`) | 4.2 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -0.9 / 6.8 | -0.8 / -1.5 | 14.8 / 46.9 |
@@ -276,13 +276,13 @@ The bend is the cup's own (the hand palm up, fingers round the handguard's far s
 | 147 | Kato Emberline (`core.kato`) | 3.9 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | -1 / -0.6 | -4.9 / -4.7 | 17 / 48.1 |
 | 148 | Juno Hartwell (`core.crewpilot`) | 3.9 | footRoll R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 5.5 / 6.5 | -4 / -4.6 | 13.6 / 48.9 |
 | 149 | The Visitor (`core.visitor`) | 3.8 | footRoll L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | -0.9 / 6.3 | -2.1 / 0 | 14.7 / 47.1 |
-| 150 | General Cherrytree (`core.washington`) | 3.8 | skinBow L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 2.5 / 1.9 | -5.8 / -3.9 | 17.4 / 47.6 |
+| 150 | George Washington (`core.washington`) | 3.8 | skinBow L | 0 | 3.1 / 2.2 | 2.6 / 2.6 | 5.5 / 7.2 | 7 / 7 | 2.5 / 1.9 | -5.8 / -3.9 | 17.4 / 47.6 |
 | 151 | Ryker Voss (`core.merc`) | 3.8 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 3.7 / 3.3 | 1.8 / 1.2 | 16.4 / 45.3 |
 | 152 | Lancer Mei (`core.mei`) | 3.7 | skinBow L | 0 | 3.1 / 2.3 | 2.6 / 2.6 | 5.5 / 7.1 | 7 / 7 | 0.7 / 2.1 | -5.7 / -2.4 | 15.6 / 48.7 |
-| 153 | Imperator Laurel (`core.caesar`) | 3.7 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 3.4 / 0.3 | 1.7 / -2.1 | 17.2 / 49.7 |
+| 153 | Julius Caesar (`core.caesar`) | 3.7 | skinBow L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 3.4 / 0.3 | 1.7 / -2.1 | 17.2 / 49.7 |
 | 154 | Kris Kringleton (`core.santa`) | 3.7 | skinBow L | 0 | 3.2 / 2.4 | 2.4 / 2.5 | 5.4 / 7.1 | 7 / 7 | 2.6 / 2 | 1.7 / -0.5 | 17.6 / 46.9 |
 | 155 | Uncle Spangle (`core.unclesam`) | 3.7 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 1.4 / 3.6 | -1.4 / 1.6 | 16.2 / 47.7 |
-| 156 | The Rough Rider (`core.roosevelt`) | 3.5 | skinBow R | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.1 / 4.5 | -4.9 / 1.4 | 17 / 48 |
+| 156 | Theodore Roosevelt (`core.roosevelt`) | 3.5 | skinBow R | 0 | 3.1 / 2.2 | 2.8 / 2.7 | 5.5 / 7.2 | 7 / 7 | 2.1 / 4.5 | -4.9 / 1.4 | 17 / 48 |
 | 157 | Ollie Hootman (`core.owlsniper`) | 3.1 | skinBow R | 0 | 3.1 / 2.2 | 2.7 / 2.6 | 5.5 / 7.2 | 7 / 7 | 1 / 0 | -3.8 / -5.2 | 16.5 / 48.7 |
 | 158 | Scarlet Brinewell (`core.femalepirate`) | 3.1 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 6 / 4.7 | -0.4 / -4.3 | 14.9 / 47 |
 | 159 | Old Timer (`core.oldtimer`) | 2.9 | footRoll L | 0 | 3.1 / 2.2 | 2.7 / 2.7 | 5.5 / 7.2 | 7 / 7 | 0 / 3.2 | -4.2 / -0.5 | 15.2 / 49.9 |
