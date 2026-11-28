@@ -57,6 +57,7 @@ Everything else keeps its place below these.
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
+- `wip/weapons-replace-3` · 3938e21e · run 46132343964 (scoped guns with the owner's scopes, railgun, plasma, flare gun, grenade launcher, swarm)
 - (none; train check/train-20261128-092726 landed 4f56366 2026-11-28: editor-flow-1128, the editor flow's Test-return race root-caused and fixed (e2e only). Before it: armory-2 alone at ea80a3ee.)
 
 (train check/train-20261128-044628 landed a190007 2026-11-28: historical-names + weapons-replace-2; its editor e2e flow failed once and passed on the re-run: root-caused on wip/editor-flow-1128, Ready to land above.)
