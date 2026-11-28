@@ -233,7 +233,7 @@ fallbacks).
 | MP5K Style PDW | Submachine Gun | 10k / 40k, 0.37 m | flip-up nubs at the ends of its top rail: irons and the same choice; no stock, so held a little ahead of the shoulder, the left hand on its front grip; its sight picture is no longer drawn larger (the rear sight is already near the eye) |
 | Glock 19 Modular Sidearm | Pistol | 9k / 40k, 0.20 m | two nubs on a slide-top rail: irons (a hand correction: the tool read the front nub low), red dot |
 | Vietnam Tactical Breaching Shotgun | Shotgun | 12k / 50k, 1.0 m | a bead and a receiver rail: irons; its under-barrel launcher is looks only |
-| Desert Storm Assault Rifle | Burst Rifle | 12k / 50k, 0.86 m | flip-up sights on a flat top: irons; now also the red dot and holographic sight (the old model's front sight stood in their window; this one's is clear) |
+| Desert Storm Assault Rifle | Burst Rifle | 12k / 50k, 0.86 m | low flip-up sights on a flat top, level with its stock, so aimed down them the butt fills the bottom of the view: a red dot on the rail by default now (same zoom), irons, holographic and 2x to choose (the old model's front sight stood in a red dot's window; this one's is clear) |
 | Western Buffalo Break-Action Cannon | Sawed-Off (owner: sawed-off style) | 10k / 40k, 0.80 m | a bare top rail with a front bead: the red dot on the rail, as before |
 | Mesoamerican Obsidian Pump Shotgun | Auto Shotgun | 12k / 50k, 0.98 m | a leaning front post and a rear hump: irons (a hand correction on the front post) |
 | Western Classic 6-Shot Revolver | Heavy Revolver | 9k / 40k, 0.34 m | its notch and blade: irons; grip raked 26° (a curved grip) |

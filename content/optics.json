@@ -44,7 +44,7 @@
     "core.freeze_ray": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.goo_gun": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.rifle": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo", "x2"] },
-    "core.burst_rifle": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo", "x2"] },
+    "core.burst_rifle": { "hasSight": "irons", "default": "reddot", "allowed": ["reddot", "irons", "holo", "x2"] },
     "core.amarillo": {
       "hasSight": "irons",
       "default": "irons",

@@ -23,7 +23,7 @@
   "view": {
     "model": "guns/rotary_minigun.glb",
     "held": { "medium": "guns/rotary_minigun.medium.glb", "high": "guns/rotary_minigun.high.glb" },
-    "viewOffset": [0.25, -0.31, 0.74],
+    "viewOffset": [0.27, -0.36, 0.84],
     "tracer": "#ffd36b",
     "hold": { "style": "long", "grip": [0, -0.025, -0.315], "support": [0, 0.0, 0.14], "shoulder": [0, 0.12, -0.47] },
     "muzzleAt": [0, 0.075, 0.5],

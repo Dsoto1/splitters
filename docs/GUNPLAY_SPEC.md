@@ -930,8 +930,8 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 
 | Optic (kind) | Reticle | Guns | Zoom |
 |---|---|---|---|
-| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Burst Rifle, Woodland SMG (since 2026-11-27), Gilded Pistol (its Gold PPK, since 2026-11-28) | 1.52× |
-| Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off, Singularity Cannon (its new model's top rail, since 2026-11-27) | 1.52× |
+| Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Woodland SMG (since 2026-11-27), Gilded Pistol (its Gold PPK, since 2026-11-28) | 1.52× |
+| Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off, Singularity Cannon (its new model's top rail, since 2026-11-27), Burst Rifle (its new model's flat top, since 2026-11-28: its low flip-up sights put the eye at the stock's butt) | 1.52× |
 | Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (its model's own sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
 | 2-3× optic (`scope`) | a chevron with holdover ticks | Battle Rifle (3.5×, the model's tube), Marksman Rifle (2.19×, the scope overlay) | as before |
 | Sniper scope (`sniper`) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
@@ -1105,7 +1105,8 @@ changes is what you see: the sight picture, the reticle and, with the 2x optic, 
 
 | Gun | Optics offered (its own first) |
 |---|---|
-| Assault Rifle, Submachine Gun, Compact Carbine, Burst Rifle (since its new model, 2026-11-28: its front sight is clear of the window) | iron sights, red dot, holographic, 2x |
+| Assault Rifle, Submachine Gun, Compact Carbine | iron sights, red dot, holographic, 2x |
+| Burst Rifle (since its new model, 2026-11-28: its front sight is clear of the window) | red dot, iron sights, holographic, 2x |
 | Amarillo | iron sights, 2x (its rear block stands in a red dot's or a holographic sight's window) |
 | Laser Rifle | red dot, holographic, 2x |
 | Shotgun, Auto Shotgun, Runebreaker, Nailgun, Freeze Ray, Goo Gun | iron sights, red dot, holographic |

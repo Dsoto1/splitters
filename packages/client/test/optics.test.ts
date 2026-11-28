@@ -14,9 +14,9 @@ import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
  */
 const CARRIES: Record<OpticKindId, string[]> = {
   // The Woodland SMG down its own iron sights (owner, 2026-11-27: a red dot stood on its rear sight, "two sights stacked").
-  irons: ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.gilded_pistol', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
+  irons: ['core.amarillo', 'core.auto_shotgun', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.gilded_pistol', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
   // The weapons intake's guns (owner, 2026-11-22, "2a"): in their models' own sights.
-  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'],
+  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.burst_rifle', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'],
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
   scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman', 'core.nova6'],
   sniper: ['core.railgun', 'core.sniper'],
@@ -32,7 +32,7 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.smg': ['irons', 'reddot', 'holo', 'x2'],
   'core.compact_carbine': ['irons', 'reddot', 'holo', 'x2'],
   'core.amarillo': ['irons', 'x2'],
-  'core.burst_rifle': ['irons', 'reddot', 'holo', 'x2'],
+  'core.burst_rifle': ['reddot', 'irons', 'holo', 'x2'],
   'core.laser_rifle': ['reddot', 'holo', 'x2'],
   'core.shotgun': ['irons', 'reddot', 'holo'],
   'core.auto_shotgun': ['irons', 'reddot', 'holo'],
