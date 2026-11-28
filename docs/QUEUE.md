@@ -57,8 +57,7 @@ Everything else keeps its place below these.
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- (none; wip/armory-2 landed alone at ea80a3ee 2026-11-28, run 46126534239: Test my loadout in the Armory, Profile's Weapons button, two-column Profile, 59 weapon descriptions)
-- `wip/editor-flow-1128` · 20fb6da5 · run 46127516203 (the editor flow's Test-return flake: e2e only, `escapeTest`; docs/FLAKES.md "Root-caused")
+- (none; train check/train-20261128-092726 landed 4f56366 2026-11-28: editor-flow-1128, the editor flow's Test-return race root-caused and fixed (e2e only). Before it: armory-2 alone at ea80a3ee.)
 
 (train check/train-20261128-044628 landed a190007 2026-11-28: historical-names + weapons-replace-2; its editor e2e flow failed once and passed on the re-run: root-caused on wip/editor-flow-1128, Ready to land above.)
 
