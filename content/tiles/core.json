@@ -488,6 +488,25 @@
       "notes": {"design":"Two flights side by side (no stairwell gap), joined by a landing at 2 m."}
     },
     {
+      "id": "core.stairwell_open_under",
+      "category": "Vertical",
+      "displayName": "Stairwell (open under)",
+      "blurb": "The Stairwell with its upper flight's top five steps on a floor 2.75 m up, open underneath: room for a wider door beside it",
+      "cells": [[0,0,0],[0,0,1]],
+      "floors": [0],
+      "ports": [{"side":"W","level":0},{"side":"W","level":1}],
+      "extraFloors": [
+        {"box":[-4,3.5,-1.5,-1.9,4,4]}
+      ],
+      "solids": [
+        {"flight":{"axis":"x","dir":1,"from":-1.9,"across":[-3.5,0],"steps":8,"base":0,"run":0.45}},
+        {"box":[1.7,0,-3.5,3.5,2,3.5]},
+        {"flight":{"axis":"x","dir":-1,"from":1.7,"across":[0,3.5],"steps":3,"base":2,"run":0.45}},
+        {"flight":{"axis":"x","dir":-1,"from":0.35,"across":[0,3.5],"steps":5,"base":2.75,"run":0.45,"floor":2.75}}
+      ],
+      "notes": {"design":"St. John's step 14 (the 7c double door, owner 2026-11-21: 'the under stair could be removed to make room for a larger double door'). The Stairwell, cell for cell, but the upper flight's top five steps (2.25 m of its length, x 0.35 to -1.9) stand on a floor of their own 2.75 m up instead of solid to the floor: standing room under them, beside the tile's north side. The three low steps stay solid. A Stair End Bay (3 floors) swaps it in for its First-floor door: Double door."}
+    },
+    {
       "id": "core.stairwell_basement",
       "category": "Vertical",
       "displayName": "Basement Stairwell",

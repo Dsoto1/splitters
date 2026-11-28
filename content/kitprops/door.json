@@ -556,6 +556,197 @@
       ]
     },
     {
+      "id": "kit.door.oak_slim_open_pair",
+      "displayName": "Slim Oak Door (open, double, right leaf)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a double door's right leaf: the Slim Oak Door (open) with no post on its latch side (the generator's `pair`), to stand beside kit.door.oak_slim_open_pair_left (St. John's skyway, step 7c). Collides as its open leaf and is a passage."
+      },
+      "size": [
+        1.5,
+        2.6,
+        1.5
+      ],
+      "bounds": "within",
+      "passage": {
+        "frame": -0.67
+      },
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 90,
+        "leaf": "plank",
+        "back": 0.67,
+        "pair": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13885,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13886,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13887,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13888,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
+      "id": "kit.door.oak_slim_open_pair_left",
+      "displayName": "Slim Oak Door (open, double, left leaf)",
+      "category": "Furniture",
+      "assetVersion": 1,
+      "notes": {
+        "1": "First version: a double door's left leaf (owner, 2026-11-21: the stair lobbies' double door; St. John's skyway, step 7c): the Slim Oak Door (open) mirrored (the generator's `hinge: \"left\"`), its leaf on the −x jamb, and no post on its latch side (`pair`): it meets the right leaf (kit.door.oak_slim_open_pair) with nothing between them. Collides as its open leaf and is a passage, as the Slim Oak Door (open)."
+      },
+      "size": [
+        1.5,
+        2.6,
+        1.5
+      ],
+      "bounds": "within",
+      "passage": {
+        "frame": -0.67
+      },
+      "surface": "wood",
+      "detail": "wood",
+      "generator": {
+        "kind": "door",
+        "swing": 90,
+        "leaf": "plank",
+        "back": 0.67,
+        "hinge": "left",
+        "pair": true
+      },
+      "lods": [
+        {
+          "distance": 0
+        },
+        {
+          "distance": 14
+        },
+        {
+          "distance": 40
+        }
+      ],
+      "variants": [
+        {
+          "index": 0,
+          "name": "oak",
+          "seed": 13791,
+          "look": {
+            "wood": "#7a5232",
+            "frame": "#5e3f27",
+            "iron": "#24262a",
+            "jitter": 0.07,
+            "grime": 0.3
+          }
+        },
+        {
+          "index": 1,
+          "name": "glazed",
+          "seed": 13792,
+          "look": {
+            "wood": "#80552f",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "glass": "#aebfc0",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "glazed"
+          }
+        },
+        {
+          "index": 2,
+          "name": "diamond",
+          "seed": 13793,
+          "look": {
+            "wood": "#8a4f2c",
+            "frame": "#5e3f27",
+            "iron": "#2a2c30",
+            "jitter": 0.05,
+            "grime": 0.25
+          },
+          "set": {
+            "leaf": "panel"
+          }
+        },
+        {
+          "index": 3,
+          "name": "dark",
+          "seed": 13794,
+          "look": {
+            "wood": "#4e3524",
+            "frame": "#3a281c",
+            "iron": "#1c1e21",
+            "jitter": 0.07,
+            "grime": 0.35
+          }
+        }
+      ]
+    },
+    {
       "id": "kit.door.painted",
       "displayName": "Painted Door (shut)",
       "category": "Furniture",

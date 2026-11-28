@@ -56,10 +56,32 @@ const LEAF_T = 0.07;
 
 /**
  * An oak door in its frame. Settings `g`: `swing` (degrees the leaf stands open, toward +z), `leaf` ('plank',
- * 'glazed', 'panel', 'framed' or 'shop'), `handle` ('ring', 'knob' or 'pull'), `back` (how far the frame stands behind the prop's centre, m: 0 in the wall's plane). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
+ * 'glazed', 'panel', 'framed' or 'shop'), `handle` ('ring', 'knob' or 'pull'), `back` (how far the frame stands behind the prop's centre, m: 0 in the wall's plane), `hinge` ('right', the +x
+ * jamb, as first built; 'left', the −x jamb: the same door mirrored, for a double door's second leaf), `pair` (true: no post on the latch side, the head running to
+ * the edge: a leaf of a double door, its partner's leaf meeting it). `look`: `wood` (the leaf), `frame` (hex, default the wood, darker), `iron`, `glass` (the
  * glazed leaf's pane), `jitter`, `grime`.
  */
 export function doorMesh(seed, size, g, look, level) {
+  const m = rightHandDoorMesh(seed, size, g, look, level);
+  return (g.hinge ?? 'right') === 'left' ? mirrorX(m) : m;
+}
+
+/**
+ * A mesh mirrored across x = 0 (a door's `hinge: 'left'`: its leaf on the −x jamb, still swinging to +z): the points
+ * and normals flipped in x, each triangle's winding turned back so its faces still look out, and the collision boxes
+ * flipped (a turned box's turn too).
+ */
+function mirrorX(m) {
+  for (let i = 0; i < m.P.length; i += 3) {
+    m.P[i] = -m.P[i];
+    m.N[i] = -m.N[i];
+  }
+  for (let i = 0; i < m.I.length; i += 3) [m.I[i + 1], m.I[i + 2]] = [m.I[i + 2], m.I[i + 1]];
+  if (m.boxes) m.boxes = m.boxes.map(([x0, y0, z0, x1, y1, z1, ...turn]) => [-x1, y0, z0, -x0, y1, z1, ...turn.map((t) => -t)]);
+  return m;
+}
+
+function rightHandDoorMesh(seed, size, g, look, level) {
   const [w, h] = size;
   const X = w / 2;
   const wood = hex(look.wood);
@@ -77,9 +99,10 @@ export function doorMesh(seed, size, g, look, level) {
   if (level === 0 && (g.swing ?? 0) < 60) m.boxes = [[-X, 0, -FRAME_Z, X, h, FRAME_Z]];
   // The frame: two posts and a head, the full depth.
   const fc = tone(frameC, 1);
-  box(m, [-X, 0, -FRAME_Z - back], [-X + FRAME, h, FRAME_Z - back], fc, ['ny']);
+  // (`pair`: one leaf of a double door, no post on its latch side: the two leaves meet with nothing between them.)
+  if (!g.pair) box(m, [-X, 0, -FRAME_Z - back], [-X + FRAME, h, FRAME_Z - back], fc, ['ny']);
   box(m, [X - FRAME, 0, -FRAME_Z - back], [X, h, FRAME_Z - back], fc, ['ny']);
-  box(m, [-X + FRAME, h - FRAME, -FRAME_Z - back], [X - FRAME, h, FRAME_Z - back], fc, ['nx', 'px']);
+  box(m, [g.pair ? -X : -X + FRAME, h - FRAME, -FRAME_Z - back], [X - FRAME, h, FRAME_Z - back], fc, g.pair ? ['px'] : ['nx', 'px']);
   // The leaf, built shut (x from the latch edge to the hinge edge, z about the wall's middle) and turned on its
   // hinges: the pin is at the hinge edge on the room (+z) face.
   const hx = X - FRAME - 0.006;

@@ -1,0 +1,23 @@
+{
+  "$comment": "St. John's step 7c, the double door at the skyway's west end (owner, 2026-11-21, \"The stair lobbies' door\"; PLAN_STEP14_SKYWAY.md, \"The 7c double door\"): the ordered MapMaker steps, as a driver replays them on the map (Import; the Outliner's search and a click on the row; the set piece inspector's Options; the Tiles palette, R and a click on the cell; Export). Ids are the map's as it stood on main when the step was built. `coverage`: the steps on the coverage map (maps/test_coverage.json), as its unit test asks for the new tile.",
+  "steps": [
+    {
+      "op": "option",
+      "id": "setpiece_a3c0dpzi2u",
+      "name": "upperDoor",
+      "value": "double",
+      "what": "the Stair End Bay (3 floors) at (0, -9): First-floor door, Double door: the skyway's west end 3 m wide, two Slim Oak Doors standing open, the second stair's upper flight open underneath"
+    }
+  ],
+  "coverage": [
+    {
+      "op": "tile",
+      "tile": "core.stairwell_open_under",
+      "x": 19,
+      "y": -5,
+      "level": 0,
+      "rot": 0,
+      "what": "the Stairwell (open under) east of the coverage map's tile rows on free ground (one of every core tile: coverageMap.test.ts)"
+    }
+  ]
+}

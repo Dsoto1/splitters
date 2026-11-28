@@ -22,11 +22,11 @@
     ],
     "release": {
       "mapId": "m_i6w6tykeiy3hiuzv",
-      "versionId": "v_icv7o62stnqcerh7",
-      "revision": 75,
-      "contentHash": "sha256:f0b7664f490ee6df0c094c22ac5d704545686878caf89253bb7c6bd30f47130e",
+      "versionId": "v_ukbub5nr2jp7l2cm",
+      "revision": 76,
+      "contentHash": "sha256:6ccc7e18d9ab47bc7836aa831f360e3feca4f10a1fe08dd31ba0b8438d516be1",
       "schemaVersion": 55,
-      "releasedAt": "2026-11-27T19:59:16.785Z"
+      "releasedAt": "2026-11-28T00:03:25.470Z"
     },
     "category": "modern"
   },
@@ -29475,12 +29475,12 @@
       "rotation": 0,
       "mirror": false,
       "overrides": {
-        "options": {
-          "east": "open"
-        },
         "hide": [
           2
-        ]
+        ],
+        "options": {
+          "east": "open"
+        }
       }
     },
     {
@@ -30144,7 +30144,7 @@
           "facade": "collegiate_fieldstone"
         },
         "options": {
-          "upperDoor": "end",
+          "upperDoor": "double",
           "rails": "metal"
         }
       }
