@@ -94,6 +94,7 @@ import { newRigid, rigidOf, rigidSpeeds, rigidWire, rotate as rotateQ, stepRigid
 import { terrainHeightAt } from '../map/terrain.ts';
 import { mapGroundBores, nearGroundCut, type GroundCut } from '../map/groundBore.ts';
 import { BREATH_SECONDS, JET, LIQUID_SPECS, floatSurface, liquidAt, mapLiquids, stepJetFuel, waterSpan, type LiquidBox } from './liquids.ts';
+import { combatRulesOf, feedMagazine, headMultiple, headshotsCount, ammoGiven, type CombatPlay } from './combatRules.ts';
 import { DEFAULT_DEATHMATCH_RULES, akimboAllowed, akimboReady, dropsInPlay, isTeamMode, matchPhysics, powerupOff, restrictedWeapons, rouletteOn, type MatchRules } from './rules.ts';
 import type { CarryOver } from './playlist.ts';
 import type { CheckpointPlayer, CheckpointSquad, MatchCheckpoint } from '../net/handoff.ts';
@@ -941,6 +942,8 @@ export class Match {
 
   /** Dual wielding is in play in this match (rules.ts akimboReady when it was made, or MatchOptions.akimbo); the rule decides on top. */
   private readonly pairs: boolean;
+  /** The combat rules this match plays (sim/combatRules.ts: the host's, else the map's, else the standard; GUNPLAY G5). */
+  readonly combat: CombatPlay;
 
   /** Requires initPhysics() and initNavigation() to have resolved. */
   constructor(
@@ -962,6 +965,7 @@ export class Match {
     this.geometry = buildMapGeometry(map);
     this.killY = mapKillY(this.geometry, map);
     this.phys = matchPhysics(rules, map);
+    this.combat = combatRulesOf(rules, map);
     this.envShapes = environmentShapes(map);
     this.physics = new PhysicsWorld(this.geometry, mapTerrainMesh(map), this.envShapes);
     this.sight = new SightCache(this.physics);
@@ -3631,7 +3635,7 @@ export class Match {
       if (bottomless) {
         fillMagazine(held);
         if (c.reload || c.reload2) this.cancelReload(c);
-      }
+      } else if (!gun && feedMagazine(held, this.combat) && !this.combat.reloads && (c.reload || c.reload2)) this.cancelReload(c);
       const ready = c.fireCooldown === 0 && (gun ? this.turretOnAim(c) : c.raiseTicks === 0) && c.reloadTicks === 0 && !frozen && !unarmed;
       // Spin-up and charge: the trigger has to be held this long first.
       if (def.windupTicks) {
@@ -3727,6 +3731,7 @@ export class Match {
       if (paired && input.buttons & BUTTON_AUTO_RELOAD && !unarmed && !frozen && !fired && autoReloadDue(def, offBox(held), { reloadTicks: c.reloadTicks2, fireCooldown: c.fireCooldown2, raiseTicks: c.raiseTicks, burstLeft: 0 }, ((input.buttons & BUTTON_SPRINT) !== 0 && input.forward > 0) || (input.buttons & BUTTON_MELEE) !== 0)) this.startReloadOff(c);
       if (fired && gun) gun.firedTick = this.tick;
       if (bottomless) fillMagazine(held);
+      else if (!gun) feedMagazine(held, this.combat);
       // Heat weapons cool when not firing (mounted guns cool in stepMounts); bloom settles.
       for (const w of c.weapons.values()) {
         if (!w.def.heat || (fired && w === held)) continue;
@@ -3781,6 +3786,8 @@ export class Match {
   private startReload(c: Combatant): void {
     if (c.reloadTicks > 0) return;
     const w = heldWeapon(c);
+    // Reloads off (combat rules): the magazine feeds from the reserve; nothing to reload (a melee barrel still loads).
+    if (!this.combat.reloads && w.def.magazine > 0) return;
     // (One of a pair: its reload takes the pair's `reload` times as long.)
     const run = beginReload(pairOf(w) ? akimboLoader(w.def) : w.def, w);
     if (!run) return;
@@ -3792,7 +3799,7 @@ export class Match {
   /** Dual wielding: start a reload of the second gun (it waits its turn while the first gun's is under way: advanceReload). */
   private startReloadOff(c: Combatant): void {
     const w = heldWeapon(c);
-    if (c.reloadTicks2 > 0 || !pairOf(w)) return;
+    if (c.reloadTicks2 > 0 || !pairOf(w) || !this.combat.reloads) return;
     const run = beginReload(akimboLoader(w.def), offBox(w));
     if (!run) return;
     c.reload2 = run;
@@ -4079,8 +4086,8 @@ export class Match {
     const falloff = def.falloff ?? gp.falloff;
     for (const { slot, dir, zone, dist, keep } of struck) {
       const victim = this.actor(slot)!;
-      const zoneK = zone === 1 && def.alt && def.headshot !== undefined ? def.headshot : zoneScale(gp, zone);
-      this.damage(victim, def.damage * zoneK * falloffAt(falloff, dist) * keep, shooter, def.id, zone === 1);
+      const zoneK = zone === 1 && def.alt && def.headshot !== undefined ? headMultiple(def.headshot, this.combat.headshots) : this.zoneScale(gp, zone);
+      this.damage(victim, def.damage * zoneK * falloffAt(falloff, dist) * keep, shooter, def.id, zone === 1 && headshotsCount(this.combat));
       if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
       this.stagger(victim, this.powerOf(def.id), dir, (falloffAt(falloff, dist) * keep) / Math.max(1, def.pellets));
       if (def.knockback) this.push(victim, dir, def.knockback);
@@ -4820,7 +4827,7 @@ export class Match {
     if (victim) {
       const at = add(a, scale(u, best));
       const gp = gunplayOf(getWeapon(b.trig.id));
-      const damage = b.trig.damage * zoneScale(gp, zone) * this.bulletFalloff(b, gp, best, len) * b.scale;
+      const damage = b.trig.damage * this.zoneScale(gp, zone) * this.bulletFalloff(b, gp, best, len) * b.scale;
       return { at, victim: this.actor(victim.slot) ?? null, zone, damage, dir: u };
     }
     if (wall) {
@@ -4850,7 +4857,7 @@ export class Match {
         return null;
       }
       // Penetration: energy against what is in the way, how thick it is.
-      if (b.pens < MAX_PENETRATIONS && this.rules.ballistics !== 'arcade') {
+      if (b.pens < MAX_PENETRATIONS && this.rules.ballistics !== 'arcade' && this.combat.wallPenetration) {
         const exit = this.exitPoint(at, u);
         if (exit) {
           const thick = distance(at, exit);
@@ -4939,7 +4946,7 @@ export class Match {
   private bulletHit(shooter: Combatant | null, def: Trigger, end: BulletEnd): void {
     const victim = end.victim;
     if (!victim) return;
-    this.damage(victim, end.damage, shooter, def.id, end.zone === 1);
+    this.damage(victim, end.damage, shooter, def.id, end.zone === 1 && headshotsCount(this.combat));
     if (def.status) this.applyStatus(victim, def.status, shooter, def.id);
     this.stagger(victim, this.powerOf(def.id), end.dir, end.damage / Math.max(1, def.damage * Math.max(1, def.pellets)));
     if (def.knockback) this.push(victim, end.dir, def.knockback * (end.damage / Math.max(1, def.damage)));
@@ -6858,6 +6865,11 @@ export class Match {
     if (drop > 5) this.damage(c, (drop - 5) * 9, null, 'core.fall');
   }
 
+  /** A weapon's body-zone multiple in this match: the head's under the headshot rule (sim/combatRules.ts). */
+  private zoneScale(gp: Gunplay, zone: HitZone): number {
+    return zone === 1 ? headMultiple(gp.head, this.combat.headshots) : zoneScale(gp, zone);
+  }
+
   /** Apply damage through armor and the attacker's damage boost. */
   private damage(victim: Combatant, amount: number, attacker: Combatant | null, weapon: string, head = false): void {
     if (!victim.alive || this.phase !== 'playing' || victim.invulnerable) return;
@@ -6871,6 +6883,9 @@ export class Match {
     if (this.classes) amount = this.classes.adjustDamage(victim, attacker, weapon, amount);
     // Lethality (spec §10): one systemic multiple, so every weapon keeps its identity.
     amount *= lethalityScale(this.rules);
+    // Combat rules (sim/combatRules.ts): the damage scale on what someone deals; the health scale as effective health of players and bots.
+    if (attacker) amount *= this.combat.damageScale;
+    if (!victim.npc) amount /= this.combat.healthScale;
     if (amount <= 0) return;
     // No friendly fire; hazards (no attacker) and your own grenades still hurt.
     if (attacker && attacker !== victim && !this.hostile(attacker, victim)) {
@@ -6946,9 +6961,9 @@ export class Match {
   private noteTargetHit(owner: Combatant | null, handle: number, amount: number, at: Vec3, gp?: Gunplay): void {
     const zone = this.scenario.targetZone(handle, at);
     if (zone !== null) {
-      const n = amount * (gp ? zoneScale(gp, zone) : 1);
+      const n = amount * (gp ? this.zoneScale(gp, zone) : 1) * this.combat.damageScale;
       this.scenario.targetHit(handle, n, zone, owner?.slot ?? null, owner ? hypot(at.x - owner.move.pos.x, at.y - owner.move.pos.y, at.z - owner.move.pos.z) : 0);
-      if (owner?.kind === 'human') this.noteDealt(owner, n, 8 | (zone === 1 ? 1 : 0), at, -1 - handle);
+      if (owner?.kind === 'human') this.noteDealt(owner, n, 8 | (zone === 1 && headshotsCount(this.combat) ? 1 : 0), at, -1 - handle);
       return;
     }
     if (owner?.kind === 'human' && this.scenario.shootableTarget(handle)) this.noteDealt(owner, amount, 8, at, -1 - handle);
@@ -7244,7 +7259,7 @@ export class Match {
           // (A melee weapon with a reserve keeps it for its barrel: the Battle Axe's shells.)
           if (w.def.reserveMax === 0 || (e.ammo && w.def.ammo !== e.ammo)) continue;
           if (w.reserve < w.def.reserveMax) {
-            w.reserve = Math.min(w.def.reserveMax, w.reserve + (e.ammo ? w.def.pickupAmmo : Math.ceil(w.def.pickupAmmo / 2)));
+            w.reserve = Math.min(w.def.reserveMax, w.reserve + ammoGiven(e.ammo ? w.def.pickupAmmo : Math.ceil(w.def.pickupAmmo / 2), this.combat.ammo));
             used = true;
           }
         }
@@ -7277,11 +7292,11 @@ export class Match {
           const pairs = !owned.off && this.canPair(c, def);
           if (pairs) this.makePair(c, owned, def.magazine);
           else if (owned.reserve >= def.reserveMax && owned.alt >= altMax) return false;
-          owned.reserve = Math.min(def.reserveMax, owned.reserve + def.pickupAmmo);
+          owned.reserve = Math.min(def.reserveMax, owned.reserve + ammoGiven(def.pickupAmmo, this.combat.ammo));
           owned.alt = Math.min(altMax, owned.alt + (def.alt?.pickup ?? 0));
           return true;
         }
-        c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
+        c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, ammoGiven(def.pickupAmmo, this.combat.ammo)), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
         // New guns come up immediately, like most arena shooters.
         if (def.slot > (weaponByCode(c.current)?.slot ?? 0)) this.switchTo(c, weaponCode(def));
         return true;
@@ -7484,7 +7499,7 @@ export class Match {
       : { weapons: [this.rules.weapons === 'spears' ? 'core.spear' : ARENA_DISC], throwable: null };
     for (const id of kit.weapons) {
       const def = getWeapon(id);
-      c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
+      c.weapons.set(weaponCode(def), { def, mag: def.magazine, reserve: Math.min(def.reserveMax, ammoGiven(def.pickupAmmo, this.combat.ammo)), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
       c.current = weaponCode(def);
     }
     // A grenade or two of the life's kind, dealt from the set's (frags without a set's own; the rest are pickups after that).
@@ -7495,7 +7510,7 @@ export class Match {
   private give(c: Combatant, id: string): void {
     const def = getWeapon(id);
     const code = weaponCode(def);
-    c.weapons.set(code, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, def.pickupAmmo), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
+    c.weapons.set(code, { def, mag: def.magazine, reserve: Math.min(def.reserveMax, ammoGiven(def.pickupAmmo, this.combat.ammo)), alt: def.alt?.ammo === 'own' ? (def.alt.pickup ?? 0) : 0 });
     c.current = code;
   }
 
