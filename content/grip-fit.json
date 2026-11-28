@@ -591,53 +591,53 @@
    }
   },
   "meshy_azuresentinel": {
-   "hash": "1d9261627cb9a93e",
+   "hash": "da2ac6b05a97091f",
    "arms": {
-    "skin": "#252c39",
-    "cloth": "#242c38",
-    "trim": "#161b23"
+    "skin": "#28292f",
+    "cloth": "#293750",
+    "trim": "#192232"
    },
    "grip": {
     "gripLong": [
-     -0.017,
-     0.001,
-     0.014
+     0.006,
+     0.002,
+     -0.003
     ],
     "supportLong": [
-     0.027,
-     0.014,
+     0.001,
+     -0.008,
      0
     ],
     "gripPistol": [
-     -0.015,
-     -0.001,
-     0.02
+     0.016,
+     -0.006,
+     0.002
     ],
     "supportPistol": [
-     0.02,
-     0.005,
-     0.008
+     -0.019,
+     0,
+     -0.002
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.35,
-     "eL": 1.3,
+     "eR": 0.05,
+     "eL": 0.2,
      "flags": [],
      "outlier": false,
-     "auto": 1.13,
-     "none": 3.492
+     "auto": 0.17,
+     "none": 1.406
     },
     "pistol": {
      "pick": "auto",
-     "eR": 0.65,
-     "eL": 0.5,
+     "eR": 1.95,
+     "eL": 0.245,
      "flags": [],
      "outlier": false,
-     "auto": 0.95,
-     "none": 3.583
+     "auto": 2.097,
+     "none": 3.661
     }
    }
   },
@@ -944,6 +944,61 @@
      "outlier": false,
      "auto": 3.534,
      "none": 4.28
+    }
+   }
+  },
+  "meshy_baseballbot": {
+   "hash": "ae7c44aa8f6f2f74",
+   "arms": {
+    "skin": "#232631",
+    "cloth": "#26282e",
+    "trim": "#18191d"
+   },
+   "grip": {
+    "gripLong": [
+     0.021,
+     -0.003,
+     -0.016
+    ],
+    "supportLong": [
+     0.037,
+     -0.045,
+     0
+    ],
+    "gripPistol": [
+     0.014,
+     -0.025,
+     -0.014
+    ],
+    "supportPistol": [
+     0.073,
+     -0.05,
+     0.083
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.1,
+     "eL": 0,
+     "flags": [
+      "palm"
+     ],
+     "outlier": true,
+     "auto": 3.1,
+     "none": 11.229
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 2.15,
+     "eL": 4.753,
+     "flags": [
+      "palm"
+     ],
+     "outlier": true,
+     "auto": 8.002,
+     "none": 11.601
     }
    }
   },
@@ -1562,6 +1617,57 @@
      "outlier": false,
      "auto": 1.71,
      "none": 4.481
+    }
+   }
+  },
+  "meshy_cardinal": {
+   "hash": "9e2ce6d3f2156bfd",
+   "arms": {
+    "skin": "#b71b1a",
+    "cloth": "#93421c",
+    "trim": "#7d0909"
+   },
+   "grip": {
+    "gripLong": [
+     -0.032,
+     -0.004,
+     -0.006
+    ],
+    "supportLong": [
+     0.004,
+     0.04,
+     0
+    ],
+    "gripPistol": [
+     0.013,
+     -0.001,
+     0.003
+    ],
+    "supportPistol": [
+     0.012,
+     0.043,
+     0.014
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 2,
+     "eL": 0.1,
+     "flags": [],
+     "outlier": false,
+     "auto": 2.06,
+     "none": 5.24
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 1.6,
+     "eL": 0.424,
+     "flags": [],
+     "outlier": false,
+     "auto": 1.854,
+     "none": 5.647
     }
    }
   },
@@ -2335,6 +2441,59 @@
      "outlier": false,
      "auto": 2.87,
      "none": 5.629
+    }
+   }
+  },
+  "meshy_churchill": {
+   "hash": "48a8116087fc5b1b",
+   "arms": {
+    "skin": "#d8a18a",
+    "cloth": "#121623",
+    "trim": "#0b0e16"
+   },
+   "grip": {
+    "gripLong": [
+     0.007,
+     -0.031,
+     -0.008
+    ],
+    "supportLong": [
+     -0.012,
+     -0.014,
+     0
+    ],
+    "gripPistol": [
+     0.011,
+     -0.006,
+     0.006
+    ],
+    "supportPistol": [
+     -0.023,
+     -0.006,
+     0.007
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.05,
+     "eL": 2.8,
+     "flags": [
+      "through"
+     ],
+     "outlier": true,
+     "auto": 4.73,
+     "none": 7.109
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 2.35,
+     "eL": 1.4,
+     "flags": [],
+     "outlier": false,
+     "auto": 3.19,
+     "none": 4.836
     }
    }
   },
@@ -4637,6 +4796,57 @@
     }
    }
   },
+  "meshy_gladiator": {
+   "hash": "cbf922ab3d47cb49",
+   "arms": {
+    "skin": "#916b54",
+    "cloth": "#291d13",
+    "trim": "#413020"
+   },
+   "grip": {
+    "gripLong": [
+     0.004,
+     -0.019,
+     -0.013
+    ],
+    "supportLong": [
+     -0.004,
+     -0.013,
+     0
+    ],
+    "gripPistol": [
+     0.01,
+     -0.003,
+     0
+    ],
+    "supportPistol": [
+     -0.011,
+     -0.002,
+     -0.019
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.15,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.15,
+     "none": 3.132
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 1.85,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 1.85,
+     "none": 3.91
+    }
+   }
+  },
   "meshy_gladiatorrooster": {
    "hash": "cf5d906435aae4d7",
    "arms": {
@@ -5297,57 +5507,53 @@
    }
   },
   "meshy_hazmat": {
-   "hash": "68059cca01d05d8a",
+   "hash": "c417f7802127c38a",
    "arms": {
-    "skin": "#1a1a1c",
-    "cloth": "#fdcc08",
-    "trim": "#9d7e05"
+    "skin": "#202020",
+    "cloth": "#313023",
+    "trim": "#c6a121"
    },
    "grip": {
     "gripLong": [
-     -0.042,
-     0.033,
-     -0.05
+     0.014,
+     0.02,
+     -0.009
     ],
     "supportLong": [
-     -0.027,
-     0.034,
+     -0.019,
+     -0.013,
      0
     ],
     "gripPistol": [
-     0.008,
-     0.02,
-     -0.046
+     0.016,
+     0,
+     -0.009
     ],
     "supportPistol": [
-     0.09,
-     0.02,
-     0.09
+     -0.031,
+     -0.004,
+     -0.005
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 3.3,
-     "eL": 2.7,
-     "flags": [
-      "through"
-     ],
-     "outlier": true,
-     "auto": 7.92,
-     "none": 19.777
+     "eR": 0.15,
+     "eL": 0.2,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.27,
+     "none": 3.999
     },
     "pistol": {
      "pick": "auto",
-     "eR": 3.35,
-     "eL": 7.351,
-     "flags": [
-      "through"
-     ],
-     "outlier": true,
-     "auto": 10.761,
-     "none": 21.658
+     "eR": 0.85,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.85,
+     "none": 5.229
     }
    }
   },
@@ -5556,32 +5762,32 @@
    }
   },
   "meshy_inspector": {
-   "hash": "bf7b93193d82a75c",
+   "hash": "3bc4f3b9cd170105",
    "arms": {
-    "skin": "#c1a476",
-    "cloth": "#603f34",
-    "trim": "#4a362c"
+    "skin": "#84755c",
+    "cloth": "#938883",
+    "trim": "#0e0e0e"
    },
    "grip": {
     "gripLong": [
-     0.002,
-     0.005,
-     -0.011
+     0.016,
+     0.023,
+     0.001
     ],
     "supportLong": [
-     0.001,
-     -0.007,
+     -0.014,
+     -0.009,
      0
     ],
     "gripPistol": [
-     0.001,
-     0.002,
-     -0.003
+     0.02,
+     -0.008,
+     -0.002
     ],
     "supportPistol": [
-     -0.008,
-     -0.005,
-     -0.009
+     -0.03,
+     -0.002,
+     0.001
     ]
    },
    "keep": [],
@@ -5589,20 +5795,20 @@
     "long": {
      "pick": "auto",
      "eR": 0.05,
-     "eL": 0.5,
+     "eL": 0.4,
      "flags": [],
      "outlier": false,
-     "auto": 0.35,
-     "none": 1.942
+     "auto": 0.29,
+     "none": 3.632
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.05,
-     "eL": 0.9,
+     "eR": 1.2,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "auto": 1.59,
-     "none": 2.816
+     "auto": 1.2,
+     "none": 4.677
     }
    }
   },
@@ -5813,54 +6019,53 @@
    }
   },
   "meshy_knight": {
-   "hash": "d15a51bd27b7329d",
+   "hash": "e5d53a0a2a9ab546",
    "arms": {
-    "skin": "#2d2d2c",
-    "cloth": "#34322f",
-    "trim": "#201f1d"
+    "skin": "#39393a",
+    "cloth": "#373739",
+    "trim": "#29292b"
    },
    "grip": {
     "gripLong": [
-     -0.027,
-     0.02,
-     -0.011
+     0.005,
+     0,
+     0.002
     ],
     "supportLong": [
-     -0.004,
-     0.033,
+     0,
+     -0.01,
      0
     ],
     "gripPistol": [
-     -0.007,
-     0.007,
-     -0.008
+     0.021,
+     -0.011,
+     0.003
     ],
     "supportPistol": [
+     -0.008,
      0.001,
-     0.037,
-     -0.013
+     0.001
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.7,
-     "eL": 0.6,
+     "eR": 0.241,
+     "eL": 0.8,
      "flags": [],
      "outlier": false,
-     "hand": 5.062,
-     "auto": 1.06,
-     "none": 8.118
+     "auto": 0.721,
+     "none": 1.061
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.25,
-     "eL": 1,
+     "eR": 2.4,
+     "eL": 0.3,
      "flags": [],
      "outlier": false,
-     "auto": 1.85,
-     "none": 5.17
+     "auto": 2.58,
+     "none": 4.003
     }
    }
   },
@@ -6218,53 +6423,53 @@
    }
   },
   "meshy_mechanic": {
-   "hash": "ad16b4bac84838af",
+   "hash": "b46726fc43db97a4",
    "arms": {
-    "skin": "#3b3222",
-    "cloth": "#c88760",
-    "trim": "#8d7853"
+    "skin": "#352b27",
+    "cloth": "#806341",
+    "trim": "#8e867d"
    },
    "grip": {
     "gripLong": [
-     -0.027,
-     0.001,
-     0.014
+     -0.003,
+     0.023,
+     0.002
     ],
     "supportLong": [
-     0.017,
-     0.035,
+     -0.014,
+     0.011,
      0
     ],
     "gripPistol": [
-     -0.008,
+     0.02,
      -0.004,
-     0.02
+     -0.001
     ],
     "supportPistol": [
-     0.007,
-     0.031,
-     0.007
+     0.075,
+     0.006,
+     0.076
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 1.6,
-     "eL": 1.9,
+     "eR": 0.85,
+     "eL": 0.4,
      "flags": [],
      "outlier": false,
-     "auto": 2.74,
-     "none": 5.313
+     "auto": 1.09,
+     "none": 4.487
     },
     "pistol": {
      "pick": "auto",
-     "eR": 2.45,
-     "eL": 1.9,
+     "eR": 2.5,
+     "eL": 1.345,
      "flags": [],
      "outlier": false,
-     "auto": 3.59,
-     "none": 6.801
+     "auto": 3.307,
+     "none": 9.481
     }
    }
   },
@@ -6628,55 +6833,53 @@
    }
   },
   "meshy_mummybot": {
-   "hash": "d4548932f4c30c39",
+   "hash": "7ce19ff9f9af0d05",
    "arms": {
-    "skin": "#231d14",
-    "cloth": "#44341c",
-    "trim": "#302412"
+    "skin": "#575048",
+    "cloth": "#9c8772",
+    "trim": "#615447"
    },
    "grip": {
     "gripLong": [
-     -0.017,
-     -0.001,
-     -0.012
+     0.008,
+     0.008,
+     -0.004
     ],
     "supportLong": [
-     -0.006,
-     0.015,
+     -0.015,
+     -0.01,
      0
     ],
     "gripPistol": [
+     0.012,
      -0.001,
-     0.004,
-     -0.001
+     0.001
     ],
     "supportPistol": [
-     0.002,
-     0.022,
-     -0.016
+     -0.022,
+     -0.002,
+     -0.003
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.05,
-     "eL": 0,
-     "flags": [],
-     "outlier": false,
-     "hand": 4.997,
-     "auto": 0.05,
-     "none": 2.593
-    },
-    "pistol": {
-     "pick": "auto",
-     "eR": 0.4,
+     "eR": 0.15,
      "eL": 0.1,
      "flags": [],
      "outlier": false,
-     "hand": 2.658,
-     "auto": 0.46,
-     "none": 2.452
+     "auto": 0.21,
+     "none": 2.183
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 0.95,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.95,
+     "none": 2.35
     }
    }
   },
@@ -6834,32 +7037,32 @@
    }
   },
   "meshy_oldtimer": {
-   "hash": "c2defac0eb70c0e0",
+   "hash": "4eaae957aa93dd91",
    "arms": {
-    "skin": "#eda380",
-    "cloth": "#475f87",
-    "trim": "#2c3b54"
+    "skin": "#b58674",
+    "cloth": "#3e362c",
+    "trim": "#26211b"
    },
    "grip": {
     "gripLong": [
-     0.012,
-     0.012,
-     -0.018
+     0.015,
+     0.011,
+     -0.012
     ],
     "supportLong": [
-     -0.021,
-     -0.02,
+     -0.016,
+     -0.012,
      0
     ],
     "gripPistol": [
-     0.019,
-     -0.003,
-     -0.015
+     0.018,
+     -0.005,
+     -0.01
     ],
     "supportPistol": [
-     -0.035,
-     0,
-     -0.011
+     -0.036,
+     -0.005,
+     0.002
     ]
    },
    "keep": [],
@@ -6867,20 +7070,20 @@
     "long": {
      "pick": "auto",
      "eR": 0.05,
-     "eL": 0,
+     "eL": 0.4,
      "flags": [],
      "outlier": false,
-     "auto": 0.05,
-     "none": 4.043
+     "auto": 0.29,
+     "none": 3.374
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.25,
+     "eR": 1.05,
      "eL": 0,
      "flags": [],
      "outlier": false,
-     "auto": 1.25,
-     "none": 5.33
+     "auto": 1.05,
+     "none": 5.151
     }
    }
   },
@@ -7141,6 +7344,57 @@
     }
    }
   },
+  "meshy_patton": {
+   "hash": "83812a76b11e35cd",
+   "arms": {
+    "skin": "#c58c78",
+    "cloth": "#452e21",
+    "trim": "#311f16"
+   },
+   "grip": {
+    "gripLong": [
+     0.016,
+     0.003,
+     0
+    ],
+    "supportLong": [
+     0,
+     -0.013,
+     0
+    ],
+    "gripPistol": [
+     0.017,
+     -0.008,
+     0.003
+    ],
+    "supportPistol": [
+     0.001,
+     -0.008,
+     0.026
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.05,
+     "eL": 2.3,
+     "flags": [],
+     "outlier": false,
+     "auto": 1.43,
+     "none": 3.041
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 1.612,
+     "eL": 1.383,
+     "flags": [],
+     "outlier": false,
+     "auto": 2.442,
+     "none": 4.347
+    }
+   }
+  },
   "meshy_penguinking": {
    "hash": "264932703f174229",
    "arms": {
@@ -7193,32 +7447,32 @@
    }
   },
   "meshy_pharaoh": {
-   "hash": "2f9368707a64cf97",
+   "hash": "2d89e912ea10071a",
    "arms": {
-    "skin": "#605a51",
-    "cloth": "#938975",
-    "trim": "#7b7057"
+    "skin": "#74624f",
+    "cloth": "#a18b6e",
+    "trim": "#645644"
    },
    "grip": {
     "gripLong": [
-     0.003,
-     -0.002,
-     0.001
+     0.001,
+     -0.007,
+     -0.008
     ],
     "supportLong": [
-     -0.006,
-     -0.001,
+     0.011,
+     -0.011,
      0
     ],
     "gripPistol": [
-     0.01,
+     0.012,
      -0.005,
-     0.009
+     0.001
     ],
     "supportPistol": [
-     -0.001,
-     0.003,
-     -0.002
+     0.005,
+     0,
+     -0.025
     ]
    },
    "keep": [],
@@ -7226,73 +7480,71 @@
     "long": {
      "pick": "auto",
      "eR": 0.05,
-     "eL": 0.4,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "hand": 4.674,
-     "auto": 0.29,
-     "none": 1.145
+     "auto": 0.05,
+     "none": 2.302
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1,
-     "eL": 0.9,
+     "eR": 1.85,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "hand": 4.602,
-     "auto": 1.54,
-     "none": 2.696
+     "auto": 1.85,
+     "none": 3.755
     }
    }
   },
   "meshy_pilot": {
-   "hash": null,
+   "hash": "88a009213009ff40",
    "arms": {
-    "skin": "#383534",
-    "cloth": "#a9591e",
-    "trim": "#693713"
+    "skin": "#272726",
+    "cloth": "#444437",
+    "trim": "#2a2a22"
    },
    "grip": {
     "gripLong": [
-     -0.009,
-     0.006,
-     0.004
+     0.003,
+     -0.014,
+     -0.01
     ],
     "supportLong": [
-     0.005,
-     0.002,
+     -0.004,
+     -0.014,
      0
     ],
     "gripPistol": [
-     0,
-     -0.001,
-     0.009
+     0.02,
+     -0.015,
+     -0.001
     ],
     "supportPistol": [
-     0.004,
-     0.001,
-     0.001
+     -0.011,
+     -0.004,
+     -0.022
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.512,
-     "eL": 0.9,
+     "eR": 0.05,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "auto": 1.052,
-     "none": 1.748
+     "auto": 0.05,
+     "none": 2.706
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.6,
-     "eL": 1.2,
+     "eR": 2,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "auto": 2.32,
-     "none": 3.313
+     "auto": 2,
+     "none": 4.626
     }
    }
   },
@@ -7759,84 +8011,32 @@
    }
   },
   "meshy_resolvesoldier": {
-   "hash": null,
+   "hash": "64a0c3ff8ac672c8",
    "arms": {
-    "skin": "#1a1918",
-    "cloth": "#76503f",
-    "trim": "#9e8b70"
+    "skin": "#23232b",
+    "cloth": "#292d37",
+    "trim": "#191c22"
    },
    "grip": {
     "gripLong": [
-     0.001,
-     -0.007,
-     -0.011
-    ],
-    "supportLong": [
-     -0.007,
-     -0.012,
-     0
-    ],
-    "gripPistol": [
+     0.01,
      0.006,
-     0.004,
-     -0.002
-    ],
-    "supportPistol": [
-     0.057,
-     -0.021,
-     0.04
-    ]
-   },
-   "keep": [],
-   "audit": {
-    "long": {
-     "pick": "auto",
-     "eR": 0.05,
-     "eL": 0.7,
-     "flags": [],
-     "outlier": false,
-     "hand": 7.355,
-     "auto": 0.47,
-     "none": 2.438
-    },
-    "pistol": {
-     "pick": "auto",
-     "eR": 1.15,
-     "eL": 1.36,
-     "flags": [],
-     "outlier": false,
-     "auto": 1.966,
-     "none": 3.742
-    }
-   }
-  },
-  "meshy_ricochet": {
-   "hash": null,
-   "arms": {
-    "skin": "#151353",
-    "cloth": "#3a7e55",
-    "trim": "#1d182e"
-   },
-   "grip": {
-    "gripLong": [
-     -0.002,
-     0.018,
-     -0.009
+     -0.001
     ],
     "supportLong": [
-     -0.014,
-     -0.009,
+     -0.012,
+     -0.005,
      0
     ],
     "gripPistol": [
-     0,
-     0.001,
-     -0.008
+     0.02,
+     -0.011,
+     0.001
     ],
     "supportPistol": [
-     -0.033,
-     -0.007,
-     -0.012
+     -0.021,
+     0.003,
+     -0.004
     ]
    },
    "keep": [],
@@ -7848,16 +8048,67 @@
      "flags": [],
      "outlier": false,
      "auto": 0.05,
-     "none": 3.016
+     "none": 1.6
     },
     "pistol": {
      "pick": "auto",
-     "eR": 0.95,
-     "eL": 0.4,
+     "eR": 1.7,
+     "eL": 0.141,
      "flags": [],
      "outlier": false,
-     "auto": 1.19,
-     "none": 4.557
+     "auto": 1.785,
+     "none": 4.676
+    }
+   }
+  },
+  "meshy_ricochet": {
+   "hash": "e0792cdab67879cf",
+   "arms": {
+    "skin": "#272727",
+    "cloth": "#494484",
+    "trim": "#2d2a52"
+   },
+   "grip": {
+    "gripLong": [
+     0.013,
+     0.007,
+     -0.006
+    ],
+    "supportLong": [
+     -0.008,
+     -0.012,
+     0
+    ],
+    "gripPistol": [
+     0.019,
+     -0.006,
+     -0.002
+    ],
+    "supportPistol": [
+     -0.022,
+     -0.003,
+     -0.01
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.15,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.15,
+     "none": 2.023
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 1.55,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 1.55,
+     "none": 4.144
     }
    }
   },
@@ -7964,53 +8215,53 @@
    }
   },
   "meshy_rourke": {
-   "hash": "65662a9cc9d92aed",
+   "hash": "2c6a2b0246c272d5",
    "arms": {
-    "skin": "#b7805f",
-    "cloth": "#514a29",
-    "trim": "#322e19"
+    "skin": "#695349",
+    "cloth": "#5a5544",
+    "trim": "#38352a"
    },
    "grip": {
     "gripLong": [
-     -0.006,
-     -0.036,
-     -0.011
+     0.006,
+     0.013,
+     0.021
     ],
     "supportLong": [
-     -0.021,
-     0.014,
+     0,
+     -0.007,
      0
     ],
     "gripPistol": [
-     0.01,
-     -0.007,
-     0.006
+     0.017,
+     -0.024,
+     0.016
     ],
     "supportPistol": [
-     -0.029,
-     0.032,
-     0.009
+     -0.014,
+     -0.002,
+     0.007
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.85,
-     "eL": 0,
+     "eR": 0.05,
+     "eL": 0.5,
      "flags": [],
      "outlier": false,
-     "auto": 0.85,
-     "none": 6.43
+     "auto": 0.35,
+     "none": 3.034
     },
     "pistol": {
      "pick": "auto",
      "eR": 2.05,
-     "eL": 1.341,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "auto": 2.855,
-     "none": 5.511
+     "auto": 2.05,
+     "none": 5.749
     }
    }
   },
@@ -8270,6 +8521,57 @@
      "outlier": false,
      "auto": 1.794,
      "none": 4.591
+    }
+   }
+  },
+  "meshy_sheetghost": {
+   "hash": null,
+   "arms": {
+    "skin": "#c4c4cb",
+    "cloth": "#c1c1c9",
+    "trim": "#d0d0d8"
+   },
+   "grip": {
+    "gripLong": [
+     0.009,
+     0.013,
+     -0.006
+    ],
+    "supportLong": [
+     -0.023,
+     -0.01,
+     0
+    ],
+    "gripPistol": [
+     0.025,
+     -0.007,
+     -0.007
+    ],
+    "supportPistol": [
+     -0.03,
+     0,
+     -0.006
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.6,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.6,
+     "none": 4.163
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 1.5,
+     "eL": 0.1,
+     "flags": [],
+     "outlier": false,
+     "auto": 1.56,
+     "none": 5.609
     }
    }
   },
@@ -8587,55 +8889,53 @@
    }
   },
   "meshy_spacemarine": {
-   "hash": "f535b11f669e5101",
+   "hash": "f95f18e4e36510ab",
    "arms": {
-    "skin": "#3d403c",
-    "cloth": "#582122",
-    "trim": "#371415"
+    "skin": "#65584d",
+    "cloth": "#8e7354",
+    "trim": "#2e0d40"
    },
    "grip": {
     "gripLong": [
-     -0.011,
-     0.022,
-     -0.007
+     -0.008,
+     0.041,
+     -0.014
     ],
     "supportLong": [
-     0.038,
-     -0.004,
+     -0.024,
+     0.003,
      0
     ],
     "gripPistol": [
-     0.005,
+     0,
      -0.002,
-     -0.008
+     -0.021
     ],
     "supportPistol": [
-     -0.018,
-     0.009,
-     0.008
+     0.09,
+     -0.012,
+     0.09
     ]
    },
    "keep": [],
    "audit": {
     "long": {
      "pick": "auto",
-     "eR": 0.05,
-     "eL": 0.8,
+     "eR": 0.55,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "hand": 7.557,
-     "auto": 0.53,
-     "none": 3.884
+     "auto": 0.55,
+     "none": 9.787
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.95,
-     "eL": 1.4,
+     "eR": 2.3,
+     "eL": 9.81,
      "flags": [],
-     "outlier": false,
-     "hand": 6.863,
-     "auto": 2.79,
-     "none": 4.957
+     "outlier": true,
+     "auto": 8.186,
+     "none": 12.723
     }
    }
   },
@@ -8691,32 +8991,32 @@
    }
   },
   "meshy_stealthop": {
-   "hash": "b211ce260217ad56",
+   "hash": "149b3cbb2eeec942",
    "arms": {
-    "skin": "#52494d",
-    "cloth": "#3a3c40",
-    "trim": "#242528"
+    "skin": "#1a1a1f",
+    "cloth": "#202327",
+    "trim": "#141618"
    },
    "grip": {
     "gripLong": [
-     -0.01,
-     0.002,
-     -0.006
+     0.01,
+     0.005,
+     0.007
     ],
     "supportLong": [
-     -0.002,
-     0.009,
+     -0.007,
+     -0.013,
      0
     ],
     "gripPistol": [
-     0.003,
-     -0.003,
-     0.001
+     0.014,
+     -0.01,
+     0.01
     ],
     "supportPistol": [
-     -0.005,
-     0.012,
-     -0.009
+     -0.013,
+     -0.007,
+     0.005
     ]
    },
    "keep": [],
@@ -8724,22 +9024,20 @@
     "long": {
      "pick": "auto",
      "eR": 0.05,
-     "eL": 0.8,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "hand": 5.4,
-     "auto": 0.53,
-     "none": 1.691
+     "auto": 0.05,
+     "none": 1.907
     },
     "pistol": {
      "pick": "auto",
-     "eR": 1.05,
-     "eL": 1.1,
+     "eR": 1.25,
+     "eL": 0,
      "flags": [],
      "outlier": false,
-     "hand": 3.291,
-     "auto": 1.71,
-     "none": 3.032
+     "auto": 1.25,
+     "none": 3.862
     }
    }
   },
@@ -9356,6 +9654,57 @@
      "outlier": false,
      "auto": 4.242,
      "none": 5.072
+    }
+   }
+  },
+  "meshy_tesla": {
+   "hash": "26c1bad0498cceba",
+   "arms": {
+    "skin": "#2f2724",
+    "cloth": "#3e312c",
+    "trim": "#261e1b"
+   },
+   "grip": {
+    "gripLong": [
+     0.001,
+     0.003,
+     -0.002
+    ],
+    "supportLong": [
+     -0.008,
+     -0.004,
+     0
+    ],
+    "gripPistol": [
+     0.014,
+     -0.006,
+     0.001
+    ],
+    "supportPistol": [
+     -0.013,
+     0.006,
+     -0.009
+    ]
+   },
+   "keep": [],
+   "audit": {
+    "long": {
+     "pick": "auto",
+     "eR": 0.15,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 0.15,
+     "none": 0.91
+    },
+    "pistol": {
+     "pick": "auto",
+     "eR": 2.25,
+     "eL": 0,
+     "flags": [],
+     "outlier": false,
+     "auto": 2.25,
+     "none": 4.103
     }
    }
   },
