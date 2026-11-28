@@ -34,7 +34,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // range: Best within 18 m: full damage, 5 body shots. Down to 40 % (11 shots) by 45 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.
-  // model: The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.
+  // model: The owner's own Glock 19 Modular Sidearm (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 Makarov. The flat-colour kit pistol is the fallback.
   // design: Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.
   // fireMode: One shot per click; holding the trigger doesn't keep firing (the Machine Pistol is the automatic one).
   'core.pistol': {
@@ -61,17 +61,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     fireIntervalTicks: 10,
     view: {
-      model: 'guns/makarov.glb',
-      held: { medium: 'guns/makarov.medium.glb', high: 'guns/makarov.high.glb' },
+      model: 'guns/glock19.glb',
+      held: { medium: 'guns/glock19.medium.glb', high: 'guns/glock19.high.glb' },
       fallback: 'weapons/pistol.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffe08a',
-      hold: { style: 'pistol', grip: [0, -0.022, -0.083], support: [-0.02, -0.032, -0.073], rake: 10 },
-      muzzleAt: [0, 0.055, 0.1],
+      hold: { style: 'pistol', grip: [0, -0.03, -0.062], support: [-0.02, -0.04, -0.052], rake: 15 },
+      muzzleAt: [0, 0.04, 0.1],
     },
   },
   // range: Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 500 m. Standard ballistics: by impact speed, the same distances.
-  // model: The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47 (still built), the kit rifle as the fallback.
+  // model: The owner's own AK-47 Modular Assault Rifle (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 AK-47. The kit rifle is the fallback.
   // design: Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse.
   'core.rifle': {
     id: 'core.rifle',
@@ -114,19 +114,19 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     raiseTicks: 20,
     view: {
-      model: 'guns/ak47_cc0.glb',
-      held: { medium: 'guns/ak47_cc0.medium.glb', high: 'guns/ak47_cc0.high.glb' },
+      model: 'guns/ak47_modular.glb',
+      held: { medium: 'guns/ak47_modular.medium.glb', high: 'guns/ak47_modular.high.glb' },
       fallback: 'weapons/rifle.glb',
       viewOffset: [0.2, -0.2, 0.55],
       tracer: '#ffd36b',
-      hold: { style: 'long', grip: [0, -0.012, -0.175], support: [0, 0.048, 0.13], shoulder: [0, 0.02, -0.43] },
+      hold: { style: 'long', grip: [0, -0.02, -0.18], support: [0, 0.055, 0.13], shoulder: [0, 0.03, -0.43] },
       sound: 'fire.rifle.ak74',
       reloadSound: 'reload.ak',
-      muzzleAt: [0, 0.068, 0.44],
+      muzzleAt: [0, 0.072, 0.44],
     },
   },
   // range: Best within 8 m: full damage, 1 body blast. Down to 25 % (4 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).
-  // model: The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's (still built), the kit shotgun as the fallback.
+  // model: The owner's own Vietnam Tactical Breaching Shotgun (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 pump shotgun; its under-barrel launcher is only looks. The kit shotgun is the fallback.
   // design: Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).
   // reload: Shell by shell: each one loaded can be fired straight away.
   'core.shotgun': {
@@ -161,15 +161,15 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botDesirability: 0.65,
     botRange: [0, 9],
     view: {
-      model: 'guns/shotgun_cc0.glb',
-      held: { medium: 'guns/shotgun_cc0.medium.glb', high: 'guns/shotgun_cc0.high.glb' },
+      model: 'guns/vietnam_shotgun.glb',
+      held: { medium: 'guns/vietnam_shotgun.medium.glb', high: 'guns/vietnam_shotgun.high.glb' },
       fallback: 'weapons/shotgun.glb',
       viewOffset: [0.2, -0.2, 0.6],
       tracer: '#ffb38a',
       cycle: { sound: 'fire.shotgun.pump', at: 0.3 },
-      hold: { style: 'long', grip: [0, 0.015, -0.205], support: [0, 0.035, 0.22], shoulder: [0, -0.03, -0.52] },
+      hold: { style: 'long', grip: [0, -0.03, -0.205], support: [0, 0.03, 0.21], shoulder: [0, -0.035, -0.49] },
       reloadSound: 'reload.end.b',
-      muzzleAt: [0, 0.083, 0.52],
+      muzzleAt: [0, 0.076, 0.5],
     },
   },
   // range: Best within 150 m: full damage, 2 body shots. Down to 90 % (2 shots) by 300 m; reaches 1000 m. Standard ballistics: by impact speed, the same distances.
@@ -246,7 +246,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // range: Best within 15 m: full damage, 7 body shots. Down to 35 % (20 shots) by 35 m; reaches 100 m. Standard ballistics: by impact speed, the same distances.
   // design: Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.
-  // model: The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun (owner, 2026-11-06; still built in the repo), the kit SMG as the fallback.
+  // model: The owner's own MP5K Style PDW (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 Suomi KP. No stock: held a little ahead of the shoulder, the left hand on its front grip. The kit SMG is the fallback.
   'core.smg': {
     id: 'core.smg',
     displayName: 'Submachine Gun',
@@ -269,13 +269,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     botRange: [0, 18],
     pellets: 1,
     view: {
-      model: 'guns/suomi_kp.glb',
-      held: { medium: 'guns/suomi_kp.medium.glb', high: 'guns/suomi_kp.high.glb' },
+      model: 'guns/mp5k_pdw.glb',
+      held: { medium: 'guns/mp5k_pdw.medium.glb', high: 'guns/mp5k_pdw.high.glb' },
       fallback: 'weapons/smg.glb',
       viewOffset: [0.2, -0.2, 0.5],
       tracer: '#ffe9a8',
-      hold: { style: 'long', grip: [0, -0.005, -0.15], support: [0, 0.045, 0.17], shoulder: [0, -0.03, -0.44] },
-      muzzleAt: [0, 0.072, 0.435],
+      hold: { style: 'long', grip: [0, -0.015, -0.09], support: [0, 0, 0.128], shoulder: [0, 0.05, -0.28] },
+      muzzleAt: [0, 0.065, 0.185],
     },
   },
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
@@ -456,17 +456,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     recoil: { bloom: 0.03, maxBloom: 0.05, recover: 0.0012 },
     pellets: 1,
     view: {
-      model: 'guns/bk220.glb',
-      held: { medium: 'guns/bk220.medium.glb', high: 'guns/bk220.high.glb' },
+      model: 'guns/desert_eagle.glb',
+      held: { medium: 'guns/desert_eagle.medium.glb', high: 'guns/desert_eagle.high.glb' },
       fallback: 'weapons/hand_cannon.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffd08a',
-      hold: { style: 'pistol', grip: [0, -0.03, -0.097], support: [-0.02, -0.04, -0.087], rake: 8 },
-      muzzleAt: [0, 0.06, 0.125],
+      hold: { style: 'pistol', grip: [0, -0.027, -0.088], support: [-0.02, -0.037, -0.078], rake: 14 },
+      muzzleAt: [0, 0.042, 0.135],
       sound: 'fire.pistol.c',
     },
   },
-  // model: The Meshy community gilded flintlock pistol (an unnamed download, CC0 per the owner; content/guns.json): one shot, one kill. The flat-colour kit pistol is the fallback.
+  // model: The owner's own Gold Walther PPK (Meshy, owned, 2026-11-27; content/guns.json): one shot, one kill. Sharper copies in your own hands at Medium and High; it replaced the Meshy community gilded flintlock pistol. The flat-colour kit pistol is the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   'core.gilded_pistol': {
     id: 'core.gilded_pistol',
@@ -499,13 +499,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'guns/flintlock.glb',
-      held: { medium: 'guns/flintlock.medium.glb', high: 'guns/flintlock.high.glb' },
+      model: 'guns/gold_ppk.glb',
+      held: { medium: 'guns/gold_ppk.medium.glb', high: 'guns/gold_ppk.high.glb' },
       fallback: 'weapons/gilded_pistol.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffe070',
-      hold: { style: 'pistol', grip: [0, -0.045, -0.13], support: [-0.02, -0.055, -0.12], rake: 28 },
-      muzzleAt: [0, 0.05, 0.165],
+      hold: { style: 'pistol', grip: [0, -0.04, -0.053], support: [-0.02, -0.05, -0.043], rake: 12 },
+      muzzleAt: [0, 0.03, 0.09],
       sound: 'fire.heavy.b',
     },
   },
@@ -558,7 +558,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // range: Best within 8 m: full damage, 15 body shots. Down to 35 % (41 shots) by 25 m; reaches 60 m. Standard ballistics: by impact speed, the same distances.
-  // model: The 3DModelsCC0 Grease Gun (CC0; content/guns.json), replacing the flat-colour kit machine pistol of the same shape, now the fallback.
+  // model: The owner's own Modular Machine Pistol (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 Grease Gun. No stock: held a little ahead of the shoulder, the left hand on the magazine. The flat-colour kit machine pistol is the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   // hold: Both hands on its pistol grip (the hold's points sat at the end of the wire stock, 11 cm behind the grip; a support hand on the foregrip, 15 cm further ahead, is out of reach in third person); 4 cm nearer the eye than the pistols, so the hands sit where theirs do.
   'core.machine_pistol': {
@@ -584,20 +584,20 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     botDesirability: 0.5,
     view: {
-      model: 'guns/grease_gun.glb',
-      held: { medium: 'guns/grease_gun.medium.glb', high: 'guns/grease_gun.high.glb' },
+      model: 'guns/machine_pistol_mod.glb',
+      held: { medium: 'guns/machine_pistol_mod.medium.glb', high: 'guns/machine_pistol_mod.high.glb' },
       fallback: 'weapons/machine_pistol.glb',
       viewOffset: [0.2, -0.2, 0.42],
       tracer: '#ffe9a8',
-      hold: { style: 'long', grip: [0, 0.015, -0.175], support: [0, 0.05, 0], shoulder: [0, 0.03, -0.245] },
-      muzzleAt: [0, 0.085, 0.245],
+      hold: { style: 'long', grip: [0, 0.01, -0.115], support: [0, 0.02, 0.03], shoulder: [0, 0.06, -0.26] },
+      muzzleAt: [0, 0.072, 0.16],
       sound: 'fire.heavy.l86.fast',
     },
   },
   // range: Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 160 m. Standard ballistics: by impact speed, the same distances.
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
-  // model: The 3DModelsCC0 M4A1 (CC0; content/guns.json), replacing the Meshy community Neon Flux (still built): a realistic rifle for the Military set. The kit burst rifle is the fallback.
+  // model: The owner's own Desert Storm Assault Rifle (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 M4A1. The kit burst rifle is the fallback.
   'core.burst_rifle': {
     id: 'core.burst_rifle',
     displayName: 'Burst Rifle',
@@ -622,12 +622,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     raiseTicks: 20,
     view: {
-      model: 'guns/m4a1.glb',
-      held: { medium: 'guns/m4a1.medium.glb', high: 'guns/m4a1.high.glb' },
+      model: 'guns/desert_storm_rifle.glb',
+      held: { medium: 'guns/desert_storm_rifle.medium.glb', high: 'guns/desert_storm_rifle.high.glb' },
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#ffd36b',
-      hold: { style: 'long', grip: [0, -0.04, -0.195], support: [0, 0.045, 0.11], shoulder: [0, 0.02, -0.425] },
-      muzzleAt: [0, 0.065, 0.43],
+      hold: { style: 'long', grip: [0, -0.035, -0.172], support: [0, 0.055, 0.13], shoulder: [0, 0.03, -0.425] },
+      muzzleAt: [0, 0.1, 0.43],
       fallback: 'weapons/burst_rifle.glb',
       sound: 'fire.rifle',
     },
@@ -703,6 +703,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.sniper',
     },
   },
+  // model: The owner's own Western Buffalo Break-Action Cannon (Meshy, owned, 2026-11-27; content/guns.json; owner: sawed-off style), sharper copies in your own hands at Medium and High; it replaced the kit sawed-off, now the fallback.
   // range: Best within 8 m: full damage, 1 body blast. Down to 25 % (3 blasts) by 28 m; reaches 25 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // group: The extended arsenal: every one fires differently. 4: shotguns.
   'core.sawed_off': {
@@ -730,14 +731,18 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     recoil: { bloom: 0, maxBloom: 0, recover: 0 },
     akimbo: true,
     view: {
-      model: 'weapons/sawed_off.glb',
+      model: 'guns/buffalo_cannon.glb',
+      muzzleAt: [0, 0.063, 0.4],
+      held: { medium: 'guns/buffalo_cannon.medium.glb', high: 'guns/buffalo_cannon.high.glb' },
+      fallback: 'weapons/sawed_off.glb',
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#ffb38a',
-      hold: { style: 'long', grip: [0, -0.06, -0.165], support: [0, -0.04, 0.066], shoulder: [0, 0, -0.275] },
+      hold: { style: 'long', grip: [0, -0.008, -0.126], support: [0, 0.017, 0.143], shoulder: [0, -0.034, -0.396] },
       sound: 'fire.shotgun.b',
       reloadSound: 'reload.end.b',
     },
   },
+  // model: The owner's own Mesoamerican Obsidian Pump Shotgun (Meshy, owned, 2026-11-27; content/guns.json; owner: the Auto Shotgun's model), sharper copies in your own hands at Medium and High; it replaced Styloo's shotgun. The kit auto shotgun is the fallback.
   // range: Best within 8 m: full damage, 2 body blasts. Down to 25 % (7 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // group: The extended arsenal: every one fires differently. 4: shotguns.
   'core.auto_shotgun': {
@@ -762,13 +767,14 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     recoil: { bloom: 0.012, maxBloom: 0.04, recover: 0.0015 },
     reserveMax: 40,
     view: {
-      model: 'guns/shotgun.glb',
+      model: 'guns/obsidian_pump.glb',
+      held: { medium: 'guns/obsidian_pump.medium.glb', high: 'guns/obsidian_pump.high.glb' },
       fallback: 'weapons/auto_shotgun.glb',
       viewOffset: [0.21, -0.21, 0.56],
       tracer: '#ffb38a',
-      hold: { style: 'long', grip: [0, 0, -0.2], support: [0, 0.035, 0.2], shoulder: [0, -0.02, -0.47] },
+      hold: { style: 'long', grip: [0, -0.005, -0.215], support: [0, 0.022, 0.19], shoulder: [0, -0.035, -0.48] },
       reloadSound: 'reload.end.b',
-      muzzleAt: [0, 0.078, 0.475],
+      muzzleAt: [0, 0.072, 0.49],
       sound: 'fire.shotgun.b',
     },
   },
@@ -1051,7 +1057,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 7: automatics.
   // design: Huge belt, poor handling: slow to draw and a long, dangerous reload.
-  // model: The owner's Rotary Gatling Gun (Meshy, owned; content/guns.json), the gun-pack machine gun as the fallback. (Before it: a Meshy community rotary-barrel gun, CC0 per the owner: no stock, so the rear handle sat at the shoulder.)
+  // model: The owner's own Tactical Rotary Minigun (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the Rotary Gatling Gun. Its rear frame sits at the shoulder, the right hand on its forward grip, the left under the barrels' housing. The gun-pack machine gun is the fallback.
   // viewOffset: Chunky (a tall body and a carry loop): further out and lower than a rifle, so it doesn't fill the view.
   // hold: The stock is tall: its top sits in the shoulder, so the gun rides below the face.
   'core.lmg': {
@@ -1077,10 +1083,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     recoil: { bloom: 0.002, maxBloom: 0.04, recover: 0.001 },
     pellets: 1,
     view: {
-      model: 'guns/gatling_gun.glb',
-      viewOffset: [0.25, -0.31, 0.74],
+      model: 'guns/rotary_minigun.glb',
+      held: { medium: 'guns/rotary_minigun.medium.glb', high: 'guns/rotary_minigun.high.glb' },
+      viewOffset: [0.27, -0.36, 0.84],
       tracer: '#ffd36b',
-      hold: { style: 'long', grip: [0, -0.09, -0.243], support: [0, -0.126, -0.018], shoulder: [0, 0.09, -0.423] },
+      hold: { style: 'long', grip: [0, -0.025, -0.315], support: [0, 0, 0.14], shoulder: [0, 0.12, -0.47] },
+      muzzleAt: [0, 0.075, 0.5],
       fallback: 'weapons/lmg.glb',
       sound: 'fire.smg.ppsh',
       reloadSound: 'reload.scifi',
@@ -1859,7 +1867,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   },
   // range: Best within 25 m: full damage, 2 body shots. Down to 40 % (3 shots) by 65 m; reaches 110 m. A head shot kills to about 45 m, a body pair to about 50 m. Standard ballistics: by impact speed, the same distances.
   // design: Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills within its range, about 45 m; a body shot takes nine tenths of a life; owner, 2026-11-16: short range like the Hand Cannon, 110 m and a 40 % floor), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).
-  // model: The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver of 2026-01-26 (still built), the kit revolver as the fallback.
+  // model: The owner's own Western Classic 6-Shot Revolver (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the Meshy community Revolver Rustique. The kit revolver is the fallback.
   'core.revolver': {
     id: 'core.revolver',
     displayName: 'Heavy Revolver',
@@ -1885,12 +1893,12 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     knockback: 4,
     pellets: 1,
     view: {
-      model: 'guns/revolver_rustique.glb',
-      held: { medium: 'guns/revolver_rustique.medium.glb', high: 'guns/revolver_rustique.high.glb' },
+      model: 'guns/western_revolver.glb',
+      held: { medium: 'guns/western_revolver.medium.glb', high: 'guns/western_revolver.high.glb' },
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ffcf7a',
-      hold: { style: 'pistol', grip: [0, -0.045, -0.115], support: [-0.02, -0.055, -0.105], rake: 18 },
-      muzzleAt: [0, 0.055, 0.145],
+      hold: { style: 'pistol', grip: [0, -0.042, -0.133], support: [-0.02, -0.052, -0.123], rake: 26 },
+      muzzleAt: [0, 0.053, 0.17],
       fallback: 'weapons/revolver.glb',
       sound: 'fire.revolver',
     },

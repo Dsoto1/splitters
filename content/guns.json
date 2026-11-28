@@ -194,13 +194,6 @@
       "length": 0.85
     },
     {
-      "out": "guns/shotgun.glb",
-      "pack": "styloo-guns",
-      "file": "shotgun.glb",
-      "forward": "+x",
-      "length": 0.95
-    },
-    {
       "out": "guns/rocket_launcher.glb",
       "pack": "styloo-guns",
       "file": "rocketlaucher.glb",
@@ -269,23 +262,6 @@
       "label": "Tommy Gun (Meshy Community download, 2026-10-29)",
       "forward": "-x",
       "length": 0.86,
-      "triangles": 14000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024
-    },
-    {
-      "out": "guns/gatling_gun.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_Rotary_Gatling_Gun_1029225655_texture.glb",
-      "label": "Rotary Gatling Gun (Meshy Community download, 2026-10-29)",
-      "forward": "-x",
-      "length": 0.9,
       "triangles": 14000,
       "maxError": 0.03,
       "surface": "rebake",
@@ -629,87 +605,6 @@
       ]
     },
     {
-      "out": "guns/suomi_kp.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "Suomi_KP/Suomi_KP.fbx",
-      "label": "Suomi KP (3DModelsCC0 Guns & Explosives): the Submachine Gun",
-      "maps": {
-        "base": "Suomi_KP_Base_Color.png",
-        "normal": "Suomi_KP_Normal.png",
-        "metallic": "Suomi_KP_Metallic.png",
-        "roughness": "Suomi_KP_Roughness.png"
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 0.87,
-      "budget": "hero",
-      "lod": [
-        0.25,
-        12
-      ]
-    },
-    {
-      "out": "guns/ak47_cc0.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "AK-47/AK47.fbx",
-      "label": "AK-47 (3DModelsCC0 Guns & Explosives): the Assault Rifle",
-      "maps": {
-        "base": "AK47_Base_Color.png",
-        "normal": "AK47_Normal_DirectX.png",
-        "metallic": "AK47_Metallic.png",
-        "roughness": "AK47_Roughness.png"
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 0.88
-    },
-    {
-      "out": "guns/m4a1.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "M4A1/M4A1.fbx",
-      "label": "M4A1 (3DModelsCC0 Guns & Explosives): the Burst Rifle",
-      "maps": {
-        "base": "M4A1_Base_Color.png",
-        "normal": "M4A1_Normal.png",
-        "metallic": "M4A1_Metallic.png",
-        "roughness": "M4A1_Roughness.png"
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 0.86,
-      "budget": "hero",
-      "lod": [
-        0.25,
-        12
-      ]
-    },
-    {
-      "out": "guns/makarov.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "Pistol_MK/Makarov.fbx",
-      "label": "Makarov (3DModelsCC0 Guns & Explosives): the Pistol, its magazine put back in the grip",
-      "maps": {
-        "base": "Makarov_Base_Color.png",
-        "normal": "Makarov_Normal.png",
-        "metallic": "Makarov_Metallic.png",
-        "roughness": "Makarov_Roughness.png"
-      },
-      "move": {
-        "Magazine": [
-          0,
-          0,
-          -9.15
-        ]
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 0.2
-    },
-    {
       "out": "guns/flare_gun.glb",
       "pack": "3dmodelscc0-guns-explosives",
       "download": "Flare_Gun",
@@ -725,38 +620,6 @@
       "held": true,
       "forward": "-z",
       "length": 0.24
-    },
-    {
-      "out": "guns/grease_gun.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "GreaseGun/Grease_Gun.fbx",
-      "label": "Grease Gun (3DModelsCC0 Guns & Explosives): the Machine Pistol",
-      "maps": {
-        "base": "Grease_Gun_Base_Color.png",
-        "normal": "Grease_Gun_Normal_DirectX.png",
-        "metallic": "Grease_Gun_Metallic.png",
-        "roughness": "Grease_Gun_Roughness.png"
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 0.5
-    },
-    {
-      "out": "guns/shotgun_cc0.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "Shotgun/Shotgun.fbx",
-      "label": "Shotgun (3DModelsCC0 Guns & Explosives): the Shotgun",
-      "maps": {
-        "base": "Shotgun_Base_Color.png",
-        "normal": "Shotgun_Normal_DirectX.png",
-        "metallic": "Shotgun_Metallic.png",
-        "roughness": "Shotgun_Roughness.png"
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 1.05
     },
     {
       "out": "guns/scoped_rifle.glb",
@@ -836,60 +699,6 @@
       "forward": "+z",
       "height": 0.21,
       "normalSize": 256
-    },
-    {
-      "out": "guns/bk220.glb",
-      "pack": "meshy-community-drive-1106c",
-      "glb": "Meshy_AI_BK_220_1106083440_texture.glb",
-      "label": "BK 220 (Meshy Community download, 2026-11-06): the Hand Cannon",
-      "forward": "-x",
-      "length": 0.26,
-      "triangles": 8000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
-    },
-    {
-      "out": "guns/revolver_rustique.glb",
-      "pack": "meshy-community-drive-1106c",
-      "glb": "Meshy_AI_Revolver_Rustique_1106214209_texture.glb",
-      "label": "Revolver Rustique (Meshy Community download, 2026-11-06): the Heavy Revolver",
-      "forward": "-x",
-      "length": 0.29,
-      "triangles": 8000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
-    },
-    {
-      "out": "guns/flintlock.glb",
-      "pack": "meshy-community-drive-1106c",
-      "glb": "Meshy_AI__1106214221_texture.glb",
-      "label": "Gilded flintlock pistol (Meshy Community download, unnamed, 2026-11-06): the Gilded Pistol",
-      "forward": "-x",
-      "length": 0.34,
-      "triangles": 9000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
     },
     {
       "out": "guns/plasma_defender.glb",
@@ -1838,6 +1647,258 @@
       "maxError": 0.02,
       "surface": "rebake",
       "pbr": true
+    },
+    {
+      "out": "guns/ak47_modular.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_ak47_modular_assault_rifle_3d_20261127_image-to-3d-texture.glb",
+      "label": "AK-47 Modular Assault Rifle: the Assault Rifle (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.88,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/mp5k_pdw.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_mp5k_modular_pdw_3d_20261127_image-to-3d-texture.glb",
+      "label": "MP5K Style PDW: the Submachine Gun (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.37,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/glock19.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_glock_19_modular_sidearm_3d_20261127_image-to-3d-texture.glb",
+      "label": "Glock 19 Modular Sidearm: the Pistol (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.2,
+      "triangles": 9000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/vietnam_shotgun.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_vietnam_tactical_shotgun_3d_20261127_image-to-3d-texture.glb",
+      "label": "Vietnam Tactical Breaching Shotgun: the Shotgun (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 1.0,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/desert_storm_rifle.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_desert_storm_assault_rifle_3d_20261127_image-to-3d-texture.glb",
+      "label": "Desert Storm Assault Rifle: the Burst Rifle (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.86,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/buffalo_cannon.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_western_buffalo_cannon_3d_20261127_image-to-3d-texture.glb",
+      "label": "Western Buffalo Break-Action Cannon: the Sawed-Off (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.8,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/obsidian_pump.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_mesoamerican_shotgun_3d_20261127_image-to-3d-texture.glb",
+      "label": "Mesoamerican Obsidian Pump Shotgun: the Auto Shotgun (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.98,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/western_revolver.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_western_classic_revolver_3d_20261127_image-to-3d-texture.glb",
+      "label": "Western Classic 6-Shot Revolver: the Heavy Revolver (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.34,
+      "triangles": 9000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/desert_eagle.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_desert_eagle_modular_cannon_3d_20261127_image-to-3d-texture.glb",
+      "label": "Desert Eagle Modular Hand Cannon: the Hand Cannon (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.27,
+      "triangles": 9000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/machine_pistol_mod.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_modular_machine_pistol_3d_20261127_image-to-3d-texture.glb",
+      "label": "Modular Machine Pistol: the Machine Pistol (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.32,
+      "triangles": 10000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/gold_ppk.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_gold_ppk_luxury_variant_3d_20261127_image-to-3d-texture.glb",
+      "label": "Gold Walther PPK: the Gilded Pistol (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.18,
+      "triangles": 9000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/rotary_minigun.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_tactical_rotary_minigun_3d_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Rotary Minigun: the Spin Gun (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 1.0,
+      "triangles": 14000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 60000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
     }
   ]
 }

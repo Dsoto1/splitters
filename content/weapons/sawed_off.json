@@ -24,14 +24,18 @@
   "recoil": { "bloom": 0, "maxBloom": 0, "recover": 0 },
   "akimbo": true,
   "view": {
-    "model": "weapons/sawed_off.glb",
+    "model": "guns/buffalo_cannon.glb",
+    "muzzleAt": [0, 0.063, 0.4],
+    "held": { "medium": "guns/buffalo_cannon.medium.glb", "high": "guns/buffalo_cannon.high.glb" },
+    "fallback": "weapons/sawed_off.glb",
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#ffb38a",
-    "hold": { "style": "long", "grip": [0, -0.06, -0.165], "support": [0, -0.04, 0.066], "shoulder": [0, 0, -0.275] },
+    "hold": { "style": "long", "grip": [0, -0.008, -0.126], "support": [0, 0.017, 0.143], "shoulder": [0, -0.034, -0.396] },
     "sound": "fire.shotgun.b",
     "reloadSound": "reload.end.b"
   },
   "notes": {
+    "model": "The owner's own Western Buffalo Break-Action Cannon (Meshy, owned, 2026-11-27; content/guns.json; owner: sawed-off style), sharper copies in your own hands at Medium and High; it replaced the kit sawed-off, now the fallback.",
     "range": "Best within 8 m: full damage, 1 body blast. Down to 25 % (3 blasts) by 28 m; reaches 25 m. Body shots count every pellet on the body (hitscan pellets: by distance).",
     "group": "The extended arsenal: every one fires differently. 4: shotguns."
   }

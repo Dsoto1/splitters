@@ -32,6 +32,7 @@
   },
   "weapons": {
     "core.pistol": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot"] },
+    "core.gilded_pistol": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot"] },
     "core.revolver": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot"] },
     "core.hand_cannon": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot"] },
     "core.pulse_pistol": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot"] },
@@ -43,7 +44,7 @@
     "core.freeze_ray": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.goo_gun": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo"] },
     "core.rifle": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "reddot", "holo", "x2"] },
-    "core.burst_rifle": { "hasSight": "irons", "default": "irons", "allowed": ["irons", "x2"] },
+    "core.burst_rifle": { "hasSight": "irons", "default": "reddot", "allowed": ["reddot", "irons", "holo", "x2"] },
     "core.amarillo": {
       "hasSight": "irons",
       "default": "irons",
@@ -114,9 +115,8 @@
     "core.heart_taser": "fires a slime that finds a hurt teammate by itself: no sight to line up",
     "core.oil_slicker": "sprays a lobbed stream: a sight on the bore would point over where it lands",
     "core.flamethrower": "a stream weapon, aimed by its flame",
-    "core.lmg": "a rotary gun fired from the hip: its top is a housing and a crank",
+    "core.lmg": "a rotary gun fired from the hip: its top rail rides over the barrels' housing, well above the bore",
     "core.flare_gun": "a flare pistol, drawn broken open: fired from the hand",
-    "core.gilded_pistol": "a flintlock: the cock stands over the barrel where a sight would go, and a modern optic does not belong on it",
     "core.hornet": "an organic sci-fi shell whose mandibles block the top: fired from the hand, its stingers home"
   }
 }
