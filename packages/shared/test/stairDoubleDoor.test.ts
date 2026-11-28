@@ -9,6 +9,7 @@ import {
   buildMapGeometry,
   emptyInput,
   getKitFamily,
+  getProp,
   initPhysics,
   loadMap,
   mapTerrainMesh,
@@ -55,7 +56,8 @@ describe("the Stair End Bay (3 floors)'s Double door (St. John's skyway, step 7c
     const right = getKitFamily('kit.door.oak_slim_open')!;
     const left = getKitFamily('kit.door.oak_slim_open_left')!;
     expect(left.passage).toEqual(right.passage);
-    expect(left.size).toEqual(right.size);
+    expect(getProp('kit.door.oak_slim_open_left')?.size).toEqual(getProp('kit.door.oak_slim_open')?.size);
+    expect(left.surface).toBe(right.surface);
   });
 
   it('the door is 3 m wide in the outer wall with standing room under the stair beside it; the stair keeps its steps', () => {
