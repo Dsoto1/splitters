@@ -9,16 +9,17 @@ import { HANDS_UNDER_AIM_DEG, SIGHT_TOLERANCE_DEG, STOCK_AHEAD, UNFITTED_OVER, a
  * The weapons that aim down their own drawn sights, by name. A new gun joins this list when the sight fit finds its
  * sights (tools/content/sight-fit.mjs), after a look at it on the sight sheet (`?mode=sights`).
  */
-// The Flare Gun, Grenade Launcher and Swarm Launcher's new models have sights of their own: fitted (weapon replacements batch 3).
-const FITTED = ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flare_gun', 'core.flintlock_pistol', 'core.freeze_ray', 'core.gilded_pistol', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.launcher', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.swarm', 'core.woodland_smg'];
+// The Flare Gun, Grenade Launcher, Rocket Launcher and Swarm Launcher's new models have sights of their own: fitted (weapon replacements batch 3).
+const FITTED = ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flare_gun', 'core.flintlock_pistol', 'core.freeze_ray', 'core.gilded_pistol', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.launcher', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.rockets', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.swarm', 'core.woodland_smg'];
 /** Of those, the ones whose fit was corrected by hand (content/sight-fit.json `corrections`, each with its reason). */
 // Hand corrections (content/sight-fit.json): the obsidian pump's leaning front post, the Glock's nubs on its slide rail (2026-11-28).
-const CORRECTED: string[] = ['core.auto_shotgun', 'core.pistol'];
+// The heavy rocket launcher's rail line (2026-11-28, batch 3).
+const CORRECTED: string[] = ['core.auto_shotgun', 'core.pistol', 'core.rockets'];
 /**
  * The hand-held guns that aim without a fit, by name: their models have no usable sights (content/sight-fit.json
  * `excluded`, each with its reason), so they keep the placement every gun had before.
  */
-const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.laser_rifle', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.rockets', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'];
+const EXCLUDED_BY_HAND = ['core.arc_caster', 'core.arena_disc', 'core.blast_rockets', 'core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.disc_launcher', 'core.flak', 'core.flamethrower', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.laser_rifle', 'core.lmg', 'core.oil_slicker', 'core.plasma', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'];
 /** The rest never aim down sights in the hand (mounted, melee and tools), or aim through a scope or an optic. */
 const BY_NATURE = ['core.baseball_bat', 'core.battle_axe', 'core.battle_rifle', 'core.builder', 'core.crossbow', 'core.grapple', 'core.katana', 'core.knife', 'core.lever_action', 'core.marksman', 'core.medi_beam', 'core.medkit', 'core.mount_mg', 'core.mount_rockets', 'core.nova6', 'core.railgun', 'core.scimitar', 'core.sentry_arc', 'core.sentry_gun', 'core.sniper', 'core.space_shield', 'core.speeder_guns', 'core.spear', 'core.tank_cannon'];
 

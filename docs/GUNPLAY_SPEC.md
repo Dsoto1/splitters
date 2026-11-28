@@ -890,11 +890,11 @@ are as they were. At the hip nothing changes.
 - **No fit** (`SIGHT_EXCLUDED`, each with its reason): guns whose models have no usable sights keep the placement they
   had: the flat-topped kit guns (Arc Caster, Bubble Blaster, Flak Cannon, Laser Rifle, Oil Slicker, Flamethrower,
   Swarm Launcher, Disc Launcher, Arena Disc), the tube launchers (Rocket Launcher, Guided Rocket, Blast Rockets,
-  Grenade Launcher), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (an open
-  sight box, no irons), the Flare Gun (drawn broken open) and the Spear (the Gilded Pistol until its Gold PPK of 2026-11-28, fitted on its irons).
+  Grenade Launcher until its revolving launcher of 2026-11-28, fitted on its flip-ups), the Spin Gun (held at the hip), the Sawed-Off, the Singularity Cannon, the Plasma Rifle (a
+  holographic sight on its rail since 2026-11-28), the Flare Gun (fitted on its notch and post since its new model, 2026-11-28) and the Spear (the Gilded Pistol until its Gold PPK of 2026-11-28, fitted on its irons; the Swarm Launcher since its new model, fitted on its nubs).
   Eight of them carry an optic since step 2 (below); the rest keep that placement.
-  Scopes (`view.zoomFov`: Marksman Rifle, Precision Rifle, Railgun) hide the gun behind the scope overlay, the Battle
-  Rifle brings its optic's eyepiece to the eye (`view.optic`), and melee weapons, tools and mounted guns do not aim.
+  Scopes (`view.zoomFov`: Marksman Rifle, Precision Rifle, Railgun, Lever-Action, Crossbow) hide the gun behind the scope overlay, the Battle
+  Rifle brings its optic's eyepiece to the eye (`view.optic`: since 2026-11-28 the eyepiece of the scope model on its rail), and melee weapons, tools and mounted guns do not aim.
 - **The audit** is the sight sheet, `?mode=sights` (client `tools/sightSheet.ts`): each weapon from the eye as the game
   places it, the crosshair's centre marked, a target 15 m off; ←/→ step through the weapons, A toggles the aim, B the
   placement from before the fit. `window.__sights.audit()` casts rays at the gun as drawn and reports how far its
@@ -932,10 +932,22 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 |---|---|---|---|
 | Iron sights (`irons`) | none: the front sight is the aim | Pistol, Heavy Revolver, Hand Cannon, Pulse Pistol, Machine Pistol, SMG, Nailgun, Shotgun, Auto Shotgun, Freeze Ray, Goo Gun, Assault Rifle, Woodland SMG (since 2026-11-27), Gilded Pistol (its Gold PPK, since 2026-11-28) | 1.52× |
 | Red dot (`reddot`) | a dot on its glass | Laser Rifle, Bubble Blaster, Sawed-Off, Singularity Cannon (its new model's top rail, since 2026-11-27), Burst Rifle (its new model's flat top, since 2026-11-28: its low flip-up sights put the eye at the stock's butt) | 1.52× |
-| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (its model's own sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
-| 2-3× optic (`scope`) | a chevron with holdover ticks | Battle Rifle (3.5×, the model's tube), Marksman Rifle (2.19×, the scope overlay) | as before |
-| Sniper scope (`sniper`) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
-| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Flare Gun, Spear | 1.52× |
+| Holographic (`holo`) | a ring with four ticks and a dot, on its glass | Flak Cannon, Disc Launcher, Arena Disc, Plasma Rifle (on its new model's rail since 2026-11-28; was in its old model's sight box), Arc Caster (its model's own scope tube, since 2026-11-27) | 1.52× |
+| 2-3× optic (`scope`) | a chevron with holdover ticks | Nova 6 (its model's own scope) | as before |
+| Sniper scope (`sniper`) | a fine crosshair with holdover marks | none since 2026-11-28 (kept for a gun with a scope of its own) | |
+| Rifle scope (`rifle_scope`, the owner's Scope model on the rail) | a chevron with holdover ticks | Battle Rifle (3.5×, looked through: its eyepiece), Marksman Rifle (2.19×, the scope overlay) | as before |
+| Long-range scope (`long_scope`, the same Scope model) | a fine crosshair with holdover marks | Sniper Rifle (3.95×, 8.9× on the wheel), Railgun (3.13×) | as before |
+| Brass Sentinel scope (`sentinel`, the owner's Brass Sentinel Scope model) | a chevron with holdover ticks | Lever-Action (2.59×), Crossbow (2.19×), both the scope overlay | as before |
+| none | the HUD's aim dot, as before | the Rocket Launcher, Guided Rocket, Blast Rockets, Grenade Launcher, Swarm Launcher, Oil Slicker, Flamethrower, Spin Gun, Flare Gun, Spear (the Rocket Launcher, Grenade Launcher, Swarm Launcher and Flare Gun down their new models' own sights since 2026-11-28, the dot kept) | 1.52× |
+
+- **A scope of our own** (`scopeModel` on a `model` or `overlay` kind; weapon replacements batch 3, 2026-11-28): the
+  scoped guns whose new models have no scope (the Battle Rifle's SCAR, the Marksman's DMR, the Sniper Rifle's Steyr, the
+  Railgun's plasma sniper, the Lever-Action's Civil War repeater, the Crossbow's arbalest) carry one of the owner's scope
+  models, stood on the gun's rail: its `foot` (the middle of its base's underside) on the weapon's hand-set `mount`
+  (`at`, `scale`, read off the gun's rail), drawn for everyone (client `opticHousing.ts`, your own copy from its sharper
+  `held` model), its zoom and its aim the gun's own as before. Looked through (the Battle Rifle), the weapon's
+  `view.optic` is that scope's eyepiece where it stands (`eye`, `radius` at scale 1; `tools/content/optics.mjs` checks
+  them). Another kind swaps in by changing the gun's `default` and `allowed`.
 
 - **A model's own sight** (`window`): the glass and its mark go in the model's opening, a clip hides what lies behind it
   while aimed; `round` for a round eyepiece (the glass and the clip a disc), `lens` for a closed sight whose own glass and
@@ -945,7 +957,7 @@ changed**: each got the optic that matches the zoom it had (the sights' 0.72 of 
 - **One sight at a time** (owner, 2026-11-27, "two sights stacked": the Woodland SMG's red dot on a riser over its own
   rear sight, the Arc Caster's holographic box on top of its own scope tube, "looks very odd"). Every gun in `weapons`
   says what its model has of its own, `hasSight`: `"optic"` (a scope, a red dot or holographic sight, or a sight box:
-  the Arc Caster, Plasma Rifle, Desert Carbine, Twin-Shot Rifle, Blaster X-42 and the scoped guns), `"irons"` (iron
+  the Arc Caster, Desert Carbine, Twin-Shot Rifle, Blaster X-42 and the Nova 6; since 2026-11-28 the other scoped guns' new models have none of their own), `"irons"` (iron
   sights only) or false (none: Bubble Blaster, Sawed-Off, Flak Cannon, Disc Launcher, Arena Disc, Laser Rifle), each
   read off the model on the sight sheet (`__sights.inspect('rear' | 'side' | 'top')` shows the shown gun from outside).
   A gun with an optic of its own aims down it (its `window`, its own tube or its scope) and `tools/content/optics.mjs`
@@ -1051,7 +1063,7 @@ changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/sco
   few frames before the dark arrived (over pale ground, a bright flash), and leaving a scope cut from black to the
   scene in one frame. Coming up to the eye is shown by the eye box opening instead.
 - **The glint.** Other players see a small, soft, steady point of light at the scope of a player who aims a
-  sniper-kind optic (Sniper Rifle, Railgun) their way: within 14° between that player's aim and the line to your eye
+  sniper's scope (its fine crosshair: the Sniper Rifle and Railgun's long-range scope) their way: within 14° between that player's aim and the line to your eye
   (full within 4°), from 18 m (full from 30 m; nearer you see the gun), down to 0.55 of its level by 320 m. It is one
   square of four vertices facing the camera, its soft round worked out in its shader, drawn in the scene with the
   scene's own depth, so walls, hills and crates hide it for nothing; no fog, no depth written. It spans the same angle
@@ -1088,8 +1100,8 @@ changed (damage, spread, recoil, timing), nor the sim or the protocol; `game/sco
 Tests: `packages/client/test/scopeFeel.test.ts` (the numbers above, the breath's times, the easing, the shadow's
 limits, the glint's cone); `tools/content/test/optics.test.mjs` (the table's checks).
 
-**Left for later:** the Marksman and Sniper scopes are still the full-screen overlay with the gun hidden; their models
-carry scope tubes that the Battle Rifle's frame (`opticView.ts`) could look through instead. The snapshot bit above.
+**Left for later:** the Marksman and Sniper scopes are still the full-screen overlay with the gun hidden; the scope models
+on their rails could be looked through in the Battle Rifle's frame (`opticView.ts`) instead. The snapshot bit above.
 
 
 ### Optic choice
@@ -1115,8 +1127,9 @@ changes is what you see: the sight picture, the reticle and, with the 2x optic, 
 | Desert Carbine, Twin-Shot Rifle, Blaster X-42 | red dot, holographic (in the model's own sight) |
 | Arc Caster | holographic, red dot (in the model's own scope tube, since 2026-11-27) |
 | Flak Cannon, Disc Launcher, Arena Disc | holographic, red dot |
-| none: Sawed-Off (red dot), Plasma Rifle (its own sight box), Flintlock Pistol (irons), Woodland SMG (irons, since 2026-11-27: a housing stood on its rear sight) | |
-| none: snipers and every gun with a scope of its own (Battle Rifle, Marksman, Nova 6, Lever-Action, Crossbow, Sniper Rifle, Railgun) | they keep their scope |
+| Plasma Rifle (since its new model, 2026-11-28) | holographic, red dot |
+| none: Sawed-Off (red dot), Flintlock Pistol (irons), Woodland SMG (irons, since 2026-11-27: a housing stood on its rear sight) | |
+| none: snipers and every gun with a scope (Battle Rifle, Marksman, Nova 6, Lever-Action, Crossbow, Sniper Rifle, Railgun) | they keep their scope |
 
 - **The 2x optic** (kind `x2`, housing `magtube`, `power` 2: twice the hip view, a little more than the sights' 1.52x)
   is a tube built in code on the gun's top (`game/opticHousing.ts` `scopeParts`: a foot and two rings, the tube, an

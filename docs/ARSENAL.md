@@ -218,6 +218,43 @@ The owner-approved candidates 1-6 of docs/GUNPLAY_AUDIT.md (its "Pass 2" section
 - **Lever action: not made.** The Frontier Rifle is a scoped modern rifle, not a lever gun, and no lever-action model
   is in the repo or the Drive.
 
+## Weapon replacements of 2026-11-28 (batch 3)
+
+Eleven more of the owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows) and two of
+the owner's scope models, built by `tools/content/prepare-guns.mjs` in pack `meshy-owned-drive-1127`. Every weapon keeps
+its rules, numbers, sounds and sets; its model, held copies (`heldTriangles`, `heldMaxError` 0.004, 1024/2048 px), hold
+and muzzle changed. The models they replaced are no longer built (the kit models stay the fallbacks).
+
+| Download | Now the model of | Build (everyone / held) | Sight |
+|---|---|---|---|
+| Desert Storm SCAR-Type Rifle | Battle Rifle | 12k / 50k, 0.96 m | the owner's Scope on its top rail (`rifle_scope`), looked through as before (3.5x): its eyepiece the scope's, the scope far enough forward that the rear flip-up stays out of the lens |
+| Semi-Automatic Precision DMR | Marksman Rifle | 12k / 50k, 1.05 m | the Scope on its rail (`rifle_scope`), the full-screen scope as before (2.19x, 5.04x on the wheel) |
+| Steyr SSG 69 Bolt-Action Sniper | Sniper Rifle | 12k / 50k, 1.14 m | the Scope at 1.1 on its receiver rail (`long_scope`: the fine crosshair, glint), the full-screen scope as before |
+| Cyan Charge Plasma Sniper Rifle | Railgun | 12k / 50k, 1.05 m, its cyan cells lit (`glow`) | the Scope on its flat top (`long_scope`), the full-screen scope as before |
+| Civil War Lever Repeater | Lever-Action Rifle | 12k / 50k, 1.0 m | the owner's Brass Sentinel Scope at 0.7 on its top rail (`sentinel`), the full-screen scope as before |
+| Medieval Repeating Arbalest | Crossbow | 12k / 50k, 0.95 m (its bow 0.68 m across) | the Brass Sentinel at 0.7 on its rail (`sentinel`), the full-screen scope as before |
+| Orange Automatic Plasma Rifle | Plasma Rifle | 12k / 50k, 0.85 m, its orange panels lit (`glow`) | a holographic sight on its top rail (the tool's mount), a red dot offered; was the old model's own sight box |
+| Tactical Flare Gun | Flare Gun, and the Airstrike Flare in your hands | 9k / 40k, 0.30 m, grip raked 24° | its notch and post, fitted (no optic: the HUD's dot kept) |
+| 40mm Revolving Cylinder Grenade Launcher | Grenade Launcher | 12k / 50k, 0.85 m | its flip-ups, fitted (no optic) |
+| Heavy Anti-Armor Rocket Launcher | Rocket Launcher | 12k / 50k, 1.1 m | the nubs on its top rail, fitted (a hand correction: the line taken over the grip, so the eye sits ahead of the wide rear flare, which filled the aimed view over the tube) |
+| Micro-Missile Swarm Launcher | Swarm Launcher | 14k / 60k, 0.95 m, its cyan lights lit (`glow`) | its nubs, fitted (no optic) |
+| Scope | the rifle scope and long-range scope | 5k / 24k, 0.32 m | — |
+| Brass Sentinel Scope | the Brass Sentinel scope | 6k / 30k, 0.30 m | — |
+
+**Scopes of our own** (GUNPLAY_SPEC §15, "A scope of our own"): an optic kind in content/optics.json may carry a
+`scopeModel` (the model, its base's middle `foot` and, looked through, its eyepiece `eye` and `radius` at scale 1); each
+gun that carries it gives a hand-set `mount` (`at` on its rail, `scale`), and the scope is drawn there for everyone, your
+own copy from its sharper model. A different scope is a different kind: a gun swaps by its `default` and `allowed`.
+
+**Not done in this batch:** oil_slicker, disc_launcher, arena_disc, bubble_blaster, goo_gun, flamethrower, freeze_ray,
+knife, battle_axe, spear, the frag and smoke grenades and the projectile models (40mm, micro rocket, RPG round): left for a
+later batch (HANDOFF).
+
+**Pictures** (lane B's scratchpad `weapons3/`): the raw downloads (`raw/`), gridded side and top views (`grid/`, the
+scoped guns with their scope in place: `*_scoped.png`), before/after inspect views and first person hip and aimed and
+third person (`before/`, `after/`), the after side views on one sheet (`sheet.png`) and the grip sheets (`grips-before/`,
+`grips-after/`).
+
 ## Weapon replacements of 2026-11-28 (batch 2)
 
 Twelve more of the owner's own Meshy models (Meshy, owned; docs/WEAPONS_INTAKE_1127.md, the "Replace" rows), built by

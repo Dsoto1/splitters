@@ -1444,7 +1444,8 @@ export class GameSession {
     for (const p of poses) {
       if (p.slot === this.slot || p.slot >= NPC_ID_BASE || !p.scoped || !p.alive || riders?.has(p.slot)) continue;
       const def = weaponByCode(p.weapon);
-      if (!def || opticFor(def, p.slot)?.id !== 'sniper') continue;
+      // (A sniper's scope: the `sniper` kind, or a scope of our own with its fine crosshair, the Sniper Rifle's and Railgun's.)
+      if (!def || opticFor(def, p.slot)?.kind.reticle !== 'fine') continue;
       sources.push({ slot: p.slot, eye: { x: p.x, y: p.y + STANCES[(p.stance ?? 0) as 0 | 1 | 2].eye * this.sizeOf(p.slot), z: p.z }, yaw: p.yaw, pitch: p.pitch });
     }
     this.view.glints.update(dt, this.view.cameraPosition(), this.fov, sources);
