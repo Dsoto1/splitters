@@ -1,6 +1,6 @@
 // The daily flake list (tools/ci/flakes.mjs): reading job logs, counting, the page.
 import { describe, expect, it } from 'vitest';
-import { failedChecks, flakyFlows, renderFlakes, summarize } from '../flakes.mjs';
+import { failedChecks, flakyFlows, keptNotes, renderFlakes, summarize } from '../flakes.mjs';
 
 const log = (...lines) => lines.map((l) => `2026-11-18T03:02:00.9221546Z ${l}`).join('\n');
 
@@ -34,5 +34,14 @@ describe('the list', () => {
     expect(md).toMatch(/^# Flaky checks/);
     expect(md).toMatch(/\| e2e a \| 1 \| retry 1 \| \[2026-11-17\]\(u\/2026-11-17T01:00:00Z\) check\/x \| x \\\| y \|/);
     expect(renderFlakes([], { generated: 'g', days: 7, runs: 0 })).toMatch(/Nothing flaky/);
+  });
+  it('keeps the hand-written Root-caused section when the list is written again', () => {
+    const notes = keptNotes('# Flaky checks\n\n| a |\n\n## Root-caused\n\n- **e2e editor** (2026-11-28): why.\n');
+    expect(notes).toBe('## Root-caused\n\n- **e2e editor** (2026-11-28): why.\n');
+    expect(keptNotes('# Flaky checks\n')).toBe('');
+    const md = renderFlakes(summarize([ev('e2e a', 'retry', '2026-11-17T01:00:00Z')]), { generated: 'g', days: 7, runs: 1, notes });
+    expect(md.endsWith('|\n\n## Root-caused\n\n- **e2e editor** (2026-11-28): why.\n')).toBe(true);
+    expect(keptNotes(md)).toBe(notes);
+    expect(renderFlakes([], { generated: 'g', days: 7, runs: 0, notes })).toMatch(/Nothing flaky in this window\.\n\n## Root-caused/);
   });
 });
