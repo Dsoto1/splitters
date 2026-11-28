@@ -8,6 +8,7 @@ made only on a commit that passed CI on a check branch.
 
 ## Unreleased
 - **The Armory: every weapon on one page.** Main menu → Armory lists every weapon you can hold by category (like Character Select: search, favourites, controller and touch), shows the one you pick large and turnable, with its role, stats, sights (pick its optic for your loadout) and fire sound, and **Try it in the range** drops you on the Practice range holding it.
+- **Characters stand straighter.** Standing still, every character's knees sit over its feet and its toes point nearly ahead (no more bowed legs and splayed ankles); the shooting elbow hangs a little lower; the hand under a rifle's or shotgun's handguard turns along the forearm instead of wringing the wrist (first and third person).
 - **St. Jasper's: the skyway goes through.** The clock tower stands half a tile further out into the court, and the skyway over the carriageway now runs on behind it into a back hall that meets the tower's stair and Welles's halls on both upper floors; the extra door under the skyway is gone. MapMaker has the new set piece **Clock Tower, forward** and the Carriageway's East side **Open**.
 - **MapMaker's team Layout chips: just the common ones.** 1v1, 2v2, 4v4, 8v8, 2v2v2, 3v3v3, 2v2v2v2 and 4v4v4v4; any other mix is set with the team steppers, and a map saved with one shows it as its own lit chip.
 - **MapMaker shows which walls break.** Breakable walls are hatched in orange, with a dashed outline, in MapMaker's 3D view (View → Breakable walls turns it off); never in play or Test.
