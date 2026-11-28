@@ -371,9 +371,10 @@ export class MapProperties {
     const head = document.createElement('h3');
     head.textContent = 'Combat rules';
     el.append(head);
-    const own = mapCombatRules(this.app.doc);
     const now = combatRulesOf({}, this.app.doc);
+    // (Read the document at the click, not as drawn: a second pick before the panel redraws keeps the first.)
     const set = <K extends keyof CombatRules>(k: K, v: CombatRules[K]) => {
+      const own = mapCombatRules(this.app.doc);
       const after: CombatRules = { ...own };
       if (v === STANDARD_COMBAT[k]) delete after[k];
       else after[k] = v;
