@@ -2761,6 +2761,22 @@ Teach bots:
 
 Expose safe combat-rule controls to MapMaker.
 
+**As built (2026-11-28, `packages/shared/src/sim/combatRules.ts`, map format v56).** Six match-wide knobs, never per
+weapon, so every gun keeps its identity: **headshots** off (a head hit counts as the body, multiple 1; no headshot mark
+in the killfeed), normal (each weapon's `head`), high (its head bonus doubled: 1 + (head − 1) × 2); **ammo** normal,
+unlimited (the held gun's reserve stays full) or scarce (half, rounded up, of the spawn reserve and every weapon or
+ammo pickup; drops keep what they hold); **reloads** off (the magazine feeds straight from the reserve before and after
+every shot, a round chambered, nothing reloads; a melee weapon's barrel still loads); **bullets through walls** off
+(§8 penetration skipped; glass still breaks and still costs a little); **damage scale** (everything a player, bot or NPC
+deals to a combatant; falls and hazards untouched) and **health scale** (players' and bots' effective health, as
+Lethality's: damage they take is divided by it, so the HUD and heals keep their meaning), each 0.5×, 1×, 1.5× or 2×.
+A map saves its defaults (`combatRules`, MapMaker's Map properties → Combat rules); the host's Match Setup → Rules
+change each (MatchRules, the same keys; kept on map travel); unset plays the map's, else the standard
+(`combatRulesOf`). The host's sim reads them once per match (`Match.combat`); the client resolves the same for
+prediction (feeding, no reload) and the Practice Target's gun report (its damage comes from the host with the rules in
+it; hits to down at the health scale). Bots need nothing of their own: a fed magazine and a full reserve never send
+them to reload or to an ammo box. Not yet: rows in the dedicated server's rules list (serverRules.ts).
+
 ## Phase G6 — Exotic Arsenal
 
 Only after the conventional gunplay foundation is excellent should production expand aggressively into strange weapons/ammunition.
