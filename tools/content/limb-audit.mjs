@@ -1,0 +1,109 @@
+// Limb audit (lane A, 2026-11-27; docs/CHARACTER_LIMBS.md): every pickable character in Character Select's pose
+// (standing, holding the rifle), measured by the game's own renderer (client tools/gripSheet.ts `__grips.limbs()`,
+// tools/limbProbe.ts) and scored by tools/content/limbs.mjs: knee and ankle bow, sole roll, the drawn shin against its
+// bones, and the elbows' direction. Writes the table, worst first, into docs/CHARACTER_LIMBS.md (between its
+// "limb-table" marks) and the raw numbers to <out>/limbs.json.
+//
+//   pnpm build && pnpm --filter @tiletrigger/client exec vite preview --port 4860
+//   node tools/content/limb-audit.mjs http://localhost:4860 <out dir>
+//   node tools/content/limb-audit.mjs --table <out dir>      the table again from <out dir>/limbs.json
+//
+// ONLY=<look ids> for some; PICTURES=1 also saves each one front and side (whole body) and front and support side
+// (upper body) as <out>/pics/<look>_{front,side,upper,support}.png; TUNE='{"elbowOut":0.1}' measures with that
+// GripTune on every look (the elbow pole's before/after); LEGS_REST=1 holds the legs at their rest rotations after
+// the clips (the clips' leg pose off: what is left is the body's own); CHROMIUM=<path> uses that browser build.
+// FIX=0 measures with the limbs fix off (`__grips.limbFix(false)`: the clips' standing legs, the old elbow pole, no
+// forearm twist share): the before of docs/CHARACTER_LIMBS.md's "After". WRISTS=<gun ids> also measures each look's
+// wrists holding those guns in first person, arms-only and full body (`__grips.wrists()`: bend and twist off rest).
+import { mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { tmpdir } from 'node:os';
+import { dirname, join, relative, resolve } from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { chromium } from 'playwright';
+import { limbMeasures, limbTable } from './limbs.mjs';
+
+const ROOT = resolve(dirname(fileURLToPath(import.meta.url)), '../..');
+const DOC = join(ROOT, 'docs/CHARACTER_LIMBS.md');
+const writeTable = (rows) => writeFileSync(DOC, readFileSync(DOC, 'utf8').replace(/<!-- limb-table -->[\s\S]*<!-- \/limb-table -->/, `<!-- limb-table -->\n${limbTable(rows)}\n<!-- /limb-table -->`));
+// `--table <dir>`: rewrite the doc's table from a run's <dir>/limbs.json, without measuring again.
+if (process.argv[2] === '--table') {
+  writeTable(JSON.parse(readFileSync(join(resolve(process.argv[3]), 'limbs.json'), 'utf8')));
+  process.exit(0);
+}
+const base = process.argv[2] ?? 'http://localhost:4860';
+const out = resolve(process.argv[3] ?? join(tmpdir(), 'tiletrigger-limbs'));
+if (!relative(ROOT, out).startsWith('..')) throw new Error(`the audit's output goes outside the repo, not ${out}`);
+const only = process.env.ONLY?.split(',').filter(Boolean);
+const pictures = process.env.PICTURES === '1';
+const legsRest = process.env.LEGS_REST === '1';
+const tune = process.env.TUNE ? JSON.parse(process.env.TUNE) : null;
+const fixOff = process.env.FIX === '0';
+const wristGuns = process.env.WRISTS?.split(',').filter(Boolean) ?? [];
+mkdirSync(join(out, 'pics'), { recursive: true });
+
+const browser = await chromium.launch({
+  ...(process.env.CHROMIUM ? { executablePath: process.env.CHROMIUM } : {}),
+  args: ['--use-gl=angle', '--use-angle=swiftshader', '--enable-unsafe-swiftshader'],
+});
+const page = await browser.newPage({ viewport: { width: 360, height: 480 } });
+const errors = [];
+page.on('pageerror', (e) => errors.push(e.message));
+// (Opened again when a look's pose hangs: the run goes on with the next look.)
+const open = async () => {
+  await page.goto(`${base}/?mode=grips&test=1`, { waitUntil: 'domcontentloaded' });
+  await page.waitForFunction(() => window.__grips, null, { timeout: 120_000 });
+  if (fixOff) await page.evaluate(() => window.__grips.limbFix(false));
+};
+await open();
+const looks = (await page.evaluate(() => window.__grips.looks())).filter((l) => (only ? only.includes(l.id) : l.pickable));
+
+const rows = [];
+const LOOK_MS = 120_000;
+for (const l of looks) {
+  let timer;
+  try {
+    await Promise.race([measure(l), new Promise((_, no) => (timer = setTimeout(() => no(new Error(`timed out after ${LOOK_MS / 1000} s`)), LOOK_MS)))]);
+  } catch (e) {
+    console.error(`${l.id}: ${e.message.split('\n')[0]}`);
+    if (/timed out/.test(e.message)) await open();
+  } finally {
+    clearTimeout(timer);
+  }
+  // Saved as it goes (a long run cut short keeps what it measured).
+  writeFileSync(join(out, 'limbs.json'), JSON.stringify(rows, null, 1));
+}
+
+async function measure(l) {
+  {
+    if (tune) await page.evaluate(([id, t]) => window.__grips.tune(id, { grip: t }), [l.id, tune]);
+    await page.evaluate((id) => window.__grips.pose(id, 'core.rifle', 'third'), l.id);
+    if (legsRest) await page.evaluate(() => window.__grips.legsAtRest(true));
+    const raw = await page.evaluate(() => window.__grips.limbs());
+    const m = limbMeasures(raw);
+    const wrists = {};
+    rows.push({ id: l.id, name: l.name, ...m, raw, wrists });
+    if (pictures) {
+      for (const v of ['front', 'side']) {
+        await page.evaluate((from) => window.__grips.body(from), v);
+        await page.screenshot({ path: join(out, 'pics', `${l.id}_${v}.png`) });
+      }
+      for (const [v, from] of [['upper', 'front'], ['support', 'support']]) {
+        await page.evaluate((f) => window.__grips.upper(f), from);
+        await page.screenshot({ path: join(out, 'pics', `${l.id}_${v}.png`) });
+      }
+    }
+    for (const gun of wristGuns)
+      for (const view of ['third', 'first', 'body']) {
+        await page.evaluate(([id, g, v]) => window.__grips.pose(id, g, v), [l.id, gun, view]);
+        wrists[`${gun} ${view}`] = await page.evaluate(() => window.__grips.wrists());
+        if (pictures && view !== 'third') await page.screenshot({ path: join(out, 'pics', `${l.id}_${gun}_${view}.png`) });
+      }
+    console.log(`${l.id}: legs ${m.legScore} elbows ${m.elbowScore}${wristGuns.length ? ` wrists ${JSON.stringify(wrists)}` : ''}`);
+  }
+}
+await browser.close();
+writeFileSync(join(out, 'limbs.json'), JSON.stringify(rows, null, 1));
+
+if (!only && !tune && !legsRest && !fixOff) writeTable(rows);
+else console.log(limbTable(rows));
+if (errors.length) console.error(`page errors: ${errors.join('; ')}`);
