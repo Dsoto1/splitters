@@ -208,6 +208,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.02, -0.28], support: [0, 0.02, 0.12], shoulder: [0, -0.02, -0.55] },
     },
   },
+  // model: The owner's 40mm Revolving Cylinder Grenade Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut. The kit launcher is the fallback.
   'core.launcher': {
     id: 'core.launcher',
     displayName: 'Grenade Launcher',
@@ -239,10 +240,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'weapons/launcher.glb',
+      model: 'guns/revolving_launcher.glb',
+      muzzleAt: [0, 0.07, 0.425],
+      held: { medium: 'guns/revolving_launcher.medium.glb', high: 'guns/revolving_launcher.high.glb' },
+      fallback: 'weapons/launcher.glb',
       viewOffset: [0.22, -0.23, 0.55],
       tracer: '#c2c9a8',
-      hold: { style: 'long', grip: [0, -0.1, 0.02], support: [0, 0.029, 0.187], shoulder: [0, 0.023, -0.43] },
+      hold: { style: 'long', grip: [0, -0.035, -0.18], support: [0, 0.03, 0.25], shoulder: [0, 0.02, -0.4] },
       sound: 'fire.launcher.synth',
     },
   },
@@ -280,6 +284,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.065, 0.185],
     },
   },
+  // model: The owner's Heavy Anti-Armor Rocket Launcher (Meshy, owned; content/guns.json, 2026-11-28): 1.1 m, held copies a 50,000-triangle cut; the tube rests on the shoulder behind its pistol grip. The kit rocket launcher is the fallback.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: Benchmark rocket: rewards predicting where they will be. A slow 30 m/s rocket (a runner moves 4 m while it crosses 25 m), a 5 m blast and a direct hit that kills outright; your own blast hurts you three quarters as much. Quick to bring back: a rocket every 1.5 s, fire again as soon as it is loaded.
   'core.rockets': {
@@ -315,15 +320,17 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'guns/rocket_launcher.glb',
+      model: 'guns/heavy_rocket_launcher.glb',
+      held: { medium: 'guns/heavy_rocket_launcher.medium.glb', high: 'guns/heavy_rocket_launcher.high.glb' },
       fallback: 'weapons/rockets.glb',
       viewOffset: [0.24, -0.24, 0.5],
       tracer: '#ffb347',
-      hold: { style: 'long', grip: [0, -0.09, -0.115], support: [0, -0.09, 0.095], shoulder: [0, -0.03, -0.25] },
+      hold: { style: 'long', grip: [0, -0.05, -0.045], support: [0, -0.06, 0.11], shoulder: [0, 0, -0.22] },
+      muzzleAt: [0, 0.06, 0.55],
       sound: 'fire.launcher.c',
     },
   },
-  // model: The owner's Futuristic Blaster (Meshy, owned; content/guns.json), the sci-fi kit rifle it replaced as the fallback.
+  // model: The owner's Orange Automatic Plasma Rifle (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut, its orange panels lit (glow). A holographic sight on its top rail by default (content/optics.json), a red dot offered. The sci-fi kit rifle is the fallback.
   'core.plasma': {
     id: 'core.plasma',
     displayName: 'Plasma Rifle',
@@ -373,11 +380,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     raiseTicks: 20,
     view: {
-      model: 'guns/futuristic_blaster.glb',
+      model: 'guns/plasma_rifle_orange.glb',
+      muzzleAt: [0, 0.085, 0.425],
+      held: { medium: 'guns/plasma_rifle_orange.medium.glb', high: 'guns/plasma_rifle_orange.high.glb' },
       fallback: 'weapons/plasma.glb',
       viewOffset: [0.21, -0.21, 0.52],
       tracer: '#7dffb0',
-      hold: { style: 'long', grip: [0, -0.08, -0.08], support: [0, -0.05, 0.28], shoulder: [0, 0.02, -0.41] },
+      hold: { style: 'long', grip: [0, -0.035, -0.18], support: [0, 0.04, 0.2], shoulder: [0, 0.03, -0.41] },
       sound: 'fire.plasma.c',
     },
   },
@@ -512,7 +521,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     },
   },
   // group: The extended arsenal: every one fires differently. 2: sidearms.
-  // model: The 3DModelsCC0 Flare Gun (CC0; content/guns.json, from its own download folder: the pack's colour, normal, metal and roughness maps), replacing the kit pistol, now the fallback. The Airstrike Flare is this gun's shot too (content/throwables.json): the same gun in your hands while you line it up.
+  // model: The owner's Tactical Flare Gun (Meshy, owned; content/guns.json, 2026-11-28): 0.30 m, held copies a 40,000-triangle cut, its grip raked 24°. The kit pistol is the fallback. The Airstrike Flare is this gun's shot too (content/throwables.json): the same gun in your hands while you line it up.
   'core.flare_gun': {
     id: 'core.flare_gun',
     displayName: 'Flare Gun',
@@ -549,13 +558,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     spread: 0,
     range: 120,
     view: {
-      model: 'guns/flare_gun.glb',
-      held: { medium: 'guns/flare_gun.medium.glb', high: 'guns/flare_gun.high.glb' },
+      model: 'guns/flare_pistol.glb',
+      held: { medium: 'guns/flare_pistol.medium.glb', high: 'guns/flare_pistol.high.glb' },
       fallback: 'weapons/flare_gun.glb',
       viewOffset: [0.2, -0.18, 0.42],
       tracer: '#ff7a3a',
-      hold: { style: 'pistol', grip: [0, -0.03, -0.075], support: [-0.02, -0.04, -0.065], rake: 14 },
-      muzzleAt: [0, 0.05, 0.12],
+      hold: { style: 'pistol', grip: [0, -0.03, -0.1], support: [-0.02, -0.04, -0.09], rake: 24 },
+      muzzleAt: [0, 0.055, 0.15],
       sound: 'fire.flare',
     },
   },
@@ -829,7 +838,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 5: precision.
   // design: Charges briefly, then one body hit kills an unarmoured player.
-  // model: The Meshy community Coppercoil Sentinel (CC0; weapons intake of 2026-11-18), a copper-wound coil rifle with a scope and a folding foregrip; the kit railgun is the fallback.
+  // model: The owner's Cyan Charge Plasma Sniper Rifle (Meshy, owned; content/guns.json, 2026-11-28): 1.05 m, held copies a 50,000-triangle cut, its cyan cells lit (glow). It has no scope of its own: the owner's Scope model stands on its flat top (content/optics.json long_scope; aimed through the full-screen scope as before). The kit railgun is the fallback.
   'core.railgun': {
     id: 'core.railgun',
     displayName: 'Railgun',
@@ -857,13 +866,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     pellets: 1,
     spread: 0,
     view: {
-      model: 'guns/coppercoil.glb',
-      held: { medium: 'guns/coppercoil.medium.glb', high: 'guns/coppercoil.high.glb' },
+      model: 'guns/plasma_sniper_cyan.glb',
+      held: { medium: 'guns/plasma_sniper_cyan.medium.glb', high: 'guns/plasma_sniper_cyan.high.glb' },
       fallback: 'weapons/railgun.glb',
-      viewOffset: [0.21, -0.21, 0.52],
+      viewOffset: [0.21, -0.21, 0.55],
       tracer: '#5fe0ff',
-      hold: { style: 'long', grip: [0, -0.052, -0.122], support: [0, -0.017, 0.26], shoulder: [0, 0, -0.487] },
-      muzzleAt: [0, 0.017, 0.5],
+      hold: { style: 'long', grip: [0, -0.03, -0.195], support: [0, 0.04, 0.2], shoulder: [0, 0.03, -0.51] },
+      muzzleAt: [0, 0.09, 0.525],
       zoomFov: 0.5,
       sound: 'fire.railgun',
       beam: true,
@@ -1141,6 +1150,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'door.open',
     },
   },
+  // model: The owner's Micro-Missile Swarm Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.95 m, held copies a 60,000-triangle cut, its cyan lights lit (glow). The kit swarm launcher is the fallback.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // group: The extended arsenal: every one fires differently. 8: heavy.
   'core.swarm': {
@@ -1177,10 +1187,13 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
     damage: 0,
     range: 120,
     view: {
-      model: 'weapons/swarm.glb',
+      model: 'guns/swarm_launcher.glb',
+      held: { medium: 'guns/swarm_launcher.medium.glb', high: 'guns/swarm_launcher.high.glb' },
+      fallback: 'weapons/swarm.glb',
       viewOffset: [0.21, -0.23, 0.52],
       tracer: '#ffb347',
-      hold: { style: 'long', grip: [0, -0.07, -0.07], support: [0, 0.012, 0.247], shoulder: [0, 0.029, -0.405] },
+      hold: { style: 'long', grip: [0, -0.07, -0.165], support: [0, -0.09, 0.29], shoulder: [0, 0.04, -0.45] },
+      muzzleAt: [0, 0.08, 0.47],
       sound: 'fire.swarm.d',
     },
   },
@@ -1965,7 +1978,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
   // model: The owner's Desert Storm SCAR-Type Rifle (Meshy, owned; content/guns.json, 2026-11-28): 0.96 m, held Medium/High copies a 50,000-triangle cut. It has no scope of its own: it carries the owner's Scope model on its top rail (content/optics.json rifle_scope), looked through as before.
   // hold: Read off a side view on a 5 cm grid: grip in the raked pistol grip's middle under the trigger guard, support under the handguard's lower rail, the butt plate in the shoulder.
   // fireModes: Spec §36, owner 2026-11-16 (U switches). Single: one round a press, at most every 12 ticks (300 rpm); paced, every round lands where the dot is. Burst: three rounds 5 ticks apart (720 rpm inside the burst), the next burst 33 ticks after the first round (a 0.55 s body kill against Single's 0.6). Its own kick: little climb (7 and 6 mrad) but a hard sideways jump on the second round (15 mrad right, then 20 back left), too quick to pull against: two heads in one burst (83 ms) only inside about 12 m, chest bursts all land to about 20 m, and past 35 m a burst mostly misses where Single still kills. Bots burst inside 22 m and go single past it (bots/fireModePick.ts). Measured in packages/shared/test/fireModes.test.ts.
-  // optic: A real 3.5x optic, the owner's Scope model stood on its top rail (content/optics.json `rifle_scope`, its `mount`; client game/opticView.ts): the eyepiece's glass is the scope's where it stands, [0, 0.1603, -0.1018] with a 26 mm clear radius (tools/content/optics.mjs checks it against the scope model and its mount), brought to 12 cm in front of the eye.
+  // optic: A real 3.5x optic, the owner's Scope model stood on its top rail (content/optics.json `rifle_scope`, its `mount`; client game/opticView.ts): the eyepiece's glass is the scope's where it stands, [0, 0.1643, -0.0618] with a 26 mm clear radius (tools/content/optics.mjs checks it against the scope model and its mount), brought to 12 cm in front of the eye.
   'core.battle_rifle': {
     id: 'core.battle_rifle',
     displayName: 'Battle Rifle',
@@ -2007,7 +2020,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       tracer: '#ffe2a0',
       hold: { style: 'long', grip: [0, -0.04, -0.17], support: [0, 0.05, 0.16], shoulder: [0, 0.02, -0.45] },
       muzzleAt: [0, 0.075, 0.47],
-      optic: { mag: 3.5, eye: [0, 0.1603, -0.1018], radius: 0.0263, relief: 0.12, reticle: 'chevron' },
+      optic: { mag: 3.5, eye: [0, 0.1643, -0.0618], radius: 0.0263, relief: 0.12, reticle: 'chevron' },
       sound: 'fire.heavy',
     },
   },
@@ -2942,7 +2955,7 @@ export const THROWABLE_DEFS: Readonly<Record<(typeof THROWABLES)[number], Throwa
         },
       },
     },
-    view: { model: 'guns/flare_gun.glb', handOnly: true },
+    view: { model: 'guns/flare_pistol.glb', handOnly: true },
   },
   // group: Worms-style special.
   // design: Tossed a few metres ahead; where it lands it becomes a waist-high wall facing you.

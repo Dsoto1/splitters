@@ -29,19 +29,17 @@
   "botRange": [7, 40],
   "vehicleDamage": 2,
   "view": {
-    "model": "guns/rocket_launcher.glb",
+    "model": "guns/heavy_rocket_launcher.glb",
+    "held": { "medium": "guns/heavy_rocket_launcher.medium.glb", "high": "guns/heavy_rocket_launcher.high.glb" },
     "fallback": "weapons/rockets.glb",
     "viewOffset": [0.24, -0.24, 0.5],
     "tracer": "#ffb347",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.09, -0.115],
-      "support": [0, -0.09, 0.095],
-      "shoulder": [0, -0.03, -0.25]
-    },
+    "hold": { "style": "long", "grip": [0, -0.05, -0.045], "support": [0, -0.06, 0.11], "shoulder": [0, 0.0, -0.22] },
+    "muzzleAt": [0, 0.06, 0.55],
     "sound": "fire.launcher.c"
   },
   "notes": {
+    "model": "The owner's Heavy Anti-Armor Rocket Launcher (Meshy, owned; content/guns.json, 2026-11-28): 1.1 m, held copies a 50,000-triangle cut; the tube rests on the shoulder behind its pistol grip. The kit rocket launcher is the fallback.",
     "vehicleDamage": "Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.",
     "design": "Benchmark rocket: rewards predicting where they will be. A slow 30 m/s rocket (a runner moves 4 m while it crosses 25 m), a 5 m blast and a direct hit that kills outright; your own blast hurts you three quarters as much. Quick to bring back: a rocket every 1.5 s, fire again as soon as it is loaded."
   }

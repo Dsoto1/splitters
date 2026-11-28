@@ -97,44 +97,44 @@
     "core.flak": { "hasSight": false, "default": "holo", "allowed": ["holo", "reddot"] },
     "core.disc_launcher": { "hasSight": false, "default": "holo", "allowed": ["holo", "reddot"] },
     "core.arena_disc": { "hasSight": false, "default": "holo", "allowed": ["holo", "reddot"] },
-    "core.plasma": {
-      "hasSight": "optic",
-      "default": "holo",
-      "allowed": ["holo"],
-      "window": { "at": [0, 0.157, -0.058], "half": [0.0222, 0.0138], "reason": "the model's own sight box on its riser is open: the hole measured along the barrel (y 0.142-0.172, x within 0.024; the box runs z -0.037 to 0.085). 31 loose scraps of the model float in the opening from z -0.05 to -0.01, so `at` is 2 cm behind the box, on the eye's side of every scrap, and `half` the hole as seen from the eye there: the window's clip keeps them out of the aimed view" }
-    },
+    "core.plasma": { "hasSight": "irons", "default": "holo", "allowed": ["holo", "reddot"] },
     "core.battle_rifle": {
       "hasSight": "irons",
       "default": "rifle_scope",
       "allowed": ["rifle_scope"],
-      "mount": { "at": [0, 0.127, 0.04], "scale": 0.875, "reason": "the SCAR's top rail (y 0.127 from z -0.10 to 0.34): the scope's base on it ahead of the rear flip-up sight, its eyepiece over the receiver's rear" }
+      "mount": { "at": [0, 0.131, 0.08], "scale": 0.875, "reason": "the SCAR's top rail (y 0.131 from z -0.10 to 0.34): the scope's base on it, far enough forward that the eye behind its eyepiece is right over the rear flip-up sight (z -0.16 to -0.13, 1.6 cm under the tube's line), which then stays out of the lens" }
     },
     "core.marksman": {
       "hasSight": "irons",
       "default": "rifle_scope",
       "allowed": ["rifle_scope"],
       "steps": [1, 0.45],
-      "mount": { "at": [0, 0.1, -0.02], "scale": 0.95, "reason": "the DMR's top rail (y 0.100 from z -0.22 to 0.38, a flip-up at each end): the scope's base on it over the receiver" }
+      "mount": { "at": [0, 0.103, -0.02], "scale": 0.95, "reason": "the DMR's top rail (y 0.103 from z -0.22 to 0.38, a flip-up at each end): the scope's base on it over the receiver" }
     },
     "core.sniper": {
       "hasSight": false,
       "default": "long_scope",
       "allowed": ["long_scope"],
-      "mount": { "at": [0, 0.093, -0.03], "scale": 1.1, "reason": "the Steyr's receiver rail (y 0.093 from z -0.22 to 0.18): the scope's base on it over the bolt" }
+      "mount": { "at": [0, 0.091, -0.03], "scale": 1.1, "reason": "the Steyr's receiver rail (y 0.091 from z -0.22 to 0.18): the scope's base on it over the bolt" }
     },
-    "core.railgun": { "hasSight": "optic", "default": "sniper", "allowed": ["sniper"] },
+    "core.railgun": {
+      "hasSight": false,
+      "default": "long_scope",
+      "allowed": ["long_scope"],
+      "mount": { "at": [0, 0.137, 0.0], "scale": 1, "reason": "the plasma sniper's flat top (y 0.137 from z -0.19 to 0.19, a nub at each end): the scope's base on it over the cells" }
+    },
     "core.nova6": { "hasSight": "optic", "default": "scope", "allowed": ["scope"] },
     "core.lever_action": {
       "hasSight": "irons",
       "default": "sentinel",
       "allowed": ["sentinel"],
-      "mount": { "at": [0, 0.1, 0.02], "scale": 0.7, "reason": "the repeater's top rail (y 0.100 from z -0.13 to 0.45, its sights at the ends): the scope's base on it just ahead of the receiver" }
+      "mount": { "at": [0, 0.098, 0.02], "scale": 0.7, "reason": "the repeater's top rail (y 0.098 from z -0.13 to 0.45, its sights at the ends): the scope's base on it just ahead of the receiver" }
     },
     "core.crossbow": {
       "hasSight": "irons",
       "default": "sentinel",
       "allowed": ["sentinel"],
-      "mount": { "at": [0, 0.087, -0.01], "scale": 0.7, "reason": "the arbalest's top rail (y 0.087 from z -0.10 to 0.38): the scope's base on it behind where the string rests drawn" }
+      "mount": { "at": [0, 0.09, -0.01], "scale": 0.7, "reason": "the arbalest's top rail (y 0.090 from z -0.10 to 0.38): the scope's base on it behind where the string rests drawn" }
     },
     "core.woodland_smg": { "hasSight": "irons", "default": "irons", "allowed": ["irons"] },
     "core.desert_carbine": {
@@ -166,7 +166,7 @@
     "core.oil_slicker": "sprays a lobbed stream: a sight on the bore would point over where it lands",
     "core.flamethrower": "a stream weapon, aimed by its flame",
     "core.lmg": "a rotary gun fired from the hip: its top rail rides over the barrels' housing, well above the bore",
-    "core.flare_gun": "a flare pistol, drawn broken open: fired from the hand",
+    "core.flare_gun": "a flare pistol: fired from the hand, its flare lobbed",
     "core.hornet": "an organic sci-fi shell whose mandibles block the top: fired from the hand, its stingers home"
   }
 }

@@ -45,14 +45,16 @@
   "botDesirability": 0.7,
   "botRange": [3, 25],
   "view": {
-    "model": "guns/futuristic_blaster.glb",
+    "model": "guns/plasma_rifle_orange.glb",
+    "muzzleAt": [0, 0.085, 0.425],
+    "held": { "medium": "guns/plasma_rifle_orange.medium.glb", "high": "guns/plasma_rifle_orange.high.glb" },
     "fallback": "weapons/plasma.glb",
     "viewOffset": [0.21, -0.21, 0.52],
     "tracer": "#7dffb0",
-    "hold": { "style": "long", "grip": [0, -0.08, -0.08], "support": [0, -0.05, 0.28], "shoulder": [0, 0.02, -0.41] },
+    "hold": { "style": "long", "grip": [0, -0.035, -0.18], "support": [0, 0.04, 0.2], "shoulder": [0, 0.03, -0.41] },
     "sound": "fire.plasma.c"
   },
   "notes": {
-    "model": "The owner's Futuristic Blaster (Meshy, owned; content/guns.json), the sci-fi kit rifle it replaced as the fallback."
+    "model": "The owner's Orange Automatic Plasma Rifle (Meshy, owned; content/guns.json, 2026-11-28): 0.85 m, held copies a 50,000-triangle cut, its orange panels lit (glow). A holographic sight on its top rail by default (content/optics.json), a red dot offered. The sci-fi kit rifle is the fallback."
   }
 }

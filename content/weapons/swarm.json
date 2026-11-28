@@ -31,16 +31,14 @@
     "homing": { "turnRate": 2.6, "range": 45 }
   },
   "view": {
-    "model": "weapons/swarm.glb",
+    "model": "guns/swarm_launcher.glb",
+    "held": { "medium": "guns/swarm_launcher.medium.glb", "high": "guns/swarm_launcher.high.glb" },
+    "fallback": "weapons/swarm.glb",
     "viewOffset": [0.21, -0.23, 0.52],
     "tracer": "#ffb347",
-    "hold": {
-      "style": "long",
-      "grip": [0, -0.07, -0.07],
-      "support": [0, 0.012, 0.247],
-      "shoulder": [0, 0.029, -0.405]
-    },
+    "hold": { "style": "long", "grip": [0, -0.07, -0.165], "support": [0, -0.09, 0.29], "shoulder": [0, 0.04, -0.45] },
+    "muzzleAt": [0, 0.08, 0.47],
     "sound": "fire.swarm.d"
   },
-  "notes": { "vehicleDamage": "Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.", "group": "The extended arsenal: every one fires differently. 8: heavy." }
+  "notes": { "model": "The owner's Micro-Missile Swarm Launcher (Meshy, owned; content/guns.json, 2026-11-28): 0.95 m, held copies a 60,000-triangle cut, its cyan lights lit (glow). The kit swarm launcher is the fallback.", "vehicleDamage": "Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.", "group": "The extended arsenal: every one fires differently. 8: heavy." }
 }

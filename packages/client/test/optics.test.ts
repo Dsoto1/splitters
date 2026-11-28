@@ -19,12 +19,12 @@ const CARRIES: Record<OpticKindId, string[]> = {
   reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.burst_rifle', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'],
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
   scope: ['core.nova6'],
-  sniper: ['core.railgun'],
+  sniper: [],
   // Built for the loadout's choice (step 4): no gun carries it by default.
   x2: [],
   // The owner's scope models on the rails of the scoped guns whose new models have none (weapon replacements batch 3).
   rifle_scope: ['core.battle_rifle', 'core.marksman'],
-  long_scope: ['core.sniper'],
+  long_scope: ['core.railgun', 'core.sniper'],
   sentinel: ['core.crossbow', 'core.lever_action'],
 };
 /**
@@ -54,6 +54,7 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.bubble_blaster': ['reddot', 'holo'],
   'core.singularity': ['reddot', 'holo'],
   'core.flak': ['holo', 'reddot'],
+  'core.plasma': ['holo', 'reddot'],
   'core.disc_launcher': ['holo', 'reddot'],
   'core.arena_disc': ['holo', 'reddot'],
   // In the model's own sight (its window): the mark changes, nothing is built.
@@ -133,8 +134,8 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
     const file = JSON.parse(readFileSync(new URL('../../../content/optics.json', import.meta.url), 'utf8')) as { weapons: Record<string, { hasSight?: string | false }> };
     const built = (k: OpticKindId) => ['tube', 'frame', 'magtube'].includes(OPTIC_KINDS[k].housing);
     const own = Object.keys(file.weapons).filter((id) => file.weapons[id]!.hasSight === 'optic').sort();
-    // (The Battle Rifle, Marksman, Sniper, Lever-Action and Crossbow's new models have no scope: ours stands on their rails.)
-    expect(own).toEqual(['core.arc_caster', 'core.blaster_x42', 'core.desert_carbine', 'core.nova6', 'core.plasma', 'core.railgun', 'core.twin_rifle']);
+    // (The Battle Rifle, Marksman, Sniper, Railgun, Lever-Action and Crossbow's new models have no scope: ours stands on their rails; the Plasma Rifle's has no sight box: a holographic sight stands on its rail.)
+    expect(own).toEqual(['core.arc_caster', 'core.blaster_x42', 'core.desert_carbine', 'core.nova6', 'core.twin_rifle']);
     for (const [id, e] of Object.entries(file.weapons)) {
       expect(['optic', 'irons', false], `${id}: hasSight`).toContain(e.hasSight);
       const w = WEAPON_OPTICS[id]!;
@@ -390,7 +391,7 @@ describe('optic choice in the loadout (docs/GUNPLAY_SPEC.md §15, "Optic choice"
     expect(offered).toEqual(CHOICES);
     for (const [id, kinds] of Object.entries(CHOICES)) expect(kinds[0], `${id}: its default first`).toBe(WEAPON_OPTICS[id]!.default);
     // Snipers and the guns with a scope of their own keep it: a pick for them is ignored.
-    for (const id of [...CARRIES.scope, ...CARRIES.sniper, ...CARRIES.rifle_scope, ...CARRIES.long_scope, ...CARRIES.sentinel, 'core.plasma', 'core.flintlock_pistol']) {
+    for (const id of [...CARRIES.scope, ...CARRIES.sniper, ...CARRIES.rifle_scope, ...CARRIES.long_scope, ...CARRIES.sentinel, 'core.flintlock_pistol']) {
       expect(opticChoices(getWeapon(id)), id).toEqual([]);
       for (const k of ['reddot', 'holo', 'x2', 'irons']) expect(opticOf(getWeapon(id), k)!.id, `${id} given ${k}`).toBe(WEAPON_OPTICS[id]!.default);
     }

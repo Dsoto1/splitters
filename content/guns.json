@@ -194,13 +194,6 @@
       "length": 0.85
     },
     {
-      "out": "guns/rocket_launcher.glb",
-      "pack": "styloo-guns",
-      "file": "rocketlaucher.glb",
-      "forward": "+x",
-      "length": 1.1
-    },
-    {
       "out": "guns/frag.glb",
       "pack": "styloo-guns",
       "file": "nade_low.glb",
@@ -331,23 +324,6 @@
       "forward": "-z",
       "length": 0.34,
       "triangles": 10000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024
-    },
-    {
-      "out": "guns/futuristic_blaster.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_Futuristic_Blaster_To_1029233804_texture.glb",
-      "label": "Futuristic Blaster (Meshy Community download, 2026-10-29)",
-      "forward": "-x",
-      "length": 0.85,
-      "triangles": 14000,
       "maxError": 0.03,
       "surface": "rebake",
       "budget": "hero",
@@ -563,23 +539,6 @@
           "pivot": [0, 0.537, 1.45]
         }
       ]
-    },
-    {
-      "out": "guns/flare_gun.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "download": "Flare_Gun",
-      "file": "FlareGun.fbx",
-      "label": "Flare Gun (3DModelsCC0 Guns & Explosives): the Flare Gun",
-      "maps": {
-        "base": "FlareGun_Base_Color.png",
-        "normal": "FlareGun_Normal_DirectX.png",
-        "metallic": "FlareGun_Metallic.png",
-        "roughness": "FlareGun_Roughness.png"
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 0.24
     },
     {
       "out": "guns/frag_m67.glb",
@@ -1264,24 +1223,6 @@
       ]
     },
     {
-      "out": "guns/coppercoil.glb",
-      "pack": "meshy-community-drive-1118",
-      "glb": "Meshy_AI_Coppercoil_Sentinel_1118134752_texture.glb",
-      "label": "Coppercoil Sentinel (Meshy Community download, owner's Drive, 2026-11-18): the Railgun",
-      "forward": "-x",
-      "length": 1.0,
-      "triangles": 12000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
-    },
-    {
       "out": "guns/heart_taser.glb",
       "pack": "meshy-community-drive-1118",
       "glb": "Meshy_AI_Heart_Taser_1118135943_texture.glb",
@@ -1950,6 +1891,144 @@
         0.2,
         12
       ]
+    },
+    {
+      "out": "guns/plasma_rifle_orange.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_orange_auto_plasma_rifle_3d_20261127_image-to-3d-texture.glb",
+      "label": "Orange Automatic Plasma Rifle: the Plasma Rifle (the owner's own Meshy model, owner's Drive, 2026-11-27), its orange coils lit",
+      "forward": "-x",
+      "length": 0.85,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#ff8a2a",
+        "strength": 0.8
+      }
+    },
+    {
+      "out": "guns/plasma_sniper_cyan.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_charge_plasma_sniper_3d_20261127_image-to-3d-texture.glb",
+      "label": "Cyan Charge Plasma Sniper Rifle: the Railgun (the owner's own Meshy model, owner's Drive, 2026-11-27), its cyan cells lit",
+      "forward": "-x",
+      "length": 1.05,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#36d8ff",
+        "strength": 1
+      }
+    },
+    {
+      "out": "guns/flare_pistol.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_tactical_flare_gun_3d_20261127_image-to-3d-texture.glb",
+      "label": "Tactical Flare Gun: the Flare Gun (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.3,
+      "triangles": 9000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 40000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/revolving_launcher.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_revolving_grenade_launcher_3d_20261127_image-to-3d-texture.glb",
+      "label": "40mm Revolving Cylinder Grenade Launcher: the Grenade Launcher (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.85,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/heavy_rocket_launcher.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_heavy_rocket_launcher_3d_20261127_image-to-3d-texture.glb",
+      "label": "Heavy Anti-Armor Rocket Launcher: the Rocket Launcher (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 1.1,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/swarm_launcher.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_swarm_missile_launcher_3d_20261127_image-to-3d-texture.glb",
+      "label": "Micro-Missile Swarm Launcher: the Swarm Launcher (the owner's own Meshy model, owner's Drive, 2026-11-27), its cyan lights lit",
+      "forward": "-x",
+      "length": 0.95,
+      "triangles": 14000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 60000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ],
+      "glow": {
+        "color": "#36d8ff",
+        "strength": 1
+      }
     }
   ]
 }

@@ -14,19 +14,16 @@
     "core.disc_launcher": "no sights on the model: a flat-topped disc launcher",
     "core.flak": "no sights on the model: a flat-topped kit gun",
     "core.flamethrower": "no sights on the model: its top line starts on the stock",
-    "core.flare_gun": "the model is drawn broken open, its barrel tipped up: no line along it",
     "core.guided": "a tube launcher, steered after the shot: the RPG's leaf sights are not fitted (content/optics.json none)",
     "core.heart_taser": "its slime finds a hurt teammate by itself: aims with the top of the gun (weapons intake 11-18)",
     "core.hornet": "an organic sci-fi shell: the mandibles at the muzzle block a line along the top (weapons intake 11-18)",
     "core.laser_rifle": "no sights on the model: a flat-topped kit gun",
-    "core.launcher": "a tube launcher: no rear sight, its top line starts on the stock",
     "core.lmg": "a rotary gun held at the hip: the nubs on its top rail stand well above the barrels, not a sight line for them",
     "core.oil_slicker": "no sights on the model: its top line starts on the stock",
-    "core.plasma": "no iron sights: the model carries an open sight box on a riser, which holds its holographic mark (content/optics.json)",
+    "core.plasma": "a holographic sight stands on its top rail (content/optics.json): the low flip-up nubs at the rail's ends are not used",
     "core.rockets": "a tube launcher: its carrying arches are not sights (the line over them is 5 degrees off the tube)",
     "core.sawed_off": "no rear sight on the model: a bare top rail with a bead at its front end, carrying the red dot",
     "core.singularity": "no sights on the model: a flat top rail with flush nubs, carrying a red dot or holographic sight",
-    "core.swarm": "no sights on the model: a flat-topped kit launcher",
     "core.twin_rifle": "its own red dot is the only sight, with no posts: aims through it, its window in content/optics.json"
   }
 }
