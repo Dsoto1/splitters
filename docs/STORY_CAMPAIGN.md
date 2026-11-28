@@ -41,8 +41,9 @@ into its data):
   Callahan (`core.paratrooper`); Desert Storm Pvt. Hank Dowling (`core.usgrunt`, desert camouflage).
 - **Medieval / Crusades (The Broken Crown), 2026-11-26:** Ser Godric Vale (`core.templar`), Kaiser Ironhelm
   (`core.gothickaiser`), Ser Aldous Lionmane (`core.lionheart`) and Emir Tariq Falconsword (`core.emir`).
-- **Founders and famous minds (Legends), 2026-11-26:** Poor Richard (`core.franklin`), General Cherrytree
-  (`core.washington`), The Rough Rider (`core.roosevelt`) and Prof. Quanta (`core.einstein`), with Honest Abe.
+- **Founders and famous minds (Legends), 2026-11-26; Historical since 2026-11-27, by their real names since 2026-11-28:**
+  Benjamin Franklin (`core.franklin`), George Washington (`core.washington`), Theodore Roosevelt (`core.roosevelt`) and
+  Albert Einstein (`core.einstein`), with Abraham Lincoln (`core.abe`).
 - **The Sunken Dynasty, 2026-11-26:** Nebka the Unwrapped (`core.ankhmummy`).
 - **Urban Breakdown, 2026-11-26:** Cleo Groovestone (`core.afropi`), Rad Rootley (`core.radishman`) and Rourke; and a
   city of the dead: Marla Quarterly (`core.officeworker`), Dez Kickley (`core.hoodieguy`), Linda Refundsworth

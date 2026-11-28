@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 226,
-  "name": "Poor Richard",
+  "name": "Benjamin Franklin",
   "look": "core.franklin",
   "group": "historical",
   "blood": "red",

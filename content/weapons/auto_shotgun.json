@@ -20,17 +20,19 @@
   "ammo": "shells",
   "recoil": { "bloom": 0.012, "maxBloom": 0.04, "recover": 0.0015 },
   "view": {
-    "model": "guns/shotgun.glb",
+    "model": "guns/obsidian_pump.glb",
+    "held": { "medium": "guns/obsidian_pump.medium.glb", "high": "guns/obsidian_pump.high.glb" },
     "fallback": "weapons/auto_shotgun.glb",
     "viewOffset": [0.21, -0.21, 0.56],
     "tracer": "#ffb38a",
-    "hold": { "style": "long", "grip": [0, 0.0, -0.2], "support": [0, 0.035, 0.2], "shoulder": [0, -0.02, -0.47] },
+    "hold": { "style": "long", "grip": [0, -0.005, -0.215], "support": [0, 0.022, 0.19], "shoulder": [0, -0.035, -0.48] },
     "reloadSound": "reload.end.b",
-    "muzzleAt": [0, 0.078, 0.475],
+    "muzzleAt": [0, 0.072, 0.49],
     "sound": "fire.shotgun.b"
   },
   "notes": {
     "description": "A shotgun that keeps on firing: a little less punch per blast, a lot more blasts.",
+    "model": "The owner's own Mesoamerican Obsidian Pump Shotgun (Meshy, owned, 2026-11-27; content/guns.json; owner: the Auto Shotgun's model), sharper copies in your own hands at Medium and High; it replaced Styloo's shotgun. The kit auto shotgun is the fallback.",
     "range": "Best within 8 m: full damage, 2 body blasts. Down to 25 % (7 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).",
     "group": "The extended arsenal: every one fires differently. 4: shotguns."
   }

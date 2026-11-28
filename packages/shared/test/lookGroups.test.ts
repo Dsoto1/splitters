@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, lookVariants, pickableLooks, CHARACTER_GROUP_LABELS, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
+import { CHARACTER_GROUP_ALIASES, CHARACTER_NEIGHBOURS, CHARACTER_BRANCHES, CHARACTER_COLLECTIONS, CHARACTER_GROUPS, CORE_LOOKS, EXPERIMENTAL_SECTION, characterSectionOf, characterTier, getLook, NPC_LOOKS, PICKABLE_LOOKS, PLAYER_NPC_LOOKS, RETIRED_LOOKS, validLookId, characterSections, lookVariants, pickableLooks, CHARACTER_GROUP_LABELS, encodeLook, isCharacterGroup, lookBranch, lookForBot, lookGroup } from '../src/index.ts';
 // @ts-expect-error: a plain .mjs tool without types
 import { BRANCHES, COLLECTIONS, GROUPS, readManifests } from '../../../tools/content/character-manifests.mjs';
 
@@ -61,6 +61,9 @@ describe("Character Select's groups", () => {
     expect(at('animals')).toEqual(expect.arrayContaining(['core.bandit', 'core.koala', 'core.shiba']));
     // Owner, 2026-11-27: Legends keeps seven; the famous real people and the period characters are Historical's.
     expect(at('legends').sort()).toEqual(['core.abyssalhunter', 'core.basaltguardian', 'core.celestialknight', 'core.frostvalkyrie', 'core.magmajuggernaut', 'core.mystic', 'core.sunpriest']);
+    // Owner, 2026-11-28: the pirates are Historical's too (their own row retired; `pirates` reads as `historical`).
+    expect(at('historical')).toEqual(expect.arrayContaining(['core.piratecaptain', 'core.firstmate', 'core.femalepirate']));
+    expect(CHARACTER_GROUP_ALIASES.pirates).toBe('historical');
     expect(at('historical')).toEqual(expect.arrayContaining(['core.abe', 'core.franklin', 'core.washington', 'core.roosevelt', 'core.shaka', 'core.khan', 'core.vikingm', 'core.caesar', 'core.templar', 'core.aztecjaguar', 'core.dustycolt']));
     expect(at('folk')).toEqual(expect.arrayContaining(['core.afropi', 'core.radishman', 'core.hazmat', 'core.bronzer', 'core.ansel', 'core.elder', 'core.grandpachains']));
     expect(at('space')).toEqual(expect.arrayContaining(['core.vanguard', 'core.knight']));
@@ -103,7 +106,7 @@ describe("Character Select's groups", () => {
 
   it("the owner's categories, in order (Roster Board, 2026-11-14/15; merged 2026-11-17)", () => {
     expect(CHARACTER_GROUPS.map((g) => `${g.id}:${g.label}`)).toEqual([
-      'soldiers:Soldiers & Spies', 'folk:Everyday Folk', 'space:Outer Space', 'legends:Legends', 'historical:Historical', 'pirates:Pirates',
+      'soldiers:Soldiers & Spies', 'folk:Everyday Folk', 'space:Outer Space', 'legends:Legends', 'historical:Historical',
       'animals:Animalia', 'toys:Toys', 'holiday:Holiday', 'machines:Machines', 'horror:Horrors & Creatures',
     ]);
     // Uncle Bao and the Rusty Mech are off the roster; a saved choice plays the nearest kept look.
@@ -180,8 +183,13 @@ describe("Character Select's groups", () => {
       expect(sec.looks.slice(at, at + list.length).map((l) => l.id)).toEqual([...list]);
     }
     const historical = sections.find((s) => s.id === 'historical')!.looks.map((l) => l.id);
-    const famous = ['core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'];
-    expect(historical.slice(historical.indexOf(famous[0]!), historical.indexOf(famous[0]!) + 5)).toEqual(famous);
+    const famous = ['core.caesar', 'core.khan', 'core.washington', 'core.franklin', 'core.abe', 'core.roosevelt', 'core.einstein'];
+    expect(historical.slice(historical.indexOf(famous[0]!), historical.indexOf(famous[0]!) + famous.length)).toEqual(famous);
+    // The age of sail: the pirates together after Mesoamerica, right before the famous real people (owner, 2026-11-28).
+    expect(historical.slice(historical.indexOf('core.eagleclan') + 1, historical.indexOf('core.caesar'))).toEqual(['core.piratecaptain', 'core.firstmate', 'core.femalepirate']);
+    // The famous real people by their real names, Julius Caesar and Genghis Khan with them (owner, 2026-11-28).
+    expect(famous.map((id) => getLook(id).name)).toEqual(['Julius Caesar', 'Genghis Khan', 'George Washington', 'Benjamin Franklin', 'Abraham Lincoln', 'Theodore Roosevelt', 'Albert Einstein']);
+    expect(getLook('core.shaka').name).toBe('Shaka Mpande');
     // Rome first, the Wild West last; every Historical character in the row's own list (none left to sort by name).
     expect(historical[0]).toBe('core.gladiatrix');
     expect(historical.at(-1)).toBe('core.thornweaver');

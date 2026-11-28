@@ -2,7 +2,7 @@ import { readFileSync } from 'node:fs';
 import { dirname, join, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
-import { EYE_NEAREST, OPTICS_TS, buildOptics, fitMount, magOf, nearShows, opticsSource, pictureAt, readOpticsFile, surfacePoints } from '../optics.mjs';
+import { EYE_NEAREST, OPTICS_TS, blockedAt, buildOptics, fitMount, magOf, nearShows, opticsSource, pictureAt, readOpticsFile, surfacePoints } from '../optics.mjs';
 import { modelTriangles, readWeapons } from '../sight-fit.mjs';
 
 const MODELS = join(resolve(dirname(fileURLToPath(import.meta.url)), '../../..'), 'packages/client/public/models');
@@ -134,10 +134,13 @@ describe('optics by gun: the table and the mounts', () => {
 
   it('every built housing a gun may carry stands on one mount, and must clear the gun there', async () => {
     const file = readOpticsFile();
-    // The Burst Rifle's front sight stands in a red dot's window wherever one is mounted.
-    file.weapons['core.burst_rifle'].allowed = ['irons', 'x2', 'reddot'];
-    const { problems, weapons } = await buildOptics(file);
-    expect(problems.some((p) => /core\.burst_rifle: the gun stands in a reddot's window at its mount/.test(p))).toBe(true);
+    const { weapons } = await buildOptics(file);
+    // A front sight stands in a window set low just behind it (the Burst Rifle's, a red dot 9.5 cm up at 25 cm ahead);
+    // at the Burst Rifle's own mount, on its flat top, it stands clear (its new model since 2026-11-28: a red dot or a
+    // holographic sight is offered on it now).
+    const rifle = await modelTriangles(join(MODELS, 'guns/desert_storm_rifle.glb'));
+    expect(blockedAt(rifle, { at: [0, 0.095, 0.25], scale: 1 }, file.kinds.reddot.glass)).toBe(true);
+    for (const id of ['reddot', 'holo']) expect(blockedAt(rifle, weapons['core.burst_rifle'].mount, file.kinds[id].glass), id).toBe(false);
     // The gun behind a housing counts too: the Amarillo's rear block stands in a holographic sight's window.
     file.weapons['core.amarillo'] = { default: 'irons', allowed: ['irons', 'holo', 'x2'] };
     const behind = await buildOptics(file);

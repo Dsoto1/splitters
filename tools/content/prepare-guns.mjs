@@ -37,11 +37,15 @@
 //
 // `glow: { color, warm: [r, r-b, r-g], strength }` (Meshy entries): the download's own glowing parts (lit panels,
 // a muzzle ring: the orange and red pixels the `warm` test picks, as in `paintOut`) are recoloured to `color`,
-// keeping their light and dark, and the built model gets an emissive map of them (glowColour): a weapon whose
+// keeping their light and dark, and the built model gets an emissive map of them (glowColour; a `held` entry's tiers each
+// get their own, from the tier's colour map, at most 1024 px): a weapon whose
 // in-house model glowed in its own colour keeps that glow on its new model (the Singularity Cannon's purple).
 // `metalDarken: k` folds the download's bare metal (its metal/roughness map) into the matte colour map, darkened toward
 // `k` (a GLB's metal parts read as dark steel, not flat grey); `roughness` (default 0.85) leaves painted bodywork some
 // sheen (the snowmobile's 0.55: its download's paint is glossy).
+// `flat: "#rrggbb"`: the untextured copy of a model the game tints (a pickup's plain twin): its colour map replaced by that
+// colour, the baked normal map kept (built from the textured download: the owner's untextured `_generate` copy is the
+// same mesh without texture coordinates to bake onto).
 // `tint: { color, warm }` recolours the same way without the emissive map: a painted emblem in another colour
 // (the medical bag's red crosses, green by the owner's call, 2026-11-03).
 //
@@ -246,6 +250,11 @@ async function heldTiers(doc, entry) {
     for (const mat of copy.getRoot().listMaterials()) {
       const base = mat.getBaseColorTexture();
       if (base && !done.has(base)) await shrink(base, colour, mat.getAlphaMode() === 'OPAQUE' ? 'image/jpeg' : 'image/png');
+      // `glow`: each tier's emissive map taken from its own colour map (at most 1024 px: a mask of a few lit parts).
+      if (entry.glow && base) {
+        const strength = entry.glow.strength ?? 1;
+        mat.setEmissiveTexture(copy.createTexture('glow').setImage(await glowMap(base.getImage(), entry.glow, Math.min(1024, colour))).setMimeType('image/jpeg')).setEmissiveFactor([strength, strength, strength]);
+      }
       const nrm = mat.getNormalTexture();
       if (nrm && !done.has(nrm)) nrm.setImage(await normalJpeg(nrm.getImage(), normal)).setMimeType('image/jpeg').setURI('');
       const mr = mat.getMetallicRoughnessTexture();
@@ -447,7 +456,7 @@ async function build(src, entry, pack, place = null) {
     const crop = place && entry.box ? boxToSource(entry.box, place) : null;
     // A `held` entry is painted at its sharpest tier's sizes (the tiers shrink copies of it).
     const sizes = entry.held ? { textureSize: HELD_TIERS.at(-1).colour, normalSize: HELD_TIERS.at(-1).normal } : { ...(entry.normalSize > 1024 ? { normalSize: entry.normalSize } : {}), ...(entry.textureSize ? { textureSize: entry.textureSize } : {}) };
-    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, crop, keepMetalRough: !!entry.pbr, ...sizes }));
+    ({ doc: meshy } = await meshyDocument(src, { triangles: entry.triangles, maxError: entry.maxError, surface: entry.surface, dropHidden: entry.dropHidden, recolor, sloppy: entry.sloppy, lod: entry.lod ?? null, crop, keepMetalRough: !!entry.pbr, align: entry.align ?? null, ...sizes }));
   }
   // FBX sources (the Guns & Explosives pack) keep their UVs; their colour and normal maps sit beside them
   // unlinked, so `baseColor` / `normal` name them and they go on every material (or `maps`, all of them: packMaps).
@@ -518,12 +527,14 @@ async function build(src, entry, pack, place = null) {
   // An interior says which part of the body it stands in for (`box`, in its glTF extras).
   if (place && entry.box) holder.setExtras({ cockpit: { box: entry.box } });
   if (entry.parts) splitParts(doc, holder, entry.parts);
-  if (entry.held && entry.glow) throw new Error(`${entry.out}: held tiers don't carry a glow map yet`);
   for (const mat of doc.getRoot().listMaterials()) {
     // `pbr`: the source's own metal and roughness (packMaps, or meshyDocument's keepMetalRough), else a matte finish.
     if (entry.pbr) mat.setOcclusionTexture(null).setEmissiveTexture(null);
     else mat.setMetallicFactor(0).setRoughnessFactor(entry.roughness ?? 0.85).setMetallicRoughnessTexture(null).setOcclusionTexture(null).setEmissiveTexture(null);
     for (const ext of mat.listExtensions()) ext.dispose();
+    // `flat: "#rrggbb"`: the untextured, tintable copy: one plain colour instead of the colour map (the normal map
+    // baked from the download keeps its shape), for the game to tint (team colours, ammo types, themes).
+    if (entry.flat) mat.setBaseColorTexture(null).setBaseColorFactor([...[1, 3, 5].map((i) => (parseInt(entry.flat.slice(i, i + 2), 16) / 255) ** 2.2), 1]);
     // A `held` entry keeps its maps whole here: heldTiers shrinks a copy per tier.
     if (entry.held) continue;
     const baseMap = mat.getBaseColorTexture();
@@ -561,6 +572,8 @@ async function build(src, entry, pack, place = null) {
 }
 
 mkdirSync(OUT, { recursive: true });
+/** The frame each model built in this run was placed in (`frameOf`). */
+const placeOf = new Map();
 const lock = { $comment: 'Generated by tools/content/prepare-guns.mjs. Do not edit by hand.', files: [] };
 
 /** Write (or keep and check) one output and add it to the lock file. */
@@ -600,7 +613,11 @@ for (const entry of manifest.models) {
   const src = entry.glb && !skip ? downloadFile(entry.glb) : null;
   const dir = skip ? null : entry.glb ? src && dirname(src) : downloadDir(entry.download ?? pack.download);
   const from = dir ? (src ?? join(dir, pack.models ?? '.', entry.file)) : null;
-  let made = from ? await build(from, entry, pack) : null;
+  // `frameOf: <out>` (with `align`): built in that earlier entry's exact frame (its turn, scale and centre), so the two
+  // models swap in place (the grapple gun loaded and fired: guns.json); both are rebuilt together.
+  if (from && entry.frameOf && !placeOf.has(entry.frameOf)) throw new Error(`${entry.out}: build it with ${entry.frameOf} (ONLY=${entry.frameOf},${entry.out})`);
+  let made = from ? await build(from, entry, pack, entry.frameOf ? placeOf.get(entry.frameOf) : null) : null;
+  if (made) placeOf.set(entry.out, made.place);
   // `heldTriangles` (a Meshy `held` entry): the copies in your own hands are cut far less than everyone else's (their
   // own build of the same download, `heldMaxError`, no lower level of detail), in exactly the world copy's frame (the
   // same turn, scale and centre), so the hold, muzzle and sight numbers carry over. The world copy keeps `triangles`.

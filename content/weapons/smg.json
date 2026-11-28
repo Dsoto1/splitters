@@ -20,18 +20,18 @@
   "botDesirability": 0.6,
   "botRange": [0, 18],
   "view": {
-    "model": "guns/suomi_kp.glb",
-    "held": { "medium": "guns/suomi_kp.medium.glb", "high": "guns/suomi_kp.high.glb" },
+    "model": "guns/mp5k_pdw.glb",
+    "held": { "medium": "guns/mp5k_pdw.medium.glb", "high": "guns/mp5k_pdw.high.glb" },
     "fallback": "weapons/smg.glb",
     "viewOffset": [0.2, -0.2, 0.5],
     "tracer": "#ffe9a8",
-    "hold": { "style": "long", "grip": [0, -0.005, -0.15], "support": [0, 0.045, 0.17], "shoulder": [0, -0.03, -0.44] },
-    "muzzleAt": [0, 0.072, 0.435]
+    "hold": { "style": "long", "grip": [0, -0.015, -0.09], "support": [0, 0.0, 0.128], "shoulder": [0, 0.05, -0.28] },
+    "muzzleAt": [0, 0.065, 0.185]
   },
   "notes": {
     "description": "A fast rate of light rounds, tight for the first few, then wild. Short bursts win.",
     "range": "Best within 15 m: full damage, 7 body shots. Down to 35 % (20 shots) by 35 m; reaches 100 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.",
-    "model": "The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun (owner, 2026-11-06; still built in the repo), the kit SMG as the fallback."
+    "model": "The owner's own MP5K Style PDW (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 Suomi KP. No stock: held a little ahead of the shoulder, the left hand on its front grip. The kit SMG is the fallback."
   }
 }

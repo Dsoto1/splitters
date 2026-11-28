@@ -1,6 +1,8 @@
 import { roomLightsOn, saveRoomLights } from '../game/roomLights.ts';
 import { unlistedMapNotice } from './mapNotice.ts';
 import {
+  COMBAT_RULE_KEYS,
+  type CombatRules,
   BREAKTHROUGH_POOL_MAX,
   breakthroughSectors,
   CHARACTER_BRANCHES,
@@ -294,7 +296,7 @@ const narrowSetup = (): boolean => typeof matchMedia === 'function' && matchMedi
 const compactSetup = (): boolean => isTouchDevice() || (typeof matchMedia === 'function' && matchMedia('(max-width: 900px), (max-height: 600px)').matches);
 
 /** Advanced rules' summary names the changes that matter most first ("9 changed · Low gravity · Tactical bots +7"). */
-const RULE_RANK: Record<string, number> = { weapons: 0, set: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
+const RULE_RANK: Record<string, number> = { weapons: 0, set: 0, gravity: 1, style: 2, lethality: 3, ballistics: 4, combat: 4, randomchars: 5, classes: 6, ff: 7, fall: 8, stats: 9, sizes: 10 };
 
 /** Draw each card's plan once it scrolls into view in `root` (a long list draws only what is seen). */
 function lazyPlans(root: HTMLElement): (card: Element, draw: () => void) => void {
@@ -2195,6 +2197,12 @@ export class FrontEnd {
     const timeRowOff = forts ? 'Fort Wars ends after its last combat phase.' : coop ? 'Co-op and Zombies end through the mission.' : null;
     const noTeams = team ? null : `No teams in ${MODE_LABEL[s.mode]}.`;
     const respawnDefault = Math.round(BASE_RULES[s.mode].respawnDelayTicks / 60);
+    // Combat rules (GUNPLAY G5): their rows load with their own chunk (frontend/combatRows.ts) into their fold, out of the
+    // menu's first download; the host's changes count as one chip here.
+    const combatSet = COMBAT_RULE_KEYS.filter((k) => s[k] !== undefined).length;
+    const combatChanged = combatSet ? [{ id: 'combat', value: `Combat rules (${combatSet})` }] : [];
+    const combatBox = el('div', { id: 'setup-combat-rows' });
+    void import('./combatRows.ts').then((m) => combatBox.replaceChildren(...m.combatRows(s, map, (k, v) => this.change((x) => (v === undefined ? delete (x as CombatRules)[k] : ((x as CombatRules)[k] = v as never))))));
     const extras: { id: string; label: string; tip: string; changed: boolean; value: string; control: HTMLElement; disabled?: string | null }[] = [
       { id: 'ff', label: 'Friendly fire', tip: 'Team modes and co-op: whether your shots and blasts hurt teammates. A team kill earns nothing.', changed: !!s.friendlyFire, value: `Friendly fire ${s.friendlyFire === 'half' ? 'half' : 'full'}`, control: choice([['off', 'Off'], ['half', 'Half'], ['on', 'Full']], s.friendlyFire ?? 'off', (v) => this.change((x) => (x.friendlyFire = v === 'off' ? undefined : (v as 'half' | 'on')))), disabled: team || coop ? null : `No teammates in ${MODE_LABEL[s.mode]}.` },
       { id: 'respawn', label: 'Respawn delay', tip: `Seconds before you are back in. Rounds modes (Elimination, Bomb, Hostage) and Zombies wait for the next round or wave instead. Default here: ${respawnDefault} s.`, changed: s.respawn !== undefined, value: `Respawn ${s.respawn} s`, control: stepper({ value: s.respawn ?? respawnDefault, min: 0, max: 30, id: 'arcade-respawn', fmt: (v) => `${v} s`, onChange: (v) => this.change((x) => (x.respawn = v === respawnDefault ? undefined : v)) }) },
@@ -2241,10 +2249,10 @@ export class FrontEnd {
     const rowOf = (x: (typeof extras)[number]) => settingRow(x.label, x.tip, x.control, { disabled: x.disabled });
     const live = (xs: typeof extras) => xs.filter((x) => x.changed && !x.disabled);
     // What matters most first: "9 changed · Low gravity · Tactical bots +7".
-    const changed = [...live(extras), ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
+    const changed = [...live(extras), ...combatChanged, ...live(arsenal), ...live(botRules)].sort((a, b) => (RULE_RANK[a.id] ?? 50) - (RULE_RANK[b.id] ?? 50));
     const reset = el('button', { type: 'button', class: 'link rule-reset', id: 'setup-reset', textContent: 'Reset', title: 'Back to the standard rules (every variant off)' });
     reset.addEventListener('click', () => this.change((x) => {
-      for (const k of ['spears', 'discs', 'powerupsOff', 'mixPickups', 'dropWeapons', 'akimbo', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'themedNames', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn'] as const) delete x[k];
+      for (const k of ['spears', 'discs', 'powerupsOff', 'mixPickups', 'dropWeapons', 'akimbo', 'weaponSet', 'weather', 'classes', 'classLimit', 'botStyle', 'botCast', 'themedNames', 'gravity', 'fallDamage', 'friendlyFire', 'killstreaks', 'squadSpawn', 'emotes', 'sizes', 'stats', 'randomChars', 'vehicleDamage', 'leaders', 'lethality', 'ballistics', 'respawn', 'headshots', 'ammo', 'reloads', 'wallPenetration', 'damageScale', 'healthScale'] as const) delete x[k];
     }));
     const count = (xs: typeof extras) => {
       const n = live(xs).length;
@@ -2265,6 +2273,7 @@ export class FrontEnd {
       ...(changed.length ? [el('div', { class: 'rule-chips', id: 'setup-rule-chips' }, ...changed.map((x) => el('span', { textContent: x.value })), reset)] : []),
       ...(modeRows.length ? [fold('setup-mode', `${MODE_LABEL[s.mode]} settings`, 'mode settings', ...modeRows)] : []),
       fold('setup-rules', 'Rules', count(extras), ...rulesRows),
+      fold('setup-combat', 'Combat rules', combatSet ? `${combatSet} changed` : 'map', combatBox),
       fold('setup-arsenal', 'Weapons, pickups & vehicles', count(arsenal), ...arsenal.map(rowOf)),
     ];
 

@@ -93,6 +93,9 @@ import {
   type Zipline,
   oneHanded,
   thirdPersonAim,
+  STANDARD_COMBAT,
+  feedMagazine,
+  type CombatPlay,
 } from '@tiletrigger/shared';
 import type { VehiclePrediction } from './vehiclePrediction.ts';
 
@@ -202,6 +205,8 @@ export class LocalPlayer {
   private prevButtons = 0;
   /** Match rules the drawn rounds fly by (ballistics). */
   rules: Pick<MatchRules, 'ballistics'> = {};
+  /** The match's combat rules (shared sim/combatRules.ts), so ammo and reloads predict as the host plays them. */
+  combat: CombatPlay = STANDARD_COMBAT;
   /** Trigger state mirrored from the server rules (semi-auto latch, spin-up, burst). */
   private semiLatch = false;
   private windup = 0;
@@ -526,6 +531,7 @@ export class LocalPlayer {
     const def = this.weapon;
     const ammo = this.inventory.get(this.held);
     if (this.reloadTicks > 0 || !def || !ammo) return;
+    if (!this.combat.reloads && def.magazine > 0) return;
     const run = beginReload(this.pairOf() ? akimboLoader(def) : def, this.box(this.held, ammo));
     if (!run) return;
     this.reload = run;
@@ -538,7 +544,7 @@ export class LocalPlayer {
     const def = this.weapon;
     const ammo = this.inventory.get(this.held);
     const o = this.offs.get(this.held);
-    if (this.reloadTicks2 > 0 || !def || !ammo || !o || !this.pairOf()) return;
+    if (this.reloadTicks2 > 0 || !def || !ammo || !o || !this.pairOf() || !this.combat.reloads) return;
     const run = beginReload(akimboLoader(def), this.offBox(o, ammo));
     if (!run) return;
     this.reload2 = run;
@@ -632,7 +638,7 @@ export class LocalPlayer {
     if (bottomless) {
       this.fillHeld(def, ammo, off);
       if (this.reload || this.reload2) this.cancelReload();
-    }
+    } else if (!this.seatGun && this.feedHeld(def, ammo, off) && !this.combat.reloads && (this.reload || this.reload2)) this.cancelReload();
     stepAds(this.gun, gp.accuracy, !!(input.buttons & BUTTON_ZOOM) && !this.seatGun && !paired && !(this.state.roll && !this.mounted));
     const ready = (a: [number, number, number, number]) => (this.seatGun ? a[0] : roundsReady(this.box(this.held, a)));
     // As the server: a swing always interrupts a melee weapon's barrel reload; its barrel fires once a load is in.
@@ -673,7 +679,23 @@ export class LocalPlayer {
     }
     if (!fired) recoilIdle(this.gun, firing.kick, gp.accuracy, firing.interval);
     if (bottomless) this.fillHeld(def, ammo, off);
+    else if (!this.seatGun) this.feedHeld(def, ammo, off);
     return [shot, shot2];
+  }
+
+  /** Combat rules (as the server, Match: feedMagazine): unlimited ammo keeps the reserve full; reloads off feed the magazine. */
+  private feedHeld(def: WeaponDefinition, ammo: [number, number, number, number], off: { mag: number; unchambered: boolean } | undefined): boolean {
+    if (this.combat.reloads && this.combat.ammo !== 'unlimited') return false;
+    const w = { def, mag: ammo[0], reserve: ammo[1], unchambered: this.unchambered.has(this.held) || undefined, off: off ? { mag: off.mag, unchambered: off.unchambered || undefined } : undefined };
+    if (!feedMagazine(w, this.combat)) return false;
+    ammo[0] = w.mag;
+    ammo[1] = w.reserve;
+    if (!w.unchambered) this.unchambered.delete(this.held);
+    if (off && w.off) {
+      off.mag = w.off.mag;
+      off.unchambered = !!w.off.unchambered;
+    }
+    return true;
   }
 
   /** Bottomless Mag: the held gun's magazine (and a second gun's) full, a round chambered (sim/powerups.ts fillMagazine). */

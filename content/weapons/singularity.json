@@ -28,17 +28,18 @@
     "zone": { "kind": "singularity", "radius": 8, "seconds": 2.4 }
   },
   "view": {
-    "model": "guns/plasma_blaster.glb",
-    "viewOffset": [0.27, -0.31, 0.57],
+    "model": "guns/singularity_cannon.glb",
+    "held": { "medium": "guns/singularity_cannon.medium.glb", "high": "guns/singularity_cannon.high.glb" },
+    "viewOffset": [0.27, -0.34, 0.64],
     "tracer": "#b07aff",
-    "hold": { "style": "long", "grip": [0, -0.13, -0.17], "support": [0, -0.076, 0.17], "shoulder": [0, 0, -0.33] },
+    "hold": { "style": "long", "grip": [0, -0.1, -0.24], "support": [0, -0.085, 0.14], "shoulder": [0, 0.04, -0.43] },
     "fallback": "weapons/singularity.glb",
-    "muzzleAt": [0, 0.042, 0.33],
+    "muzzleAt": [0, 0.045, 0.425],
     "sound": "fire.vortex"
   },
   "notes": {
     "description": "A slow orb that opens a small black hole, dragging everyone nearby into it.",
     "group": "The extended arsenal: every one fires differently. 8: heavy.",
-    "model": "The Plasma Blaster (Meshy community, CC0 per the owner; content/guns.json), its glow turned purple; the Quaternius sci-fi sniper it replaced is the fallback."
+    "model": "The owner's own Singularity Cannon (Meshy, owned, 2026-11-27; content/guns.json), its purple core lit; sharper copies in your own hands at Medium and High. It replaced the Plasma Blaster (Meshy community). The Quaternius sci-fi sniper is the fallback."
   }
 }

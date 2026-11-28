@@ -11,4 +11,9 @@ describe('the Practice Target readout', () => {
     expect(targetReadout({ z: 0, n: 104, d: 8, p: 9 })).toBe('Body · 8 m · 9 pellets · 104 · 1 hit to down');
     expect(targetReadout({ z: 0, n: 60, d: 0 })).toBe('Blast · 60 · 2 hits to down');
   });
+
+  it('counts hits to down at the match\'s health scale (combat rules)', () => {
+    expect(targetReadout({ z: 0, n: 50, d: 10 }, 2)).toBe('Body · 10 m · 50 · 4 hits to down');
+    expect(targetReadout({ z: 0, n: 50, d: 10 }, 0.5)).toBe('Body · 10 m · 50 · 1 hit to down');
+  });
 });

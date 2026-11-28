@@ -23,12 +23,12 @@
   "ammo": "light",
   "knockback": 4,
   "view": {
-    "model": "guns/revolver_rustique.glb",
-    "held": { "medium": "guns/revolver_rustique.medium.glb", "high": "guns/revolver_rustique.high.glb" },
+    "model": "guns/western_revolver.glb",
+    "held": { "medium": "guns/western_revolver.medium.glb", "high": "guns/western_revolver.high.glb" },
     "viewOffset": [0.2, -0.18, 0.42],
     "tracer": "#ffcf7a",
-    "hold": { "style": "pistol", "grip": [0, -0.045, -0.115], "support": [-0.02, -0.055, -0.105], "rake": 18 },
-    "muzzleAt": [0, 0.055, 0.145],
+    "hold": { "style": "pistol", "grip": [0, -0.042, -0.133], "support": [-0.02, -0.052, -0.123], "rake": 26 },
+    "muzzleAt": [0, 0.053, 0.17],
     "fallback": "weapons/revolver.glb",
     "sound": "fire.revolver"
   },
@@ -36,6 +36,6 @@
     "description": "Every pull is an event: absurd damage for a handgun, six of them, then a reload.",
     "range": "Best within 25 m: full damage, 2 body shots. Down to 40 % (3 shots) by 65 m; reaches 110 m. A head shot kills to about 45 m, a body pair to about 50 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills within its range, about 45 m; a body shot takes nine tenths of a life; owner, 2026-11-16: short range like the Hand Cannon, 110 m and a 40 % floor), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).",
-    "model": "The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver of 2026-01-26 (still built), the kit revolver as the fallback."
+    "model": "The owner's own Western Classic 6-Shot Revolver (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the Meshy community Revolver Rustique. The kit revolver is the fallback."
   }
 }

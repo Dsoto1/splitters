@@ -14,9 +14,9 @@ import { HOLDOVER_DISTANCES, holdoverFor } from '../src/game/holdover.ts';
  */
 const CARRIES: Record<OpticKindId, string[]> = {
   // The Woodland SMG down its own iron sights (owner, 2026-11-27: a red dot stood on its rear sight, "two sights stacked").
-  irons: ['core.amarillo', 'core.auto_shotgun', 'core.burst_rifle', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
+  irons: ['core.amarillo', 'core.auto_shotgun', 'core.compact_carbine', 'core.flintlock_pistol', 'core.freeze_ray', 'core.gilded_pistol', 'core.goo_gun', 'core.hand_cannon', 'core.laser_blaster', 'core.machine_pistol', 'core.nailgun', 'core.pistol', 'core.pulse_pistol', 'core.revolver', 'core.rifle', 'core.runebreaker', 'core.shotgun', 'core.smg', 'core.woodland_smg'],
   // The weapons intake's guns (owner, 2026-11-22, "2a"): in their models' own sights.
-  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.twin_rifle'],
+  reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.burst_rifle', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'],
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
   scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman', 'core.nova6'],
   sniper: ['core.railgun', 'core.sniper'],
@@ -32,7 +32,7 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.smg': ['irons', 'reddot', 'holo', 'x2'],
   'core.compact_carbine': ['irons', 'reddot', 'holo', 'x2'],
   'core.amarillo': ['irons', 'x2'],
-  'core.burst_rifle': ['irons', 'x2'],
+  'core.burst_rifle': ['reddot', 'irons', 'holo', 'x2'],
   'core.laser_rifle': ['reddot', 'holo', 'x2'],
   'core.shotgun': ['irons', 'reddot', 'holo'],
   'core.auto_shotgun': ['irons', 'reddot', 'holo'],
@@ -41,12 +41,14 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.freeze_ray': ['irons', 'reddot', 'holo'],
   'core.goo_gun': ['irons', 'reddot', 'holo'],
   'core.pistol': ['irons', 'reddot'],
+  'core.gilded_pistol': ['irons', 'reddot'],
   'core.revolver': ['irons', 'reddot'],
   'core.hand_cannon': ['irons', 'reddot'],
   'core.pulse_pistol': ['irons', 'reddot'],
   'core.machine_pistol': ['irons', 'reddot'],
   'core.laser_blaster': ['irons', 'reddot'],
   'core.bubble_blaster': ['reddot', 'holo'],
+  'core.singularity': ['reddot', 'holo'],
   'core.flak': ['holo', 'reddot'],
   'core.disc_launcher': ['holo', 'reddot'],
   'core.arena_disc': ['holo', 'reddot'],
@@ -57,7 +59,7 @@ const CHOICES: Record<string, OpticKindId[]> = {
   'core.blaster_x42': ['reddot', 'holo'],
 };
 /** The hand-held guns that keep the aim they had (no sights, no optic), each with its reason in content/optics.json `none`. */
-const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.flamethrower', 'core.flare_gun', 'core.gilded_pistol', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.singularity', 'core.swarm'];
+const KEEP_THEIR_AIM = ['core.blast_rockets', 'core.flamethrower', 'core.flare_gun', 'core.guided', 'core.heart_taser', 'core.hornet', 'core.launcher', 'core.lmg', 'core.oil_slicker', 'core.rockets', 'core.swarm'];
 /**
  * Every weapon's aimed magnification over the hip view. A zoom is a feel and balance number: the optics pass changed
  * none of them (the sights' 0.72 of the hip field of view is 1.52x), and a change here is the owner's to approve.
@@ -295,9 +297,10 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
       // Drawn larger across the view axis only: a point on the axis stays on it, so the sights stay on the aim.
       expect(offAxis([rear[0] * k, rear[1] * k, rear[2]]), id).toBeLessThan(SIGHT_TOLERANCE_DEG);
     }
-    // Handguns are near enough already (all but unchanged); rifles, shotguns and the SMG are not.
-    for (const id of ['core.pistol', 'core.revolver', 'core.hand_cannon', 'core.pulse_pistol']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeLessThan(1.12);
-    for (const id of ['core.rifle', 'core.burst_rifle', 'core.smg', 'core.shotgun']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeGreaterThan(1.2);
+    // Handguns are near enough already (all but unchanged), and so is the SMG since its short MP5K (2026-11-28: its rear
+    // sight sits at the eye's end of a gun with no stock); rifles and shotguns are not.
+    for (const id of ['core.pistol', 'core.revolver', 'core.hand_cannon', 'core.pulse_pistol', 'core.smg']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeLessThan(1.12);
+    for (const id of ['core.rifle', 'core.burst_rifle', 'core.shotgun']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeGreaterThan(1.2);
     for (const id of [...CARRIES.scope, ...CARRIES.sniper, ...KEEP_THEIR_AIM]) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBe(1);
   });
 
@@ -364,7 +367,7 @@ describe('optic choice in the loadout (docs/GUNPLAY_SPEC.md §15, "Optic choice"
       for (const k of ['reddot', 'holo', 'x2', 'irons']) expect(opticOf(getWeapon(id), k)!.id, `${id} given ${k}`).toBe(WEAPON_OPTICS[id]!.default);
     }
     // Anything not allowed is the default; nonsense too.
-    expect(opticOf(getWeapon('core.burst_rifle'), 'reddot')!.id).toBe('irons');
+    expect(opticOf(getWeapon('core.amarillo'), 'reddot')!.id).toBe('irons');
     expect(opticOf(getWeapon('core.rifle'), 'banana')!.id).toBe('irons');
   });
 

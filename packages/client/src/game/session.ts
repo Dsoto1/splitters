@@ -93,6 +93,7 @@ import {
   ZOMBIE_LOOKS,
   STREAK_REWARDS,
   matchPhysics,
+  combatRulesOf,
   matchTeams,
   type Vec3,
   type WeaponDefinition,
@@ -2623,6 +2624,7 @@ export class GameSession {
         this.local.scale = this.sizeOf(this.slot);
         this.local.gravity = matchPhysics(msg.rules, loaded.map).gravity;
         this.local.rules = { ...(msg.rules.ballistics ? { ballistics: msg.rules.ballistics } : {}) };
+        this.local.combat = combatRulesOf(msg.rules, loaded.map);
         this.local.liquids = mapLiquids(loaded.map.entities);
         this.local.gravityZones = mapGravityZones(loaded.map.entities);
         this.local.portals = mapPortals(loaded.map.entities);
@@ -2846,7 +2848,9 @@ export class GameSession {
               // It stays on the muzzle while the hook pulls you in.
               const slot = ev.s;
               const muzzleNow = () => (mine ? (this.view.localMuzzle() ?? this.view.muzzleOf(slot)) : this.view.muzzleOf(slot));
-              if (t) this.view.addRope(muzzleNow, { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450);
+              if (t) this.view.addRope(muzzleNow, { x: eye.x, y: eye.y - 0.25, z: eye.z }, { x: t[0], y: t[1], z: t[2] }, color, 0.025, 450, def.view.hookModel);
+              // Your gun shows its claw gone until it can fire again (view.spent).
+              if (mine && def.view.spent) this.view.spendViewmodel(def, (def.fireIntervalTicks / 60) * 1000);
               continue;
             }
             const flying = new Set(ev.fl ?? []);
@@ -3071,7 +3075,7 @@ export class GameSession {
           } else if (ev.e === 'thit') {
             // A Practice Target (map v55): it rocks on its hinge; your own hit is read out on the pickup line.
             this.view.scenario.targetHit(ev.i, ev.z);
-            if (ev.s === this.slot) this.hud.targetReadout(targetReadout(ev));
+            if (ev.s === this.slot) this.hud.targetReadout(targetReadout(ev, this.local?.combat.healthScale ?? 1));
           } else if (ev.e === 'broken') {
             const e = this.map?.entities[ev.i];
             // A Practice Target knocked down: it falls on its hinge (scenario state), no debris.

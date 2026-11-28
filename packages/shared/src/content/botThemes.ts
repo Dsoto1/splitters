@@ -88,9 +88,10 @@ const isGroupId = (x: string) => CHARACTER_GROUPS.some((g) => g.id === x);
 const isBranchId = (x: string) => CHARACTER_BRANCHES.some((b) => b.id === x);
 /**
  * Retired cast ids and what they read as now (saved setups, maps, server rules; 2026-11-17): Agents & Spies is
- * Soldiers & Spies' Agency (the same characters as before), Creatures is in Horrors & Creatures.
+ * Soldiers & Spies' Agency (the same characters as before), Creatures is in Horrors & Creatures; Pirates is in
+ * Historical (owner, 2026-11-28).
  */
-export const CAST_ID_ALIASES: Readonly<Record<string, string>> = { agents: 'agency', creatures: 'horror' };
+export const CAST_ID_ALIASES: Readonly<Record<string, string>> = { agents: 'agency', creatures: 'horror', pirates: 'historical' };
 /** A cast id as it reads now (a retired one's replacement). */
 export const currentCastId = (x: string): string => CAST_ID_ALIASES[x] ?? x;
 /** A choice that picks characters by what they are (a group or a branch), not by their names' theme. */
@@ -166,7 +167,6 @@ export const BOT_TYPES = [
   { id: 'space', label: 'Outer Space' },
   { id: 'legends', label: 'Legends' },
   { id: 'historical', label: 'Historical' },
-  { id: 'pirates', label: 'Pirates' },
   { id: 'animals', label: 'Animalia' },
   { id: 'toys', label: 'Toys' },
   { id: 'holiday', label: 'Holiday' },
@@ -191,8 +191,9 @@ export const THEME_BOT_TYPES: Readonly<Record<string, BotTypeId>> = {
   raccoon: 'animals',
   critter: 'animals',
   frog: 'animals',
-  pirate: 'legends',
-  // Owner, 2026-11-27: the knights, the samurai and lancers, the barbarians and the cowboys are Historical's now.
+  // Owner, 2026-11-27: the knights, the samurai and lancers, the barbarians and the cowboys are Historical's now;
+  // 2026-11-28 the pirates too.
+  pirate: 'historical',
   knight: 'historical',
   ninja: 'historical',
   wizard: 'legends',

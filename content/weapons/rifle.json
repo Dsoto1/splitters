@@ -38,20 +38,20 @@
   "botDesirability": 0.7,
   "botRange": [4, 35],
   "view": {
-    "model": "guns/ak47_cc0.glb",
-    "held": { "medium": "guns/ak47_cc0.medium.glb", "high": "guns/ak47_cc0.high.glb" },
+    "model": "guns/ak47_modular.glb",
+    "held": { "medium": "guns/ak47_modular.medium.glb", "high": "guns/ak47_modular.high.glb" },
     "fallback": "weapons/rifle.glb",
     "viewOffset": [0.2, -0.2, 0.55],
     "tracer": "#ffd36b",
-    "hold": { "style": "long", "grip": [0, -0.012, -0.175], "support": [0, 0.048, 0.13], "shoulder": [0, 0.02, -0.43] },
+    "hold": { "style": "long", "grip": [0, -0.02, -0.18], "support": [0, 0.055, 0.13], "shoulder": [0, 0.03, -0.43] },
     "sound": "fire.rifle.ak74",
     "reloadSound": "reload.ak",
-    "muzzleAt": [0, 0.068, 0.44]
+    "muzzleAt": [0, 0.072, 0.44]
   },
   "notes": {
     "description": "The medium-range workhorse: steady climb, real bullet travel. Learn it and it never lets you down.",
     "range": "Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 500 m. Standard ballistics: by impact speed, the same distances.",
-    "model": "The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47 (still built), the kit rifle as the fallback.",
+    "model": "The owner's own AK-47 Modular Assault Rifle (Meshy, owned, 2026-11-27; content/guns.json), sharper copies in your own hands at Medium and High; it replaced the 3DModelsCC0 AK-47. The kit rifle is the fallback.",
     "design": "Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse."
   }
 }

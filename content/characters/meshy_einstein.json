@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 229,
-  "name": "Prof. Quanta",
+  "name": "Albert Einstein",
   "look": "core.einstein",
   "group": "historical",
   "blood": "red",

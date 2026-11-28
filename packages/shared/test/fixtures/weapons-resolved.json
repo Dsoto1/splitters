@@ -100,10 +100,10 @@
     "pellets": 1,
     "fireIntervalTicks": 10,
     "view": {
-     "model": "guns/makarov.glb",
+     "model": "guns/glock19.glb",
      "held": {
-      "medium": "guns/makarov.medium.glb",
-      "high": "guns/makarov.high.glb"
+      "medium": "guns/glock19.medium.glb",
+      "high": "guns/glock19.high.glb"
      },
      "fallback": "weapons/pistol.glb",
      "viewOffset": [
@@ -116,19 +116,19 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.022,
-       -0.083
+       -0.03,
+       -0.062
       ],
       "support": [
        -0.02,
-       -0.032,
-       -0.073
+       -0.04,
+       -0.052
       ],
-      "rake": 10
+      "rake": 15
      },
      "muzzleAt": [
       0,
-      0.055,
+      0.04,
       0.1
      ]
     }
@@ -243,10 +243,10 @@
     "pellets": 1,
     "raiseTicks": 20,
     "view": {
-     "model": "guns/ak47_cc0.glb",
+     "model": "guns/ak47_modular.glb",
      "held": {
-      "medium": "guns/ak47_cc0.medium.glb",
-      "high": "guns/ak47_cc0.high.glb"
+      "medium": "guns/ak47_modular.medium.glb",
+      "high": "guns/ak47_modular.high.glb"
      },
      "fallback": "weapons/rifle.glb",
      "viewOffset": [
@@ -259,17 +259,17 @@
       "style": "long",
       "grip": [
        0,
-       -0.012,
-       -0.175
+       -0.02,
+       -0.18
       ],
       "support": [
        0,
-       0.048,
+       0.055,
        0.13
       ],
       "shoulder": [
        0,
-       0.02,
+       0.03,
        -0.43
       ]
      },
@@ -277,7 +277,7 @@
      "reloadSound": "reload.ak",
      "muzzleAt": [
       0,
-      0.068,
+      0.072,
       0.44
      ]
     }
@@ -391,10 +391,10 @@
      9
     ],
     "view": {
-     "model": "guns/shotgun_cc0.glb",
+     "model": "guns/vietnam_shotgun.glb",
      "held": {
-      "medium": "guns/shotgun_cc0.medium.glb",
-      "high": "guns/shotgun_cc0.high.glb"
+      "medium": "guns/vietnam_shotgun.medium.glb",
+      "high": "guns/vietnam_shotgun.high.glb"
      },
      "fallback": "weapons/shotgun.glb",
      "viewOffset": [
@@ -411,25 +411,25 @@
       "style": "long",
       "grip": [
        0,
-       0.015,
+       -0.03,
        -0.205
       ],
       "support": [
        0,
-       0.035,
-       0.22
+       0.03,
+       0.21
       ],
       "shoulder": [
        0,
-       -0.03,
-       -0.52
+       -0.035,
+       -0.49
       ]
      },
      "reloadSound": "reload.end.b",
      "muzzleAt": [
       0,
-      0.083,
-      0.52
+      0.076,
+      0.5
      ]
     }
    },
@@ -726,10 +726,10 @@
     ],
     "pellets": 1,
     "view": {
-     "model": "guns/suomi_kp.glb",
+     "model": "guns/mp5k_pdw.glb",
      "held": {
-      "medium": "guns/suomi_kp.medium.glb",
-      "high": "guns/suomi_kp.high.glb"
+      "medium": "guns/mp5k_pdw.medium.glb",
+      "high": "guns/mp5k_pdw.high.glb"
      },
      "fallback": "weapons/smg.glb",
      "viewOffset": [
@@ -742,24 +742,24 @@
       "style": "long",
       "grip": [
        0,
-       -0.005,
-       -0.15
+       -0.015,
+       -0.09
       ],
       "support": [
        0,
-       0.045,
-       0.17
+       0,
+       0.128
       ],
       "shoulder": [
        0,
-       -0.03,
-       -0.44
+       0.05,
+       -0.28
       ]
      },
      "muzzleAt": [
       0,
-      0.072,
-      0.435
+      0.065,
+      0.185
      ]
     }
    },
@@ -1206,10 +1206,10 @@
     },
     "pellets": 1,
     "view": {
-     "model": "guns/bk220.glb",
+     "model": "guns/desert_eagle.glb",
      "held": {
-      "medium": "guns/bk220.medium.glb",
-      "high": "guns/bk220.high.glb"
+      "medium": "guns/desert_eagle.medium.glb",
+      "high": "guns/desert_eagle.high.glb"
      },
      "fallback": "weapons/hand_cannon.glb",
      "viewOffset": [
@@ -1222,20 +1222,20 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.03,
-       -0.097
+       -0.027,
+       -0.088
       ],
       "support": [
        -0.02,
-       -0.04,
-       -0.087
+       -0.037,
+       -0.078
       ],
-      "rake": 8
+      "rake": 14
      },
      "muzzleAt": [
       0,
-      0.06,
-      0.125
+      0.042,
+      0.135
      ],
      "sound": "fire.pistol.c"
     }
@@ -1342,10 +1342,10 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "guns/flintlock.glb",
+     "model": "guns/gold_ppk.glb",
      "held": {
-      "medium": "guns/flintlock.medium.glb",
-      "high": "guns/flintlock.high.glb"
+      "medium": "guns/gold_ppk.medium.glb",
+      "high": "guns/gold_ppk.high.glb"
      },
      "fallback": "weapons/gilded_pistol.glb",
      "viewOffset": [
@@ -1358,20 +1358,20 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.045,
-       -0.13
+       -0.04,
+       -0.053
       ],
       "support": [
        -0.02,
-       -0.055,
-       -0.12
+       -0.05,
+       -0.043
       ],
-      "rake": 28
+      "rake": 12
      },
      "muzzleAt": [
       0,
-      0.05,
-      0.165
+      0.03,
+      0.09
      ],
      "sound": "fire.heavy.b"
     }
@@ -1549,10 +1549,10 @@
     "pellets": 1,
     "botDesirability": 0.5,
     "view": {
-     "model": "guns/grease_gun.glb",
+     "model": "guns/machine_pistol_mod.glb",
      "held": {
-      "medium": "guns/grease_gun.medium.glb",
-      "high": "guns/grease_gun.high.glb"
+      "medium": "guns/machine_pistol_mod.medium.glb",
+      "high": "guns/machine_pistol_mod.high.glb"
      },
      "fallback": "weapons/machine_pistol.glb",
      "viewOffset": [
@@ -1565,24 +1565,24 @@
       "style": "long",
       "grip": [
        0,
-       0.015,
-       -0.175
+       0.01,
+       -0.115
       ],
       "support": [
        0,
-       0.05,
-       0
+       0.02,
+       0.03
       ],
       "shoulder": [
        0,
-       0.03,
-       -0.245
+       0.06,
+       -0.26
       ]
      },
      "muzzleAt": [
       0,
-      0.085,
-      0.245
+      0.072,
+      0.16
      ],
      "sound": "fire.heavy.l86.fast"
     }
@@ -1682,10 +1682,10 @@
     "pellets": 1,
     "raiseTicks": 20,
     "view": {
-     "model": "guns/m4a1.glb",
+     "model": "guns/desert_storm_rifle.glb",
      "held": {
-      "medium": "guns/m4a1.medium.glb",
-      "high": "guns/m4a1.high.glb"
+      "medium": "guns/desert_storm_rifle.medium.glb",
+      "high": "guns/desert_storm_rifle.high.glb"
      },
      "viewOffset": [
       0.21,
@@ -1697,23 +1697,23 @@
       "style": "long",
       "grip": [
        0,
-       -0.04,
-       -0.195
+       -0.035,
+       -0.172
       ],
       "support": [
        0,
-       0.045,
-       0.11
+       0.055,
+       0.13
       ],
       "shoulder": [
        0,
-       0.02,
+       0.03,
        -0.425
       ]
      },
      "muzzleAt": [
       0,
-      0.065,
+      0.1,
       0.43
      ],
      "fallback": "weapons/burst_rifle.glb",
@@ -2039,7 +2039,17 @@
     },
     "akimbo": true,
     "view": {
-     "model": "weapons/sawed_off.glb",
+     "model": "guns/buffalo_cannon.glb",
+     "muzzleAt": [
+      0,
+      0.063,
+      0.4
+     ],
+     "held": {
+      "medium": "guns/buffalo_cannon.medium.glb",
+      "high": "guns/buffalo_cannon.high.glb"
+     },
+     "fallback": "weapons/sawed_off.glb",
      "viewOffset": [
       0.21,
       -0.21,
@@ -2050,18 +2060,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.06,
-       -0.165
+       -0.008,
+       -0.126
       ],
       "support": [
        0,
-       -0.04,
-       0.066
+       0.017,
+       0.143
       ],
       "shoulder": [
        0,
-       0,
-       -0.275
+       -0.034,
+       -0.396
       ]
      },
      "sound": "fire.shotgun.b",
@@ -2150,7 +2160,11 @@
     },
     "reserveMax": 40,
     "view": {
-     "model": "guns/shotgun.glb",
+     "model": "guns/obsidian_pump.glb",
+     "held": {
+      "medium": "guns/obsidian_pump.medium.glb",
+      "high": "guns/obsidian_pump.high.glb"
+     },
      "fallback": "weapons/auto_shotgun.glb",
      "viewOffset": [
       0.21,
@@ -2162,25 +2176,25 @@
       "style": "long",
       "grip": [
        0,
-       0,
-       -0.2
+       -0.005,
+       -0.215
       ],
       "support": [
        0,
-       0.035,
-       0.2
+       0.022,
+       0.19
       ],
       "shoulder": [
        0,
-       -0.02,
-       -0.47
+       -0.035,
+       -0.48
       ]
      },
      "reloadSound": "reload.end.b",
      "muzzleAt": [
       0,
-      0.078,
-      0.475
+      0.072,
+      0.49
      ],
      "sound": "fire.shotgun.b"
     }
@@ -2892,31 +2906,40 @@
     },
     "pellets": 1,
     "view": {
-     "model": "guns/gatling_gun.glb",
+     "model": "guns/rotary_minigun.glb",
+     "held": {
+      "medium": "guns/rotary_minigun.medium.glb",
+      "high": "guns/rotary_minigun.high.glb"
+     },
      "viewOffset": [
-      0.25,
-      -0.31,
-      0.74
+      0.27,
+      -0.36,
+      0.84
      ],
      "tracer": "#ffd36b",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.09,
-       -0.243
+       -0.025,
+       -0.315
       ],
       "support": [
        0,
-       -0.126,
-       -0.018
+       0,
+       0.14
       ],
       "shoulder": [
        0,
-       0.09,
-       -0.423
+       0.12,
+       -0.47
       ]
      },
+     "muzzleAt": [
+      0,
+      0.075,
+      0.5
+     ],
      "fallback": "weapons/lmg.glb",
      "sound": "fire.smg.ppsh",
      "reloadSound": "reload.scifi"
@@ -3221,11 +3244,21 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "weapons/rockets.glb",
+     "model": "guns/rpg7.glb",
+     "held": {
+      "medium": "guns/rpg7.medium.glb",
+      "high": "guns/rpg7.high.glb"
+     },
+     "fallback": "weapons/rockets.glb",
+     "muzzleAt": [
+      0,
+      0.04,
+      0.47
+     ],
      "viewOffset": [
       0.24,
-      -0.26,
-      0.5
+      -0.305,
+      0.415
      ],
      "tracer": "#ff4a3a",
      "sound": "fire.plasma",
@@ -3233,18 +3266,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.1,
-       0
+       -0.055,
+       0.085
       ],
       "support": [
        0,
-       -0.101,
-       0.24
+       -0.005,
+       0.2
       ],
       "shoulder": [
        0,
-       0.034,
-       -0.48
+       0.04,
+       -0.3
       ]
      }
     }
@@ -3317,36 +3350,40 @@
     "spread": 0,
     "range": 120,
     "view": {
-     "model": "guns/plasma_blaster.glb",
+     "model": "guns/singularity_cannon.glb",
+     "held": {
+      "medium": "guns/singularity_cannon.medium.glb",
+      "high": "guns/singularity_cannon.high.glb"
+     },
      "viewOffset": [
       0.27,
-      -0.31,
-      0.57
+      -0.34,
+      0.64
      ],
      "tracer": "#b07aff",
      "hold": {
       "style": "long",
       "grip": [
        0,
-       -0.13,
-       -0.17
+       -0.1,
+       -0.24
       ],
       "support": [
        0,
-       -0.076,
-       0.17
+       -0.085,
+       0.14
       ],
       "shoulder": [
        0,
-       0,
-       -0.33
+       0.04,
+       -0.43
       ]
      },
      "fallback": "weapons/singularity.glb",
      "muzzleAt": [
       0,
-      0.042,
-      0.33
+      0.045,
+      0.425
      ],
      "sound": "fire.vortex"
     }
@@ -4207,27 +4244,49 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "weapons/flare_gun.glb",
+     "model": "guns/grapple.glb",
+     "held": {
+      "medium": "guns/grapple.medium.glb",
+      "high": "guns/grapple.high.glb"
+     },
+     "spent": {
+      "model": "guns/grapple_fired.glb",
+      "held": {
+       "medium": "guns/grapple_fired.medium.glb",
+       "high": "guns/grapple_fired.high.glb"
+      }
+     },
+     "hookModel": "guns/grapple_hook.glb",
+     "fallback": "weapons/flare_gun.glb",
      "viewOffset": [
       0.2,
-      -0.18,
-      0.42
+      -0.2,
+      0.46
      ],
      "tracer": "#d8d2c0",
      "hold": {
-      "style": "pistol",
+      "style": "long",
       "grip": [
        0,
-       -0.043,
-       -0.068
+       -0.04,
+       -0.17
       ],
       "support": [
-       -0.02,
-       -0.053,
-       -0.058
+       0,
+       0,
+       0.12
       ],
-      "rake": 34
+      "shoulder": [
+       0,
+       0.01,
+       -0.31
+      ]
      },
+     "muzzleAt": [
+      0,
+      0.045,
+      0.25
+     ],
      "sound": "fire.disc.c"
     }
    },
@@ -4540,11 +4599,21 @@
     "pellets": 1,
     "spread": 0,
     "view": {
-     "model": "weapons/rockets.glb",
+     "model": "guns/rpg7.glb",
+     "held": {
+      "medium": "guns/rpg7.medium.glb",
+      "high": "guns/rpg7.high.glb"
+     },
+     "fallback": "weapons/rockets.glb",
+     "muzzleAt": [
+      0,
+      0.04,
+      0.47
+     ],
      "viewOffset": [
       0.24,
-      -0.26,
-      0.5
+      -0.305,
+      0.415
      ],
      "tracer": "#ffb347",
      "sound": "fire.swarm.d",
@@ -4552,18 +4621,18 @@
       "style": "long",
       "grip": [
        0,
-       -0.1,
-       0
+       -0.055,
+       0.085
       ],
       "support": [
        0,
-       -0.101,
-       0.24
+       -0.005,
+       0.2
       ],
       "shoulder": [
        0,
-       0.034,
-       -0.48
+       0.04,
+       -0.3
       ]
      }
     }
@@ -4697,10 +4766,10 @@
     "knockback": 4,
     "pellets": 1,
     "view": {
-     "model": "guns/revolver_rustique.glb",
+     "model": "guns/western_revolver.glb",
      "held": {
-      "medium": "guns/revolver_rustique.medium.glb",
-      "high": "guns/revolver_rustique.high.glb"
+      "medium": "guns/western_revolver.medium.glb",
+      "high": "guns/western_revolver.high.glb"
      },
      "viewOffset": [
       0.2,
@@ -4712,20 +4781,20 @@
       "style": "pistol",
       "grip": [
        0,
-       -0.045,
-       -0.115
+       -0.042,
+       -0.133
       ],
       "support": [
        -0.02,
-       -0.055,
-       -0.105
+       -0.052,
+       -0.123
       ],
-      "rake": 18
+      "rake": 26
      },
      "muzzleAt": [
       0,
-      0.055,
-      0.145
+      0.053,
+      0.17
      ],
      "fallback": "weapons/revolver.glb",
      "sound": "fire.revolver"

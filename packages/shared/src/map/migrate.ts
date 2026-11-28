@@ -168,6 +168,9 @@ export const MIGRATIONS: ReadonlyMap<number, Migration> = new Map<number, Migrat
   // 2026-11-19: the Practice range). v54 data is valid as is. The bump is for the other direction: an older build
   // refuses a v55 map outright instead of failing on an entity it has never heard of.
   [54, (doc) => ({ ...doc })],
+  // v55 -> v56: the map's combat rules (sim/combatRules.ts, GUNPLAY G5): an optional `combatRules`. v55 data is valid as
+  // is; the bump is so an older build refuses a map with combat rules instead of quietly playing it without them.
+  [55, (doc) => ({ ...doc })],
 ]);
 
 /** v50 -> v51: the `categories` pairs become one `category` (none when there were none). */

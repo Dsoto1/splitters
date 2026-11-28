@@ -3,7 +3,7 @@
   "kind": "character",
   "use": "player",
   "order": 277,
-  "name": "Imperator Laurel",
+  "name": "Julius Caesar",
   "look": "core.caesar",
   "group": "historical",
   "blood": "red",
