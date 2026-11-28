@@ -14,10 +14,11 @@ import { gzipSync } from 'node:zlib';
  * style packs (2026-10-31: Harbor 798, Snow 805, Desert City 816 kB gzipped; Jungle Ruins next): each pack's tiles,
  * materials and props table come in through the shared map and sim code the menu loads. Content scalability step 1
  * moved the map content out (649 kB); it had grown back to 746 kB by 2026-11-09, when the measured hit-shape table
- * left the menu (sim/lookHitbox.ts: 714 kB gzip, 2513 kB raw) and these went back down to 800 / 2800.
+ * left the menu (sim/lookHitbox.ts: 714 kB gzip, 2513 kB raw) and these went back down to 800 / 2800. Raised to
+ * 810 / 2835 by the owner on 2026-11-28 (the menu at 799.7 kB with the Armory's entry hook; docs/LOADING.md).
  */
-const BUDGET_GZIP_KB = Number(process.env.BUDGET_GZIP_KB ?? 800);
-const BUDGET_RAW_KB = Number(process.env.BUDGET_RAW_KB ?? 2800);
+const BUDGET_GZIP_KB = Number(process.env.BUDGET_GZIP_KB ?? 810);
+const BUDGET_RAW_KB = Number(process.env.BUDGET_RAW_KB ?? 2835);
 
 const dist = process.argv[2] ?? 'packages/client/dist';
 const html = join(dist, 'index.html');

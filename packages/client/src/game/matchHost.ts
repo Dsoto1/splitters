@@ -86,6 +86,8 @@ export interface LocalMatchOptions {
   title?: string;
   /** This browser's player's optic choices (opticPrefs.ts): on the roster, so friends draw the optic they picked. */
   optics?: Record<string, string>;
+  /** The Armory's Try it in the range: this browser's player holds this weapon from each spawn (Match holdOnSpawn). */
+  hand?: string;
   /** MapMaker's Play from here: this browser's player starts here (feet, facing; editor/playFromHere.ts), not at a spawn. */
   startAt?: { pos: [number, number, number]; yaw: number; pitch: number };
   /**
@@ -325,6 +327,7 @@ export class MatchHost {
       if (this.opts.emblem) me.emblem = this.opts.emblem;
       if (this.opts.title) me.title = this.opts.title;
       if (this.opts.carry) match.applyCarry(me, this.opts.carry);
+      if (this.opts.hand) match.holdOnSpawn(me, this.opts.hand);
       const at = this.opts.startAt;
       if (at) match.startHere(me, { pos: { x: at.pos[0], y: at.pos[1], z: at.pos[2] }, yaw: at.yaw, pitch: at.pitch });
     }
