@@ -1189,7 +1189,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       fallback: 'weapons/swarm.glb',
       viewOffset: [0.21, -0.23, 0.52],
       tracer: '#ffb347',
-      hold: { style: 'long', grip: [0, -0.07, -0.165], support: [0, -0.09, 0.29], shoulder: [0, 0.04, -0.45] },
+      hold: { style: 'long', grip: [0, -0.07, -0.165], support: [0, -0.09, 0.29], shoulder: [0, 0.11, -0.45] },
       muzzleAt: [0, 0.08, 0.47],
       sound: 'fire.swarm.d',
     },
