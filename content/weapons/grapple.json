@@ -21,5 +21,8 @@
     "tracer": "#d8d2c0",
     "hold": { "style": "pistol", "grip": [0, -0.043, -0.068], "support": [-0.02, -0.053, -0.058], "rake": 34 },
     "sound": "fire.disc.c"
+  },
+  "notes": {
+    "description": "Fire it at a wall or a ledge and it reels you in. The quickest way up."
   }
 }

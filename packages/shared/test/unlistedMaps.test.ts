@@ -1,5 +1,5 @@
 // Retired maps and training maps (map/retired.ts): kept in maps/, offered by no list, vote or rotation (owner, 2026-11-24:
-// Citadel retired; the Training Range only for training and testing, from Profile → Test weapons).
+// Citadel retired; the Training Range only for training and testing, from Armory → Test my loadout).
 import { existsSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import { RETIRED_MAPS, TRAINING_MAPS, isRetiredMap, isTrainingMap, isUnlistedMap } from '../src/index.ts';
@@ -21,7 +21,7 @@ describe('retired and training maps', () => {
     expect(isUnlistedMap('frost_basin')).toBe(false);
   });
 
-  it('keeps their files (tests, ?offline= links, the tutorial and Test weapons still load them)', () => {
+  it('keeps their files (tests, ?offline= links, the tutorial and Test my loadout still load them)', () => {
     for (const id of [...RETIRED_MAPS, ...TRAINING_MAPS]) expect(existsSync(file(id)), id).toBe(true);
   });
 

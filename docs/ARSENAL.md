@@ -539,7 +539,7 @@ carries only the entry hook in `frontEnd.ts` (the screen id, the nav entry, hand
   flick keeps it turning. Its file comes through Character Select's `FileFetcher`: resting on a tile fetches it (`soon`)
   and its neighbours (`later`); a pick takes the bytes. Leaving frees it.
 - **The panel**: name, role (by family, else from its category and data: `armoryRole`), its description
-  (`notes.description`, written in the Weapon Manager; none are written yet) and range note (`notes.range`), tags, and
+  (`notes.description`, edited in the Weapon Manager) and range note (`notes.range`), tags, and
   stat bars from the weapon tuning page's numbers (`tools/weaponTuningData.ts` weaponStats, on `arsenalMax`'s scale):
   damage, fire rate, range (where its falloff ends), handling (sights up), mobility, magazine, reload; longer is better
   on every bar. **Sights**: its own, or a choice of those content/optics.json allows, kept for your loadout (the same
@@ -547,6 +547,11 @@ carries only the entry hook in `frontEnd.ts` (the screen id, the nav entry, hand
 - **Try it in the range** (the button, Enter or controller A on the one shown): the Practice range alone, as Quick
   Play's link opens it, with the weapon in hand now and at every spawn (`playRange('practice_range', weapon)`, host
   option `hand`, shared `Match.holdOnSpawn`). Leaving the range comes back to the Armory, that weapon shown.
+- **Test my loadout** (the header, owner 2026-11-28; it was Profile → Favourite loadout → Test weapons): the Training
+  Range with your favourite class's loadout and optic picks (main.ts `playRange()`); its pause menu's Back ("◀ Armory")
+  and "Back to the Armory" come back here, the button focused. Profile's Favourite loadout has a **Weapons** button here.
+- **Descriptions**: a first pass for every listed weapon (`notes.description`, 2026-11-28), short and in the game's voice,
+  for the owner to edit in the Weapon Manager.
 - Tests: `client/test/armoryData.test.ts`, `shared/test/holdOnSpawn.test.ts`, e2e `armory`.
 
 ## Weapon categories and random pickups

@@ -53,6 +53,7 @@
     "sound": "fire.plasma.c"
   },
   "notes": {
+    "description": "Fires glowing plasma bolts; the second trigger charges an orb with a big splash.",
     "model": "The owner's Futuristic Blaster (Meshy, owned; content/guns.json), the sci-fi kit rifle it replaced as the fallback."
   }
 }

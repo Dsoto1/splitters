@@ -44,6 +44,7 @@
     "sound": "fire.nail"
   },
   "notes": {
+    "description": "A silent bolt that downs an unarmoured player in one hit, if you lead and lift for its flight.",
     "design": "A bolt you can watch fly: 100 on a hit (an unarmoured player down in one), but it flies at 75 m/s and drops, so past 20 m you lead and lift. No flash, no tracer line: the bolt itself is all anyone sees. One bolt, then a 1 s reload. The Medieval set's precision weapon.",
     "model": "The Meshy community Break-Action Crossbow (CC0); its bolt in flight is drawn in code (the `arrow` look). The kit marksman rifle is the fallback."
   }

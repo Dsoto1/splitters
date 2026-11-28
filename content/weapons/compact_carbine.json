@@ -40,6 +40,7 @@
     "sound": "fire.smg"
   },
   "notes": {
+    "description": "The SMG that reaches: a big magazine and full damage further out than its cousins.",
     "design": "The SMG that reaches: lighter rounds (13) but a 40-round magazine and half again the SMG's reach (full damage to 22 m); U switches to Single, a quick, low-kick tap for the middle distance. Body kill up close 8 rounds, 0.47 s.",
     "model": "The Meshy community Compact Tactical Carbine (CC0); the kit SMG is the fallback."
   }

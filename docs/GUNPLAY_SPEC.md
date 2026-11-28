@@ -2249,7 +2249,7 @@ Include:
 
 This serves players **and developers**.
 
-**Where it lives (owner, 2026-11-24):** Profile → Favourite loadout → **Test weapons** (the loadout screen), not the map list: a training map (`TRAINING_MAPS`, shared `map/retired.ts`) with no modes, offline, alone, your class and optic picks, no score or clock; Back returns to the loadout (docs/FEATURES.md, "Training maps"). Its boards, walls, racks and range troopers are as before; the armour targets, damage readout and drop view above are still to come (QUEUE, "Gunplay gaps").
+**Where it lives (owner, 2026-11-24; moved 2026-11-28):** Armory → **Test my loadout** (it was Profile → Favourite loadout → Test weapons), not the map list: a training map (`TRAINING_MAPS`, shared `map/retired.ts`) with no modes, offline, alone, your class and optic picks, no score or clock; Back returns to the Armory (docs/FEATURES.md, "Training maps"). Its boards, walls, racks and range troopers are as before; the armour targets, damage readout and drop view above are still to come (QUEUE, "Gunplay gaps").
 
 Developers should be able to compare two weapon builds rapidly.
 

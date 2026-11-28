@@ -34,6 +34,7 @@
     "sound": "fire.shotgun"
   },
   "notes": {
+    "description": "A six-shot revolving shotgun: lighter blasts than the pump, but they keep coming.",
     "design": "A six-shot revolving shotgun: a lighter blast than the pump (9 pellets of 11, so not a one-shot kill) that comes again in a quarter of a second, six times, then loads shell by shell. Two quick blasts beat one big one if you keep your aim.",
     "model": "The Meshy community Runebreaker Revolver (CC0): a revolving long gun with shells on its stock; the kit shotgun is the fallback."
   }

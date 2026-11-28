@@ -34,6 +34,7 @@
     "sound": "fire.heavy.c"
   },
   "notes": {
+    "description": "Two rounds to a body, one to the head, a lever pull between shots. Old, steady, deadly.",
     "design": "The Lever Action of the spec (§13): 60 a round, two to a body and one to the head, rechambered by the lever between shots (0.57 s); seven rounds loaded one at a time, so a reload can be cut short to fire. Sits between the Marksman Rifle (faster, weaker) and the Sniper Rifle (one body shot, slow).",
     "model": "The Meshy community Scoped Lever-Action Rifle (CC0); the kit marksman rifle is the fallback."
   }

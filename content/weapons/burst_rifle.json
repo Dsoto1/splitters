@@ -31,6 +31,7 @@
     "sound": "fire.rifle"
   },
   "notes": {
+    "description": "Three rounds a pull, tight and quick. Land the whole burst and it's over fast.",
     "range": "Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 160 m. Standard ballistics: by impact speed, the same distances.",
     "recoil": "The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",

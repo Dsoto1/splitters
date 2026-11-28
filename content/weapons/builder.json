@@ -22,6 +22,7 @@
     "hold": { "style": "melee", "grip": [0, 0, -0.1] }
   },
   "notes": {
+    "description": "Fort Wars' tool: places and picks up the pieces of your fort while the build phase lasts.",
     "design": "Fort Wars: held through the build phase; the mode turns its clicks into placing and picking up pieces."
   }
 }

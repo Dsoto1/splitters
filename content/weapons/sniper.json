@@ -28,6 +28,7 @@
     "hold": { "style": "long", "grip": [0, -0.05, -0.27], "support": [0, -0.02, 0.24], "shoulder": [0, 0.06, -0.57] }
   },
   "notes": {
+    "description": "Patience, prediction and holdover: one well-placed round, the heavy bullet dropping at range.",
     "range": "Best within 150 m: full damage, 2 body shots. Down to 90 % (2 shots) by 300 m; reaches 1000 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Benchmark precision rifle: patience, prediction and holdover. A body shot and anything else kills, a head shot kills outright; the heavy round drops half a metre by 200 m and the next shot wants a settled beat.",
     "model": "The owner's military sniper rifle (Meshy, owned; content/guns.json), the gun-pack sniper rifle as the fallback."

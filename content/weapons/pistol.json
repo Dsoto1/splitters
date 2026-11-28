@@ -30,6 +30,7 @@
     "muzzleAt": [0, 0.055, 0.1]
   },
   "notes": {
+    "description": "Your reliable sidearm: quick to draw, steady, a fast reload. Always worth having.",
     "range": "Best within 18 m: full damage, 5 body shots. Down to 40 % (11 shots) by 45 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.",
     "model": "The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.",
     "design": "Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.",

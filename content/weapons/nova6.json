@@ -35,6 +35,7 @@
     "sound": "fire.pulse"
   },
   "notes": {
+    "description": "The energy marksman: quick, precise light-speed bolts, no drop and no lead.",
     "design": "The energy marksman: quick semi-automatic (360 rpm cap), 28 a shot, four to a body (0.5 s), two to the head; light-speed bolts, so no drop and no lead, where the Marksman Rifle's rounds fly and fall. A 2.4x scope (zoom 0.65).",
     "ballistic": "null: an energy weapon, hitscan (no flight time or drop).",
     "model": "The Meshy community Nova 6 Scoped Carbine (CC0), its yellow cells kept; the kit marksman rifle is the fallback."

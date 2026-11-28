@@ -41,6 +41,7 @@
     "sound": "fire.flare"
   },
   "notes": {
+    "description": "A slow, bright flare that sets its target alight and lights up the dark.",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",
     "model": "The 3DModelsCC0 Flare Gun (CC0; content/guns.json, from its own download folder: the pack's colour, normal, metal and roughness maps), replacing the kit pistol, now the fallback. The Airstrike Flare is this gun's shot too (content/throwables.json): the same gun in your hands while you line it up."
   }

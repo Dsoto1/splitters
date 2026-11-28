@@ -27,6 +27,7 @@
     "hold": { "style": "melee", "grip": [0, 0, -0.33] }
   },
   "notes": {
+    "description": "The quick blade: light, fast cuts, and you run a little faster holding it.",
     "design": "The quick blade: light cuts (36) every 0.27 s, three to a body (0.53 s), and you run a little faster with it (1.05). Keep slashing on the move.",
     "model": "The Meshy community Scimitar Sword (CC0; weapons intake of 2026-11-18), 0.9 m, stood on its edge (`roll`); the knife is the fallback."
   }

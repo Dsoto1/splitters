@@ -50,6 +50,7 @@
     "sound": "fire.swarm.b"
   },
   "notes": {
+    "description": "Slow stingers that turn toward the nearest enemy and poison them. Easy to land, slow to kill.",
     "design": "Stingers that find their mark: slow (32 m/s) darts that turn toward the nearest enemy ahead within 22 m, 16 a hit and a short poison. Easy to land, slow to kill (six hits); strafing players outrun them up close. A Chaos-set oddball.",
     "model": "The Meshy community Hornet Carbine (CC0), a chunky sci-fi handgun with mandibles at the muzzle; the kit pulse pistol is the fallback. Its stingers in flight are drawn in code (`stinger`)."
   }

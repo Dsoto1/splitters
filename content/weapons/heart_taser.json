@@ -50,6 +50,7 @@
     "sound": "fire.goo"
   },
   "notes": {
+    "description": "A support sidearm: its little slime seeks out a hurt teammate ahead and heals them.",
     "design": "A support sidearm: it fires a small slime that turns toward the nearest hurt teammate ahead (25 m) and heals them 25; it passes harmlessly through enemies and never hurts anyone. Four slimes, then a reload. Bots don't carry it (they would fire it at enemies).",
     "model": "The Meshy community Heart Taser (CC0; weapons intake of 2026-11-18); the slime in flight is the Meshy community slime (guns/slime.glb). The kit pulse pistol is the fallback."
   }

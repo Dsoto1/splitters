@@ -32,6 +32,7 @@
     "reloadSound": "reload.end.b"
   },
   "notes": {
+    "description": "Both barrels at once, devastating up close, useless far away.",
     "range": "Best within 8 m: full damage, 1 body blast. Down to 25 % (3 blasts) by 28 m; reaches 25 m. Body shots count every pellet on the body (hitscan pellets: by distance).",
     "group": "The extended arsenal: every one fires differently. 4: shotguns."
   }

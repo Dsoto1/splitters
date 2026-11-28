@@ -30,5 +30,6 @@
     "sound": "fire.heavy.b"
   },
   "notes": {
+    "description": "A golden pistol with a single round that kills whatever it hits. Miss, and you're holding jewellery.",
     "model": "The Meshy community gilded flintlock pistol (an unnamed download, CC0 per the owner; content/guns.json): one shot, one kill. The flat-colour kit pistol is the fallback.", "group": "The extended arsenal: every one fires differently. 2: sidearms." }
 }

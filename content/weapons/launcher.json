@@ -32,5 +32,8 @@
     "tracer": "#c2c9a8",
     "hold": { "style": "long", "grip": [0, -0.1, 0.02], "support": [0, 0.029, 0.187], "shoulder": [0, 0.023, -0.43] },
     "sound": "fire.launcher.synth"
+  },
+  "notes": {
+    "description": "Lobs grenades that bounce and blow. Arc them over cover."
   }
 }

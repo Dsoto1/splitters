@@ -36,6 +36,7 @@
     "sound": "fire.goo.b"
   },
   "notes": {
+    "description": "Sticky goo that glues people in place. Cover a doorway and watch them wade.",
     "group": "The extended arsenal: every one fires differently. 6: lobbers.",
     "model": "The owner's Mystical Glue Gun (Meshy, owned), the sci-fi kit gun as the fallback."
   }

@@ -8,6 +8,7 @@ export const WEAPON_FAMILIES = ['pistol', 'revolver', 'machine_pistol', 'smg', '
 
 /** Every weapon, in network-code order (content/weapons/<name>.json over families.json `defaults`). */
 export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
+  // description: Always with you, never runs dry: quick stabs for when it gets personal.
   'core.knife': {
     id: 'core.knife',
     displayName: 'Knife',
@@ -33,6 +34,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'melee', grip: [0, 0, -0.1] },
     },
   },
+  // description: Your reliable sidearm: quick to draw, steady, a fast reload. Always worth having.
   // range: Best within 18 m: full damage, 5 body shots. Down to 40 % (11 shots) by 45 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.
   // model: The 3DModelsCC0 Makarov (CC0; content/guns.json, its magazine put back in the grip), replacing the flat-colour kit pistol, now the fallback.
   // design: Benchmark A (service pistol): instant handling, moderate damage and velocity, low recoil, true first shot, fast reload.
@@ -70,6 +72,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.055, 0.1],
     },
   },
+  // description: The medium-range workhorse: steady climb, real bullet travel. Learn it and it never lets you down.
   // range: Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 500 m. Standard ballistics: by impact speed, the same distances.
   // model: The 3DModelsCC0 AK-47 (CC0; content/guns.json), replacing Styloo's AK-47 (still built), the kit rifle as the fallback.
   // design: Benchmark D: high velocity, visible long-range travel and drop, predictable vertical climb, a medium-range workhorse.
@@ -125,6 +128,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.068, 0.44],
     },
   },
+  // description: Makes you close in: one shot kills point-blank, a few pellets reach at middle range.
   // range: Best within 8 m: full damage, 1 body blast. Down to 25 % (4 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // model: The 3DModelsCC0 pump shotgun (CC0; content/guns.json), replacing Styloo's (still built), the kit shotgun as the fallback.
   // design: Benchmark shotgun: makes you close in. Ten pellets in a fixed 75 mrad pattern: all of them on a body out to about 5 m (one shot kills), a few at 15 m, a scratch at 25 m (pattern and steep falloff).
@@ -172,6 +176,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.083, 0.52],
     },
   },
+  // description: Patience, prediction and holdover: one well-placed round, the heavy bullet dropping at range.
   // range: Best within 150 m: full damage, 2 body shots. Down to 90 % (2 shots) by 300 m; reaches 1000 m. Standard ballistics: by impact speed, the same distances.
   // design: Benchmark precision rifle: patience, prediction and holdover. A body shot and anything else kills, a head shot kills outright; the heavy round drops half a metre by 200 m and the next shot wants a settled beat.
   // model: The owner's military sniper rifle (Meshy, owned; content/guns.json), the gun-pack sniper rifle as the fallback.
@@ -206,6 +211,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.05, -0.27], support: [0, -0.02, 0.24], shoulder: [0, 0.06, -0.57] },
     },
   },
+  // description: Lobs grenades that bounce and blow. Arc them over cover.
   'core.launcher': {
     id: 'core.launcher',
     displayName: 'Grenade Launcher',
@@ -244,6 +250,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.launcher.synth',
     },
   },
+  // description: A fast rate of light rounds, tight for the first few, then wild. Short bursts win.
   // range: Best within 15 m: full damage, 7 body shots. Down to 35 % (20 shots) by 35 m; reaches 100 m. Standard ballistics: by impact speed, the same distances.
   // design: Benchmark C: very high rate of weak rounds, tight for the first few then widening fast, very fast recovery, snappy reload.
   // model: The Suomi KP (3DModelsCC0 Guns & Explosives, CC0; content/guns.json), replacing the Meshy community Tommy Gun (owner, 2026-11-06; still built in the repo), the kit SMG as the fallback.
@@ -278,6 +285,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       muzzleAt: [0, 0.072, 0.435],
     },
   },
+  // description: A slow rocket with a big blast. Aim where they will be, not where they are.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: Benchmark rocket: rewards predicting where they will be. A slow 30 m/s rocket (a runner moves 4 m while it crosses 25 m), a 5 m blast and a direct hit that kills outright; your own blast hurts you three quarters as much. Quick to bring back: a rocket every 1.5 s, fire again as soon as it is loaded.
   'core.rockets': {
@@ -321,6 +329,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.launcher.c',
     },
   },
+  // description: Fires glowing plasma bolts; the second trigger charges an orb with a big splash.
   // model: The owner's Futuristic Blaster (Meshy, owned; content/guns.json), the sci-fi kit rifle it replaced as the fallback.
   'core.plasma': {
     id: 'core.plasma',
@@ -379,6 +388,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.plasma.c',
     },
   },
+  // description: An energy sidearm: quick pulses, no drop, no lead.
   // range: Best within 15 m: full damage, 5 body shots. Down to 30 % (14 shots) by 45 m; reaches 90 m. Hitscan: by distance.
   // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 2: sidearms.
@@ -428,6 +438,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // description: A huge revolver round in a handgun: slow to fire, brutal when it lands.
   // range: Best within 20 m: full damage, 2 body shots. Down to 40 % (5 shots) by 55 m; reaches 110 m. Standard ballistics: by impact speed, the same distances.
   // model: The Meshy community BK 220 (CC0 per the owner; content/guns.json): a heavy semi-automatic pistol (the Heavy Revolver is the revolver), replacing the flat-colour kit revolver, now the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
@@ -466,6 +477,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.pistol.c',
     },
   },
+  // description: A golden pistol with a single round that kills whatever it hits. Miss, and you're holding jewellery.
   // model: The Meshy community gilded flintlock pistol (an unnamed download, CC0 per the owner; content/guns.json): one shot, one kill. The flat-colour kit pistol is the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   'core.gilded_pistol': {
@@ -509,6 +521,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.heavy.b',
     },
   },
+  // description: A slow, bright flare that sets its target alight and lights up the dark.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
   // model: The 3DModelsCC0 Flare Gun (CC0; content/guns.json, from its own download folder: the pack's colour, normal, metal and roughness maps), replacing the kit pistol, now the fallback. The Airstrike Flare is this gun's shot too (content/throwables.json): the same gun in your hands while you line it up.
   'core.flare_gun': {
@@ -557,6 +570,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.flare',
     },
   },
+  // description: A sidearm that sprays: a fast burst for when the main gun runs dry up close.
   // range: Best within 8 m: full damage, 15 body shots. Down to 35 % (41 shots) by 25 m; reaches 60 m. Standard ballistics: by impact speed, the same distances.
   // model: The 3DModelsCC0 Grease Gun (CC0; content/guns.json), replacing the flat-colour kit machine pistol of the same shape, now the fallback.
   // group: The extended arsenal: every one fires differently. 2: sidearms.
@@ -594,6 +608,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.heavy.l86.fast',
     },
   },
+  // description: Three rounds a pull, tight and quick. Land the whole burst and it's over fast.
   // range: Best within 25 m: full damage, 6 body shots. Down to 60 % (10 shots) by 70 m; reaches 160 m. Standard ballistics: by impact speed, the same distances.
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
@@ -632,6 +647,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.rifle',
     },
   },
+  // description: A steady beam: instant, no drop, no lead. Keep it on target and mind the heat.
   // group: The extended arsenal: every one fires differently. 3: rifles.
   // model: The Meshy community Neon Pulse Rifle (CC0; weapons intake of 2026-11-18), its cyan glow matched by a cyan beam (was red); the kit laser rifle is the fallback.
   'core.laser_rifle': {
@@ -665,6 +681,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // description: A scoped semi-automatic for picking people off at range, faster than a sniper rifle.
   // range: Best within 60 m: full damage, 3 body shots. Down to 85 % (4 shots) by 150 m; reaches 220 m. Standard ballistics: by impact speed, the same distances.
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 3: rifles.
@@ -703,6 +720,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.sniper',
     },
   },
+  // description: Both barrels at once, devastating up close, useless far away.
   // range: Best within 8 m: full damage, 1 body blast. Down to 25 % (3 blasts) by 28 m; reaches 25 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // group: The extended arsenal: every one fires differently. 4: shotguns.
   'core.sawed_off': {
@@ -738,6 +756,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       reloadSound: 'reload.end.b',
     },
   },
+  // description: A shotgun that keeps on firing: a little less punch per blast, a lot more blasts.
   // range: Best within 8 m: full damage, 2 body blasts. Down to 25 % (7 blasts) by 28 m; reaches 40 m. Body shots count every pellet on the body (hitscan pellets: by distance).
   // group: The extended arsenal: every one fires differently. 4: shotguns.
   'core.auto_shotgun': {
@@ -772,6 +791,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.shotgun.b',
     },
   },
+  // description: Bursting shards that bounce off walls: wide, messy and hard to dodge up close.
   // group: The extended arsenal: every one fires differently. 4: shotguns.
   // model: The Meshy community Rustworn Pulse Carbine (CC0; weapons intake of 2026-11-18), a heavy scrap receiver held at the hip and shoulder; the kit flak cannon is the fallback.
   'core.flak': {
@@ -818,6 +838,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.flak',
     },
   },
+  // description: Charges for a moment, then one body hit drops an unarmoured player. Hold still, hold your breath.
   // recoil: `kick` is the legacy camera kick folded into family-style kick (identical to what gunplayOf derived from `recoil.kick`). `recoil` is the legacy spread bloom, kept as it was: the family spread model can't reproduce it exactly (docs/CONTENT_SCALABILITY.md, step 4).
   // group: The extended arsenal: every one fires differently. 5: precision.
   // design: Charges briefly, then one body hit kills an unarmoured player.
@@ -861,6 +882,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // description: Heavy discs that knock people off their feet, and off ledges.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
   'core.disc_launcher': {
     id: 'core.disc_launcher',
@@ -901,6 +923,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.disc',
     },
   },
+  // description: Traps people in bubbles that float them away. Silly, until it wins you the point.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
   'core.bubble_blaster': {
     id: 'core.bubble_blaster',
@@ -944,6 +967,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.bubble',
     },
   },
+  // description: Sticky goo that glues people in place. Cover a doorway and watch them wade.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
   // model: The owner's Mystical Glue Gun (Meshy, owned), the sci-fi kit gun as the fallback.
   'core.goo_gun': {
@@ -987,6 +1011,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.goo.b',
     },
   },
+  // description: Spills oil that sends anyone crossing it sliding. Set it alight for a nasty surprise.
   // group: The extended arsenal: every one fires differently. 6: lobbers.
   // bots: Bots lay puddles round their target and light them with the igniter about every three seconds (BotBrain.act), so it is worth as much to them as the flare gun or the goo gun (0.45; it was 0.3 while they never lit it).
   'core.oil_slicker': {
@@ -1047,6 +1072,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.pulse.c',
     },
   },
+  // description: A huge belt of rounds and a long spin-up of a reload. Hold a corridor, don't get caught reloading.
   // range: Best within 30 m: full damage, 12 body shots. Down to 70 % (16 shots) by 80 m; reaches 300 m. Standard ballistics: by impact speed, the same distances.
   // recoil: The legacy spread bloom (bloom per shot, cap, recovery per tick). With a family its spread comes from the family's accuracy; `maxBloom` still sets how long bots fire their bursts.
   // group: The extended arsenal: every one fires differently. 7: automatics.
@@ -1086,6 +1112,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       reloadSound: 'reload.scifi',
     },
   },
+  // description: Fires nails in a quick stream that bounce off walls. They fly, so lead your target a little.
   // model: The Meshy community Scrapfire Assault Blaster (CC0 per the owner; content/guns.json): a drum-fed scrap-built gun, replacing the flat-colour kit nailgun, now the fallback.
   // group: The extended arsenal: every one fires differently. 7: automatics.
   'core.nailgun': {
@@ -1131,6 +1158,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'door.open',
     },
   },
+  // description: A volley of small rockets that home in on their target.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // group: The extended arsenal: every one fires differently. 8: heavy.
   'core.swarm': {
@@ -1174,6 +1202,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.swarm.d',
     },
   },
+  // description: The rocket flies wherever your crosshair goes. Slow, so steer it round corners.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // group: The extended arsenal: every one fires differently. 8: heavy.
   // design: Laser-guided: the rocket flies wherever you keep your crosshair. Slow, so steer it round corners.
@@ -1219,6 +1248,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.1, 0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] },
     },
   },
+  // description: A slow orb that opens a small black hole, dragging everyone nearby into it.
   // group: The extended arsenal: every one fires differently. 8: heavy.
   // model: The Plasma Blaster (Meshy community, CC0 per the owner; content/guns.json), its glow turned purple; the Quaternius sci-fi sniper it replaced is the fallback.
   'core.singularity': {
@@ -1263,6 +1293,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.vortex',
     },
   },
+  // description: Throws lightning that leaps from target to target. Runs hot, so pick your moments.
   // group: The extended arsenal: every one fires differently. 9: energy and chemical.
   // model: The Meshy community Arcstorm Carbine (CC0; weapons intake of 2026-11-18), its cable and blue cell kept; the kit arc caster is the fallback.
   'core.arc_caster': {
@@ -1297,6 +1328,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // description: A stream of fire that sets everyone in front of you burning. Short range, big panic.
   // group: The extended arsenal: every one fires differently. 9: energy and chemical.
   'core.flamethrower': {
     id: 'core.flamethrower',
@@ -1340,6 +1372,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.flame.c',
     },
   },
+  // description: A cold beam that slows, then freezes. Pair it with a friend who can finish the job.
   // group: The extended arsenal: every one fires differently. 9: energy and chemical.
   // model: The owner's Freeze Gun (Meshy, owned), the sci-fi kit gun as the fallback.
   // alt: Freeze blast (owner, 2026-11-24): a slow cold ball (14 m/s, 35 m); whoever it hits is held in a block of ice where they stand for 3 s (can't move or act, 5 HP/s, full damage from anything else; the block solid to others). 60 % of the heat bar and its own 6 s cooldown; the beam fires on meanwhile.
@@ -1595,6 +1628,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       beam: true,
     },
   },
+  // description: Patches up you or a teammate. Not a weapon, but it wins fights.
   // model: The owner's Medkit (Meshy, owned), carried by its handle; the boxes-in-code case as the fallback.
   'core.medkit': {
     id: 'core.medkit',
@@ -1623,6 +1657,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'pistol', grip: [0, 0.1, 0] },
     },
   },
+  // description: Fire it at a wall or a ledge and it reels you in. The quickest way up.
   'core.grapple': {
     id: 'core.grapple',
     displayName: 'Grapple Hook',
@@ -1650,6 +1685,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.disc.c',
     },
   },
+  // description: Poke with it at long reach, or throw it for a one-hit kill and go pick it up.
   // design: Two ways to use it (owner, 2026-11-18): fire pokes (60, a long 2.9 m reach, two to a body) and you keep the spear; right mouse throws it, one hit kills, and it sticks where it lands until someone picks it up, back into their hands ready to poke or throw. With no spear in hand there is nothing to poke with.
   // model: The owner's carved spear (Meshy community, CC0; content/guns.json), 2 m long and centred, held a third of the way back on the plain shaft; the boxes-in-code spear (same length and grip) as the fallback.
   'core.spear': {
@@ -1700,6 +1736,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'pistol', grip: [0, 0, -0.35] },
     },
   },
+  // description: Fort Wars' tool: places and picks up the pieces of your fort while the build phase lasts.
   // design: Fort Wars: held through the build phase; the mode turns its clicks into placing and picking up pieces.
   'core.builder': {
     id: 'core.builder',
@@ -1768,6 +1805,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       reloadSound: 'reload.scifi',
     },
   },
+  // description: A rocket launcher with a four-rocket drum and enough kick to rocket-jump.
   // vehicleDamage: Rockets hurt vehicles (owner, 2026-11-08): twice what they do to anyone else, impact and blast, before a vehicle's armour (the Tank's blasts 1.25). Against the Tank: a side hit 2 x (impact + full splash) x 1.25, so a Rocket Launcher's 160 is 400 (3 to kill it, 4 at an angle; was 6), a Guided Rocket's 165 is 412 (3). Players take the same as before.
   // design: A variant of an existing weapon for Disc Arena and Classes. Blast rockets: a Rocket Launcher with a four-rocket drum and the knockback to rocket-jump.
   'core.blast_rockets': {
@@ -1811,6 +1849,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'long', grip: [0, -0.1, 0], support: [0, -0.101, 0.24], shoulder: [0, 0.034, -0.48] },
     },
   },
+  // description: Heals a teammate a little at a time, from further away than a medkit.
   // design: A variant of an existing weapon for Disc Arena and Classes. The medi-beam: a Medkit that heals a little, often, from further away.
   'core.medi_beam': {
     id: 'core.medi_beam',
@@ -1839,6 +1878,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'pistol', grip: [0, 0.1, 0] },
     },
   },
+  // description: Every pull is an event: absurd damage for a handgun, six of them, then a reload.
   // range: Best within 25 m: full damage, 2 body shots. Down to 40 % (3 shots) by 65 m; reaches 110 m. A head shot kills to about 45 m, a body pair to about 50 m. Standard ballistics: by impact speed, the same distances.
   // design: Weapon of the gunplay pass (docs/GUNPLAY_SPEC.md), benchmark B: every trigger pull is an event. Absurd damage for a handgun (a head shot kills within its range, about 45 m; a body shot takes nine tenths of a life; owner, 2026-11-16: short range like the Hand Cannon, 110 m and a 40 % floor), savage kick, five rounds, a true first shot that only comes back once the last one has settled (fan it and you miss), and a slow, rhythmic round-by-round reload (each cartridge can be fired as soon as it is in).
   // model: The Meshy community Revolver Rustique (CC0 per the owner; content/guns.json), replacing the Meshy community revolver of 2026-01-26 (still built), the kit revolver as the fallback.
@@ -1877,6 +1917,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.revolver',
     },
   },
+  // description: A heavy, wide swing that takes a lot of health, with a blunderbuss in the haft for the second trigger.
   // design: Made for the Steampunk Battle Axe model (Meshy Community; content/guns.json, pack meshy-community-arsenal). The heavy melee weapon: a slow, wide swing that hits hard and shoves, and a black-powder blunderbuss for the second trigger (two loads in the barrel, reloaded one at a time from a reserve of shotgun shells).
   // ammo: Powder and shot: shotgun shells (shell boxes and the general ammo box top it up), loaded into the barrel by hand.
   // alt: The blunderbuss (docs/ARSENAL.md): a wide, short cone of nine pellets that falls off fast (it never outreaches the Shotgun), two loads, each rammed home in a slow 1.1 s, and a big kick.
@@ -1931,6 +1972,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       altShot: { sound: 'fire.shotgun.b', rate: 0.78, flash: { effect: 'wide_flash_02', scale: 0.32 }, smoke: 1.2 },
     },
   },
+  // description: Hits hard and reaches far, but it bucks: tap it, don't spray it.
   // range: Best within 40 m: full damage, 4 body shots. Down to 75 % (6 shots) by 100 m; reaches 600 m. Standard ballistics: by impact speed, the same distances.
   // design: Spec gap G2 (GUNPLAY_SPEC.md §13, "Battle Rifle": high damage, medium-low rate, high recoil, high accuracy, very high velocity, medium capacity). Four heavy rounds kill to 40 m and two to the head anywhere; a true 1 mrad first shot from the hip, 880 m/s and the family's 1800 energy (more through walls than the Assault Rifle's 1200). Never the quickest body kill of the rifles on paper (Single 0.6 s, Burst 0.55 s, against the Assault Rifle's 0.5 up close; the Precision Rifle owns 100 m and beyond): its case is the first shot, the head and what's behind cover.
   // falloff: Its own (the family's minimum 0.8 would let five rounds kill at 100 m, quicker than the Precision Rifle's two bolts): five rounds at 50 m, six past 85 m.
@@ -1983,6 +2025,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.heavy',
     },
   },
+  // description: The run-and-gun rifle: moves like an SMG, fires faster than the Assault Rifle, climbs more.
   // design: The run-and-gun rifle: moves and comes out of a sprint like an SMG (full speed, 5 ticks), fires faster than the Assault Rifle (720 rpm) and climbs more, but loses its punch past 15 m (half by 45 m). Body kill up close 6 rounds, 0.42 s.
   // model: The Meshy community Desert M4 Carbine (CC0; content/guns.json, pack meshy-community-drive-1118); the kit rifle is the fallback.
   'core.desert_carbine': {
@@ -2021,6 +2064,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.rifle.c',
     },
   },
+  // description: Every pull is a double tap: two rounds close together. Land both.
   // design: Every pull is a double tap: two rounds 3 ticks apart (the second jumps up), then 15 ticks to the next pull. Two pulls and a round kill a body (0.6 s); two head hits in one pull. Rewards a steady first round and the timing of the next pull, not holding the trigger.
   // model: The Meshy community Scoped Tactical Rifle (CC0); its red dot is a plain sight for now (the sights pass fits it). The kit burst rifle is the fallback.
   'core.twin_rifle': {
@@ -2059,6 +2103,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.rifle.suppressed',
     },
   },
+  // description: The SMG that reaches: a big magazine and full damage further out than its cousins.
   // design: The SMG that reaches: lighter rounds (13) but a 40-round magazine and half again the SMG's reach (full damage to 22 m); U switches to Single, a quick, low-kick tap for the middle distance. Body kill up close 8 rounds, 0.47 s.
   // model: The Meshy community Compact Tactical Carbine (CC0); the kit SMG is the fallback.
   'core.compact_carbine': {
@@ -2096,6 +2141,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.smg',
     },
   },
+  // description: The heavy SMG: slower and harder-hitting, each round kicking higher. Pull it down and it wins.
   // design: The heavy SMG: slow (514 rpm) and hard-hitting (22 a round, five to a body, 0.47 s), each round kicking higher than the last. Pull it down and it wins close fights; spray and it climbs off the target.
   // model: The Meshy community Wooden SMG Design (CC0), held by its rear grip with the top of the receiver at the shoulder; the kit SMG is the fallback.
   'core.woodland_smg': {
@@ -2131,6 +2177,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.heavy.b',
     },
   },
+  // description: A bullet hose: forty rounds gone in barely a second, with almost no climb. Get close and hold the trigger.
   // design: The bullet hose: 1,800 rpm with almost no climb, empties its 40 rounds in 1.3 s, reloads fast (0.9 s). Thirteen rounds to a body, 0.4 s, but the cone blooms wide and the rounds fade past 10 m: a corner and room gun.
   // model: The Meshy community Amarillo Carbine (CC0); the kit SMG is the fallback.
   'core.amarillo': {
@@ -2168,6 +2215,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.rifle.m4',
     },
   },
+  // description: The energy marksman: quick, precise light-speed bolts, no drop and no lead.
   // design: The energy marksman: quick semi-automatic (360 rpm cap), 28 a shot, four to a body (0.5 s), two to the head; light-speed bolts, so no drop and no lead, where the Marksman Rifle's rounds fly and fall. A 2.4x scope (zoom 0.65).
   // ballistic: null: an energy weapon, hitscan (no flight time or drop).
   // model: The Meshy community Nova 6 Scoped Carbine (CC0), its yellow cells kept; the kit marksman rifle is the fallback.
@@ -2209,6 +2257,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.pulse',
     },
   },
+  // description: Two rounds to a body, one to the head, a lever pull between shots. Old, steady, deadly.
   // design: The Lever Action of the spec (§13): 60 a round, two to a body and one to the head, rechambered by the lever between shots (0.57 s); seven rounds loaded one at a time, so a reload can be cut short to fire. Sits between the Marksman Rifle (faster, weaker) and the Sniper Rifle (one body shot, slow).
   // model: The Meshy community Scoped Lever-Action Rifle (CC0); the kit marksman rifle is the fallback.
   'core.lever_action': {
@@ -2247,6 +2296,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.heavy.c',
     },
   },
+  // description: A six-shot revolving shotgun: lighter blasts than the pump, but they keep coming.
   // design: A six-shot revolving shotgun: a lighter blast than the pump (9 pellets of 11, so not a one-shot kill) that comes again in a quarter of a second, six times, then loads shell by shell. Two quick blasts beat one big one if you keep your aim.
   // model: The Meshy community Runebreaker Revolver (CC0): a revolving long gun with shells on its stock; the kit shotgun is the fallback.
   'core.runebreaker': {
@@ -2284,6 +2334,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.shotgun',
     },
   },
+  // description: One heavy lead ball, then a long reload. Make it count: up close it's a kill.
   // design: One heavy lead ball, then a reload (1.6 s): a body kill inside 8 m (100), half that by 40 m, always a kill to the head, and a shove. The ball is slow (210 m/s) and drops, so past 20 m you lead and lob it. The Medieval set's sidearm; the Gilded Pistol stays the rare one-shot kill.
   // ballistic: A round ball: slow, falling fast, losing speed (and damage, by impact speed) quickly.
   // model: The Meshy community Ornate Flintlock Pistol (CC0), a long horse pistol, built 0.56 m long; the Gilded Pistol's kit model is the fallback.
@@ -2325,6 +2376,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.heavy.b',
     },
   },
+  // description: A silent bolt that downs an unarmoured player in one hit, if you lead and lift for its flight.
   // design: A bolt you can watch fly: 100 on a hit (an unarmoured player down in one), but it flies at 75 m/s and drops, so past 20 m you lead and lift. No flash, no tracer line: the bolt itself is all anyone sees. One bolt, then a 1 s reload. The Medieval set's precision weapon.
   // model: The Meshy community Break-Action Crossbow (CC0); its bolt in flight is drawn in code (the `arrow` look). The kit marksman rifle is the fallback.
   'core.crossbow': {
@@ -2374,6 +2426,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.nail',
     },
   },
+  // description: Bright orange bolts at a steady rate. Fast, but not instant: lead anyone running past.
   // design: The Sci-fi set's automatic: bright orange bolts at 600 rpm, 21 each (five to a body, 0.4 s), fast (110 m/s) but not instant, so a moving target past 15 m needs a little lead; no splash and no drop. The Plasma Rifle lobs slower, splashing balls; the Laser Rifle burns without ammo.
   // model: The Meshy community Blaster X-42 (CC0); the kit plasma rifle is the fallback.
   'core.blaster_x42': {
@@ -2421,6 +2474,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       impactSound: 'impact.energy',
     },
   },
+  // description: A sidearm that never reloads: instant laser shots until it overheats.
   // design: A sidearm that never reloads: blue laser shots (20, five to a body, 0.53 s), instant, but every shot heats it; nine quick shots overheat it and it locks until it cools. Pace your trigger and it never runs dry.
   // model: The Meshy community Laser Blaster Gun (CC0); the kit pulse pistol is the fallback.
   'core.laser_blaster': {
@@ -2458,6 +2512,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.laser.b',
     },
   },
+  // description: Slow stingers that turn toward the nearest enemy and poison them. Easy to land, slow to kill.
   // design: Stingers that find their mark: slow (32 m/s) darts that turn toward the nearest enemy ahead within 22 m, 16 a hit and a short poison. Easy to land, slow to kill (six hits); strafing players outrun them up close. A Chaos-set oddball.
   // model: The Meshy community Hornet Carbine (CC0), a chunky sci-fi handgun with mandibles at the muzzle; the kit pulse pistol is the fallback. Its stingers in flight are drawn in code (`stinger`).
   'core.hornet': {
@@ -2506,6 +2561,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       sound: 'fire.swarm.b',
     },
   },
+  // description: The long blade: two cuts down a body, with more reach than a knife.
   // design: The long blade: 70 a cut, two to a body, at a 2.6 m reach (the knife's 2.2), a cut every 0.57 s. Reach and a two-hit kill against the Scimitar's speed.
   // model: The Meshy community Dragon Katana 3D (CC0; weapons intake of 2026-11-18), 1 m long; the knife is the fallback.
   'core.katana': {
@@ -2537,6 +2593,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'melee', grip: [0, 0, -0.38] },
     },
   },
+  // description: The quick blade: light, fast cuts, and you run a little faster holding it.
   // design: The quick blade: light cuts (36) every 0.27 s, three to a body (0.53 s), and you run a little faster with it (1.05). Keep slashing on the move.
   // model: The Meshy community Scimitar Sword (CC0; weapons intake of 2026-11-18), 0.9 m, stood on its edge (`roll`); the knife is the fallback.
   'core.scimitar': {
@@ -2569,6 +2626,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'melee', grip: [0, 0, -0.33] },
     },
   },
+  // description: A slow, mighty swing that sends people flying: off ledges, into hazards, out of the fight.
   // design: The home run: a slow swing (0.7 s) for 45 that knocks the target flying (14 m/s along the swing, the Battle Axe's 6): off ledges, into hazards, out of the fight.
   // model: The owner's own Futuristic Baseball Bat (Meshy, owned; weapons intake of 2026-11-18), 0.86 m; the knife is the fallback.
   'core.baseball_bat': {
@@ -2636,6 +2694,7 @@ export const CORE_WEAPONS: Readonly<Record<string, WeaponDefinition>> = {
       hold: { style: 'melee', grip: [0, 0, -0.07] },
     },
   },
+  // description: A support sidearm: its little slime seeks out a hurt teammate ahead and heals them.
   // design: A support sidearm: it fires a small slime that turns toward the nearest hurt teammate ahead (25 m) and heals them 25; it passes harmlessly through enemies and never hurts anyone. Four slimes, then a reload. Bots don't carry it (they would fire it at enemies).
   // model: The Meshy community Heart Taser (CC0; weapons intake of 2026-11-18); the slime in flight is the Meshy community slime (guns/slime.glb). The kit pulse pistol is the fallback.
   'core.heart_taser': {

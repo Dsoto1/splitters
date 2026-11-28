@@ -30,6 +30,7 @@
     "sound": "fire.heavy.l86.fast"
   },
   "notes": {
+    "description": "A sidearm that sprays: a fast burst for when the main gun runs dry up close.",
     "range": "Best within 8 m: full damage, 15 body shots. Down to 35 % (41 shots) by 25 m; reaches 60 m. Standard ballistics: by impact speed, the same distances.",
     "model": "The 3DModelsCC0 Grease Gun (CC0; content/guns.json), replacing the flat-colour kit machine pistol of the same shape, now the fallback.",
     "group": "The extended arsenal: every one fires differently. 2: sidearms.",

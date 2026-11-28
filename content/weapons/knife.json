@@ -20,5 +20,8 @@
     "viewOffset": [0.2, -0.2, 0.42],
     "tracer": "#ffffff",
     "hold": { "style": "melee", "grip": [0, 0, -0.1] }
+  },
+  "notes": {
+    "description": "Always with you, never runs dry: quick stabs for when it gets personal."
   }
 }

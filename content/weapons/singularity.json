@@ -37,6 +37,7 @@
     "sound": "fire.vortex"
   },
   "notes": {
+    "description": "A slow orb that opens a small black hole, dragging everyone nearby into it.",
     "group": "The extended arsenal: every one fires differently. 8: heavy.",
     "model": "The Plasma Blaster (Meshy community, CC0 per the owner; content/guns.json), its glow turned purple; the Quaternius sci-fi sniper it replaced is the fallback."
   }

@@ -45,6 +45,7 @@
     "hold": { "style": "pistol", "grip": [0, 0, -0.35] }
   },
   "notes": {
+    "description": "Poke with it at long reach, or throw it for a one-hit kill and go pick it up.",
     "design": "Two ways to use it (owner, 2026-11-18): fire pokes (60, a long 2.9 m reach, two to a body) and you keep the spear; right mouse throws it, one hit kills, and it sticks where it lands until someone picks it up, back into their hands ready to poke or throw. With no spear in hand there is nothing to poke with.",
     "model": "The owner's carved spear (Meshy community, CC0; content/guns.json), 2 m long and centred, held a third of the way back on the plain shaft; the boxes-in-code spear (same length and grip) as the fallback."
   }

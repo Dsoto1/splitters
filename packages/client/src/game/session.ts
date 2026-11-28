@@ -371,7 +371,7 @@ export interface SessionOptions {
   /** First-time tips (tips.ts); off in the tutorial and in browser tests (main.ts). */
   tips?: boolean;
   /**
-   * Test weapons (Profile → Favourite loadout; main.ts playRange): the Training Range alone, no scorebar, and Back
+   * Test my loadout (the Armory; main.ts playRange): the Training Range alone, no scorebar, and Back
    * from the pause menu's top (Esc again, controller B) leaves, as the exit button does, back to the loadout.
    */
   range?: boolean;
@@ -1089,7 +1089,7 @@ export class GameSession {
         overlay: () => document.getElementById('bm-pick-wrap') ?? document.getElementById('bot-manager') ?? document.getElementById('leave-confirm') ?? document.getElementById('online-confirm') ?? this.mapPicker,
         opened: () => this.drawPause(true),
         // MapMaker TEST: back from the top goes back to MapMaker.
-        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : opts.range ? { top: { label: opts.rangeBack ?? 'Loadout', act: () => this.exit() } } : {}),
+        ...(opts.exitOnF5 ? { top: { label: 'MapMaker', act: () => this.exit() } } : opts.range ? { top: { label: opts.rangeBack ?? 'Armory', act: () => this.exit() } } : {}),
       },
       signal,
     );

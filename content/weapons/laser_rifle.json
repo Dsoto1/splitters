@@ -27,6 +27,7 @@
     "beam": true
   },
   "notes": {
+    "description": "A steady beam: instant, no drop, no lead. Keep it on target and mind the heat.",
     "group": "The extended arsenal: every one fires differently. 3: rifles.",
     "model": "The Meshy community Neon Pulse Rifle (CC0; weapons intake of 2026-11-18), its cyan glow matched by a cyan beam (was red); the kit laser rifle is the fallback."
   }
