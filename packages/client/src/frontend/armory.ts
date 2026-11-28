@@ -360,7 +360,16 @@ export function mountArmory(root: HTMLElement, host: ArmoryHost): ArmoryPage {
     s.optic = null;
     void import('../game/opticHousing.ts').then(({ attachOptic }) => {
       if (onShow !== s || gone) return;
-      s.optic = attachOptic(scene, s.model, d, false, opticOf(d, myOpticFor(d.id)));
+      // A scope model of our own (content/optics.json `scopeModel`) comes in as the weapon did, its sharper copy.
+      const scopeModel = (path: string) =>
+        load(path).then((c) => {
+          const entries = c.instantiateModelsToScene((n) => `armoryScope_${n}`, false, { doNotInstantiate: true });
+          const node = new TransformNode('armoryScope', scene);
+          for (const n of entries.rootNodes) n.parent = node;
+          node.onDisposeObservable.add(() => c.dispose());
+          return node;
+        });
+      s.optic = attachOptic(scene, s.model, d, false, opticOf(d, myOpticFor(d.id)), scopeModel, 'high');
     });
   };
   const free = (s: OnShow | null) => {

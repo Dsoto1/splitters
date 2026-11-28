@@ -20,16 +20,18 @@
   "botDesirability": 0.6,
   "botRange": [18, 120],
   "view": {
-    "model": "guns/sniper_rifle.glb",
+    "model": "guns/steyr_ssg69.glb",
+    "muzzleAt": [0, 0.065, 0.565],
+    "held": { "medium": "guns/steyr_ssg69.medium.glb", "high": "guns/steyr_ssg69.high.glb" },
     "fallback": "weapons/sniper.glb",
     "viewOffset": [0.2, -0.2, 0.65],
     "tracer": "#9ad7ff",
     "zoomFov": 0.4,
-    "hold": { "style": "long", "grip": [0, -0.05, -0.27], "support": [0, -0.02, 0.24], "shoulder": [0, 0.06, -0.57] }
+    "hold": { "style": "long", "grip": [0, -0.02, -0.28], "support": [0, 0.02, 0.12], "shoulder": [0, -0.02, -0.55] }
   },
   "notes": {
     "range": "Best within 150 m: full damage, 2 body shots. Down to 90 % (2 shots) by 300 m; reaches 1000 m. Standard ballistics: by impact speed, the same distances.",
     "design": "Benchmark precision rifle: patience, prediction and holdover. A body shot and anything else kills, a head shot kills outright; the heavy round drops half a metre by 200 m and the next shot wants a settled beat.",
-    "model": "The owner's military sniper rifle (Meshy, owned; content/guns.json), the gun-pack sniper rifle as the fallback."
+    "model": "The owner's Steyr SSG 69 Bolt-Action Sniper (Meshy, owned; content/guns.json, 2026-11-28): 1.14 m, held copies a 50,000-triangle cut, the owner's Scope model on its receiver rail (content/optics.json long_scope; aimed through the full-screen scope as before). The gun-pack sniper rifle is the fallback."
   }
 }

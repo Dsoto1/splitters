@@ -273,23 +273,6 @@
       "textureSize": 1024
     },
     {
-      "out": "guns/sniper_rifle.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_military_sniper_rifle_1029233810_texture.glb",
-      "label": "Military Sniper Rifle (Meshy Community download, 2026-10-29)",
-      "forward": "-x",
-      "length": 1.2,
-      "triangles": 14000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024
-    },
-    {
       "out": "guns/battle_axe.glb",
       "pack": "meshy-community-arsenal",
       "glb": "Meshy_AI_Steampunk_Battle_Axe__1029233254_texture.glb",
@@ -391,29 +374,6 @@
         12
       ],
       "textureSize": 1024
-    },
-    {
-      "out": "guns/frontier_rifle.glb",
-      "pack": "meshy-community-arsenal",
-      "glb": "Meshy_AI_rifle__1029192631_texture.glb",
-      "label": "Frontier Rifle (Meshy Community download, 2026-10-29)",
-      "url": "https://www.meshy.ai/posts/019e91b5-bda3-7714-91a6-870f1f0db2d3",
-      "forward": "-x",
-      "length": 0.95,
-      "triangles": 14000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ],
-      "textureSize": 1024,
-      "pbr": true,
-      "held": true,
-      "heldTriangles": 60000,
-      "heldMaxError": 0.004,
-      "heldBudget": "heldHero"
     },
     {
       "out": "guns/ornate_pistol.glb",
@@ -620,26 +580,6 @@
       "held": true,
       "forward": "-z",
       "length": 0.24
-    },
-    {
-      "out": "guns/scoped_rifle.glb",
-      "pack": "3dmodelscc0-guns-explosives",
-      "file": "Sniper/Sniper.fbx",
-      "label": "Sniper (3DModelsCC0 Guns & Explosives, levelled: posed nose-up in the download): the Marksman Rifle",
-      "noseDown": 9.6,
-      "move": {
-        "Magazine": [0, 2.0, 0]
-      },
-      "maps": {
-        "base": "Sniper_Base_Color.png",
-        "normal": "Sniper_Normal.png",
-        "metallic": "Sniper_Metallic.png",
-        "roughness": "Sniper_Roughness.png"
-      },
-      "pbr": true,
-      "held": true,
-      "forward": "-z",
-      "length": 1.15
     },
     {
       "out": "guns/frag_m67.glb",
@@ -1180,24 +1120,6 @@
       ]
     },
     {
-      "out": "guns/lever_action.glb",
-      "pack": "meshy-community-drive-1118",
-      "glb": "Meshy_AI_Scoped_Lever_Action_R_1118133806_texture.glb",
-      "label": "Scoped Lever-Action Rifle (Meshy Community download, owner's Drive, 2026-11-18): the Lever-Action",
-      "forward": "-x",
-      "length": 1.02,
-      "triangles": 12000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
-    },
-    {
       "out": "guns/runebreaker.glb",
       "pack": "meshy-community-drive-1118",
       "glb": "Meshy_AI_Runebreaker_Revolver_1118134519_texture.glb",
@@ -1223,24 +1145,6 @@
       "forward": "-x",
       "length": 0.56,
       "triangles": 8000,
-      "maxError": 0.03,
-      "surface": "rebake",
-      "pbr": true,
-      "held": true,
-      "budget": "hero",
-      "lod": [
-        0.2,
-        12
-      ]
-    },
-    {
-      "out": "guns/crossbow.glb",
-      "pack": "meshy-community-drive-1118",
-      "glb": "Meshy_AI_break_action_crossbow_1118133706_image-to-3d-texture.glb",
-      "label": "Break-Action Crossbow (Meshy Community download, owner's Drive, 2026-11-18): the Crossbow",
-      "forward": "-x",
-      "length": 0.86,
-      "triangles": 12000,
       "maxError": 0.03,
       "surface": "rebake",
       "pbr": true,
@@ -1892,6 +1796,153 @@
       "pbr": true,
       "held": true,
       "heldTriangles": 60000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/scope_rifle.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Scope_20260319_texture.glb",
+      "label": "Scope (the owner's own Meshy model, owner's Drive): the rifle scope on the Battle Rifle, Marksman Rifle and Sniper Rifle's rails",
+      "forward": "+x",
+      "length": 0.32,
+      "triangles": 5000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 24000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/scope_sentinel.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_Brass_Sentinel_Scope_20261115_texture.glb",
+      "label": "Brass Sentinel Scope (the owner's own Meshy model, owner's Drive): the brass scope on the Lever-Action Rifle and the Crossbow",
+      "forward": "+x",
+      "length": 0.3,
+      "triangles": 6000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 30000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/scar_modular.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_desert_storm_modular_scar_3d_20261127_image-to-3d-texture.glb",
+      "label": "Desert Storm SCAR-Type Rifle: the Battle Rifle (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.96,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/precision_dmr.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_semiauto_precision_dmr_3d_20261127_image-to-3d-texture.glb",
+      "label": "Semi-Automatic Precision DMR: the Marksman Rifle (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 1.05,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/steyr_ssg69.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_steyr_ssg69_bolt_action_3d_20261127_image-to-3d-texture.glb",
+      "label": "Steyr SSG 69 Bolt-Action Sniper: the Sniper Rifle (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 1.14,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/lever_repeater.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_civil_war_lever_repeater_3d_20261127_image-to-3d-texture.glb",
+      "label": "Civil War Lever Repeater: the Lever-Action Rifle (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 1.0,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
+      "heldMaxError": 0.004,
+      "heldBudget": "heldHero",
+      "budget": "hero",
+      "lod": [
+        0.2,
+        12
+      ]
+    },
+    {
+      "out": "guns/repeating_arbalest.glb",
+      "pack": "meshy-owned-drive-1127",
+      "glb": "Meshy_AI_medieval_repeating_arbalest_3d_20261127_image-to-3d-texture.glb",
+      "label": "Medieval Repeating Arbalest: the Crossbow (the owner's own Meshy model, owner's Drive, 2026-11-27)",
+      "forward": "-x",
+      "length": 0.95,
+      "triangles": 12000,
+      "maxError": 0.02,
+      "surface": "rebake",
+      "pbr": true,
+      "held": true,
+      "heldTriangles": 50000,
       "heldMaxError": 0.004,
       "heldBudget": "heldHero",
       "budget": "hero",

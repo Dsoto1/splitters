@@ -18,10 +18,14 @@ const CARRIES: Record<OpticKindId, string[]> = {
   // The weapons intake's guns (owner, 2026-11-22, "2a"): in their models' own sights.
   reddot: ['core.blaster_x42', 'core.bubble_blaster', 'core.burst_rifle', 'core.desert_carbine', 'core.laser_rifle', 'core.sawed_off', 'core.singularity', 'core.twin_rifle'],
   holo: ['core.arc_caster', 'core.arena_disc', 'core.disc_launcher', 'core.flak', 'core.plasma'],
-  scope: ['core.battle_rifle', 'core.crossbow', 'core.lever_action', 'core.marksman', 'core.nova6'],
-  sniper: ['core.railgun', 'core.sniper'],
+  scope: ['core.nova6'],
+  sniper: ['core.railgun'],
   // Built for the loadout's choice (step 4): no gun carries it by default.
   x2: [],
+  // The owner's scope models on the rails of the scoped guns whose new models have none (weapon replacements batch 3).
+  rifle_scope: ['core.battle_rifle', 'core.marksman'],
+  long_scope: ['core.sniper'],
+  sentinel: ['core.crossbow', 'core.lever_action'],
 };
 /**
  * The choice each gun offers in the loadout (docs/GUNPLAY_SPEC.md §15, "Optic choice"), its default first. Guns not named
@@ -129,7 +133,8 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
     const file = JSON.parse(readFileSync(new URL('../../../content/optics.json', import.meta.url), 'utf8')) as { weapons: Record<string, { hasSight?: string | false }> };
     const built = (k: OpticKindId) => ['tube', 'frame', 'magtube'].includes(OPTIC_KINDS[k].housing);
     const own = Object.keys(file.weapons).filter((id) => file.weapons[id]!.hasSight === 'optic').sort();
-    expect(own).toEqual(['core.arc_caster', 'core.battle_rifle', 'core.blaster_x42', 'core.desert_carbine', 'core.lever_action', 'core.marksman', 'core.nova6', 'core.plasma', 'core.railgun', 'core.sniper', 'core.twin_rifle']);
+    // (The Battle Rifle, Marksman, Sniper, Lever-Action and Crossbow's new models have no scope: ours stands on their rails.)
+    expect(own).toEqual(['core.arc_caster', 'core.blaster_x42', 'core.desert_carbine', 'core.nova6', 'core.plasma', 'core.railgun', 'core.twin_rifle']);
     for (const [id, e] of Object.entries(file.weapons)) {
       expect(['optic', 'irons', false], `${id}: hasSight`).toContain(e.hasSight);
       const w = WEAPON_OPTICS[id]!;
@@ -301,11 +306,11 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
     // sight sits at the eye's end of a gun with no stock); rifles and shotguns are not.
     for (const id of ['core.pistol', 'core.revolver', 'core.hand_cannon', 'core.pulse_pistol', 'core.smg']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeLessThan(1.12);
     for (const id of ['core.rifle', 'core.burst_rifle', 'core.shotgun']) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBeGreaterThan(1.2);
-    for (const id of [...CARRIES.scope, ...CARRIES.sniper, ...KEEP_THEIR_AIM]) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBe(1);
+    for (const id of [...CARRIES.scope, ...CARRIES.sniper, ...CARRIES.rifle_scope, ...CARRIES.long_scope, ...CARRIES.sentinel, ...KEEP_THEIR_AIM]) expect(sightPicture(getWeapon(id), aimPlacement(getWeapon(id), BOUNDS)), id).toBe(1);
   });
 
   it('iron sights and the guns without an optic draw no glass', () => {
-    for (const id of [...CARRIES.irons, ...CARRIES.scope, ...CARRIES.sniper]) expect(hasGlass(opticOf(getWeapon(id))), id).toBe(false);
+    for (const id of [...CARRIES.irons, ...CARRIES.scope, ...CARRIES.sniper, ...CARRIES.rifle_scope, ...CARRIES.long_scope, ...CARRIES.sentinel]) expect(hasGlass(opticOf(getWeapon(id))), id).toBe(false);
     expect(pictureScale(opticOf(getWeapon('core.rifle')), 0.5, 1)).toBe(1);
     expect(pictureScale(null, 0.5, 1)).toBe(1);
   });
@@ -319,7 +324,7 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
   });
 
   it('holdover marks match the ballistics at each magnified optic\'s field of view, at both zooms', () => {
-    const magnified = [...CARRIES.scope, ...CARRIES.sniper];
+    const magnified = [...CARRIES.scope, ...CARRIES.sniper, ...CARRIES.rifle_scope, ...CARRIES.long_scope, ...CARRIES.sentinel];
     let marked = 0;
     for (const id of magnified) {
       const def = getWeapon(id);
@@ -357,12 +362,35 @@ describe('optics by gun (docs/GUNPLAY_SPEC.md §15)', () => {
 });
 
 describe('optic choice in the loadout (docs/GUNPLAY_SPEC.md §15, "Optic choice")', () => {
+  it('the scoped guns whose models have none carry one of our scope models on their rails (weapon replacements batch 3)', () => {
+    for (const id of [...CARRIES.rifle_scope, ...CARRIES.long_scope, ...CARRIES.sentinel]) {
+      const def = getWeapon(id);
+      const o = opticOf(def)!;
+      const sm = o.kind.scopeModel!;
+      expect(sm, id).toBeDefined();
+      expect(o.mount, `${id}: its scope's foot on the rail`).toBeDefined();
+      // Never a housing built in code beside it, and aimed as before: through the full-screen scope or its tube.
+      expect(builtHousing(o), id).toBe(false);
+      expect(!!def.view.zoomFov || !!def.view.optic, id).toBe(true);
+      expect(sm.held, `${id}: a sharper copy for your own hands`).toBeDefined();
+      if (def.view.optic) {
+        // Looked through: the weapon's eyepiece is the scope model's, where it stands on the gun.
+        const m = o.mount!;
+        const eye = [0, 1, 2].map((i) => m.at[i]! + (sm.eye![i]! - sm.foot[i]!) * m.scale);
+        for (let i = 0; i < 3; i++) expect(eyepieceOf(def, o)!.eye[i], `${id} eye ${i}`).toBeCloseTo(eye[i]!, 3);
+        expect(eyepieceOf(def, o)!.radius, id).toBeCloseTo(sm.radius! * m.scale, 3);
+      }
+    }
+    expect(OPTIC_KINDS.sentinel.scopeModel!.model).toBe('guns/scope_sentinel.glb');
+    expect(OPTIC_KINDS.rifle_scope.scopeModel!.model).toBe(OPTIC_KINDS.long_scope.scopeModel!.model);
+  });
+
   it('each gun offers the choice named here, its default first; the rest offer none', () => {
     const offered = Object.fromEntries(Object.values(CORE_WEAPONS).map((d) => [d.id, opticChoices(d).map((c) => c.id)] as const).filter(([, c]) => c.length));
     expect(offered).toEqual(CHOICES);
     for (const [id, kinds] of Object.entries(CHOICES)) expect(kinds[0], `${id}: its default first`).toBe(WEAPON_OPTICS[id]!.default);
     // Snipers and the guns with a scope of their own keep it: a pick for them is ignored.
-    for (const id of [...CARRIES.scope, ...CARRIES.sniper, 'core.plasma', 'core.flintlock_pistol']) {
+    for (const id of [...CARRIES.scope, ...CARRIES.sniper, ...CARRIES.rifle_scope, ...CARRIES.long_scope, ...CARRIES.sentinel, 'core.plasma', 'core.flintlock_pistol']) {
       expect(opticChoices(getWeapon(id)), id).toEqual([]);
       for (const k of ['reddot', 'holo', 'x2', 'irons']) expect(opticOf(getWeapon(id), k)!.id, `${id} given ${k}`).toBe(WEAPON_OPTICS[id]!.default);
     }
