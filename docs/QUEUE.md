@@ -57,7 +57,9 @@ Everything else keeps its place below these.
 ## Ready to land
 (`branch · green sha · run`; the next train takes them all in this order)
 
-- `wip/historical-names` · ec288a5a · run 46103320090 (Pirates into Historical, real names, Khan and Caesar with the real people)
+- `wip/armory-2` · 4a0499f7 · run 46104515126 (Test my loadout in the Armory, Profile's Weapons button, two-column Profile, 59 weapon descriptions)
+
+(train check/train-20261128-044628 landed a190007 2026-11-28: historical-names + weapons-replace-2; its editor e2e flow failed once and passed on the re-run: being root-caused on wip/editor-flow-1128.)
 
 ## Maps (rebuilds and map work, kept apart: owner, 2026-11-16)
 - **St. John's, handed to the lead by lane F (owner, 2026-11-22: "try and wrap things up here"); the owner's words and answers are in `docs/map-briefs/st_johns/OWNER_NOTES_2026-11-21.md`, each step through MapMaker with a committed step list:**
