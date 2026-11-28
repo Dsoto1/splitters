@@ -14941,6 +14941,14 @@ async function gripsInPlay(browser) {
   await page.goto(`${CLIENT}/?offline=canyon&gamemode=core.deathmatch&bots=12&look=core.dapper&test=1&god=1`);
   await page.waitForFunction(() => window.__cs?.local?.alive && window.__cs.phase() === 'playing' && window.__cs.view.gripReport().local, null, { timeout: T(120000) });
   await fight(page).catch(() => {});
+  // No end to the round: with a dozen bots a Deathmatch round reaches its score limit in about two minutes (headless,
+  // seeded), and the next round spawns everyone afresh with the spawn loadout, the rifle in hand: a gun the flow had
+  // just handed over was gone with no key pressed (the scope check's marksman, run 42679874806; the Laser Rifle's
+  // optic, train run 46141903583). farBodies stops the round the same way.
+  await sim(page, (m) => {
+    m.phaseEndTick = Infinity;
+    m.rules.scoreLimit = 0;
+  });
   const misses = [];
   const step = async (label, act) => {
     await act();
@@ -14992,7 +15000,8 @@ async function gripsInPlay(browser) {
   });
   // On CI the rifle sometimes came back in your hands a few seconds after the give (twice in one run, 2026-11-09:
   // marksman at 0.1 s, rifle at 0.7 s with no key pressed), and pressing 3 then only asked for the rifle again
-  // ("asked 3", run 42679874806). So the give is repeated until the marksman is held, drawn and raised.
+  // ("asked 3", run 42679874806): the round had ended and the next one spawned you with its loadout (the round is
+  // no longer ended above). The give is still repeated until the marksman is held, drawn and raised.
   const marksmanUp = () => window.__cs.local.weapon?.id === 'core.marksman' && window.__cs.view.viewWeapon === 'core.marksman' && !!window.__cs.view.viewmodel && window.__cs.local.raiseTicks === 0;
   for (let i = 0; i < 6 && !(await page.evaluate(marksmanUp)); i++) {
     if ((await page.evaluate(() => window.__cs.local.weapon?.id)) !== 'core.marksman') await page.evaluate(() => window.__give('core.marksman'));
