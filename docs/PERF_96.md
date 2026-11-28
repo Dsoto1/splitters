@@ -1376,3 +1376,46 @@ SwiftShader on a shared 4-core box: counts compare, milliseconds only between ru
 
 Left for later: far characters cheaper (waits for grips), bots far from humans, a binary worker snapshot, the ground
 mist's depth pass, indoor clustered lights, a true `.wasm` Rapier.
+
+## The lean range (28 Nov 2026, `wip/range-picker`)
+
+The owner (2026-11-28): "I really dislike having to load into the level just to test it… give them the weapon picker.
+Just optimize it so we are not running code that is unnecessary." The ranges (the Practice range, Test my loadout) now
+have a weapon picker in play (docs/ARSENAL.md, "In the range: the weapon picker"), and played alone they are a **lean
+match** (`?perfoff=rangelean` plays them as any match, for comparing on one build):
+
+1. **No navmesh** (shared `Match` option `lean`: `Match.nav` is made the first time something asks for it: a bot
+   added, a player returned to the play area; the play area is the map's bounds until then). The page waits for the
+   match's welcome before it builds the map, so the navmesh was on the critical path of every range start; the browser's
+   navmesh store isn't opened either.
+2. **No bot tick** with nobody for a brain to play (`runBots` skipped: its navmesh bookkeeping included).
+3. **No countdown** (3 s): play begins as soon as you have loaded. **No loading-board hold** (1.6 s, a board of one).
+4. **Only the guns you hold at once are warmed before the start** (your spawn guns, the Armory's pick, your class's,
+   the grenades): the racks' other guns warm out of sight after it, four at a time (`GameView.prewarm` `gunsOnly`), so
+   the first one you take still builds nothing.
+5. **Only the effects a gun, an impact or a pickup plays are warmed** (client `fxMap.ts` `rangeEffects`): not a
+   match's moments (a streak, a spawn shield, team auras), vehicles and wrecks, traps, and portals and pads unless the
+   map has them.
+
+Kept as in any match: everything a shot does (recoil, spread, ballistics, the Practice Targets' read-outs, sights,
+sounds, muzzle flashes, impacts, reloads), the snapshots to your own page (already local only: no guests, nothing
+encoded for a network), the HUD (its kill feed and scoreboard cost ~0.1 ms a frame with nothing in them).
+
+**Measured** (the Practice range from Quick Play, medium, 960 × 540, SwiftShader on a shared 4-core box at load 12-16:
+wall times swing ±30 % here, so the counts lead; 4 runs each, interleaved, one build, lean against `?perfoff=rangelean`,
+and 3 runs of the build before for the navmesh):
+
+| | Before (any match) | Lean range |
+|---|---|---|
+| Match made in the worker (welcome on the critical path) | 1.2-2.8 s (navmesh built) | 0.13-0.4 s |
+| Countdown, loading-board hold (players, not tests) | 3 s, 1.6 s | none |
+| Gun copies warmed before the start | 171 (57 guns × 3) | 9 (3 guns × 3; the rest after) |
+| Effects warmed before the start | 48 | 36 |
+| Shader programs built at the start | 129-150 | 128-132 (one run 91) |
+| Bots section of the tick, per tick | 0.03-0.09 ms | ~0.005 ms |
+| Whole tick, mean / p95 | 0.16-0.32 / 0.3-0.4 ms | 0.15-0.24 / 0.3 ms |
+| Page frame's JS, mean | 3.6-10 ms | 3.2-7.7 ms (one 25 ms outlier run) |
+
+The wall-clock start on this box (click to in play, 50-85 s either way) is the SwiftShader shader builds against the
+start gate's 25 s cap and the box's load, not these savings; on a GPU the start loses the navmesh, the countdown and the
+hold (about 6-7 s together) and most of its shader builds.
