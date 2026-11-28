@@ -113,7 +113,7 @@ to 6.1 MB (the match worker no longer carries its own copy of Rapier).
 `tools/ci/bundle-budget.mjs` (CI's build and site jobs) adds up the JS a first
 visit loads before the menu (index.html's entry and everything it imports
 statically, i.e. its modulepreloads), gzipped as the hub serves it, and fails
-over **800 kB gzip / 2.8 MB raw** (it was 840 kB / 3 MB from the Snow and Desert City packs, ad1ba06, until
+over **810 kB gzip / 2.835 MB raw** (owner, 2026-11-28: raised from 800 / 2800 with the menu at 799.7 kB gzip as the Armory's entry hook came in; the Armory's page itself and, from the same branch, Options → Controls' key list load on demand; it was 840 kB / 3 MB from the Snow and Desert City packs, ad1ba06, until
 2026-11-09: step 1 below took the menu down to 649 kB, it grew back to 746 kB, and moving the measured hit-shape table
 out of the menu, below, brought it to 714 kB / 2513 kB raw). Over budget usually means a static import
 pulled something the menu doesn't draw back into the first load: make it a
@@ -147,6 +147,12 @@ put in the menu's chunk whole, with everything it imports: keep what the menu ne
 is gone), so the menu's first JS lost only what the menu itself carried for it (the saved-designs list, Design new,
 Customise, Yours and the kept design pictures): 2790.0 to 2786.8 kB raw, 792.2 to 791.2 kB gzip (`index` 1038.8 to
 1035.6 kB raw, 340.8 to 339.8 kB gzip), the same budget.
+
+**The Armory and Controls' key list** (2026-11-28): the Armory (docs/ARSENAL.md, "Armory") is its own chunk, the menu
+carrying only its entry hook (about 0.4 kB gzip); to make room, Options → Controls' key list (`frontend/controlsPage.ts`,
+5.2 kB raw) left the menu for a chunk of its own, fetched half a second after the menu opens (a placeholder fills in
+place until it is there): with limbs and the Armory on main, 798.7 kB gzip / 2791.5 kB raw. The owner raised the budget
+to 810 / 2835 the same day.
 
 Measure a change: `pnpm build && node tools/ci/bundle-budget.mjs`, and
 `node tools/perf/first-load.mjs [dist …]` for times (it serves each build the
